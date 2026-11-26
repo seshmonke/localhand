@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "phase": "INIT",
+  "sprint": null,
+  "cycle": 0,
+  "updated_at": "2026-11-26T22:11:57Z",
+  "stop": false,
+  "human_gate": "stack_foundation",
+  "notes": "Init 0.2: monorepo scaffold, pnpm verify green, local preview + API health work, Selectel VM+S3+Token Factory chosen, UI registry 200. CI workflow added; remote preview/domain/managed Postgres later."
+}

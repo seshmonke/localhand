@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dist-ssr/
+coverage/
+storybook-static/
+playwright-report/
+test-results/
+.vite/
+.turbo/
+.DS_Store
+
+.env
+.env.*
+!.env.example
+
+*.log
