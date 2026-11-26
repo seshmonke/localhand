@@ -205,6 +205,30 @@ describe("POST /auth/verify-code", () => {
     expect(blocked.json()).toEqual({ error: "rate_limited" });
     expect(authService.verifyCode).toHaveBeenCalledTimes(10);
   });
+
+  it("normalizes IPv6 variants in the verify-code limiter key", async () => {
+    const ipv6Phone = phone("+7", "902", "000", "00", "06");
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const response = await app.inject({
+        method: "POST",
+        url: "/auth/verify-code",
+        payload: { phone: ipv6Phone, code: "654321" },
+        remoteAddress: "2001:db8:0:1::1",
+      });
+      expect(response.statusCode).toBe(401);
+    }
+
+    const blocked = await app.inject({
+      method: "POST",
+      url: "/auth/verify-code",
+      payload: { phone: ipv6Phone, code: "654321" },
+      remoteAddress: "2001:db8:0:1:0:0:0:1",
+    });
+
+    expect(blocked.statusCode).toBe(429);
+    expect(blocked.json()).toEqual({ error: "rate_limited" });
+  });
 });
 
 describe("GET /auth/me", () => {
@@ -275,5 +299,80 @@ describe("POST /auth/logout", () => {
 
     const me = await app.inject({ method: "GET", url: "/auth/me" });
     expect(me.statusCode).toBe(401);
+  });
+});
+
+describe("trustProxy", () => {
+  it("uses X-Forwarded-For from the trusted Caddy peer", async () => {
+    const trustedApp = buildApp({ trustProxy: "172.28.0.2/32" });
+    await trustedApp.ready();
+
+    try {
+      for (let index = 0; index < 20; index += 1) {
+        const response = await trustedApp.inject({
+          method: "POST",
+          url: "/auth/request-code",
+          payload: { phone: uniquePhone(index) },
+          remoteAddress: "172.28.0.2",
+          headers: { "x-forwarded-for": "203.0.113.1" },
+        });
+        expect(response.statusCode).toBe(200);
+      }
+
+      const otherClient = await trustedApp.inject({
+        method: "POST",
+        url: "/auth/request-code",
+        payload: { phone: uniquePhone(20) },
+        remoteAddress: "172.28.0.2",
+        headers: { "x-forwarded-for": "203.0.113.2" },
+      });
+      expect(otherClient.statusCode).toBe(200);
+
+      const blocked = await trustedApp.inject({
+        method: "POST",
+        url: "/auth/request-code",
+        payload: { phone: uniquePhone(21) },
+        remoteAddress: "172.28.0.2",
+        headers: { "x-forwarded-for": "203.0.113.1" },
+      });
+
+      expect(blocked.statusCode).toBe(429);
+      expect(blocked.json()).toEqual({ error: "rate_limited" });
+      expect(authService.requestCode).toHaveBeenCalledTimes(21);
+    } finally {
+      await trustedApp.close();
+    }
+  });
+
+  it("ignores X-Forwarded-For from peers outside the trusted CIDR", async () => {
+    const caddyOnlyApp = buildApp({ trustProxy: "172.28.0.2/32" });
+    await caddyOnlyApp.ready();
+
+    try {
+      for (let index = 0; index < 20; index += 1) {
+        const response = await caddyOnlyApp.inject({
+          method: "POST",
+          url: "/auth/request-code",
+          payload: { phone: uniquePhone(index) },
+          remoteAddress: "127.0.0.1",
+          headers: { "x-forwarded-for": `198.51.100.${index + 1}` },
+        });
+        expect(response.statusCode).toBe(200);
+      }
+
+      const blocked = await caddyOnlyApp.inject({
+        method: "POST",
+        url: "/auth/request-code",
+        payload: { phone: uniquePhone(20) },
+        remoteAddress: "127.0.0.1",
+        headers: { "x-forwarded-for": "198.51.100.99" },
+      });
+
+      expect(blocked.statusCode).toBe(429);
+      expect(blocked.json()).toEqual({ error: "rate_limited" });
+      expect(authService.requestCode).toHaveBeenCalledTimes(20);
+    } finally {
+      await caddyOnlyApp.close();
+    }
   });
 });

@@ -6,6 +6,7 @@ import {
   VerifyCodeResponseSchema,
   VerifyCodeSchema,
 } from "@localhand/shared";
+import rateLimitPlugin from "@fastify/rate-limit";
 import type { FastifyError, FastifyReply, FastifyRequest } from "fastify";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { env } from "../env.js";
@@ -48,7 +49,7 @@ function phoneKey(request: FastifyRequest): string {
 }
 
 function ipPhoneKey(request: FastifyRequest): string {
-  return `${request.ip}:${requestPhone(request)}`;
+  return `${rateLimitPlugin.normalizeIP(request.ip)}:${requestPhone(request)}`;
 }
 
 export const authRoutes: FastifyPluginAsyncZod<AuthRoutesOptions> = async (app, options) => {
@@ -114,6 +115,7 @@ export const authRoutes: FastifyPluginAsyncZod<AuthRoutesOptions> = async (app, 
           200: VerifyCodeResponseSchema,
           400: ApiErrorSchema,
           401: ApiErrorSchema,
+          429: ApiErrorSchema,
         },
       },
     },
