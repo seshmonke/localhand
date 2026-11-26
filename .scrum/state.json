@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "phase": "READY",
+  "phase": "BUILDING",
   "init_closed": true,
   "sprint": 1,
-  "cycle": 0,
-  "updated_at": "2026-11-27T02:30:00Z",
+  "cycle": 1,
+  "updated_at": "2026-11-27T02:40:00Z",
   "stop": false,
-  "human_gate": "start_sprint_1",
-  "notes": "Sprint 1 planned: seller onboarding + auth, change 02-seller-onboarding valid. Build not started; awaiting explicit owner command."
+  "human_gate": null,
+  "notes": "Sprint 1 BUILDING, cycle 1: S1-1 phone auth in progress. Change 02-seller-onboarding."
 }
