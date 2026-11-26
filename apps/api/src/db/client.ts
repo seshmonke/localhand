@@ -3,9 +3,21 @@ import { Pool } from "pg";
 import { env } from "../env.js";
 import * as schema from "./schema.js";
 
-if (!env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is required to connect to PostgreSQL");
+const connectionString = env.DATABASE_URL;
+
+export const pool = connectionString ? new Pool({ connectionString }) : null;
+export const db = pool ? drizzle(pool, { schema }) : null;
+
+export function requireDb() {
+  if (!db) {
+    throw new Error("DATABASE_URL is required to connect to PostgreSQL");
+  }
+  return db;
 }
 
-export const pool = new Pool({ connectionString: env.DATABASE_URL });
-export const db = drizzle(pool, { schema });
+export function requirePool() {
+  if (!pool) {
+    throw new Error("DATABASE_URL is required to connect to PostgreSQL");
+  }
+  return pool;
+}

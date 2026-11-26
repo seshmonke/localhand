@@ -9,6 +9,7 @@ import {
 } from "fastify-type-provider-zod";
 import { env } from "./env.js";
 import { healthRoutes } from "./health/health.route.js";
+import { storefrontRoutes } from "./storefront/storefront.route.js";
 
 export function buildApp() {
   const app = Fastify({
@@ -26,6 +27,7 @@ export function buildApp() {
   app.register(rateLimit, { global: false });
 
   app.register(healthRoutes);
+  app.register(storefrontRoutes);
 
   return app;
 }
