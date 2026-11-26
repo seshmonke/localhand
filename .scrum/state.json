@@ -3,8 +3,8 @@
   "phase": "INIT",
   "sprint": null,
   "cycle": 0,
-  "updated_at": "2026-11-26T22:11:57Z",
+  "updated_at": "2026-11-27T01:30:00Z",
   "stop": false,
-  "human_gate": "stack_foundation",
-  "notes": "Init 0.2: monorepo scaffold, pnpm verify green, local preview + API health work, Selectel VM+S3+Token Factory chosen, UI registry 200. CI workflow added; remote preview/domain/managed Postgres later."
+  "human_gate": "walking_skeleton",
+  "notes": "Init 0.3 local git done; GitHub remote/protected main pending. Init 0.4: change 01-walking-skeleton created and validated; implementation pending."
 }
