@@ -20,9 +20,11 @@
   магазин, товар из PostgreSQL через API. Критерий: preview показывает
   ≥3 товара, `/health` 200, `pnpm verify` зелёный. Источник: Init 0.4.
   Спринт: —.
-- [ ] Создать GitHub-репозиторий, protected `main`, required checks,
+- [x] Создать GitHub-репозиторий, protected `main`, required checks,
   review-gate. Критерий: прямой push в `main` невозможен, PR требует
-  не-автора. Источник: Init 0.3. Спринт: —.
+  не-автора. Источник: Init 0.3. Спринт: —. Сделано 27.11.2026:
+  `seshmonke/localhand`, public, `verify` + `review-gate`, label
+  `reviewed`, secret scanning/push protection.
 - [ ] Закрыть юридический пакет: оферта, политика ПДн, правила
   платформы, уведомление РКН. Критерий: документы опубликованы,
   уведомление подано. Источник: `docs/legal/context.md`. Спринт: —.
