@@ -1,12 +1,10 @@
 {
   "schema": 1,
   "phase": "INIT",
-  "sprint": null,
-  "cycle": 0,
-  "updated_at": "2026-11-27T02:15:00Z",
   "init_closed": true,
   "sprint": null,
   "cycle": 0,
+  "updated_at": "2026-11-27T02:20:00Z",
   "stop": false,
   "human_gate": null,
   "notes": "Init closed 27.11.2026: product, stack, public GitHub with protected main, walking skeleton implemented and archived. Sprint 1 not started; awaiting owner command."
