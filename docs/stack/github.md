@@ -32,6 +32,8 @@
 - Secret scanning push protection — enabled.
 - `pnpm check:public` в `verify`: запрещённые файлы, ключи, токены,
   телефоны, email, абсолютные пути.
+- `pre-commit` hook `.githooks/pre-commit` запускает `check:public` до
+  коммита; `pnpm install` включает его через `prepare`.
 - Dependabot config: npm и GitHub Actions, weekly.
 - Dependabot alerts/security updates — включены настолько, насколько
   позволяет GitHub Free; dependency graph API для репозитория пока
