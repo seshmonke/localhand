@@ -5,5 +5,6 @@
 - [ADR 0001: стек и инфраструктура](adr/0001-stack.md)
 - [Версии инструментов](versions.md)
 - [Хостинг v1](hosting.md)
+- [GitHub: репозиторий, защита main, ревью](github.md)
 - [LLM для AI-агента](llm.md)
 - [Монорепозиторий](monorepo.md)
