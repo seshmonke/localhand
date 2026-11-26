@@ -1,5 +1,5 @@
 import { migrate } from "drizzle-orm/node-postgres/migrator";
-import { db, pool } from "./client.js";
+import { requireDb, requirePool } from "./client.js";
 
-await migrate(db, { migrationsFolder: "drizzle" });
-await pool.end();
+await migrate(requireDb(), { migrationsFolder: "drizzle" });
+await requirePool().end();
