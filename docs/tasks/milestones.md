@@ -24,3 +24,6 @@
   с красным/оранжевым/зелёным акцентами; палитра отдельно. Init 0.2.
 - 27.11.2026. Создан первый OpenSpec change `01-walking-skeleton`;
   реализация и remote/protected main — следующие шаги. Init 0.4.
+- 27.11.2026. Walking skeleton реализован и смержен через PR #4; change
+  заархивирован как `2026-11-27-01-walking-skeleton`, спека `storefront`
+  создана. Init закрыт; Sprint 1 — только по команде. Init 0.4.

@@ -16,10 +16,11 @@
 
 ## P0
 
-- [ ] Реализовать walking skeleton `01-walking-skeleton`: каталог,
+- [x] Реализовать walking skeleton `01-walking-skeleton`: каталог,
   магазин, товар из PostgreSQL через API. Критерий: preview показывает
   ≥3 товара, `/health` 200, `pnpm verify` зелёный. Источник: Init 0.4.
-  Спринт: —.
+  Спринт: —. Сделано 27.11.2026: PR #4, change заархивирован, 4 товара,
+  preview + `/api` proxy, 404.
 - [x] Создать GitHub-репозиторий, protected `main`, required checks,
   review-gate. Критерий: прямой push в `main` невозможен, PR требует
   не-автора. Источник: Init 0.3. Спринт: —. Сделано 27.11.2026:
