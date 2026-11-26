@@ -18,4 +18,4 @@ jobs:
           echo "::error::Добавьте label 'reviewed' после ревью не-автором."
           exit 1
       - name: Reviewed
-        run: echo "PR reviewed: label present"
+        run: echo "PR reviewed - label present"
