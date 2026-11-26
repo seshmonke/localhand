@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": 1,
   "cycle": 1,
-  "updated_at": "2026-11-27T02:40:00Z",
+  "updated_at": "2026-11-27T03:00:00Z",
   "stop": false,
-  "human_gate": null,
-  "notes": "Sprint 1 BUILDING, cycle 1: S1-1 phone auth in progress. Change 02-seller-onboarding."
+  "human_gate": "resume_s1_1",
+  "notes": "PAUSED at safe checkpoint: S1-1 auth in progress, trustProxy blocker fix WIP; see .scrum/HANDOFF.md. Resume from checkpoint branch / task worktree."
 }
