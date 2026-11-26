@@ -16,7 +16,12 @@ function phone(...parts: string[]): string {
 
 const TEST_PHONE = phone("+7", "999", "111", "22", "33");
 const RATE_LIMIT_PHONE = phone("+7", "900", "000", "00", "04");
+const VERIFY_LIMIT_PHONE = phone("+7", "902", "000", "00", "05");
 const TEST_USER = { id: 42, phone: TEST_PHONE };
+
+function uniquePhone(index: number): string {
+  return phone("+7", "901", "000", String(index).padStart(4, "0"));
+}
 
 const app = buildApp();
 
@@ -80,12 +85,13 @@ describe("POST /auth/request-code", () => {
     expect(authService.requestCode).not.toHaveBeenCalled();
   });
 
-  it("returns 429 after five requests per IP and phone", async () => {
+  it("returns 429 after five requests for one phone across different IPs", async () => {
     for (let index = 0; index < 5; index += 1) {
       const response = await app.inject({
         method: "POST",
         url: "/auth/request-code",
         payload: { phone: RATE_LIMIT_PHONE },
+        remoteAddress: `203.0.113.${index + 1}`,
       });
       expect(response.statusCode).toBe(200);
     }
@@ -94,11 +100,42 @@ describe("POST /auth/request-code", () => {
       method: "POST",
       url: "/auth/request-code",
       payload: { phone: RATE_LIMIT_PHONE },
+      remoteAddress: "203.0.113.99",
     });
 
     expect(blocked.statusCode).toBe(429);
     expect(blocked.json()).toEqual({ error: "rate_limited" });
     expect(authService.requestCode).toHaveBeenCalledTimes(5);
+  });
+
+  it("returns 429 after twenty requests from one IP even with spoofed X-Forwarded-For", async () => {
+    const isolatedApp = buildApp();
+    await isolatedApp.ready();
+
+    try {
+      for (let index = 0; index < 20; index += 1) {
+        const response = await isolatedApp.inject({
+          method: "POST",
+          url: "/auth/request-code",
+          payload: { phone: uniquePhone(index) },
+          headers: { "x-forwarded-for": `198.51.100.${index + 1}` },
+        });
+        expect(response.statusCode).toBe(200);
+      }
+
+      const blocked = await isolatedApp.inject({
+        method: "POST",
+        url: "/auth/request-code",
+        payload: { phone: uniquePhone(20) },
+        headers: { "x-forwarded-for": "198.51.100.99" },
+      });
+
+      expect(blocked.statusCode).toBe(429);
+      expect(blocked.json()).toEqual({ error: "rate_limited" });
+      expect(authService.requestCode).toHaveBeenCalledTimes(20);
+    } finally {
+      await isolatedApp.close();
+    }
   });
 });
 
@@ -146,6 +183,27 @@ describe("POST /auth/verify-code", () => {
 
     expect(response.statusCode).toBe(400);
     expect(authService.verifyCode).not.toHaveBeenCalled();
+  });
+
+  it("returns 429 after ten attempts per IP and phone", async () => {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const response = await app.inject({
+        method: "POST",
+        url: "/auth/verify-code",
+        payload: { phone: VERIFY_LIMIT_PHONE, code: "654321" },
+      });
+      expect(response.statusCode).toBe(401);
+    }
+
+    const blocked = await app.inject({
+      method: "POST",
+      url: "/auth/verify-code",
+      payload: { phone: VERIFY_LIMIT_PHONE, code: "654321" },
+    });
+
+    expect(blocked.statusCode).toBe(429);
+    expect(blocked.json()).toEqual({ error: "rate_limited" });
+    expect(authService.verifyCode).toHaveBeenCalledTimes(10);
   });
 });
 

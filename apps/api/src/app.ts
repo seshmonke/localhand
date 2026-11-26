@@ -11,13 +11,14 @@ import {
 } from "fastify-type-provider-zod";
 import { authRoutes } from "./auth/auth.route.js";
 import { createSmsProvider } from "./auth/sms/sms-provider.js";
-import { env, jwtSecret } from "./env.js";
+import { env, jwtSecret, trustProxy } from "./env.js";
 import { healthRoutes } from "./health/health.route.js";
 import { storefrontRoutes } from "./storefront/storefront.route.js";
 
 export function buildApp() {
   const app = Fastify({
     logger: env.NODE_ENV !== "test",
+    trustProxy,
   }).withTypeProvider<ZodTypeProvider>();
 
   app.setValidatorCompiler(validatorCompiler);

@@ -23,17 +23,44 @@ function sendUnauthorized(reply: FastifyReply) {
   return reply.code(401).send(unauthorized);
 }
 
-function rateLimitKey(request: FastifyRequest): string {
+type RateLimitCheck = (
+  request: FastifyRequest,
+) => Promise<{ isAllowed: true } | { isAllowed: false; isExceeded: boolean }>;
+
+function enforceRateLimit(check: RateLimitCheck) {
+  return async (request: FastifyRequest) => {
+    const result = await check(request);
+    if (!result.isAllowed && result.isExceeded) {
+      throw Object.assign(new Error("rate limit exceeded"), { statusCode: 429 });
+    }
+  };
+}
+
+function requestPhone(request: FastifyRequest): string {
   const body = request.body as { phone?: unknown } | null | undefined;
-  const phone =
-    typeof body === "object" && body !== null && typeof body.phone === "string"
-      ? body.phone
-      : "invalid";
-  return `${request.ip}:${phone}`;
+  return typeof body === "object" && body !== null && typeof body.phone === "string"
+    ? body.phone
+    : "invalid";
+}
+
+function phoneKey(request: FastifyRequest): string {
+  return requestPhone(request);
+}
+
+function ipPhoneKey(request: FastifyRequest): string {
+  return `${request.ip}:${requestPhone(request)}`;
 }
 
 export const authRoutes: FastifyPluginAsyncZod<AuthRoutesOptions> = async (app, options) => {
   const cookieOptions = sessionCookieOptions(env.NODE_ENV);
+
+  const phoneCodeLimiter = enforceRateLimit(
+    app.createRateLimit({ max: 5, timeWindow: "1 minute", keyGenerator: phoneKey }),
+  );
+  const ipCodeLimiter = enforceRateLimit(app.createRateLimit({ max: 20, timeWindow: "1 minute" }));
+  const verifyCodeLimiter = enforceRateLimit(
+    app.createRateLimit({ max: 10, timeWindow: "1 minute", keyGenerator: ipPhoneKey }),
+  );
 
   app.setErrorHandler<FastifyError>((error, request, reply) => {
     const statusCode = error.statusCode ?? 500;
@@ -54,14 +81,7 @@ export const authRoutes: FastifyPluginAsyncZod<AuthRoutesOptions> = async (app, 
   app.post(
     "/auth/request-code",
     {
-      config: {
-        rateLimit: {
-          max: 5,
-          timeWindow: "1 minute",
-          hook: "preHandler",
-          keyGenerator: rateLimitKey,
-        },
-      },
+      preHandler: [phoneCodeLimiter, ipCodeLimiter],
       schema: {
         body: RequestCodeSchema,
         response: {
@@ -87,6 +107,7 @@ export const authRoutes: FastifyPluginAsyncZod<AuthRoutesOptions> = async (app, 
   app.post(
     "/auth/verify-code",
     {
+      preHandler: [verifyCodeLimiter],
       schema: {
         body: VerifyCodeSchema,
         response: {
