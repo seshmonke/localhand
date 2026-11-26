@@ -6,9 +6,32 @@ export const productStatuses = ["draft", "published", "hidden"] as const;
 export const shopStatusEnum = pgEnum("shop_status", shopStatuses);
 export const productStatusEnum = pgEnum("product_status", productStatuses);
 
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  phone: text("phone").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const otpCodes = pgTable(
+  "otp_codes",
+  {
+    id: serial("id").primaryKey(),
+    phone: text("phone").notNull(),
+    codeHash: text("code_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("otp_codes_phone_created_at_idx").on(table.phone, table.createdAt)],
+);
+
 export const sellers = pgTable("sellers", {
   id: serial("id").primaryKey(),
   displayName: text("display_name").notNull(),
+  userId: integer("user_id")
+    .unique()
+    .references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

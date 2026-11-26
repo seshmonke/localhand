@@ -15,6 +15,13 @@
       "when": 1795733754608,
       "tag": "0001_messy_yellowjacket",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795735938526,
+      "tag": "0002_brown_charles_xavier",
+      "breakpoints": true
     }
   ]
 }
