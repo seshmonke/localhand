@@ -19,8 +19,11 @@
 <!-- - [Спринт 1: …](01-….md) — …. Закрыт ДД.ММ.ГГГГ. -->
 
 Init закрыт 27.11.2026: product, stack, GitHub, walking skeleton
-(`2026-11-27-01-walking-skeleton`). Спринт 1 не начат — только по
-команде владельца.
+(`2026-11-27-01-walking-skeleton`). Спринт 1 спланирован, но не начат —
+ждёт явной команды владельца.
+
+- [Спринт 1: онбординг продавца + auth](01-seller-onboarding.md) —
+  PLANNING/READY, change `02-seller-onboarding`. Закрыт: —.
 
 ## Бэклог
 
