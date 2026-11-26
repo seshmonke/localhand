@@ -80,3 +80,20 @@
 - Не пушить, не мержить, не менять main.
 - Не добавлять зависимость без записи в отчёт.
 - При дыре в спеке — стоп, вопрос оркестратору.
+
+## Addendum после ревью (P1/P2)
+
+- [ ] P1: два независимых лимитера на request-code — телефон 5/мин и IP
+      20/мин (не пара); verify-code — 10/мин на IP+phone; 429 generic;
+      тесты на каждый лимит.
+- [ ] P1: `trustProxy` для Fastify за Caddy; зафиксировать в env
+      (`TRUST_PROXY=true` в prod) и не доверять заголовку вне прокси.
+- [ ] P2: DB-backed тесты `auth.service` на valid / wrong / expired /
+      consumed / 5 attempts / первый и повторный вход; в БД только хеш.
+      Использовать `DATABASE_URL_TEST`; CI уже поднимает Postgres.
+- [ ] P2: вне `test` не использовать публичные dev-секреты; требовать
+      `JWT_SECRET`/`OTP_SECRET`, отклонять известные плейсхолдеры;
+      обновить `.env.example`.
+- [ ] P3 (можно в S1-5): cleanup expired/consumed OTP, rollback SQL
+      миграции, метрики auth. Зафиксировать в отчёте, не блокировать P1.
+
