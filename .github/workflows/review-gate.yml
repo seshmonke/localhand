@@ -1,0 +1,21 @@
+name: Review gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  review-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require reviewed label
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'reviewed') }}
+        run: |
+          echo "::error::Добавьте label 'reviewed' после ревью не-автором."
+          exit 1
+      - name: Reviewed
+        run: echo "PR reviewed - label present"

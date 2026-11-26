@@ -1,3 +1,41 @@
+# === Секреты и локальная среда ===
+.env
+.env.*
+!.env.example
+.envrc
+.direnv/
+secrets/
+.secrets/
+private/
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.kubeconfig
+kubeconfig*
+.aws/
+.gcp/
+.azure/
+.npmrc.local
+.npmrc.auth
+
+# === Локальные БД, дампы, бэкапы ===
+dumps/
+dump/
+backups/
+backup/
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.bak
+*.backup
+pg_dump*
+*.har
+
+# === Логи, тесты, сборка ===
 node_modules/
 dist/
 dist-ssr/
@@ -7,10 +45,27 @@ playwright-report/
 test-results/
 .vite/
 .turbo/
-.DS_Store
-
-.env
-.env.*
-!.env.example
-
 *.log
+logs/
+
+# === Приватные заметки и состояние вне публичного контура ===
+docs/private/
+docs/finance/
+notes/
+research/
+.scrum/questions/
+.scrum/private/
+.scrum/STOP
+.scrum/budget.local.json
+
+# === ОС и редакторы ===
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# === Временное ===
+tmp/
+.tmp/
