@@ -12,7 +12,7 @@ function Header() {
       <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 sm:h-20 sm:px-6 lg:px-10">
         <Link
           to="/"
-          className="font-display text-lg uppercase leading-none tracking-tight sm:text-xl"
+          className="font-display text-lg font-extrabold uppercase leading-none tracking-tight sm:text-xl"
         >
           Local Hand
         </Link>
@@ -64,7 +64,7 @@ function Footer() {
   return (
     <footer className="border-t-[3px] border-ink bg-paper">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-10">
-        <p className="font-display text-lg uppercase">Local Hand</p>
+        <p className="font-display text-lg font-extrabold uppercase">Local Hand</p>
         <p className="font-mono text-[10px] uppercase tracking-wide">
           Секонд-хенд · Локальные бренды · Цифровое
         </p>

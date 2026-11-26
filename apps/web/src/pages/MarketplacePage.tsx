@@ -74,7 +74,7 @@ export function MarketplacePage() {
               <p className="font-mono text-xs uppercase tracking-[0.24em] text-accent-orange">
                 Local Hand / v1
               </p>
-              <p className="mt-8 font-display text-6xl uppercase leading-[0.9]">
+              <p className="mt-8 font-display text-6xl font-extrabold uppercase leading-[0.9]">
                 Вещи
                 <br />
                 с
