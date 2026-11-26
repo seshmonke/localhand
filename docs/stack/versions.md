@@ -28,7 +28,7 @@
 | zod | 4.6.7 |
 | lucide-react | 1.81.0 |
 | motion | 14.14.0 |
-| @fontsource-variable/* | 5.3.0 |
+| @fontsource-variable/golos-text, martian-mono | 5.3.0 |
 | storybook / @storybook/react-vite / addon-a11y | 10.6.9 |
 
 ## Backend

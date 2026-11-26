@@ -1,4 +1,3 @@
-import "@fontsource-variable/unbounded";
 import "@fontsource-variable/golos-text";
 import "@fontsource-variable/martian-mono";
 import { QueryClientProvider } from "@tanstack/react-query";

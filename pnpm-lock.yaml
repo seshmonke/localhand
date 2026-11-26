@@ -273,9 +273,6 @@ importers:
       '@fontsource-variable/martian-mono':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource-variable/unbounded':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@localhand/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -1068,9 +1065,6 @@ packages:
 
   '@fontsource-variable/martian-mono@5.3.0':
     resolution: {integrity: sha512-0wVODx9ILwNnaYC4XCuSaFRYtj1Prd89MRVaSuv2ng6zLiQkS4SepaWEPefs7vqCZS8sbEOA8jb/4F5KNMnGdg==}
-
-  '@fontsource-variable/unbounded@5.3.0':
-    resolution: {integrity: sha512-ea565Ncn4r7gPdBEHcmaF31V11hDfkL7b/JCklLobQbMfbu2ZZQrVWNgdeEFWFLqNh36yhieZWOgxdAnMTzrLg==}
 
   '@joshwooding/vite-plugin-react-docgen-typescript@0.7.0':
     resolution: {integrity: sha512-qvsTEwEFefhdirGOPnu9Wp6ChfIwy2dBCRuETU3uE+4cC+PFoxMSiiEhxk4lOluA34eARHA0OxqsEUYDqRMgeQ==}
@@ -3832,8 +3826,6 @@ snapshots:
   '@fontsource-variable/golos-text@5.3.0': {}
 
   '@fontsource-variable/martian-mono@5.3.0': {}
-
-  '@fontsource-variable/unbounded@5.3.0': {}
 
   '@joshwooding/vite-plugin-react-docgen-typescript@0.7.0(typescript@7.0.2)(vite@8.4.0(@types/node@26.6.11)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))':
     dependencies:

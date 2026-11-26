@@ -8,7 +8,7 @@
   --color-accent-orange: #ff8a00;
   --color-accent-green: #00a86b;
 
-  --font-display: "Unbounded Variable", "Unbounded", sans-serif;
+  --font-display: "Golos Text Variable", "Golos Text", sans-serif;
   --font-body: "Golos Text Variable", "Golos Text", sans-serif;
   --font-mono: "Martian Mono Variable", "Martian Mono", monospace;
 
@@ -50,6 +50,16 @@
   ::selection {
     background: var(--color-accent-orange);
     color: var(--color-ink);
+  }
+
+  h1,
+  h2 {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    font-weight: 700;
   }
 
   :focus-visible {
