@@ -97,3 +97,15 @@
 - [ ] P3 (можно в S1-5): cleanup expired/consumed OTP, rollback SQL
       миграции, метрики auth. Зафиксировать в отчёте, не блокировать P1.
 
+## Addendum 2 после повторного ревью
+
+- [ ] P1: `trustProxy` не boolean true. Принимать только explicit IP/CIDR
+      Caddy в `TRUST_PROXY` (например `172.28.0.2/32`); `true` отклонять;
+      вне production default false. Тест: trusted remote + XFF учитывается,
+      non-trusted remote + поддельный XFF не обходит IP-лимит.
+- [ ] P3: пустые `JWT_SECRET=`/`OTP_SECRET=` в `.env.example` не должны
+      валить `NODE_ENV=test` (preprocess "" → undefined); добавить `ci-only`
+      в запрещённые плейсхолдеры; 429 в response schema verify-code.
+- [ ] P3: по возможности нормализовать IPv6 для ключа IP-лимита; иначе
+      зафиксировать риск в отчёте.
+
