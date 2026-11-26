@@ -13,7 +13,8 @@
   покупателя/продавца/админа; метрика 10 заказов + 30 магазинов. Init 0.1.
 - 27.11.2026. Стек: Node 26, pnpm 12.23, React 19.3 + Vite 8.4 + Base UI
   1.9 + Tailwind 4.3, Fastify 5.12 + Drizzle + PostgreSQL 18; TypeScript
-  6.0.3 из-за отсутствия поддержки TS 7 в typescript-eslint 8.74. Init 0.2.
+  7.0.2, линт — oxlint 1.95 вместо typescript-eslint (тот не поддерживает
+  TS 7). Init 0.2.
 - 27.11.2026. Инфраструктура: Selectel VM + S3 + Token Factory; Postgres
   на VM; managed PostgreSQL — следующий этап; без k8s/Redis/CDN. Init 0.2.
 - 27.11.2026. LLM: DeepSeek V4.1 Flash через Selectel Token Factory

@@ -20,7 +20,7 @@
 | react / react-dom | 19.3.1 |
 | vite | 8.4.0 |
 | @vitejs/plugin-react | 6.3.0 |
-| typescript | 6.0.3 (build/lint; TS 7.0.2 ещё не поддержан typescript-eslint 8.74) |
+| typescript | 7.0.2 |
 | tailwindcss / @tailwindcss/vite | 4.3.5 |
 | @base-ui/react | 1.9.0 |
 | react-router | 8.5.3 |
@@ -62,13 +62,7 @@
 | @testing-library/user-event | 14.6.13 |
 | jsdom | 31.0.1 |
 | @axe-core/playwright | 4.14.1 |
-| eslint | 10.15.0 |
-| @eslint/js | 10.0.1 |
-| typescript-eslint | 8.74.0 |
-| eslint-plugin-react-hooks | 7.1.1 |
-| eslint-plugin-jsx-a11y | 6.10.2 |
-| eslint-plugin-storybook | 10.6.9 |
-| eslint-config-prettier | 10.1.8 |
+| oxlint | 1.95.0 |
 | prettier | 3.10.1 |
 
 ## Инфраструктура

@@ -34,10 +34,11 @@ AI-агент для покупателя/продавца/админа. Сол�
 
 - React 19.3.1, react-dom 19.3.1.
 - Vite 8.4.0, `@vitejs/plugin-react` 6.3.0.
-- TypeScript 6.0.3 — последняя версия, поддерживаемая
-  `typescript-eslint` 8.74. TypeScript 7.0.2 — самая свежая, но
-  `typescript-eslint` на ней падает; вернёмся к 7 после поддержки в
-  линтере.
+- TypeScript 7.0.2 — самая свежая стабильная.
+- Линт — oxlint 1.95.0, а не typescript-eslint: `typescript-eslint` 8.74
+  официально не поддерживает TS 7 и падает на старте. `tsc` проверяет
+  типы, oxlint — правила и React/a11y. Это осознанный выбор в пользу
+  свежего компилятора.
 - Tailwind CSS 4.3.5, `@tailwindcss/vite` 4.3.5.
 - Base UI 1.9.0 — поведение и доступность; shadcn-словарь ролей и
   стилизация поверх.
@@ -76,9 +77,8 @@ AI-агент для покупателя/продавца/админа. Сол�
 - `@testing-library/react` 16.3.3, `@testing-library/jest-dom` 8.0.0,
   `@testing-library/user-event` 14.6.13, jsdom 31.0.1.
 - Playwright 1.65.1 — e2e и a11y (`@axe-core/playwright` 4.14.1).
-- ESLint 10.15.0, typescript-eslint 8.74.0, eslint-plugin-react-hooks
-  7.1.1, eslint-plugin-jsx-a11y 6.10.2, eslint-plugin-storybook 10.6.9,
-  eslint-config-prettier 10.1.8.
+- oxlint 1.95.0 — линт TS/React/a11y; выбран вместо typescript-eslint
+  8.74, который не поддерживает TypeScript 7.
 - Prettier 3.10.1.
 - `pnpm verify` = typecheck + lint + format:check + test + build +
   `openspec validate --all --strict`.
