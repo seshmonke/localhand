@@ -12,13 +12,13 @@ A foundation, B checkout/UI, C shipment/status/e2e.
 
 ## 1. PR A: schema/contracts/provider
 
-- [ ] 1.1 RED: schema/contract tests падают (dimensions, shop city/point, delivery, quote token).
-- [ ] 1.2 Миграция `0006`: products dimensions, shops `cdek_city_code/name/shipment_point`, orders `delivery_kopecks`, `order_deliveries` (`quoted|created|in_transit|delivered|canceled|manual|failed`), `delivery_events` unique `(delivery_id,status_code,occurred_at)`.
-- [ ] 1.3 Shared contracts: city/point/quote/quoteToken (per-shop payload), delivery snapshot, seller tariffs, shipment create/manual, status; PII length/format; tests.
-- [ ] 1.4 Env: `DELIVERY_PROVIDER=cdek|fake|manual`, `DELIVERY_ENV=test|live`, `DELIVERY_QUOTE_SECRET`, `DELIVERY_LIVE_PII=false`, `CDEK_*`; fail-closed live-PII guard, tests/`.env.example`.
-- [ ] 1.5 `DeliveryProvider` + fake CDEK (cities/points/quote/tariffs/create/get) без сети; outbound limiter skeleton.
-- [ ] 1.6 Down SQL/runbook `delivery-rollback.md` (paid orders/total, webhook cleanup).
-- [ ] 1.7 `pnpm verify`; PR A evidence.
+- [x] 1.1 RED: schema/contract tests падают (dimensions, shop city/point, delivery, quote token).
+- [x] 1.2 Миграция `0006`: products dimensions, shops `cdek_city_code/name/shipment_point`, orders `delivery_kopecks`, `order_deliveries` (`quoted|created|in_transit|delivered|canceled|manual|failed`), `delivery_events` unique `(delivery_id,status_code,occurred_at)`.
+- [x] 1.3 Shared contracts: city/point/quote/quoteToken (per-shop payload), delivery snapshot, seller tariffs, shipment create/manual, status; PII length/format; tests.
+- [x] 1.4 Env: `DELIVERY_PROVIDER=cdek|fake|manual`, `DELIVERY_ENV=test|live`, `DELIVERY_QUOTE_SECRET`, `DELIVERY_LIVE_PII=false`, `CDEK_*`; fail-closed live-PII guard, tests/`.env.example`.
+- [x] 1.5 `DeliveryProvider` + fake CDEK (cities/points/quote/tariffs/create/get) без сети; outbound limiter skeleton.
+- [x] 1.6 Down SQL/runbook `delivery-rollback.md` (paid orders/total, webhook cleanup).
+- [x] 1.7 `pnpm verify`; PR A evidence.
 
 ## 2. PR B: quote/checkout/seller data/UI
 

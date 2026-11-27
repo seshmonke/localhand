@@ -62,7 +62,8 @@ refactor. Evidence: `S3-2-tdd-a.log`, `S3-2-tdd-b.log`, `S3-2-tdd-c.log`
 ## Property/contract
 
 - `total_kopecks = items_kopecks + delivery_kopecks` (fast-check).
-- `max(weight_g, L*W*H/5000)` не меньше каждого слагаемого.
+- `max(weight_g, ceil(L*W*H/5))` не меньше каждого слагаемого;
+  дробный объём округляется вверх до грамма.
 - HMAC quote: подпись/город/точка/hash/exp/цены per-shop — любое изменение → invalid.
 - CDEK fixtures: create request содержит `number`, `shipment_point`,
   `delivery_point`, `packages`; ответ 202 не терминален.

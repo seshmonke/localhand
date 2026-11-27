@@ -107,6 +107,9 @@ describeWithDb("seller shop routes with a real database", () => {
         slug: "vintage-shop",
         name: "Винтаж на районе",
         description: "Секонд-хенд и винтаж",
+        cdekCityCode: null,
+        cdekCityName: null,
+        cdekShipmentPoint: null,
         status: "draft",
       },
     });

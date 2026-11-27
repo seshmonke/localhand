@@ -15,6 +15,9 @@ const shop = {
   slug: "demo-shop",
   name: "Демо-магазин",
   description: null,
+  cdekCityCode: null,
+  cdekCityName: null,
+  cdekShipmentPoint: null,
   status: "published" as const,
 };
 const order = {

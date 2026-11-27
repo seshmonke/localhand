@@ -57,9 +57,9 @@ export const SellerShopSchema = z.object({
   slug: z.string().min(1),
   name: z.string().min(1).max(80),
   description: z.string().nullable(),
-  cdekCityCode: CdekCityCodeSchema.nullable().optional(),
-  cdekCityName: CdekCityNameSchema.nullable().optional(),
-  cdekShipmentPoint: CdekShipmentPointSchema.nullable().optional(),
+  cdekCityCode: CdekCityCodeSchema.nullable(),
+  cdekCityName: CdekCityNameSchema.nullable(),
+  cdekShipmentPoint: CdekShipmentPointSchema.nullable(),
   status: SellerShopStatusSchema,
 });
 

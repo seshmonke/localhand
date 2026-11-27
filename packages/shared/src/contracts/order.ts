@@ -71,7 +71,7 @@ export const OrderSummarySchema = z.object({
   buyerPhone: z.string().regex(/^\+7\d{10}$/),
   comment: z.string().max(ORDER_COMMENT_MAX_LENGTH).nullable(),
   createdAt: z.iso.datetime({ offset: true }),
-  delivery: DeliverySnapshotSchema.nullable().optional(),
+  delivery: DeliverySnapshotSchema.nullable(),
   items: z.array(OrderItemSchema).min(1),
 });
 

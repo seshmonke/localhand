@@ -3,7 +3,17 @@ import { eq } from "drizzle-orm";
 import { requireDb } from "../db/client.js";
 import { sellers, shops } from "../db/schema.js";
 
-type ShopRow = Pick<typeof shops.$inferSelect, "id" | "slug" | "name" | "description" | "status">;
+type ShopRow = Pick<
+  typeof shops.$inferSelect,
+  | "id"
+  | "slug"
+  | "name"
+  | "description"
+  | "status"
+  | "cdekCityCode"
+  | "cdekCityName"
+  | "cdekShipmentPoint"
+>;
 
 export function toSellerShop(row: ShopRow): SellerShop {
   return {
@@ -11,6 +21,9 @@ export function toSellerShop(row: ShopRow): SellerShop {
     slug: row.slug,
     name: row.name,
     description: row.description,
+    cdekCityCode: row.cdekCityCode,
+    cdekCityName: row.cdekCityName,
+    cdekShipmentPoint: row.cdekShipmentPoint,
     status: row.status,
   };
 }
@@ -23,6 +36,9 @@ export async function getShopByUserId(userId: number): Promise<SellerShop | null
       name: shops.name,
       description: shops.description,
       status: shops.status,
+      cdekCityCode: shops.cdekCityCode,
+      cdekCityName: shops.cdekCityName,
+      cdekShipmentPoint: shops.cdekShipmentPoint,
     })
     .from(shops)
     .innerJoin(sellers, eq(shops.sellerId, sellers.id))
@@ -119,6 +135,24 @@ export async function updateShop(userId: number, input: UpdateShop): Promise<Upd
   }
   if (input.description !== undefined) {
     changes.description = input.description;
+  }
+  if (input.cdekCityCode !== undefined) {
+    changes.cdekCityCode = input.cdekCityCode;
+  }
+  if (input.cdekCityName !== undefined) {
+    changes.cdekCityName = input.cdekCityName;
+  }
+  if (input.cdekShipmentPoint !== undefined) {
+    changes.cdekShipmentPoint = input.cdekShipmentPoint;
+  }
+  // A city without its name/point or a point without a city is not a valid
+  // shipping origin: clear the dependent fields in the same update.
+  if (changes.cdekCityCode === null) {
+    changes.cdekCityName = null;
+    changes.cdekShipmentPoint = null;
+  }
+  if (changes.cdekShipmentPoint === null) {
+    changes.cdekShipmentPoint = null;
   }
   if (input.status !== undefined) {
     changes.status = input.status;

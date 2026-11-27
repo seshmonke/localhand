@@ -20,6 +20,9 @@ const publishedShop = {
   slug: "demo-shop",
   name: "Демо-магазин",
   description: null,
+  cdekCityCode: null,
+  cdekCityName: null,
+  cdekShipmentPoint: null,
   status: "published" as const,
 };
 
@@ -31,6 +34,7 @@ const firstOrder: OrderSummary = {
   buyerPhone: firstBuyerPhone,
   comment: "Позвоните после 18:00",
   createdAt,
+  delivery: null,
   items: [
     {
       productId: 1,

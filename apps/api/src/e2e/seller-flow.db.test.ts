@@ -197,6 +197,9 @@ describeWithDb("seller flow end-to-end with a real database", () => {
       slug: FIRST_SHOP_SLUG,
       name: "Винтаж на районе",
       description: "Секонд-хенд и винтаж",
+      cdekCityCode: null,
+      cdekCityName: null,
+      cdekShipmentPoint: null,
       status: "draft",
     });
 
@@ -216,6 +219,10 @@ describeWithDb("seller flow end-to-end with a real database", () => {
       description: "Винтажная джинсовая куртка",
       priceKopecks: 420_000,
       imageUrl: null,
+      weightG: null,
+      lengthCm: null,
+      widthCm: null,
+      heightCm: null,
       status: "draft",
     });
 
@@ -324,6 +331,9 @@ describeWithDb("seller flow end-to-end with a real database", () => {
         slug: FIRST_SHOP_SLUG,
         name: "Винтаж на районе",
         description: "Секонд-хенд и винтаж",
+        cdekCityCode: null,
+        cdekCityName: null,
+        cdekShipmentPoint: null,
         status: "published",
       },
     });

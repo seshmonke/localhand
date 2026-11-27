@@ -81,10 +81,12 @@
   - точки: `point.city_code == cityCode`;
   - packages: одна упаковка на заказ; вес = сумма, габариты = max;
     объёмный вес CDEK `L*W*H/5000` **кг**, поэтому в граммах
-    `volumetric_g = L*W*H/5`; billing weight
-    `max(weight_g, volumetric_g)`; fixture 20×15×10 → 600 г;
+    `volumetric_g = ceil(L*W*H/5)`; billing weight
+    `max(weight_g, volumetric_g)`; fixture 20×15×10 → 600 г,
+    21×14×11 → ceil(646.8) = 647 г;
   - CDEK `calculator/tarifflist`, самый дешёвый тариф с доставкой до
-    ПВЗ; `delivery_sum`, `period_min/max`;
+    ПВЗ; `delivery_sum` рублей → `Math.round(delivery_sum * 100)`
+    копеек (одно правило на quote и seller-сверку), `period_min/max`;
   - возвращает `{ quoteToken, expiresAt, shops:[...] }`; `quoteToken` —
     HMAC (`DELIVERY_QUOTE_SECRET`) над canonical JSON:
     `{v:1, productHash, cityCode, pointCode, exp,
@@ -112,6 +114,9 @@
   показывает доступные тарифы и помечает оплаченный
   (`provider_tariff_code`, `price_kopecks`). Seller не может изменить
   цену доставки: оплаченный тариф — единственный допустимый.
+  Для paid-заказа без `order_deliveries` (создан до 0006) CDEK create
+  возвращает 409 `delivery_snapshot_missing`; доступен только manual
+  carrier/track, потому что ПВЗ/получатель не сохранены.
 - `POST /seller/orders/:id/delivery` body `{tariffCode}`; paid-only;
   idempotent by order; если delivery уже `created+` — 409/return;
   `tariffCode` обязан совпасть с оплаченным `provider_tariff_code`,
@@ -140,10 +145,15 @@
 - Env: `CDEK_CLIENT_ID/SECRET`, `CDEK_API_URL`,
   `CDEK_WEBHOOK_URL=https://.../delivery/cdek/webhook`,
   `DELIVERY_ENV=test|live`, `DELIVERY_LIVE_PII=false`.
-- Fail-closed: `DELIVERY_ENV=live` требует `DELIVERY_LIVE_PII=true`,
-  иначе startup error; значит preview/test не могут случайно пойти в
-  live и собрать реальные ПВЗ/имя/телефон. `true` допустим только
-  после юрпакета и явного решения владельца.
+- Fail-closed:
+  - `DELIVERY_ENV=live` требует `DELIVERY_LIVE_PII=true`, иначе
+    startup error; `true` — только после юрпакета и решения владельца.
+  - `NODE_ENV=production` (preview) допускает только
+    `DELIVERY_PROVIDER=fake`, пока `DELIVERY_LIVE_PII=false`; реальный
+    CDEK в preview не стартует.
+  - `DELIVERY_ENV=test` требует тестовый хост CDEK
+    (`api.edu.cdek.ru`); prod-хост в test — startup error.
+  - `DELIVERY_PROVIDER=fake` в live запрещён.
 - OAuth `POST /v2/oauth/token?grant_type=client_credentials...`; cache
   token до `expires_in` (3599); Bearer; 401 → refresh once.
 - Outbound limiter 200 RPS (token bucket), timeout 10 s, retry only
@@ -199,8 +209,9 @@
 `delivery_dimensions_missing`, `shop_city_missing`,
 `shop_shipment_point_missing`, `delivery_point_invalid`,
 `delivery_quote_stale`, `delivery_unavailable`, `delivery_not_paid`,
-`delivery_tariff_mismatch`, `delivery_already_created`,
-`delivery_provider_error`, `delivery_already_exists`.
+`delivery_snapshot_missing`, `delivery_tariff_mismatch`,
+`delivery_already_created`, `delivery_provider_error`,
+`delivery_already_exists`.
 
 ## Alternatives
 

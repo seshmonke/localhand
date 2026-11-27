@@ -52,6 +52,7 @@ function orderFor(item: CartItem, id = 101): OrderSummary {
     buyerPhone: demoUser.phone,
     comment: null,
     createdAt,
+    delivery: null,
     items: [
       {
         productId: item.productId,

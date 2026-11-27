@@ -52,6 +52,10 @@ type ProductBody = {
   description: string | null;
   priceKopecks: number;
   imageUrl: string | null;
+  weightG: number | null;
+  lengthCm: number | null;
+  widthCm: number | null;
+  heightCm: number | null;
   status: "draft" | "published" | "hidden";
 };
 
@@ -179,6 +183,10 @@ describeWithDb("seller product routes with a real database", () => {
         description: "Винтажная джинсовая куртка",
         priceKopecks: 420_000,
         imageUrl: "https://example.com/jacket.jpg",
+        weightG: null,
+        lengthCm: null,
+        widthCm: null,
+        heightCm: null,
         status: "draft",
       },
     });
@@ -496,6 +504,10 @@ describeWithDb("seller product routes with a real database", () => {
         description: null,
         priceKopecks: 0,
         imageUrl: null,
+        weightG: null,
+        lengthCm: null,
+        widthCm: null,
+        heightCm: null,
         status: "hidden",
       },
     });

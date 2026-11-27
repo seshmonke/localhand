@@ -161,7 +161,7 @@
 - `apps/web/e2e/delivery-*.spec.ts`: PVZ checkout → paid → create/manual →
   track; axe light/dark 320/1440.
 - Property: `total = items + delivery`, quote TTL, event idempotency,
-  volumetric `max(weight, L*W*H/5000)`.
+  volumetric `max(weight_g, ceil(L*W*H/5))` в граммах.
 
 ### Инструментальные ограничения (owner exception)
 
