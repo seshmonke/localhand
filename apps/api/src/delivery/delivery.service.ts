@@ -11,7 +11,7 @@ import { requireDb } from "../db/client.js";
 import { products, shops } from "../db/schema.js";
 import { deliverySettings } from "../env.js";
 import { calculatePackaging } from "./packaging.js";
-import { createFakeDeliveryProvider } from "./fake-provider.js";
+import { getDeliveryProvider } from "./provider-factory.js";
 import { createQuoteToken, hashProductIds } from "./quote-token.js";
 
 export type DeliveryFailure =
@@ -96,12 +96,8 @@ async function loadQuoteProducts(productIds: number[]): Promise<QuoteProductRow[
     .orderBy(products.id);
 }
 
-function getQuoteProvider() {
-  return deliverySettings?.provider === "fake" ? createFakeDeliveryProvider() : null;
-}
-
 export async function listDeliveryCities(query: string): Promise<DeliveryCity[] | null> {
-  const provider = getQuoteProvider();
+  const provider = getDeliveryProvider();
   if (!provider) {
     return null;
   }
@@ -114,7 +110,7 @@ export async function listDeliveryCities(query: string): Promise<DeliveryCity[] 
 }
 
 export async function listDeliveryPoints(cityCode: number): Promise<DeliveryPoint[] | null> {
-  const provider = getQuoteProvider();
+  const provider = getDeliveryProvider();
   if (!provider) {
     return null;
   }
@@ -131,7 +127,7 @@ export async function listDeliveryPoints(cityCode: number): Promise<DeliveryPoin
  * short-lived token. The checkout never trusts a client-supplied price.
  */
 export async function quoteDelivery(input: DeliveryQuoteRequest): Promise<DeliveryQuoteResult> {
-  const provider = getQuoteProvider();
+  const provider = getDeliveryProvider();
   const settings = deliverySettings;
   if (!provider || !settings) {
     return { ok: false, error: "delivery_unavailable" };

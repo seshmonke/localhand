@@ -8,6 +8,10 @@ import type {
   ShipmentState,
 } from "./provider.js";
 
+export type FakeDeliveryProvider = DeliveryProvider & {
+  setShipmentStatus(providerOrderId: string, statusCode: string, statusName: string): void;
+};
+
 const CITIES: DeliveryCity[] = [
   { code: 44, name: "Москва" },
   { code: 137, name: "Санкт-Петербург" },
@@ -69,8 +73,17 @@ function fakeTariff(input: DeliveryQuoteInput): DeliveryTariff {
  * Network-free provider for API tests, local dev and preview. It never sends
  * recipient data anywhere; the in-memory shipment map is process-local.
  */
-export function createFakeDeliveryProvider(): DeliveryProvider {
-  const shipments = new Map<string, { input: CreateShipmentInput; created: CreatedShipment }>();
+export function createFakeDeliveryProvider(): FakeDeliveryProvider {
+  const shipments = new Map<
+    string,
+    {
+      input: CreateShipmentInput;
+      created: CreatedShipment;
+      statusCode: string;
+      statusName: string;
+      statusDateTime: string;
+    }
+  >();
 
   return {
     name: "fake",
@@ -107,8 +120,15 @@ export function createFakeDeliveryProvider(): DeliveryProvider {
         providerNumber: `order-${input.orderId}`,
         statusCode: "CREATED",
         statusName: "Создан",
+        statusDateTime: new Date().toISOString(),
       };
-      shipments.set(id, { input, created });
+      shipments.set(id, {
+        input,
+        created,
+        statusCode: created.statusCode,
+        statusName: created.statusName,
+        statusDateTime: created.statusDateTime as string,
+      });
       return created;
     },
 
@@ -118,10 +138,36 @@ export function createFakeDeliveryProvider(): DeliveryProvider {
         return null;
       }
       return {
-        statusCode: shipment.created.statusCode,
-        statusName: shipment.created.statusName,
+        providerOrderId: shipment.created.providerOrderId,
+        statusCode: shipment.statusCode,
+        statusName: shipment.statusName,
         trackNumber: null,
+        statusDateTime: shipment.statusDateTime,
       };
+    },
+
+    async findShipmentByNumber(number: string): Promise<ShipmentState | null> {
+      for (const shipment of shipments.values()) {
+        if (shipment.created.providerNumber === number) {
+          return {
+            providerOrderId: shipment.created.providerOrderId,
+            statusCode: shipment.statusCode,
+            statusName: shipment.statusName,
+            trackNumber: null,
+            statusDateTime: shipment.statusDateTime,
+          };
+        }
+      }
+      return null;
+    },
+
+    setShipmentStatus(providerOrderId: string, statusCode: string, statusName: string): void {
+      const shipment = shipments.get(providerOrderId);
+      if (shipment) {
+        shipment.statusCode = statusCode;
+        shipment.statusName = statusName;
+        shipment.statusDateTime = new Date().toISOString();
+      }
     },
 
     async ensureOrderStatusWebhook(): Promise<void> {
