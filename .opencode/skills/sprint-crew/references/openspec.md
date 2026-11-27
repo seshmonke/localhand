@@ -61,9 +61,11 @@ openspec validate --all --strict
 - [ ] proposal: why, what, non-goals, метрика, Tier.
 - [ ] Дельта спеков: SHALL + WHEN/THEN.
 - [ ] Happy path + ошибка/край.
-- [ ] Для T1/T2 ATDD happy/error и RED-тест на каждый AC.
+- [ ] Для T1/T2 ATDD happy/error, RED-тест на каждый AC и e2e главного
+      сценария.
 - [ ] Для T2 `design.md`: threat model, contract-план, SLO/логи;
       property/mutation — по волне.
+- [ ] T0: `No spec change`; change/archive не требуются.
 - [ ] `design.md`, если контракт/схема/authz/деньги/PII.
 - [ ] `tasks.md` — чекбоксы.
 - [ ] `openspec validate <id> --strict` зелёный.
@@ -78,8 +80,9 @@ openspec validate --all --strict
 ## Definition of Done
 
 - [ ] Все задачи `[x]`.
-- [ ] TDD/ATDD evidence для T1/T2; T0 — N/A.
+- [ ] TDD/ATDD evidence и e2e главного сценария для T1/T2; T0 — N/A.
 - [ ] T2-гейты текущей волны закрыты.
+- [ ] T0: `No spec change`; archive не требуется.
 - [ ] `verify-change` пройден.
 - [ ] `openspec validate --all --strict` зелёный.
 - [ ] Change заархивирован; `specs/` обновлён.
@@ -142,6 +145,7 @@ openspec validate --all --strict
 - Спека после кода, чтобы оправдать реализацию.
 - Tier не записан или T2 без threat model/contract/property.
 - `tasks.md` без RED-теста на AC.
+- T0 через TDD/e2e/change/archive.
 - Archive пропущен → спека врёт.
 - `specs/` правится в ветке фичи.
 - Один change на пять capability.
