@@ -1,9 +1,10 @@
 import {
+  type CatalogQuery,
+  CatalogResponseSchema,
   type CreateProduct,
   type CreateShop,
   MeResponseSchema,
   ProductDetailSchema,
-  ProductListResponseSchema,
   type RequestCodeRequest,
   RequestCodeResponseSchema,
   SellerProductListResponseSchema,
@@ -107,8 +108,17 @@ async function getJson<T>(path: string, schema: Parser<T>): Promise<T> {
   }
 }
 
-export function fetchCatalog() {
-  return getJson("/catalog/products", ProductListResponseSchema);
+export function fetchCatalog(query: CatalogQuery) {
+  const params = new URLSearchParams({
+    sort: query.sort,
+    page: String(query.page),
+    pageSize: String(query.pageSize),
+  });
+  if (query.q) {
+    params.set("q", query.q);
+  }
+
+  return getJson(`/catalog/products?${params.toString()}`, CatalogResponseSchema);
 }
 
 export function fetchShop(slug: string) {

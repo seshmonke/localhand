@@ -37,7 +37,13 @@ describe("App", () => {
       vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({ products: [card] }),
+        json: async () => ({
+          products: [card],
+          page: 1,
+          pageSize: 12,
+          total: 1,
+          hasMore: false,
+        }),
       }),
     );
 

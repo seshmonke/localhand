@@ -1,4 +1,5 @@
 import { useQuery, type QueryClient } from "@tanstack/react-query";
+import type { CatalogQuery } from "@localhand/shared";
 import {
   fetchCatalog,
   fetchMe,
@@ -46,10 +47,10 @@ export function useSellerProductsQuery(enabled = true) {
   });
 }
 
-export function useCatalogQuery() {
+export function useCatalogQuery(query: CatalogQuery) {
   return useQuery({
-    queryKey: ["catalog"],
-    queryFn: fetchCatalog,
+    queryKey: ["catalog", query.q ?? "", query.sort, query.page, query.pageSize],
+    queryFn: () => fetchCatalog(query),
   });
 }
 
