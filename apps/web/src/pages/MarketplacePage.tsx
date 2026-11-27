@@ -382,7 +382,7 @@ export function MarketplacePage() {
             <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-green">
               Продавцам
             </p>
-            <h2 className="mt-4 max-w-2xl font-display text-3xl uppercase sm:text-5xl">
+            <h2 className="mt-4 max-w-2xl text-balance font-display text-3xl uppercase sm:text-5xl">
               <span className="block">Свой магазин.</span>
               <span className="block">Общая витрина.</span>
               <span className="block">Без комиссии с продаж.</span>
