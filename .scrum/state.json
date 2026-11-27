@@ -3,9 +3,9 @@
   "phase": "BUILDING",
   "init_closed": true,
   "sprint": 1,
-  "cycle": 3,
-  "updated_at": "2026-11-27T00:44:00Z",
+  "cycle": 4,
+  "updated_at": "2026-11-27T01:01:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Cycle 3: S1-3 products claimed by scrum-worker (branch task/S1-3-products, brief docs/tasks/S1-3-products.md, lease to 04:30Z). S1-2 merged (PR #14, 11ca2c0). Sprint 2 pre-authorized: buyer-core, OTP at checkout, dev adapters, local preview, merge autonomy; budget not a stop trigger."
+  "notes": "Cycle 4: S1-3 products merged (PR #16, b728eda), tasks 3.1–3.4 done. S1-4 seller admin UI split into 4a (auth/shop) and 4b (products), next 4a ready. Sprint 2 pre-authorized: buyer-core, OTP at checkout, dev adapters, local preview, merge autonomy; budget not a stop trigger."
 }

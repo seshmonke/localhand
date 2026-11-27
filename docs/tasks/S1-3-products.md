@@ -8,31 +8,31 @@ published-товары опубликованного магазина.
 
 ## AC
 
-- [ ] `packages/shared`: контракты `product-admin.ts` — `SellerProduct`,
+- [x] `packages/shared`: контракты `product-admin.ts` — `SellerProduct`,
       `SellerProductListResponse` (`{ products }`), `CreateProduct`,
       `UpdateProduct`; name 1–120, description ≤2000, priceKopecks integer
       0…2 147 483 647, imageUrl ≤2000 или null, статусы
       `draft|published|hidden`; экспорт из `index.ts`.
-- [ ] `GET /seller/products`: 200 `{ products }` только своего магазина,
+- [x] `GET /seller/products`: 200 `{ products }` только своего магазина,
       все статусы, сортировка `updated_at desc`; нет магазина — 200
       `{ products: [] }`; без сессии — 401.
-- [ ] `POST /seller/products`: создаёт товар в `draft` в своём магазине;
+- [x] `POST /seller/products`: создаёт товар в `draft` в своём магазине;
       нет магазина — 409 `shop_required`; невалидные поля — 400; без
       сессии — 401.
-- [ ] `PATCH /seller/products/:id`: частично меняет name/description/
+- [x] `PATCH /seller/products/:id`: частично меняет name/description/
       priceKopecks/imageUrl/status; чужой или несуществующий товар — 404;
       перевод в published разрешён только при published-магазине, иначе
       409 `shop_not_published`; уже published товар можно редактировать
       при draft-магазине (остаётся скрыт); hide/draft разрешены всегда;
       400 на невалидную цену; 401 без сессии.
-- [ ] Витрина: published-товар в published-магазине виден на `/`,
+- [x] Витрина: published-товар в published-магазине виден на `/`,
       `/shops/:slug` и `/products/:id`; hidden/draft исчезает; draft-
       магазин скрывает все свои товары.
-- [ ] Authz: второй продавец не видит и не меняет чужой товар; товары
+- [x] Authz: второй продавец не видит и не меняет чужой товар; товары
       привязаны только к своему shop.
-- [ ] DB-backed тесты: список, создание, невалидная цена, publish/hide,
+- [x] DB-backed тесты: список, создание, невалидная цена, publish/hide,
       чужой 404, без сессии 401, нет магазина 409, витрина.
-- [ ] `pnpm verify` в worktree — зелёный.
+- [x] `pnpm verify` в worktree — зелёный.
 
 ## Change
 

@@ -88,11 +88,25 @@
 - [ ] Привязать demo-продавца к demo-user при seed. Критерий: demo-лавка
   открывается, `sellers.user_id` заполнен. Источник: design.md,
   перенос из S1-1. Спринт: — (S1-5).
-- [ ] Убрать TOCTOU в blocked-guard магазина: conditional UPDATE с
-  `status <> 'blocked'` или row lock. Критерий: параллельный PATCH не
-  обходит platform block. Источник: P2 ревью S1-2. Спринт: — (S1-5).
+- [ ] Убрать TOCTOU в blocked-guard магазина и publish товара:
+  conditional UPDATE с `status <> 'blocked'`/`shops.status = 'published'`
+  или row lock. Критерий: параллельный PATCH не обходит block, publish
+  не проходит при конкурентном снятии магазина. Источник: P2 ревью S1-2,
+  P3 ревью S1-3. Спринт: — (S1-5).
 - [ ] Укрепить тестовую инфраструктуру API: не допускать silent skip
   DB-тестов без `DATABASE_URL_TEST`; при росте suite — отдельная
   схема/БД на файл вместо `fileParallelism: false`. Критерий: CI падает
   при пропуске DB-тестов, файлы изолированы. Источник: P3 ревью S1-2.
   Спринт: — (S1-5).
+- [ ] Ограничить storefront ProductIdSchema int4 и убрать SQL из тела
+  500 в non-production. Критерий: `/products/2147483648` → 400/404,
+  ответы 500 generic. Источник: P3 ревью S1-3. Спринт: — (S1-5).
+- [ ] Нормализовать пустой `imageUrl` в null в product API/UI.
+  Критерий: `""` не сохраняется в БД, витрина трактует как отсутствие.
+  Источник: P3 ревью S1-3. Спринт: — (S1-4b/S1-5).
+- [ ] Добавить пагинацию и rate-limit на seller products. Критерий:
+  список ограничен страницей, create/update лимитированы. Источник: P3
+  ревью S1-3. Спринт: — (следующий change).
+- [ ] Дописать в `product-management` spec partial edit, пустой PATCH и
+  очистку null. Критерий: сценарии в дельте до archive. Источник: P3
+  ревью S1-3. Спринт: — (S1-5).

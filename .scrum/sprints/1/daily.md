@@ -52,8 +52,25 @@
 
 ### S1-3 Products
 
-- Статус: `in_progress`, owner `scrum-worker`; ветка `task/S1-3-products`,
-  lease до 04:30Z.
-- Дальше: контракты product-admin, `GET/POST/PATCH /seller/products`,
-  publish/hide, authz только своего магазина, тесты.
+- Сделано: контракты product-admin, `GET/POST/PATCH /seller/products`,
+  publish/hide, ownership 404, int4/NUL validation, DB-тесты.
+- Ревью: **APPROVE**; P2 int4/NUL и P3 no-op publish закрыты в `4e4da27`.
+- `pnpm verify`: exit 0; API 97/97, shared 33/33, web 1/1, OpenSpec 2/2.
+- PR #16 squash-merge `b728eda`; evidence:
+  [evidence/S1-3-verify.md](evidence/S1-3-verify.md).
+- S1-3 закрыт; tasks 3.1–3.4 отмечены. Блокеров нет.
+
+### Итог синка
+
+- Продолжаем: S1-3 → merge → S1-4a admin auth/shop UI.
+- Перепланирование не нужно; S1-4 делим на 4a и 4b.
+- Эскалаций нет; владелец не требуется.
+
+## Cycle 4 — 27.11.2026
+
+### S1-4a Admin auth + shop UI
+
+- Статус: `ready`; brief, worktree и lease создаются перед dispatch.
+- Дальше: API client с cookie, `/login`, guard `/admin`, магазин
+  onboarding/settings/publish; mobile+desktop, a11y.
 - Блокеры: нет.
