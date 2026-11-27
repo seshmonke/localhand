@@ -64,11 +64,14 @@ async function createShop(user: TestUser, slug: string): Promise<number> {
   return response.json().shop.id as number;
 }
 
-async function createPublishedProduct(user: TestUser): Promise<number> {
+async function createPublishedProduct(
+  user: TestUser,
+  dimensions: Record<string, unknown> = PRODUCT_DIMENSIONS,
+): Promise<number> {
   const created = await request(user, "POST", "/seller/products", {
     name: "Куртка 90-х",
     priceKopecks: 420_000,
-    ...PRODUCT_DIMENSIONS,
+    ...dimensions,
   });
   expect(created.statusCode).toBe(201);
   const productId = created.json().product.id as number;
@@ -105,7 +108,16 @@ describeWithDb("checkout with delivery", () => {
       return;
     }
     process.env.DATABASE_URL = testDatabaseUrl;
+    process.env.DELIVERY_PROVIDER = "fake";
+    process.env.DELIVERY_ENV = "test";
+    process.env.DELIVERY_QUOTE_SECRET = "s3-delivery-quote-secret-9Qm2Vx7Lp4Rt8Wc1";
     dbClient = await import("../db/client.js");
+    const database = await dbClient
+      .requirePool()
+      .query<{ name: string }>("SELECT current_database() AS name");
+    if (!database.rows[0]?.name.endsWith("_test")) {
+      throw new Error("delivery DB tests require a database whose name ends with _test");
+    }
     const { migrate } = await import("drizzle-orm/node-postgres/migrator");
     await migrate(dbClient.requireDb(), { migrationsFolder });
 
@@ -117,6 +129,9 @@ describeWithDb("checkout with delivery", () => {
   afterAll(async () => {
     await app?.close();
     await dbClient?.requirePool().end();
+    delete process.env.DELIVERY_PROVIDER;
+    delete process.env.DELIVERY_ENV;
+    delete process.env.DELIVERY_QUOTE_SECRET;
   });
 
   beforeEach(async () => {
@@ -167,6 +182,53 @@ describeWithDb("checkout with delivery", () => {
     expect(replay.json().orders[0].totalKopecks).toBe(458_000);
   });
 
+  it("requires a delivery quote when delivery is configured", async () => {
+    const seller = await createUser(1);
+    await createShop(seller, "no-delivery-shop");
+    const productId = await createPublishedProduct(seller);
+    const buyer = await createUser(2);
+
+    const response = await request(buyer, "POST", "/checkout", {
+      items: [{ productId }],
+      clientCheckoutId: randomUUID(),
+    });
+    expect(response.statusCode).toBe(409);
+    expect(response.json()).toEqual({ error: "delivery_required" });
+
+    const count = await dbClient
+      .requirePool()
+      .query<{ count: number }>("SELECT count(*)::int AS count FROM orders");
+    expect(count.rows[0]?.count).toBe(0);
+  });
+
+  it("returns the existing order on a replay even with a stale token", async () => {
+    const seller = await createUser(1);
+    await createShop(seller, "replay-shop");
+    const productId = await createPublishedProduct(seller);
+    const buyer = await createUser(2);
+    const quoted = await quote([productId]);
+    const quoteBody = quoted.json() as DeliveryQuoteResponse;
+    const clientCheckoutId = randomUUID();
+
+    const first = await request(buyer, "POST", "/checkout", {
+      items: [{ productId }],
+      clientCheckoutId,
+      delivery: deliveryPayload(quoteBody),
+    });
+    expect(first.statusCode).toBe(201);
+
+    const replay = await request(buyer, "POST", "/checkout", {
+      items: [{ productId }],
+      clientCheckoutId,
+      delivery: {
+        ...deliveryPayload(quoteBody),
+        quoteToken: "tampered-token",
+      },
+    });
+    expect(replay.statusCode).toBe(201);
+    expect(replay.json().orders[0].id).toBe(first.json().orders[0].id);
+  });
+
   it("rejects a tampered quote token", async () => {
     const seller = await createUser(1);
     await createShop(seller, "stale-shop");
@@ -196,8 +258,13 @@ describeWithDb("checkout with delivery", () => {
     const secondSeller = await createUser(2);
     await createShop(firstSeller, "first-quote");
     await createShop(secondSeller, "second-quote");
-    const first = await createPublishedProduct(firstSeller);
-    const second = await createPublishedProduct(secondSeller);
+    const first = await createPublishedProduct(firstSeller, PRODUCT_DIMENSIONS);
+    const second = await createPublishedProduct(secondSeller, {
+      weightG: 1200,
+      lengthCm: 20,
+      widthCm: 15,
+      heightCm: 10,
+    });
     const buyer = await createUser(3);
 
     const quoted = await quote([first, second]);
@@ -214,9 +281,16 @@ describeWithDb("checkout with delivery", () => {
     expect(response.statusCode).toBe(201);
     const checkout = CheckoutResponseSchema.parse(response.json());
     expect(checkout.orders).toHaveLength(2);
-    for (const order of checkout.orders) {
-      expect(order.delivery?.priceKopecks).toBe(38_000);
-      expect(order.totalKopecks).toBe(458_000);
-    }
+    expect(checkout.orders.map((order) => order.delivery?.priceKopecks).sort()).toEqual([
+      38_000, 42_000,
+    ]);
+    expect(checkout.orders.map((order) => order.totalKopecks).sort()).toEqual([458_000, 462_000]);
+
+    const stored = await dbClient
+      .requirePool()
+      .query<{ delivery_kopecks: string }>(
+        "SELECT delivery_kopecks FROM orders ORDER BY delivery_kopecks",
+      );
+    expect(stored.rows.map((row) => Number(row.delivery_kopecks))).toEqual([38_000, 42_000]);
   });
 });

@@ -1,11 +1,12 @@
-import type {
-  AuthUser,
-  Checkout,
-  DeliveryQuoteShop,
-  DeliverySnapshot,
-  OrderItem,
-  OrderStatus,
-  OrderSummary,
+import {
+  orderTotalKopecks,
+  type AuthUser,
+  type Checkout,
+  type DeliveryQuoteShop,
+  type DeliverySnapshot,
+  type OrderItem,
+  type OrderStatus,
+  type OrderSummary,
 } from "@localhand/shared";
 import { and, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { requireDb } from "../db/client.js";
@@ -208,7 +209,11 @@ async function findOrdersByClientCheckoutId(
   return summaries.sort((left, right) => left.id - right.id);
 }
 
-export type CheckoutError = "product_unavailable" | "delivery_unavailable" | "delivery_quote_stale";
+export type CheckoutError =
+  | "product_unavailable"
+  | "delivery_required"
+  | "delivery_unavailable"
+  | "delivery_quote_stale";
 
 export type CheckoutResult =
   { ok: true; orders: OrderSummary[] } | { ok: false; error: CheckoutError };
@@ -233,6 +238,7 @@ function normalizeComment(comment: string | undefined): string | null {
 type CheckoutTransactionResult =
   | { kind: "existing" }
   | { kind: "unavailable" }
+  | { kind: "delivery_required" }
   | { kind: "delivery_unavailable" }
   | { kind: "delivery_quote_stale" }
   | { kind: "created"; orders: OrderSummary[] };
@@ -258,23 +264,6 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
   const lockKey = `${user.id}:${clientCheckoutId}`;
 
   const delivery = input.delivery ?? null;
-  let quoteByShop: Map<number, DeliveryQuoteShop> | null = null;
-  let quotePayload: ReturnType<typeof verifyQuoteToken> = null;
-  if (delivery) {
-    if (!deliverySettings) {
-      return { ok: false, error: "delivery_unavailable" };
-    }
-    quotePayload = verifyQuoteToken(delivery.quoteToken, deliverySettings.quoteSecret);
-    if (
-      !quotePayload ||
-      quotePayload.productHash !== hashProductIds(productIds) ||
-      quotePayload.cityCode !== delivery.cityCode ||
-      quotePayload.pointCode !== delivery.pointCode
-    ) {
-      return { ok: false, error: "delivery_quote_stale" };
-    }
-    quoteByShop = new Map(quotePayload.shops.map((shop) => [shop.shopId, shop]));
-  }
 
   try {
     const result = await requireDb().transaction(async (tx): Promise<CheckoutTransactionResult> => {
@@ -286,8 +275,33 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
         .where(and(eq(orders.buyerUserId, user.id), eq(orders.clientCheckoutId, clientCheckoutId)))
         .limit(1);
 
+      // A replay must return the orders created by the first request even if
+      // the quote has expired or the cart changed since then. Delivery is
+      // validated only for a new order.
       if (existingOrder) {
         return { kind: "existing" };
+      }
+
+      if (deliverySettings && !delivery) {
+        return { kind: "delivery_required" };
+      }
+
+      let quoteByShop: Map<number, DeliveryQuoteShop> | null = null;
+      let quotePayload: ReturnType<typeof verifyQuoteToken> = null;
+      if (delivery) {
+        if (!deliverySettings) {
+          return { kind: "delivery_unavailable" };
+        }
+        quotePayload = verifyQuoteToken(delivery.quoteToken, deliverySettings.quoteSecret);
+        if (
+          !quotePayload ||
+          quotePayload.productHash !== hashProductIds(productIds) ||
+          quotePayload.cityCode !== delivery.cityCode ||
+          quotePayload.pointCode !== delivery.pointCode
+        ) {
+          return { kind: "delivery_quote_stale" };
+        }
+        quoteByShop = new Map(quotePayload.shops.map((shop) => [shop.shopId, shop]));
       }
 
       const productRows: PublishedProductRow[] = await tx
@@ -351,7 +365,7 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
         );
         const quote = quoteByShop?.get(group.shopId) ?? null;
         const deliveryKopecks = quote?.priceKopecks ?? 0;
-        const totalKopecks = itemsTotalKopecks + deliveryKopecks;
+        const totalKopecks = orderTotalKopecks(itemsTotalKopecks, deliveryKopecks);
 
         const [order] = await tx
           .insert(orders)
@@ -458,6 +472,9 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
 
     if (result.kind === "unavailable") {
       return { ok: false, error: "product_unavailable" };
+    }
+    if (result.kind === "delivery_required") {
+      return { ok: false, error: "delivery_required" };
     }
     if (result.kind === "delivery_unavailable") {
       return { ok: false, error: "delivery_unavailable" };
