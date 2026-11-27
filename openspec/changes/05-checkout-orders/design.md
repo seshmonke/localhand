@@ -23,14 +23,15 @@ Sprint 1: users/sellers/shops/products, OTP-сессия, seller admin,
 
 - enum `order_status`: `new` (расширяется в следующих change).
 - `orders`: id, buyer_user_id FK users restrict, shop_id FK shops
-  restrict, status default `new`, total_kopecks int not null check ≥0,
+  restrict, status default `new`, total_kopecks bigint not null check ≥0,
   buyer_phone text not null, comment text null ≤500,
   client_checkout_id uuid not null, created_at, updated_at;
   unique `(buyer_user_id, client_checkout_id, shop_id)` для
   идемпотентности мультимагазинного checkout.
 - `order_items`: id, order_id FK orders cascade, product_id FK products
   set null (nullable после удаления), name text not null,
-  price_kopecks int not null check ≥0, quantity int not null default 1.
+  price_kopecks int not null check ≥0, quantity int not null default 1
+  check = 1.
 - Индексы: `orders(buyer_user_id, created_at desc)`,
   `orders(shop_id, created_at desc)`, `order_items(order_id)`.
 - Миграция аддитивная; down SQL и runbook — task 3.7 этого change.
@@ -39,16 +40,30 @@ Sprint 1: users/sellers/shops/products, OTP-сессия, seller admin,
 
 - `POST /checkout` body `{ items: [{ productId }], comment?,
   clientCheckoutId }`; items 1–50 (корзина тоже 50), productId unique.
-- Auth → 401. Rate-limit per user + IP (например 10/мин); 429.
-- В одной транзакции: загрузить products+shops `FOR UPDATE`/условия
-  published; если хотя бы один недоступен → 409 `product_unavailable`,
-  без частичного заказа.
+- Auth → 401. Rate-limit per user: 10/мин на `user.id`; 429. IP не
+  участвует в ключе, потому что checkout доступен только с сессией.
+- В одной транзакции: загрузить products+shops с условиями published;
+  `FOR UPDATE OF products` блокирует только строки товаров (shops
+  читаются без lock), порядок блокировки — `products.id`, поэтому
+  конкурентные checkout не образуют цикл. Если хотя бы один товар
+  недоступен → 409 `product_unavailable`, без частичного заказа.
 - Сгруппировать по shop_id; для каждого магазина создать order + items
   snapshot (name, price, quantity=1); total серверный.
 - `buyer_phone` — телефон сессии; `comment` trim ≤500; `clientCheckoutId`
   UUID.
-- Повтор с тем же `clientCheckoutId` возвращает существующие orders
-  (идемпотентность); клиент также блокирует double-submit.
+- Повтор с тем же `clientCheckoutId` возвращает существующие orders и не
+  создаёт новые, даже если `items` в повторе другие: ключ идемпотентности
+  — только `clientCheckoutId` в рамках покупателя. Чтобы изменить состав
+  заказа, клиент обязан сгенерировать новый UUID; тот же UUID с другим
+  составом — replay, а не правка. Клиент также блокирует double-submit.
+- Запросы с одним ключом `(buyer_user_id, client_checkout_id)`
+  сериализуются транзакционным advisory lock
+  `pg_advisory_xact_lock(hashtextextended($1, 0))` с ключом
+  `"${buyerUserId}:${clientCheckoutId}"`. Lock берётся первым действием
+  транзакции, проверка существующих orders — после него и внутри той же
+  транзакции. Поэтому конкурентные same-key запросы создают один набор
+  заказов (первый), а второй возвращает его же; новый состав принимается
+  только с новым UUID.
 - Ответ 201 `{ orders: OrderSummary[] }`; web очищает заказанные
   позиции корзины.
 - Недоступный товар → 409 без заказа; пустой/дубли/лимит → 400.
@@ -87,7 +102,10 @@ Sprint 1: users/sellers/shops/products, OTP-сессия, seller admin,
 
 - Contract parse checkout/order.
 - DB API: успех, 401, 400 (пусто/дубли/лимит), 409 unavailable,
-  snapshot, идемпотентность, buyer/seller 404, seller scope, rate-limit.
+  snapshot, идемпотентность (повтор с тем же и с другим составом items,
+  товар из магазина, которого не было в первом checkout),
+  конкурентные same-key запросы с товарами разных магазинов, buyer/seller
+  404, seller scope, rate-limit.
 - Web: checkout guard, submit/clear cart, orders lists, seller list.
 - E2E: browser Playwright + API; бриф `docs/tasks/S2-4-security.md`.
 
@@ -96,10 +114,14 @@ Sprint 1: users/sellers/shops/products, OTP-сессия, seller admin,
 - Нет оплаты/резерва: заказ — заявка; два покупателя могут заказать
   последний товар. v1.
 - PII: телефон/комментарий; legal до прода.
-- Идемпотентность только по clientCheckoutId; новый id при повторе —
-  новый заказ (осознанно).
+- Идемпотентность только по clientCheckoutId; replay с тем же id и
+  другим items возвращает исходные заказы, новый id — новый заказ
+  (осознанно). Advisory lock сериализует same-key запросы: второй
+  получает первый набор, а не смесь магазинов.
 - Статус только `new`; отмена/оплата — следующие change.
-- Транзакция и `FOR UPDATE` удерживают строки товаров; при 50 items ок.
+- `FOR UPDATE OF products` удерживает только строки товаров в порядке
+  `products.id`; shops читаются без блокировки, взаимная блокировка
+  между checkout исключена. При 50 items ок.
 
 ## Migration Plan
 

@@ -13,6 +13,7 @@ import { authRoutes } from "./auth/auth.route.js";
 import { createSmsProvider } from "./auth/sms/sms-provider.js";
 import { env, jwtSecret, trustProxy, type TrustProxyConfig } from "./env.js";
 import { healthRoutes } from "./health/health.route.js";
+import { ordersRoutes } from "./orders/orders.route.js";
 import { sellerProductRoutes } from "./seller-product/seller-product.route.js";
 import { sellerShopRoutes } from "./seller-shop/seller-shop.route.js";
 import { storefrontRoutes } from "./storefront/storefront.route.js";
@@ -55,6 +56,7 @@ export function buildApp(options: BuildAppOptions = {}) {
   app.register(authRoutes, { smsProvider });
   app.register(sellerShopRoutes);
   app.register(sellerProductRoutes);
+  app.register(ordersRoutes);
 
   return app;
 }
