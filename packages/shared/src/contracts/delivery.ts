@@ -37,6 +37,7 @@ export const DeliveryPointSchema = z.object({
   name: BoundedText(DELIVERY_POINT_NAME_MAX_LENGTH),
   address: BoundedText(DELIVERY_POINT_ADDRESS_MAX_LENGTH),
   cityCode: DeliveryCityCodeSchema,
+  cityName: BoundedText(DELIVERY_CITY_NAME_MAX_LENGTH),
 });
 
 export const DeliveryCityListResponseSchema = z.object({
@@ -78,7 +79,9 @@ export const DeliveryQuoteTokenPayloadSchema = z.object({
   v: z.literal(1),
   productHash: z.string().min(1),
   cityCode: DeliveryCityCodeSchema,
+  cityName: BoundedText(DELIVERY_CITY_NAME_MAX_LENGTH),
   pointCode: DeliveryPointCodeSchema,
+  pointAddress: BoundedText(DELIVERY_POINT_ADDRESS_MAX_LENGTH),
   exp: z.number().int().positive(),
   shops: z
     .array(DeliveryQuoteShopSchema)

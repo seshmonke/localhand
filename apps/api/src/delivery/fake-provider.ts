@@ -15,11 +15,41 @@ const CITIES: DeliveryCity[] = [
 ];
 
 const POINTS: DeliveryPoint[] = [
-  { code: "MSK001", name: "ПВЗ Тверская", address: "Москва, Тверская 1", cityCode: 44 },
-  { code: "MSK002", name: "ПВЗ Арбат", address: "Москва, Арбат 2", cityCode: 44 },
-  { code: "SPB001", name: "ПВЗ Невский", address: "Санкт-Петербург, Невский 1", cityCode: 137 },
-  { code: "SPB002", name: "ПВЗ Садовая", address: "Санкт-Петербург, Садовая 2", cityCode: 137 },
-  { code: "KZN001", name: "ПВЗ Баумана", address: "Казань, Баумана 1", cityCode: 447 },
+  {
+    code: "MSK001",
+    name: "ПВЗ Тверская",
+    address: "Москва, Тверская 1",
+    cityCode: 44,
+    cityName: "Москва",
+  },
+  {
+    code: "MSK002",
+    name: "ПВЗ Арбат",
+    address: "Москва, Арбат 2",
+    cityCode: 44,
+    cityName: "Москва",
+  },
+  {
+    code: "SPB001",
+    name: "ПВЗ Невский",
+    address: "Санкт-Петербург, Невский 1",
+    cityCode: 137,
+    cityName: "Санкт-Петербург",
+  },
+  {
+    code: "SPB002",
+    name: "ПВЗ Садовая",
+    address: "Санкт-Петербург, Садовая 2",
+    cityCode: 137,
+    cityName: "Санкт-Петербург",
+  },
+  {
+    code: "KZN001",
+    name: "ПВЗ Баумана",
+    address: "Казань, Баумана 1",
+    cityCode: 447,
+    cityName: "Казань",
+  },
 ];
 
 function fakeTariff(input: DeliveryQuoteInput): DeliveryTariff {

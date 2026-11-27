@@ -20,7 +20,9 @@ function payload(overrides: Partial<QuoteTokenPayload> = {}): QuoteTokenPayload 
     v: 1,
     productHash: hashProductIds([10, 2, 7]),
     cityCode: 44,
+    cityName: "Москва",
     pointCode: "MSK123",
+    pointAddress: "Москва, Тверская 1",
     exp: NOW_SECONDS + 600,
     shops: [
       {

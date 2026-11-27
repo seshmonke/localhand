@@ -21,7 +21,9 @@ function canonicalPayload(payload: QuoteTokenPayload): string {
     v: payload.v,
     productHash: payload.productHash,
     cityCode: payload.cityCode,
+    cityName: payload.cityName,
     pointCode: payload.pointCode,
+    pointAddress: payload.pointAddress,
     exp: payload.exp,
     shops: payload.shops.map((shop) => ({
       shopId: shop.shopId,
