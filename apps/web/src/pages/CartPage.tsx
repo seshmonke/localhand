@@ -30,7 +30,7 @@ function CartItemRow({ item, onRemove }: { item: CartItem; onRemove: () => void 
       <div className="min-w-0 flex-1">
         <Link
           to={`/products/${item.productId}`}
-          className="font-display text-sm uppercase leading-tight underline-offset-4 hover:underline sm:text-base"
+          className="break-words font-display text-sm uppercase leading-tight underline-offset-4 [overflow-wrap:anywhere] hover:underline sm:text-base"
         >
           {item.name}
         </Link>
@@ -102,21 +102,21 @@ export function CartPage() {
         </Button>
       </div>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px] lg:items-start">
-        <div className="space-y-6">
+      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+        <div className="min-w-0 space-y-6">
           {groups.map((group) => {
             const headingId = `cart-shop-${group.shopSlug}`;
             return (
               <section
                 key={group.shopSlug}
                 aria-labelledby={headingId}
-                className="border-[3px] border-ink bg-paper"
+                className="min-w-0 border-[3px] border-ink bg-paper"
               >
-                <header className="flex flex-wrap items-center justify-between gap-3 border-b-[3px] border-ink p-4">
-                  <h2 id={headingId} className="font-display text-xl uppercase">
+                <header className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-b-[3px] border-ink p-4">
+                  <h2 id={headingId} className="min-w-0 font-display text-xl uppercase">
                     <Link
                       to={`/shops/${group.shopSlug}`}
-                      className="underline-offset-4 hover:underline"
+                      className="break-words [overflow-wrap:anywhere] underline-offset-4 hover:underline"
                     >
                       {group.shopName}
                     </Link>

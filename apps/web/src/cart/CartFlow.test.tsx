@@ -50,13 +50,13 @@ describe("cart flow", () => {
       throw new Error("product card container was not found");
     }
 
-    await browser.click(within(jacketCard).getByRole("button", { name: "В корзину" }));
+    await browser.click(within(jacketCard).getByRole("button", { name: "В корзину: Куртка 90-х" }));
 
     expect(screen.getByRole("link", { name: "Корзина, 1 товар" })).toBeInTheDocument();
     expect(screen.getByText(/добавлен в корзину/)).toBeInTheDocument();
     await waitFor(() => expect(readStored().items).toHaveLength(1));
 
-    await browser.click(within(jacketCard).getByRole("button", { name: "В корзине" }));
+    await browser.click(within(jacketCard).getByRole("button", { name: "В корзине: Куртка 90-х" }));
 
     expect(screen.getByRole("link", { name: "Корзина, 1 товар" })).toBeInTheDocument();
     expect(screen.getByText(/уже в корзине/)).toBeInTheDocument();

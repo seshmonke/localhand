@@ -21,6 +21,7 @@ export function AddToCartButton({ item, size = "md", className }: AddToCartButto
         size={size}
         variant={inCart ? "outline" : "default"}
         className={className}
+        aria-label={inCart ? `В корзине: ${item.name}` : `В корзину: ${item.name}`}
         onClick={() => {
           const status = addItem(item);
           setLimitMessage(

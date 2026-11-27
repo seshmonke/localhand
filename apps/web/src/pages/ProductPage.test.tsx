@@ -33,9 +33,9 @@ describe("ProductPage cart", () => {
       await screen.findByRole("heading", { level: 1, name: "Куртка 90-х" }),
     ).toBeInTheDocument();
 
-    await browser.click(screen.getByRole("button", { name: "В корзину" }));
+    await browser.click(screen.getByRole("button", { name: "В корзину: Куртка 90-х" }));
 
-    expect(screen.getByRole("button", { name: "В корзине" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "В корзине: Куртка 90-х" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Корзина, 1 товар" })).toBeInTheDocument();
     expect(screen.getByTestId("location")).toHaveTextContent("/products/1");
     expect(screen.getByRole("status")).toHaveTextContent("добавлен в корзину");

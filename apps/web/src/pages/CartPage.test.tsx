@@ -132,6 +132,25 @@ describe("CartPage", () => {
     await waitFor(() => expect(readStored().items).toEqual([]));
   });
 
+  it("renders long unbroken product and shop names with the remove control", async () => {
+    const longProduct: CartItem = {
+      ...jacket,
+      name: "Сверхдлинноеназваниевинтажнойкурткииздевяностых",
+      shopName: "МагазинСОченьДлиннымНазваниемБезПробелов",
+    };
+    seed([longProduct]);
+    renderApp(["/cart"]);
+
+    const shopLink = await screen.findByRole("link", { name: longProduct.shopName });
+    const productLink = screen.getByRole("link", { name: longProduct.name });
+
+    expect(shopLink).toHaveClass("[overflow-wrap:anywhere]");
+    expect(productLink).toHaveClass("[overflow-wrap:anywhere]");
+    expect(
+      screen.getByRole("button", { name: `Удалить «${longProduct.name}» из корзины` }),
+    ).toBeInTheDocument();
+  });
+
   it("keeps checkout disabled with a visible hint until S2-3 ships it", async () => {
     seed([jacket]);
     renderApp(["/cart"]);

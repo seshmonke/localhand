@@ -91,7 +91,7 @@ describe("ProductCard", () => {
 
     const card = screen.getByRole("article");
     const link = screen.getByRole("link", { name: new RegExp(longName) });
-    const button = screen.getByRole("button", { name: "В корзину" });
+    const button = screen.getByRole("button", { name: `В корзину: ${longName}` });
 
     expect(link.contains(button)).toBe(false);
     expect(card).toContainElement(link);
@@ -106,10 +106,10 @@ describe("ProductCard", () => {
     const browser = userEvent.setup();
     renderCard();
 
-    await browser.click(screen.getByRole("button", { name: "В корзину" }));
+    await browser.click(screen.getByRole("button", { name: `В корзину: ${longName}` }));
 
     expect(screen.getByTestId("location")).toHaveTextContent("/");
-    expect(screen.getByRole("button", { name: "В корзине" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: `В корзине: ${longName}` })).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(`Товар «${longName}» добавлен в корзину.`);
 
     const stored = CartStateSchema.parse(
@@ -124,13 +124,13 @@ describe("ProductCard", () => {
     const browser = userEvent.setup();
     renderCard();
 
-    await screen.findByRole("button", { name: "В корзину" });
-    await browser.click(screen.getByRole("button", { name: "В корзину" }));
+    await screen.findByRole("button", { name: `В корзину: ${longName}` });
+    await browser.click(screen.getByRole("button", { name: `В корзину: ${longName}` }));
 
     expect(
       screen.getByText(`В корзине не может быть больше ${CART_MAX_ITEMS} товаров.`),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "В корзину" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: `В корзину: ${longName}` })).toBeInTheDocument();
 
     const stored = CartStateSchema.parse(
       JSON.parse(window.localStorage.getItem(CART_STORAGE_KEY) ?? "{}"),
