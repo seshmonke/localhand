@@ -19,6 +19,7 @@ const point = {
   name: "ПВЗ на Тверской",
   address: "Москва, Тверская 1",
   cityCode: 44,
+  cityName: "Москва",
 };
 
 const quoteShop = {
@@ -108,7 +109,9 @@ describe("DeliveryQuoteTokenPayloadSchema", () => {
       v: 1,
       productHash: "abc123",
       cityCode: 44,
+      cityName: "Москва",
       pointCode: "MSK123",
+      pointAddress: "Москва, Тверская 1",
       exp: 1_800_000_000,
       shops: [quoteShop],
     };

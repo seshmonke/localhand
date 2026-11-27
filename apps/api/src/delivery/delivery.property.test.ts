@@ -16,7 +16,9 @@ function tokenPayload(exp: number) {
     v: 1 as const,
     productHash: hashProductIds([1, 2]),
     cityCode: 44,
+    cityName: "Москва",
     pointCode: "MSK001",
+    pointAddress: "Москва, Тверская 1",
     exp,
     shops: [
       {

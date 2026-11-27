@@ -21,6 +21,9 @@ export default defineConfig({
       }),
       PAYMENTS_TOKEN_KEY_VERSION: "1",
       PAYMENTS_WEBHOOK_URL: "http://localhost:3000/payments/yookassa/webhook",
+      DELIVERY_PROVIDER: "fake",
+      DELIVERY_ENV: "test",
+      DELIVERY_QUOTE_SECRET: "s3-delivery-quote-secret-9Qm2Vx7Lp4Rt8Wc1",
     },
     // DB-backed test files share a single PostgreSQL test database and
     // truncate it; running them in parallel makes them delete each other's data.
