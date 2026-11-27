@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { installFetchMock } from "../test/mock-api.js";
 import { renderApp } from "../test/render-app.js";
+import { safeNext } from "./LoginPage.js";
 
 function phone(...parts: string[]): string {
   return parts.join("");
@@ -14,6 +15,20 @@ const typedPhone = "999 000-00-07";
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+});
+
+describe("safeNext", () => {
+  it("keeps only admin destinations and falls back to /admin", () => {
+    expect(safeNext("/admin")).toBe("/admin");
+    expect(safeNext("/admin/shop")).toBe("/admin/shop");
+    expect(safeNext("/admin/products?tab=draft#top")).toBe("/admin/products?tab=draft#top");
+    expect(safeNext(null)).toBe("/admin");
+    expect(safeNext("/login")).toBe("/admin");
+    expect(safeNext("/login?next=/login")).toBe("/admin");
+    expect(safeNext("/administrator")).toBe("/admin");
+    expect(safeNext("/admin/../login")).toBe("/admin");
+    expect(safeNext("//evil.example/admin")).toBe("/admin");
+  });
 });
 
 describe("LoginPage", () => {
@@ -109,5 +124,36 @@ describe("LoginPage", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Ваш магазин" }),
     ).toBeInTheDocument();
+  });
+
+  it("does not loop when next points back to /login", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: null } },
+    });
+
+    renderApp(["/login?next=%2Flogin"]);
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Ваш магазин" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Вход в кабинет" })).not.toBeInTheDocument();
+  });
+
+  it("keeps an admin destination from next after login", async () => {
+    const fetchMock = installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: null } },
+    });
+
+    renderApp(["/login?next=%2Fadmin%2Fshop"]);
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Ваш магазин" }),
+    ).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/seller/shop",
+      expect.objectContaining({ credentials: "include" }),
+    );
   });
 });

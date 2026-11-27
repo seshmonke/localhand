@@ -443,6 +443,12 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
 
   const meta = statusMeta[shop.status];
   const busy = saveMutation.isPending || statusMutation.isPending;
+  const blocked = shop.status === "blocked";
+  const isDirty =
+    name.trim() !== shop.name ||
+    slug.trim() !== shop.slug ||
+    (description.trim().length > 0 ? description.trim() : null) !== (shop.description ?? null);
+  const statusLocked = busy || isDirty || blocked;
   const publishPending = statusMutation.isPending && statusMutation.variables === "published";
   const unpublishPending = statusMutation.isPending && statusMutation.variables === "draft";
 
@@ -461,101 +467,118 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
           Смена slug ломает старые ссылки на витрину.
         </p>
 
-        <div className="mt-6 space-y-6">
-          <FormField
-            id="shop-name"
-            label="Название"
-            hint="Так магазин увидят покупатели. До 80 символов."
-            error={errors.name}
+        {blocked ? (
+          <p
+            id="shop-blocked-note"
+            className="mt-3 border-l-[3px] border-accent-orange pl-2 text-sm font-semibold leading-relaxed"
           >
-            <input
+            Платформа заблокировала магазин: изменения недоступны.
+          </p>
+        ) : null}
+
+        <fieldset
+          disabled={blocked}
+          aria-describedby={blocked ? "shop-blocked-note" : undefined}
+          className="mt-6"
+        >
+          <legend className="sr-only">Настройки магазина</legend>
+
+          <div className="space-y-6">
+            <FormField
               id="shop-name"
-              name="name"
-              type="text"
-              autoComplete="organization"
-              maxLength={80}
-              value={name}
-              onChange={(event) => {
-                setName(event.target.value);
-                if (errors.name) {
-                  setErrors((current) => ({ ...current, name: undefined }));
-                }
-              }}
-              aria-invalid={errors.name ? true : undefined}
-              aria-describedby={fieldDescribedBy(
-                "shop-name",
-                "Так магазин увидят покупатели. До 80 символов.",
-                errors.name,
-              )}
-              className={fieldControlClass}
-            />
-          </FormField>
+              label="Название"
+              hint="Так магазин увидят покупатели. До 80 символов."
+              error={errors.name}
+            >
+              <input
+                id="shop-name"
+                name="name"
+                type="text"
+                autoComplete="organization"
+                maxLength={80}
+                value={name}
+                onChange={(event) => {
+                  setName(event.target.value);
+                  if (errors.name) {
+                    setErrors((current) => ({ ...current, name: undefined }));
+                  }
+                }}
+                aria-invalid={errors.name ? true : undefined}
+                aria-describedby={fieldDescribedBy(
+                  "shop-name",
+                  "Так магазин увидят покупатели. До 80 символов.",
+                  errors.name,
+                )}
+                className={fieldControlClass}
+              />
+            </FormField>
 
-          <FormField
-            id="shop-slug"
-            label="Slug"
-            hint={`Адрес витрины: /shops/${shop.slug}. ${SLUG_RULES}`}
-            error={errors.slug}
-          >
-            <input
+            <FormField
               id="shop-slug"
-              name="slug"
-              type="text"
-              autoCapitalize="none"
-              autoComplete="off"
-              spellCheck={false}
-              maxLength={40}
-              value={slug}
-              onChange={(event) => {
-                setSlug(event.target.value.toLowerCase());
-                if (errors.slug) {
-                  setErrors((current) => ({ ...current, slug: undefined }));
-                }
-              }}
-              aria-invalid={errors.slug ? true : undefined}
-              aria-describedby={fieldDescribedBy(
-                "shop-slug",
-                `Адрес витрины: /shops/${shop.slug}. ${SLUG_RULES}`,
-                errors.slug,
-              )}
-              className={cn(fieldControlClass, "font-mono")}
-            />
-          </FormField>
+              label="Slug"
+              hint={`Адрес витрины: /shops/${shop.slug}. ${SLUG_RULES}`}
+              error={errors.slug}
+            >
+              <input
+                id="shop-slug"
+                name="slug"
+                type="text"
+                autoCapitalize="none"
+                autoComplete="off"
+                spellCheck={false}
+                maxLength={40}
+                value={slug}
+                onChange={(event) => {
+                  setSlug(event.target.value.toLowerCase());
+                  if (errors.slug) {
+                    setErrors((current) => ({ ...current, slug: undefined }));
+                  }
+                }}
+                aria-invalid={errors.slug ? true : undefined}
+                aria-describedby={fieldDescribedBy(
+                  "shop-slug",
+                  `Адрес витрины: /shops/${shop.slug}. ${SLUG_RULES}`,
+                  errors.slug,
+                )}
+                className={cn(fieldControlClass, "font-mono")}
+              />
+            </FormField>
 
-          <FormField
-            id="shop-description"
-            label="Описание"
-            hint="Необязательно. До 2000 символов."
-            error={errors.description}
-          >
-            <textarea
+            <FormField
               id="shop-description"
-              name="description"
-              rows={5}
-              maxLength={2000}
-              value={description}
-              onChange={(event) => {
-                setDescription(event.target.value);
-                if (errors.description) {
-                  setErrors((current) => ({ ...current, description: undefined }));
-                }
-              }}
-              aria-invalid={errors.description ? true : undefined}
-              aria-describedby={fieldDescribedBy(
-                "shop-description",
-                "Необязательно. До 2000 символов.",
-                errors.description,
-              )}
-              className={cn(fieldControlClass, "min-h-36 resize-y")}
-            />
-          </FormField>
+              label="Описание"
+              hint="Необязательно. До 2000 символов."
+              error={errors.description}
+            >
+              <textarea
+                id="shop-description"
+                name="description"
+                rows={5}
+                maxLength={2000}
+                value={description}
+                onChange={(event) => {
+                  setDescription(event.target.value);
+                  if (errors.description) {
+                    setErrors((current) => ({ ...current, description: undefined }));
+                  }
+                }}
+                aria-invalid={errors.description ? true : undefined}
+                aria-describedby={fieldDescribedBy(
+                  "shop-description",
+                  "Необязательно. До 2000 символов.",
+                  errors.description,
+                )}
+                className={cn(fieldControlClass, "min-h-36 resize-y")}
+              />
+            </FormField>
 
-          <FormError message={formError} />
+            <FormError message={formError} />
 
-          <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={busy}>
-            {saveMutation.isPending ? "Сохраняем…" : "Сохранить изменения"}
-          </Button>
-        </div>
+            <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={busy || blocked}>
+              {saveMutation.isPending ? "Сохраняем…" : "Сохранить изменения"}
+            </Button>
+          </div>
+        </fieldset>
       </form>
 
       <aside className="space-y-4">
@@ -573,6 +596,12 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
 
           <FormError message={statusError} />
 
+          {isDirty && !blocked ? (
+            <output className="mt-3 block text-sm font-semibold">
+              Сначала сохраните изменения.
+            </output>
+          ) : null}
+
           <div className="mt-4 flex flex-col gap-3">
             {shop.status === "draft" ? (
               <Button
@@ -583,7 +612,7 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
                   setStatusError(null);
                   statusMutation.mutate("published");
                 }}
-                disabled={busy}
+                disabled={statusLocked}
               >
                 {publishPending ? "Публикуем…" : "Опубликовать"}
               </Button>
@@ -599,7 +628,7 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
                   setStatusError(null);
                   statusMutation.mutate("draft");
                 }}
-                disabled={busy}
+                disabled={statusLocked}
               >
                 {unpublishPending ? "Снимаем…" : "Снять с публикации"}
               </Button>

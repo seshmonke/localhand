@@ -16,11 +16,26 @@ import { authKeys, useMeQuery } from "../lib/queries.js";
 const PHONE_HINT = "Российский мобильный: 10 цифр после +7. Пароль не нужен.";
 const PHONE_PLACEHOLDER = "+7 ··· ···-··-··";
 
-function safeNext(raw: string | null): string {
+const SAFE_NEXT_ORIGIN = "http://local";
+
+export function safeNext(raw: string | null): string {
   if (!raw || !raw.startsWith("/") || raw.startsWith("//")) {
     return "/admin";
   }
-  return raw;
+
+  let url: URL;
+  try {
+    url = new URL(raw, SAFE_NEXT_ORIGIN);
+  } catch {
+    return "/admin";
+  }
+
+  const isAdminPath = url.pathname === "/admin" || url.pathname.startsWith("/admin/");
+  if (url.origin !== SAFE_NEXT_ORIGIN || !isAdminPath) {
+    return "/admin";
+  }
+
+  return `${url.pathname}${url.search}${url.hash}`;
 }
 
 function formatPhone(phone: string): string {

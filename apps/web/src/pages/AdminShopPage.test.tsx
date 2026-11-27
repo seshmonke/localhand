@@ -1,4 +1,4 @@
-import { cleanup, screen } from "@testing-library/react";
+import { cleanup, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { installFetchMock } from "../test/mock-api.js";
@@ -87,6 +87,57 @@ describe("AdminShopPage", () => {
     expect(screen.getAllByText("Опубликован").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: /Открыть витрину/ })).toBeInTheDocument();
     expect(patchBody).toEqual({ status: "published" });
+  });
+
+  it("locks publish until unsaved changes are saved", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: draftShop } },
+      "PATCH /seller/shop": ({ body }) => {
+        const patch = body as Partial<typeof draftShop>;
+        return { body: { shop: { ...draftShop, ...patch } } };
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/shop"]);
+
+    await screen.findByRole("heading", { level: 2, name: "Настройки магазина" });
+
+    const nameInput = screen.getByLabelText("Название");
+    await browser.clear(nameInput);
+    await browser.type(nameInput, "Новое имя");
+
+    expect(screen.getByText("Сначала сохраните изменения.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Опубликовать" })).toBeDisabled();
+
+    await browser.click(screen.getByRole("button", { name: "Сохранить изменения" }));
+
+    await waitFor(() => expect(screen.getByRole("button", { name: "Опубликовать" })).toBeEnabled());
+    expect(screen.queryByText("Сначала сохраните изменения.")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Название")).toHaveValue("Новое имя");
+  });
+
+  it("disables the settings form for a blocked shop", async () => {
+    const blockedShop = { ...draftShop, status: "blocked" as const };
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: blockedShop } },
+    });
+
+    renderApp(["/admin/shop"]);
+
+    await screen.findByRole("heading", { level: 2, name: "Настройки магазина" });
+
+    expect(
+      screen.getByText("Платформа заблокировала магазин: изменения недоступны."),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Название")).toBeDisabled();
+    expect(screen.getByLabelText("Slug")).toBeDisabled();
+    expect(screen.getByLabelText("Описание")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Сохранить изменения" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Опубликовать" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Снять с публикации" })).not.toBeInTheDocument();
   });
 
   it("logs out through the API and returns to /login", async () => {
