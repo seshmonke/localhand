@@ -28,7 +28,8 @@
     "db:migrate": "pnpm --filter @localhand/api db:migrate",
     "db:seed": "pnpm --filter @localhand/api db:seed",
     "preview": "pnpm --filter @localhand/web preview",
-    "storybook": "pnpm --filter @localhand/web storybook"
+    "storybook": "pnpm --filter @localhand/web storybook",
+    "integrations:check": "node scripts/check-integrations.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.6.11",

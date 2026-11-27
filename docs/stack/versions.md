@@ -65,6 +65,15 @@
 | oxlint | 1.95.0 |
 | prettier | 3.10.1 |
 
+## Интеграции
+
+| Инструмент | Версия/контур |
+|---|---|
+| ЮKassa API | `v3`, OpenAPI 3.0.2, Partner OAuth; [version lock](integrations/versions.json) |
+| СДЭК API | `v2`, OpenAPI 3.0.1; test `api.edu.cdek.ru`, prod `api.cdek.ru` |
+
+Проверка актуальности: `pnpm integrations:check`.
+
 ## Инфраструктура
 
 | Компонент | Версия/условие |
