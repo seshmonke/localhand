@@ -37,5 +37,5 @@
   session guard, GET/POST/PATCH `/seller/shop`, slug, публикация,
   blocked read-only. Следующий — S1-3 products. Sprint 1.
 - 27.11.2026. S1-3 seller products смержен (PR #16, `b728eda`):
-  контракты product-admin, CRUD/publish/hide, ownership 404, int4/NUL
-  validation. Следующий — S1-4a admin auth/shop UI. Sprint 1.
+  контракты product-admin, create/edit/publish/hide, ownership 404,
+  int4/NUL validation. Следующий — S1-4a admin auth/shop UI. Sprint 1.

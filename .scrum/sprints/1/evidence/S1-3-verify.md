@@ -1,7 +1,8 @@
 # Evidence: S1-3 seller products
 
-Дата: 27.11.2026. Ветка `task/S1-3-products`, review HEAD `b12fe79`,
-merge `b728eda` (PR #16). Change `02-seller-onboarding`, tasks 3.1–3.4.
+Дата: 27.11.2026. Ветка `task/S1-3-products`, review HEAD `f3104e5`,
+post-approval docs `b12fe79`, merge `b728eda` (PR #16). Change
+`02-seller-onboarding`, tasks 3.1–3.4.
 
 ## Verify
 
@@ -50,13 +51,14 @@ Totals: 2 passed, 0 failed (2 items)
 
 ## Review
 
-- Независимый `scrum-reviewer`: **APPROVE**.
+- Независимый `scrum-reviewer`: **APPROVE** на `f3104e5`.
 - P2-1 int4 overflow, P2-2 NUL, P3 no-op publish закрыты в `4e4da27`;
   повторное ревью — **APPROVE**.
 - Post-approval `b12fe79` — docs-only: publish-переход уточнён в спеке,
-  design и брифе.
+  design и брифе; дерево `b12fe79` совпадает с merge `b728eda`.
 - Остаточные P3: TOCTOU publish (S1-5), `imageUrl: ""`, пагинация/
-  rate-limit, storefront id/SQL в non-prod, skip DB-тестов без env.
+  rate-limit, storefront id/SQL в non-prod, skip DB-тестов без env,
+  spec partial edit/пустой PATCH до archive.
 
 ## Preview / smoke
 

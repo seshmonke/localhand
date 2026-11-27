@@ -11,8 +11,10 @@
 - S1-2 shop: **done**, PR #14; tasks 2.1–2.4.
 - S1-3 products: **done**, PR #16; tasks 3.1–3.4.
 - S1-4 admin UI: **ready**, split:
-  - 4a auth + admin shell + shop onboarding/settings — tasks 4.1–4.3;
-  - 4b products table/form + responsive/a11y — tasks 4.4–4.5.
+  - 4a auth + admin shell + shop onboarding/settings — tasks 4.1–4.3 +
+    применимые loading/empty/error, mobile/desktop и a11y из 4.5;
+  - 4b products table/form — task 4.4 + остаток 4.5 (таблица/карточки,
+    responsive, a11y).
 - S1-5 security/evidence/archive — `ready`.
 
 ## Evidence
@@ -43,10 +45,12 @@
 - buyer auth — телефон/OTP на checkout, заказ привязан к `users`;
 - ЮKassa/СДЭК/SMS — только интерфейсы/dev-адаптеры;
 - preview локальный + скриншоты/видео и e2e на тестовых данных;
-- merge после независимого ревью и зелёных checks;
+- merge после независимого ревью и зелёных checks, без подтверждения на
+  каждый PR; branch protection не ослабляется;
 - бюджет не блокер; 4–6 циклов — ориентир по объёму;
 - стоп-триггеры: смена скоупа/продукта, реальные ПДн/деньги/прод,
   инцидент безопасности, красный `main`, 3 REJECT, дыра в спеке.
+- План Sprint 2 пишет orchestrator и показывает перед стартом.
 
 ## Текущий шаг
 
