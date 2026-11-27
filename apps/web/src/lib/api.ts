@@ -6,6 +6,10 @@ import {
   type CreateProduct,
   CreatePaymentResponseSchema,
   type CreateShop,
+  type DeliveryQuoteRequest,
+  DeliveryCityListResponseSchema,
+  DeliveryPointListResponseSchema,
+  DeliveryQuoteResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
   MeResponseSchema,
   OrderListResponseSchema,
@@ -195,6 +199,28 @@ export function updateProduct(id: number, input: UpdateProduct) {
     `/seller/products/${encodeURIComponent(String(id))}`,
     { method: "PATCH", body: input },
     SellerProductResponseSchema,
+  );
+}
+
+export function fetchDeliveryCities(query: string) {
+  const params = new URLSearchParams();
+  if (query) {
+    params.set("query", query);
+  }
+  const suffix = params.size > 0 ? `?${params.toString()}` : "";
+  return requestJson(`/delivery/cities${suffix}`, {}, DeliveryCityListResponseSchema);
+}
+
+export function fetchDeliveryPoints(cityCode: number) {
+  const params = new URLSearchParams({ cityCode: String(cityCode) });
+  return requestJson(`/delivery/points?${params.toString()}`, {}, DeliveryPointListResponseSchema);
+}
+
+export function fetchDeliveryQuote(input: DeliveryQuoteRequest) {
+  return requestJson(
+    "/delivery/quote",
+    { method: "POST", body: input },
+    DeliveryQuoteResponseSchema,
   );
 }
 

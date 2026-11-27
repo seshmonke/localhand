@@ -12,13 +12,68 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { CartProvider, useCart } from "../cart/CartContext.js";
 import { authKeys, orderKeys, sellerKeys } from "../lib/queries.js";
-import { installFetchMock } from "../test/mock-api.js";
+import { installFetchMock, type MockRoutes } from "../test/mock-api.js";
 import { renderApp } from "../test/render-app.js";
 import { CheckoutPage, COMMENT_HINT } from "./CheckoutPage.js";
 import { formatOrderPhone } from "./OrdersPage.js";
 
 function phone(...parts: string[]): string {
   return parts.join("");
+}
+
+const DELIVERY_ROUTES: MockRoutes = {
+  "GET /delivery/cities": {
+    body: {
+      cities: [
+        { code: 44, name: "Москва" },
+        { code: 137, name: "Санкт-Петербург" },
+      ],
+    },
+  },
+  "GET /delivery/points": ({ query }) => ({
+    body: {
+      points:
+        query.cityCode === "137"
+          ? [
+              {
+                code: "SPB001",
+                name: "ПВЗ Невский",
+                address: "Санкт-Петербург, Невский 1",
+                cityCode: 137,
+                cityName: "Санкт-Петербург",
+              },
+            ]
+          : [
+              {
+                code: "MSK001",
+                name: "ПВЗ Тверская",
+                address: "Москва, Тверская 1",
+                cityCode: 44,
+                cityName: "Москва",
+              },
+            ],
+    },
+  }),
+  "POST /delivery/quote": {
+    body: {
+      quoteToken: "test-quote-token",
+      expiresAt: "2026-12-01T00:00:00.000Z",
+      shops: [
+        {
+          shopId: 1,
+          tariffCode: "136",
+          tariffName: "Посылка склад-ПВЗ",
+          priceKopecks: 38_000,
+          periodMin: 2,
+          periodMax: 4,
+        },
+      ],
+    },
+  },
+};
+
+function installCheckoutFetchMock(routes: MockRoutes) {
+  return installFetchMock({ ...DELIVERY_ROUTES, ...routes });
 }
 
 const demoUser = { id: 7, phone: phone("+7", "999", "000", "00", "07") };
@@ -125,7 +180,7 @@ afterEach(() => {
 
 describe("CheckoutPage", () => {
   it("sends an unauthenticated buyer to login with next=/checkout", async () => {
-    installFetchMock({
+    installCheckoutFetchMock({
       "GET /auth/me": { status: 401, body: { error: "unauthorized" } },
     });
 
@@ -138,7 +193,7 @@ describe("CheckoutPage", () => {
   });
 
   it("shows an empty state when the cart has no items", async () => {
-    installFetchMock({
+    installCheckoutFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
     });
 
@@ -155,7 +210,7 @@ describe("CheckoutPage", () => {
     seed([jacket, vase]);
     const submittedBodies: Checkout[] = [];
 
-    const fetchMock = installFetchMock({
+    const fetchMock = installCheckoutFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
       "POST /checkout": ({ body }) => {
         submittedBodies.push(body as Checkout);
@@ -205,10 +260,50 @@ describe("CheckoutPage", () => {
     expect(checkoutCalls(fetchMock)).toHaveLength(1);
   });
 
+  it("adds the delivery quote to the total and sends the signed token", async () => {
+    seed([jacket]);
+    const submitted: Checkout[] = [];
+
+    installCheckoutFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "POST /checkout": ({ body }) => {
+        submitted.push(body as Checkout);
+        return { status: 201, body: { orders: [orderFor(jacket)] } };
+      },
+      "GET /orders/mine": { body: { orders: [orderFor(jacket)] } },
+      "GET /orders/101": { body: { order: orderFor(jacket) } },
+      "GET /orders/101/payment": { body: { payment: null } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/checkout"]);
+    await screen.findByRole("heading", { level: 1, name: "Проверьте заказ" });
+
+    await screen.findByRole("option", { name: "Санкт-Петербург" });
+    await browser.selectOptions(screen.getByLabelText("Город доставки"), "137");
+    await screen.findByRole("option", { name: /ПВЗ Невский/ });
+    await browser.selectOptions(screen.getByLabelText("Пункт выдачи"), "SPB001");
+    await browser.type(screen.getByLabelText("Имя получателя"), "Иван Тестов");
+
+    expect(await screen.findByText("Срок")).toBeInTheDocument();
+    expect(screen.getAllByText(/380/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/4 580/)).toBeInTheDocument();
+
+    await browser.click(screen.getByRole("button", { name: "Оформить заказ" }));
+
+    await waitFor(() => expect(submitted).toHaveLength(1));
+    expect(submitted[0]?.delivery).toEqual({
+      cityCode: 137,
+      pointCode: "SPB001",
+      recipientName: "Иван Тестов",
+      quoteToken: "test-quote-token",
+    });
+  });
+
   it("clears only the products returned by the checkout replay", async () => {
     seed([jacket, vase]);
 
-    installFetchMock({
+    installCheckoutFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
       "POST /checkout": { status: 201, body: { orders: [orderFor(jacket)] } },
       "GET /orders/mine": { body: { orders: [orderFor(jacket)] } },
@@ -234,7 +329,7 @@ describe("CheckoutPage", () => {
     const checkoutIds: string[] = [];
     let attempts = 0;
 
-    const fetchMock = installFetchMock({
+    const fetchMock = installCheckoutFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
       "POST /checkout": ({ body }) => {
         checkoutIds.push((body as { clientCheckoutId: string }).clientCheckoutId);
@@ -277,7 +372,7 @@ describe("CheckoutPage", () => {
   it("rotates the clientCheckoutId when the cart composition changes and keeps it for retries", async () => {
     const submitted: Checkout[] = [];
 
-    installFetchMock({
+    installCheckoutFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
       "POST /checkout": ({ body }) => {
         submitted.push(body as Checkout);
@@ -315,7 +410,7 @@ describe("CheckoutPage", () => {
     seed([jacket]);
     let finishCheckout: (value: { status: number; body: unknown }) => void = () => {};
 
-    installFetchMock({
+    installCheckoutFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
       "POST /checkout": () =>
         new Promise((resolve) => {
@@ -353,7 +448,7 @@ describe("CheckoutPage", () => {
     client.setQueryData(sellerKeys.shop, { shop: null });
     client.setQueryData(orderKeys.mine, { orders: [] });
 
-    installFetchMock({
+    installCheckoutFetchMock({
       "GET /auth/me": () =>
         sessionExpired
           ? { status: 401, body: { error: "unauthorized" } }
