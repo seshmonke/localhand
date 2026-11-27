@@ -320,6 +320,26 @@ describeWithDb("delivery shipment routes", () => {
     });
   });
 
+  it("rejects a CDEK create after a manual track", async () => {
+    const order = await createPaidOrder(1, 2, "manual-first-shop");
+    const manual = await request(
+      order.seller,
+      "PATCH",
+      `/seller/orders/${order.orderId}/delivery`,
+      {
+        carrier: "Почта России",
+        trackNumber: "MANUAL-1",
+      },
+    );
+    expect(manual.statusCode).toBe(200);
+
+    const create = await request(order.seller, "POST", `/seller/orders/${order.orderId}/delivery`, {
+      tariffCode: "136",
+    });
+    expect(create.statusCode).toBe(409);
+    expect(create.json()).toEqual({ error: "delivery_already_exists" });
+  });
+
   it("rejects a tariff different from the paid one", async () => {
     const order = await createPaidOrder(1, 2, "tariff-shop");
     const response = await request(
@@ -401,6 +421,12 @@ describeWithDb("delivery shipment routes", () => {
 
     const delivery = await request(order.buyer, "GET", `/orders/${order.orderId}/delivery`);
     expect(DeliveryResponseSchema.parse(delivery.json()).delivery.status).toBe("delivered");
+    const createdEvents = await dbClient
+      .requirePool()
+      .query<{ count: number }>(
+        "SELECT count(*)::int AS count FROM delivery_events WHERE status_code = 'CREATED'",
+      );
+    expect(createdEvents.rows[0]?.count).toBe(1);
   });
 
   it("sets no-store and rejects a foreign seller create", async () => {

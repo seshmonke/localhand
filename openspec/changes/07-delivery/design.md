@@ -133,8 +133,10 @@
 - `GET /seller/orders/:id/delivery` — snapshot/events.
 - Manual `PATCH /seller/orders/:id/delivery` `{carrier, trackNumber}`:
   - только paid;
-  - только если нет `provider_order_id` и нет CDEK-заказа (проверить
-    `GET /v2/orders?im_number=number` / local status);
+  - при `DELIVERY_PROVIDER=manual` API-проверка не нужна;
+  - при CDEK — только если нет `provider_order_id` и поиск
+    `GET /v2/orders?im_number=number` подтвердил отсутствие заказа;
+    5xx/timeout → 502, ручной трек блокируется до reconcile (D6);
   - status `manual`, track; не перезаписывает CDEK;
   - повтор/изменение — 409 `delivery_already_exists`.
 - `DELIVERY_PROVIDER=manual` — только seller fallback, checkout всё
