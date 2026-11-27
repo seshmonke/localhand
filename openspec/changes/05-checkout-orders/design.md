@@ -23,7 +23,7 @@ Sprint 1: users/sellers/shops/products, OTP-сессия, seller admin,
 
 - enum `order_status`: `new` (расширяется в следующих change).
 - `orders`: id, buyer_user_id FK users restrict, shop_id FK shops
-  restrict, status default `new`, total_kopecks int not null check ≥0,
+  restrict, status default `new`, total_kopecks bigint not null check ≥0,
   buyer_phone text not null, comment text null ≤500,
   client_checkout_id uuid not null, created_at, updated_at;
   unique `(buyer_user_id, client_checkout_id, shop_id)` для
