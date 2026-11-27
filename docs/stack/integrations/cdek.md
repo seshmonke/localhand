@@ -69,15 +69,17 @@ Content-Type: application/x-www-form-urlencoded
 - Первый poll — через 2–3 с; обработка может занять 30–60 с.
 - Ошибка `INVALID` содержит `errors[].code` и сообщение. Поле
   `number` — номер заказа в нашей ИС (уникален в пределах договора);
-  `im_number` — только query-параметр поиска `GET /v2/orders`, равный
-  `number`, не поле создания. Перед повторным созданием с новым
+  `im_number` — query-параметр поиска `GET /v2/orders`, равный
+  `number`; в `POST /v2/orders` его нет (в преалерте `im_number` —
+  отдельное поле). Перед повторным созданием с новым
   `number` — reconcile по существующему заказу, чтобы не сделать
   дубль.
 - Данные заказа: `tariff_code`, `recipient` (имя, телефон, адрес/ПВЗ),
   `packages` (вес/габариты/позиции), `from_location`/`sender`,
   `delivery_point` или `to_location`, `number` (наш номер заказа).
-- Для интернет-магазина `number` — номер заказа в нашей ИС; уникален в
-  пределах договора.
+- Для интернет-магазина `number` — номер заказа в нашей ИС; уникален
+  среди активных заказов (финальные `DELIVERED`/`NOT_DELIVERED` не
+  блокируют повтор).
 - Печатные формы: `/v2/print/orders`, `/v2/print/barcodes`.
 - Отмена/удаление: `DELETE /v2/orders/{uuid}` (пока нет движения груза),
   отказ получателя — `/v2/orders/{uuid}/refusal`.
@@ -153,8 +155,9 @@ S3-2 ещё не реализован. Понадобится:
 - Адрес/ПВЗ получателя: `city_code`, `postal_code`, `address`,
   `delivery_point`, имя/телефон; PII — после юрпакета, в тестах
   вымышленные.
-- Заказ: `number` = `orders.id`/shop prefix, уникален в пределах
-  договора; `im_number` — только поиск, равен `number`; хранить
+- Заказ: `number` = `orders.id`/shop prefix, уникален среди активных
+  заказов; `im_number` — только поиск (кроме преалерта), равен
+  `number`; хранить
   `cdek_order_uuid`, `cdek_number`, `status_code`,
   `status_date_time`.
 - Калькулятор: сохранять выбранный `tariff_code`, `delivery_sum`,
