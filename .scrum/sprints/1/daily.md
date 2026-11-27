@@ -12,11 +12,29 @@
   `/auth/me`, logout, rate-limit, dev/SMS.ru адаптеры; тесты.
 - Дальше: независимый review, PR, merge; затем S1-2 shop.
 - Блокеры: нет.
-- Evidence: orchestrator `pnpm verify` exit 0; API 34 tests, shared 8,
-  web 1; OpenSpec strict 2 passed.
 
 ### Итог синка
 
 - Продолжаем: S1-1 → review → merge.
 - Перепланирование не нужно.
 - Эскалаций нет; владелец не требуется.
+
+### Финал цикла
+
+- Повторное ревью после `b467306`: **APPROVE**, blocking P1 trustProxy
+  закрыт; P2/P3 перенесены в S1-5/бэклог.
+- `pnpm verify` (DATABASE_URL_TEST): exit 0; API 58/58, shared 8/8,
+  web 1/1, build OK, `openspec validate --all --strict` 2/2,
+  `check:public` чист. Evidence:
+  [evidence/S1-1-verify.md](evidence/S1-1-verify.md).
+- PR #12: `verify` + `review-gate` зелёные, squash-merge `d3e42b7`.
+- S1-1 закрыт; tasks 1.1–1.6 отмечены.
+
+## Cycle 2 — 27.11.2026
+
+### S1-2 Seller shop
+
+- Статус: `ready`; бриф, worktree и lease создаются перед dispatch.
+- Дальше: API создания/редактирования/публикации своего магазина,
+  уникальный slug, authz-тесты.
+- Блокеры: нет.
