@@ -1,7 +1,7 @@
 # Evidence: S1-5 security, e2e, docs
 
-Дата: 27.11.2026. Ветка `task/S1-5-security-archive`, review HEAD
-`07fb5bf`, merge — close-PR. Change `02-seller-onboarding`, tasks
+Дата: 27.11.2026. Ветка `task/S1-5-security-archive`, review/final
+HEAD `dd447a9`, merge — close-PR. Change `02-seller-onboarding`, tasks
 5.1–5.4; 5.5 (archive) — close-PR.
 
 ## Verify
@@ -36,7 +36,7 @@ Totals: 2 passed, 0 failed (2 items)
 ```
 
 Лог снят до добавления evidence/screenshots; на финальном дереве
-(235 tracked files) `check:public` — clean.
+(`dd447a9`, 235 tracked files) `check:public` и `pnpm verify` — exit 0.
 
 ## E2E (5.1)
 
