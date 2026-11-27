@@ -64,3 +64,6 @@
 {"ts":"2026-11-27T15:25:00Z","type":"decision","scope":"t2_exceptions","sprint":3,"task":"S3-1","pr":45,"owner":"human","decision":"approve_b2_pr_size_and_defer_mutation_sast","deadline":"Q1.3/Q1.4","property_tests":"added_in_b2"}
 {"ts":"2026-11-27T15:57:00Z","type":"merge","sprint":3,"cycle":4,"task":"S3-1","pr":45,"merge_commit":"3e343cb","scope":"payments_ui","status":"done"}
 {"ts":"2026-11-27T15:58:00Z","type":"change_archived","sprint":3,"task":"S3-1","change":"06-payments","archive":"2026-11-27-06-payments","spec":"payments"}
+{"ts":"2026-11-27T16:16:00Z","type":"decision","scope":"delivery_contract","sprint":3,"task":"S3-2","owner":"human","decision":"platform_cdek_contract_one_account","ozon":"later_second_provider"}
+{"ts":"2026-11-27T16:18:00Z","type":"cycle_started","sprint":3,"cycle":5,"task":"S3-2","scope":"delivery_planning","change":"07-delivery"}
+{"ts":"2026-11-27T16:45:00Z","type":"decision","scope":"t2_exceptions","sprint":3,"task":"S3-2","change":"07-delivery","owner":"human","decision":"extend_b2_exception_scope_to_s3_2","mutation_sast":"defer_until_Q1.3_Q1.4","alert_rum":"until_public_launch","property_contract_threat_model":"required_in_s3_2"}

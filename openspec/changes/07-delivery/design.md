@@ -80,21 +80,28 @@
     shop city/shipment point;
   - точки: `point.city_code == cityCode`;
   - packages: одна упаковка на заказ; вес = сумма, габариты = max;
-    объёмный вес `L*W*H/5000` (граммы) и `max(weight, volumetric)`;
+    объёмный вес CDEK `L*W*H/5000` **кг**, поэтому в граммах
+    `volumetric_g = L*W*H/5`; billing weight
+    `max(weight_g, volumetric_g)`; fixture 20×15×10 → 600 г;
   - CDEK `calculator/tarifflist`, самый дешёвый тариф с доставкой до
     ПВЗ; `delivery_sum`, `period_min/max`;
-  - возвращает `{ quoteToken, expiresAt, shops:[...] }`; `quoteToken`
-    HMAC (`DELIVERY_QUOTE_SECRET`) с hash(sorted productIds), city,
-    point, price/tariff, exp 10 мин.
+  - возвращает `{ quoteToken, expiresAt, shops:[...] }`; `quoteToken` —
+    HMAC (`DELIVERY_QUOTE_SECRET`) над canonical JSON:
+    `{v:1, productHash, cityCode, pointCode, exp,
+    shops:[{shopId, tariffCode, priceKopecks, periodMin, periodMax}]}`;
+    один и тот же набор shopId, что в корзине; TTL 10 мин.
 - Checkout body: `delivery: { cityCode, pointCode, recipientName,
   quoteToken }`; phone — `buyer_phone` сессии.
-  - verify HMAC/TTL/hash/city/point; цена берётся из подписанного
-    quote, не от клиента;
+  - verify HMAC/TTL/hash/city/point и наличие ровно одного shop-entry
+    на каждую группу корзины; цены берутся per-shop из подписанного
+    quote, не от клиента; подмена любого shopId/цены ломает HMAC;
   - если products изменились/цена устарела — 409
     `delivery_quote_stale`, новый quote;
   - создаёт order с `delivery_kopecks`, `total=items+delivery`,
-    `order_deliveries` `quoted` snapshot;
-  - нет quote/размеров/города — 409/502, без частичного заказа.
+    `order_deliveries` `quoted` snapshot с `provider_tariff_code` и
+    `price_kopecks` из токена;
+  - нет quote/размеров/города/ПВЗ сдачи — 409/502, без частичного
+    заказа.
 - `DELIVERY_PROVIDER=fake` — deterministic quote для test/e2e, без
   сети; `manual` не используется в checkout.
 
@@ -102,14 +109,22 @@
 
 - `GET /seller/orders/:id/delivery/tariffs` — для paid-заказа:
   CDEK `tarifflist` from shop city/shipment point to buyer PVZ;
-  возвращает список тарифов; seller выбирает.
+  показывает доступные тарифы и помечает оплаченный
+  (`provider_tariff_code`, `price_kopecks`). Seller не может изменить
+  цену доставки: оплаченный тариф — единственный допустимый.
 - `POST /seller/orders/:id/delivery` body `{tariffCode}`; paid-only;
   idempotent by order; если delivery уже `created+` — 409/return;
+  `tariffCode` обязан совпасть с оплаченным `provider_tariff_code`,
+  а текущая цена CDEK — с `price_kopecks`; иначе 409
+  `delivery_tariff_mismatch` без создания отправления и без изменения
+  `orders.total`. Разница тарифов — ручной разбор/ops, не автомат;
   `number = order-{id}`, `im_number` только search; packages из
   order items; `shipment_point = shop.cdek_shipment_point`,
   recipient buyer name/phone, delivery_point buyer point.
   CDEK `POST /v2/orders` → 202; store provider order id/request uuid;
   status `created`; poll.
+- Property/DB-тест: чужой/подешевевший/подорожавший тариф → 409,
+  `price_kopecks` и `total` не меняются; оплаченный тариф → create.
 - `GET /seller/orders/:id/delivery` — snapshot/events.
 - Manual `PATCH /seller/orders/:id/delivery` `{carrier, trackNumber}`:
   - только paid;
@@ -125,6 +140,10 @@
 - Env: `CDEK_CLIENT_ID/SECRET`, `CDEK_API_URL`,
   `CDEK_WEBHOOK_URL=https://.../delivery/cdek/webhook`,
   `DELIVERY_ENV=test|live`, `DELIVERY_LIVE_PII=false`.
+- Fail-closed: `DELIVERY_ENV=live` требует `DELIVERY_LIVE_PII=true`,
+  иначе startup error; значит preview/test не могут случайно пойти в
+  live и собрать реальные ПВЗ/имя/телефон. `true` допустим только
+  после юрпакета и явного решения владельца.
 - OAuth `POST /v2/oauth/token?grant_type=client_credentials...`; cache
   token до `expires_in` (3599); Bearer; 401 → refresh once.
 - Outbound limiter 200 RPS (token bucket), timeout 10 s, retry only
@@ -134,16 +153,18 @@
   log/ops, не создавать третий. Runbook.
 - Webhook `POST /delivery/cdek/webhook`:
   - no signature; lookup `uuid`/`cdek_number`/`number`; verify via
-    `GET /v2/orders/{uuid}`; unknown → 404/200? Return 404 for unknown
-    local, 400 invalid; provider retries; log code.
+    `GET /v2/orders/{uuid}`; неизвестный локальный заказ → 404,
+    невалидное тело → 400, ошибка/таймаут верификации → 502 (провайдер
+    повторит); валидный replay → 200 no-op; log code.
   - idempotent event by `(delivery_id,status_code,occurred_at)`;
   - status mapping: `DELIVERED`→delivered; `NOT_DELIVERED`/`RETURNED`
     →canceled; `CREATED/ACCEPTED`→created; known → in_transit;
     unknown → in_transit + raw code;
   - no-store, 60/min IP.
 - Reconcile 60 s: `created|in_transit` older 2 min → `GET`; update;
-  `quoted` without shipment older 15 min → failed/manual? Log; do not
-  create shipment automatically.
+  `quoted` без отправления не меняет статус автоматически (ждёт
+  действия продавца); через 24 ч — безопасный лог/бейдж «требует
+  отправки», не `failed`; shipment не создаётся автоматически.
 - URL docs sync `/delivery/cdek/webhook` (not `/payments/...`).
 
 ### Manual duplicate safety
@@ -159,8 +180,9 @@
 - `recipient_name`/`recipient_phone`/PVZ address — PII; logs only
   ids/provider/status; no-store; authz buyer/seller; fake data in
   preview.
-- `DELIVERY_LIVE_PII=false` default: `live` requires explicit owner
-  env + legal pack; until then test/preview only. Test redaction.
+- `DELIVERY_LIVE_PII=false` default: `live` не стартует без `true`;
+  `test`/`fake`/preview работают только с вымышленными данными, live-ПВЗ
+  и реальные получатели недоступны. Test: env guard + redaction.
 - Retention/deletion: order PII deletion runbook (anonymize name/phone
   on request); no real PII in repo.
 
@@ -175,10 +197,10 @@
 ### Errors
 
 `delivery_dimensions_missing`, `shop_city_missing`,
-`delivery_point_invalid`, `delivery_quote_stale`,
-`delivery_unavailable`, `delivery_not_paid`,
-`delivery_already_created`, `delivery_provider_error`,
-`delivery_already_exists`.
+`shop_shipment_point_missing`, `delivery_point_invalid`,
+`delivery_quote_stale`, `delivery_unavailable`, `delivery_not_paid`,
+`delivery_tariff_mismatch`, `delivery_already_created`,
+`delivery_provider_error`, `delivery_already_exists`.
 
 ## Alternatives
 

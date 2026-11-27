@@ -110,3 +110,18 @@
 - Verify: shared 139, web 154, api 271, OpenSpec 8/8, public 471.
 - Evidence: `.scrum/sprints/3/evidence/S3-1-close.md`.
 - Live YooKassa smoke/адаптер — P3 после ключей; S3-2 CDEK — следующий.
+
+## Cycle 5 — 27.11.2026
+
+### S3-2 Delivery planning
+
+- Owner decision 27.11.2026: один договор СДЭК на платформе;
+  Ozon — второй адаптер после MVP.
+- Change `07-delivery`: PVZ-only, quote/checkout с доставкой,
+  CDEK test platform, manual track fallback, provider seam.
+- `openspec validate 07-delivery --strict` — valid.
+- Ветка `task/S3-2-delivery`, lease до 23:00Z.
+- Spec review: два круга; исправлены tarif-from-quote, объёмный вес
+  в граммах, per-shop quoteToken, webhook/reconcile без «?», live-PII
+  guard, `shop_shipment_point_missing`; exception S3-2 в events.
+- Дальше: PR A (schema/contracts/provider).

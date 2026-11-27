@@ -14,5 +14,10 @@
 
 #### Scenario: Нет города
 
-- **WHEN** город/ПВЗ не заполнены
+- **WHEN** город отправки не заполнен
 - **THEN** checkout возвращает 409 `shop_city_missing`
+
+#### Scenario: Нет ПВЗ сдачи
+
+- **WHEN** город заполнен, а ПВЗ сдачи нет
+- **THEN** checkout возвращает 409 `shop_shipment_point_missing`

@@ -14,8 +14,8 @@ A foundation, B checkout/UI, C shipment/status/e2e.
 
 - [ ] 1.1 RED: schema/contract tests падают (dimensions, shop city/point, delivery, quote token).
 - [ ] 1.2 Миграция `0006`: products dimensions, shops `cdek_city_code/name/shipment_point`, orders `delivery_kopecks`, `order_deliveries` (`quoted|created|in_transit|delivered|canceled|manual|failed`), `delivery_events` unique `(delivery_id,status_code,occurred_at)`.
-- [ ] 1.3 Shared contracts: city/point/quote/quoteToken, delivery snapshot, seller tariffs, shipment create/manual, status; PII length/format; tests.
-- [ ] 1.4 Env: `DELIVERY_PROVIDER=cdek|fake|manual`, `DELIVERY_ENV=test|live`, `DELIVERY_QUOTE_SECRET`, `DELIVERY_LIVE_PII=false`, `CDEK_*`; guards/`.env.example`.
+- [ ] 1.3 Shared contracts: city/point/quote/quoteToken (per-shop payload), delivery snapshot, seller tariffs, shipment create/manual, status; PII length/format; tests.
+- [ ] 1.4 Env: `DELIVERY_PROVIDER=cdek|fake|manual`, `DELIVERY_ENV=test|live`, `DELIVERY_QUOTE_SECRET`, `DELIVERY_LIVE_PII=false`, `CDEK_*`; fail-closed live-PII guard, tests/`.env.example`.
 - [ ] 1.5 `DeliveryProvider` + fake CDEK (cities/points/quote/tariffs/create/get) без сети; outbound limiter skeleton.
 - [ ] 1.6 Down SQL/runbook `delivery-rollback.md` (paid orders/total, webhook cleanup).
 - [ ] 1.7 `pnpm verify`; PR A evidence.
@@ -25,8 +25,8 @@ A foundation, B checkout/UI, C shipment/status/e2e.
 - [ ] 2.1 RED: quote/checkout/UI tests падают.
 - [ ] 2.2 CDEK client OAuth/cache/cities/points/calculator; point-city validation; volumetric weight; fake fixtures.
 - [ ] 2.3 `GET /delivery/cities`, `/points`, `POST /delivery/quote`; signed quoteToken TTL 10 мин/hash; 30/min; no-store.
-- [ ] 2.4 Checkout schema `delivery {cityCode,pointCode,recipientName,quoteToken}`; verify token; `delivery_kopecks`/total; 409 stale/invalid; DB tests multi-shop/dimensions/city/total.
-- [ ] 2.5 Product dimensions API/contracts + admin product form; shop city/PVZ API + `/admin/shop`.
+- [ ] 2.4 Checkout schema `delivery {cityCode,pointCode,recipientName,quoteToken}`; per-shop verify; `delivery_kopecks`/total; 409 stale/invalid/shop tamper; DB tests multi-shop/dimensions/city/point/total.
+- [ ] 2.5 Product dimensions API/contracts + admin product form; shop city/PVZ API + `/admin/shop`; `shop_shipment_point_missing` test.
 - [ ] 2.6 Checkout UI: city/PVZ/quote/price/period/recipient name; errors/retry; axe.
 - [ ] 2.7 Orders API/UI delivery snapshot; old orders 0; `pnpm verify`; PR B evidence.
 
@@ -34,11 +34,11 @@ A foundation, B checkout/UI, C shipment/status/e2e.
 
 - [ ] 3.1 RED: shipment/webhook/manual/e2e tests падают.
 - [ ] 3.2 `GET /seller/orders/:id/delivery/tariffs` (paid, CDEK from shop city/point to buyer PVZ).
-- [ ] 3.3 `POST /seller/orders/:id/delivery {tariffCode}`: paid-only, idempotent `number=order-{id}`, `shipment_point`, 202, provider id/number, `created`; reconcile before retry.
+- [ ] 3.3 `POST /seller/orders/:id/delivery {tariffCode}`: paid-only, tariff must equal paid quote/price, 409 `delivery_tariff_mismatch`, idempotent `number=order-{id}`, `shipment_point`, 202, provider id/number, `created`; reconcile before retry.
 - [ ] 3.4 `PATCH /seller/orders/:id/delivery` manual carrier/track: only paid + no CDEK order; 409 if exists.
 - [ ] 3.5 `GET /seller/orders/:id/delivery`, buyer `GET /orders/:id/delivery`; authz 404; no-store.
-- [ ] 3.6 Webhook `/delivery/cdek/webhook`: verify GET, unknown 404, idempotent events, mapping, 60/min, no-store; `ensureWebhook` one ORDER_STATUS.
-- [ ] 3.7 Reconcile 60s: created/in_transit >2 мин; delivered; unknown raw; timeout/duplicate safety.
+- [ ] 3.6 Webhook `/delivery/cdek/webhook`: verify GET (unknown 404, invalid 400, verify fail 502), idempotent events, mapping, 60/min, no-store; `ensureWebhook` one ORDER_STATUS.
+- [ ] 3.7 Reconcile 60s: created/in_transit >2 мин; delivered; unknown raw; `quoted` не авто-`failed`; timeout/duplicate safety.
 - [ ] 3.8 Seller UI: tariffs/create/manual/events; buyer delivery card; states/a11y.
 - [ ] 3.9 API/DB e2e: quote→checkout→paid→create→webhook→track; manual after definitive fail; no duplicate; PII logs.
 - [ ] 3.10 Browser e2e PVZ→checkout→delivery/manual; axe 320/1440 light/dark; preview LCP<2500; bundle.

@@ -10,8 +10,14 @@
 #### Scenario: Checkout с доставкой
 
 - **WHEN** покупатель отправляет checkout с подписанным delivery quote
-- **THEN** каждый заказ получает delivery snapshot и
+- **THEN** каждый заказ получает delivery snapshot с ценой своего shop и
   `total_kopecks = items + delivery_kopecks`
+
+#### Scenario: Подмена цены магазина
+
+- **WHEN** в подписанном quote изменена цена или shopId любого магазина
+- **THEN** HMAC не сходится, checkout возвращает 409 и не создаёт
+  заказы
 
 #### Scenario: Quote устарел
 

@@ -135,7 +135,7 @@
 
 | # | Угроза | Вектор | Митигация | Остаточный риск |
 |---|--------|--------|-----------|-----------------|
-| D1 | Подмена цены доставки | Правка тела checkout | Цена только из HMAC `quoteToken`; TTL 10 мин; hash productIds/city/point; stale → 409; клиентская цена игнорируется | Компрометация `DELIVERY_QUOTE_SECRET`; ротация секрета |
+| D1 | Подмена цены доставки | Правка тела checkout | Цена только из HMAC `quoteToken`; per-shop `{shopId,tariff,price}`; TTL 10 мин; hash productIds/city/point; stale/tamper → 409; клиентская цена игнорируется | Компрометация `DELIVERY_QUOTE_SECRET`; ротация секрета |
 | D2 | Подмена ПВЗ/города | pointCode от другого города | Проверка `point.city_code == cityCode` на quote и checkout; 409 `delivery_point_invalid` | Ошибка кэша городов; TTL кэша |
 | D3 | Утечка ПII получателя | Логи, ответы, кэш, URL | `no-store`, buyer/seller authz 404, логи без имени/телефона/адреса, PII не в query, redaction-тест | Телефон/имя остаются в заказе по дизайну; удаление по runbook |
 | D4 | Поддельный webhook CDEK | Прямой POST на публичный URL | Нет подписи у CDEK: серверный `GET /v2/orders/{uuid}`, сверка `number`/`cdek_number`; неизвестный → 404; rate-limit 60/мин; no-store | DoS публичного URL; in-memory limiter |
@@ -143,7 +143,7 @@
 | D6 | Дубль отправления | Timeout/5xx на create, повтор, manual | `number=order-{id}`; перед retry/manual — reconcile по `im_number`; manual только если CDEK-заказа точно нет; 409 `delivery_already_created` | CDEK может принять заказ после timeout; reconcile закрывает |
 | D7 | Создание отправления без оплаты | Прямой API-вызов | `paid`-гейт на create/manual/tariffs; 409 `delivery_not_paid`; seller-scoped authz | Нет |
 | D8 | Чужой заказ/доставка | Перебор id | Buyer own order, seller own shop; чужие → 404; нет утечки существования | Нет |
-| D9 | Реальные ПДн в test/preview | Preview с реальной сессией | `DELIVERY_LIVE_PII=false` default; live требует явного env + юрпакет; тестовые данные; redaction-тест | Ошибка конфигурации; startup guard |
+| D9 | Реальные ПДн в test/preview | Preview с реальной сессией | `DELIVERY_LIVE_PII=false` default; `DELIVERY_ENV=live` без `true` не стартует (fail-closed); live — только после юрпакета; тестовые данные; redaction-тест | Ошибка конфигурации; startup guard |
 | D10 | Превышение лимитов CDEK | Массовые quote/create | Quote 30/мин IP, webhook 60/мин, outbound token bucket 200 RPS, timeout 10 s | Распределённый лимит — P3 |
 | D11 | Неизвестный статус теряется | Новый код CDEK | Сохраняем raw `status_code`, ставим `in_transit`, безопасный лог | Неверная интерпретация; ручная проверка |
 | D12 | PII в manual-треке | Произвольный carrier/track | Zod длина/формат, без логов значения, только seller own order | Нет |
