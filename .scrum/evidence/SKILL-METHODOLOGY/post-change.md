@@ -13,9 +13,12 @@
 
 Он сослался на новые поля скилла:
 
-> `SKILL.md` §12: «T0 не требует TDD/ATDD»;
-> `assets/task.md` `## Test plan`: «T0: TDD/ATDD не требуются»;
-> `references/cycle.md`: «T0: TDD/ATDD не применяются».
+> `SKILL.md` §12: «T0 не требует TDD/ATDD, e2e и OpenSpec archive»;
+> `assets/task.md` `## Test plan`: «T0: TDD/ATDD/e2e/archive не
+> требуются»;
+> `references/cycle.md`: «T0: TDD/ATDD/e2e/archive не применяются»;
+> `references/openspec.md` DoD: «T0: `No spec change`; archive не
+> требуется».
 
 ## T1 — публичная страница
 
