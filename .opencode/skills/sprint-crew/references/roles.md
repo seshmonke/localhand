@@ -591,7 +591,7 @@ root cause, proposal, owner и метрикой.
 **Границы.**
 - Не принимает «тесты зелёные» без RED-evidence для T1/T2.
 - Не принимает contract change без contract-теста.
-- Не принимает T2 без threat model, contract и property;
+- Не принимает T2 без threat model, contract, property и runbook;
   mutation/SAST — nightly/ручной до Q1.0–Q1.6; SLO-дизайн/логи
   обязательны, alert/RUM — исключение только до активации; после
   Q1.0–Q1.6 — блок; field RUM — исключение до публичного запуска.
