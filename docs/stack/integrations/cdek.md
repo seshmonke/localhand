@@ -89,7 +89,7 @@ Content-Type: application/x-www-form-urlencoded
 `POST /v2/webhooks`
 
 ```json
-{ "type": "ORDER_STATUS", "url": "https://.../payments/cdek/webhook" }
+{ "type": "ORDER_STATUS", "url": "https://.../delivery/cdek/webhook" }
 ```
 
 - Типы: `ORDER_STATUS`, `ORDER_MODIFIED`, `PRINT_FORM`, `RECEIPT`,

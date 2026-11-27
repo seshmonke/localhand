@@ -1,53 +1,50 @@
 # Tasks: delivery
 
-## 1. Контракты и схема
+Tier T2. TDD RED→GREEN→REFACTOR для каждого AC. Три PR/цикла:
+A foundation, B checkout/UI, C shipment/status/e2e.
 
-- [ ] 1.1 Миграция `0006`: product dimensions, shops city, orders delivery_kopecks, `order_deliveries`, `delivery_events`, индексы/checks.
-- [ ] 1.2 Shared contracts: city, point, quote, delivery snapshot, shipment create/manual, status; Zod + тесты.
-- [ ] 1.3 Env `DELIVERY_PROVIDER`, `DELIVERY_ENV`, `CDEK_*`; guards test/live; `.env.example`.
-- [ ] 1.4 Down SQL + runbook `delivery-rollback.md`.
+## 0. До кода
 
-## 2. Quote/ПВЗ
+- [x] 0.1 Threat model delivery в `docs/quality/threat-model.md`: PII, quote token, CDEK webhook spoof, manual duplicate, live-PII gate.
+- [x] 0.2 Contract/property-план: CDEK fixtures, quote total/volumetric, HMAC/TTL, event idempotency.
+- [x] 0.3 SLO/бюджет: API p95<500ms без сети, error<1%, availability 99.5%; CDEK timeout 10s/200 RPS.
+- [x] 0.4 TDD-трассировка AC→RED-тест в `S3-2-tdd.md`; owner exceptions mutation/SAST до Q1.3/Q1.4.
 
-- [ ] 2.1 CDEK client: OAuth token cache, cities/points, calculator.
-- [ ] 2.2 `GET /delivery/cities`, `GET /delivery/points`, `POST /delivery/quote`; rate-limit 30/min; grouping by shop.
-- [ ] 2.3 Проверка dimensions/city; ошибки 409/502; no-store.
-- [ ] 2.4 Fake CDEK adapter для тестов/e2e (без сети).
+## 1. PR A: schema/contracts/provider
 
-## 3. Checkout
+- [ ] 1.1 RED: schema/contract tests падают (dimensions, shop city/point, delivery, quote token).
+- [ ] 1.2 Миграция `0006`: products dimensions, shops `cdek_city_code/name/shipment_point`, orders `delivery_kopecks`, `order_deliveries` (`quoted|created|in_transit|delivered|canceled|manual|failed`), `delivery_events` unique `(delivery_id,status_code,occurred_at)`.
+- [ ] 1.3 Shared contracts: city/point/quote/quoteToken, delivery snapshot, seller tariffs, shipment create/manual, status; PII length/format; tests.
+- [ ] 1.4 Env: `DELIVERY_PROVIDER=cdek|fake|manual`, `DELIVERY_ENV=test|live`, `DELIVERY_QUOTE_SECRET`, `DELIVERY_LIVE_PII=false`, `CDEK_*`; guards/`.env.example`.
+- [ ] 1.5 `DeliveryProvider` + fake CDEK (cities/points/quote/tariffs/create/get) без сети; outbound limiter skeleton.
+- [ ] 1.6 Down SQL/runbook `delivery-rollback.md` (paid orders/total, webhook cleanup).
+- [ ] 1.7 `pnpm verify`; PR A evidence.
 
-- [ ] 3.1 Расширить checkout schema `delivery` (city/point/recipientName); серверный пересчёт; order delivery_kopecks/total.
-- [ ] 3.2 UI checkout: город/ПВЗ/quote/срок/цена, ошибки, a11y.
-- [ ] 3.3 Обновить orders API/UI snapshot; старые заказы delivery 0.
-- [ ] 3.4 DB-тесты: multi-shop, цена клиента игнорируется, quote fail, dimensions/city, total/payment.
+## 2. PR B: quote/checkout/seller data/UI
 
-## 4. Отправление CDEK
+- [ ] 2.1 RED: quote/checkout/UI tests падают.
+- [ ] 2.2 CDEK client OAuth/cache/cities/points/calculator; point-city validation; volumetric weight; fake fixtures.
+- [ ] 2.3 `GET /delivery/cities`, `/points`, `POST /delivery/quote`; signed quoteToken TTL 10 мин/hash; 30/min; no-store.
+- [ ] 2.4 Checkout schema `delivery {cityCode,pointCode,recipientName,quoteToken}`; verify token; `delivery_kopecks`/total; 409 stale/invalid; DB tests multi-shop/dimensions/city/total.
+- [ ] 2.5 Product dimensions API/contracts + admin product form; shop city/PVZ API + `/admin/shop`.
+- [ ] 2.6 Checkout UI: city/PVZ/quote/price/period/recipient name; errors/retry; axe.
+- [ ] 2.7 Orders API/UI delivery snapshot; old orders 0; `pnpm verify`; PR B evidence.
 
-- [ ] 4.1 `POST /seller/orders/:id/delivery`: paid only, idempotent, CDEK create `202`, store UUID/status.
-- [ ] 4.2 Async poll `GET /v2/orders/{uuid}` 2–3 с/timeout 60; status mapping; reconcile 60 с.
-- [ ] 4.3 Webhook `POST /delivery/cdek/webhook`: verify GET, idempotent events, rate-limit/no-store.
-- [ ] 4.4 Manual `PATCH /seller/orders/:id/delivery` carrier/track; status manual; not overwrite CDEK.
-- [ ] 4.5 Authz buyer/seller, PII/logs, 404/409/502.
-- [ ] 4.6 DB-тесты: paid gate, repeat, 202, webhook replay, unknown status, manual, reconcile.
+## 3. PR C: shipment/status/manual/e2e
 
-## 5. UI доставки
+- [ ] 3.1 RED: shipment/webhook/manual/e2e tests падают.
+- [ ] 3.2 `GET /seller/orders/:id/delivery/tariffs` (paid, CDEK from shop city/point to buyer PVZ).
+- [ ] 3.3 `POST /seller/orders/:id/delivery {tariffCode}`: paid-only, idempotent `number=order-{id}`, `shipment_point`, 202, provider id/number, `created`; reconcile before retry.
+- [ ] 3.4 `PATCH /seller/orders/:id/delivery` manual carrier/track: only paid + no CDEK order; 409 if exists.
+- [ ] 3.5 `GET /seller/orders/:id/delivery`, buyer `GET /orders/:id/delivery`; authz 404; no-store.
+- [ ] 3.6 Webhook `/delivery/cdek/webhook`: verify GET, unknown 404, idempotent events, mapping, 60/min, no-store; `ensureWebhook` one ORDER_STATUS.
+- [ ] 3.7 Reconcile 60s: created/in_transit >2 мин; delivered; unknown raw; timeout/duplicate safety.
+- [ ] 3.8 Seller UI: tariffs/create/manual/events; buyer delivery card; states/a11y.
+- [ ] 3.9 API/DB e2e: quote→checkout→paid→create→webhook→track; manual after definitive fail; no duplicate; PII logs.
+- [ ] 3.10 Browser e2e PVZ→checkout→delivery/manual; axe 320/1440 light/dark; preview LCP<2500; bundle.
+- [ ] 3.11 ADR 0005, runbooks webhook/reconcile/manual/rollback; `openspec validate --all --strict`; evidence `S3-2-*`.
 
-- [ ] 5.1 `/orders/:id`: delivery card (ПВЗ, цена, срок, carrier, track, status).
-- [ ] 5.2 `/admin/orders/:id`: создать CDEK, manual carrier/track, статус/events.
-- [ ] 5.3 `/admin/shop`: город отправки.
-- [ ] 5.4 Состояния loading/error/empty/retry, a11y, no PII в URL.
+## 4. Close
 
-## 6. Проверка
-
-- [ ] 6.1 Unit: CDEK client/fixtures, status mapping, token cache.
-- [ ] 6.2 API e2e: quote → checkout → paid → create → webhook → track; manual.
-- [ ] 6.3 Browser e2e: PVZ checkout, order delivery, seller create/manual; axe light/dark 320/1440.
-- [ ] 6.4 Preview LCP <2500, bundle delta; `pnpm verify`, `openspec validate 07-delivery --strict`.
-- [ ] 6.5 Threat model/ADR `0005-delivery`; Ozon seam; evidence `.scrum/sprints/3/evidence/S3-2-*`.
-
-## 7. Документы/закрытие
-
-- [ ] 7.1 ADR 0005: platform CDEK contract, PVZ, manual, Ozon later.
-- [ ] 7.2 Runbooks: CDEK webhook/reconcile, manual track, rollback.
-- [ ] 7.3 Обновить `docs/stack/integrations/cdek.md` при изменении API.
-- [ ] 7.4 Archive `07-delivery` после merge/smoke.
+- [ ] 4.1 Archive `07-delivery`; board/state/daily; owner live/CDEK contract remains external.
+- [ ] 4.2 Ozon backlog PBI (provider seam, contract/B2B; after MVP).

@@ -2,17 +2,30 @@
 
 ## Context
 
-- CDEK API v2: OpenAPI 3.0.1, test `api.edu.cdek.ru`, prod
-  `api.cdek.ru`; OAuth query token, calculator, async order `202`,
-  webhooks `ORDER_STATUS` (≤2 per client), 200 RPS. Сверено 27.11.2026,
+- CDEK v2 OpenAPI 3.0.1: test `api.edu.cdek.ru`, prod `api.cdek.ru`;
+  OAuth query token, calculator, async order `202`, `ORDER_STATUS`
+  webhook, ≤2 subscriptions, 200 RPS. Сверено 27.11.2026,
   `docs/stack/integrations/cdek.md`.
-- Owner decision 27.11.2026: **один договор СДЭК на платформе**;
-  продавцы шлют через платформенный аккаунт; Ozon — второй адаптер
-  после MVP.
-- Sprint 3 S3-2; статусы заказа `shipped/delivered` — S3-3, здесь
-  только delivery-статус.
-- Юрпакет/ПДн не закрыт: реальные адреса/имена запрещены, только
-  вымышленные тестовые данные.
+- Owner decision 27.11.2026: **один договор CDEK на платформе**;
+  продавцы сдают посылку в выбранный ПВЗ платформенного аккаунта;
+  Ozon — второй адаптер после MVP.
+- S3-2 — PVZ-only; door delivery позже. Статусы заказа
+  `shipped/delivered` — S3-3.
+- Юрпакет/ПДн не закрыт: реальные имена/телефоны/адреса запрещены;
+  `DELIVERY_LIVE_PII=false` по умолчанию.
+
+## T2 DoR
+
+- Threat model: `docs/quality/threat-model.md` раздел delivery (PII,
+  webhook, quote token, provider spoof, manual duplicate).
+- Contract tests: CDEK create/quote fixtures; shared schemas.
+- Property tests: quote total, volumetric weight, signed token TTL,
+  provider event idempotency.
+- SLO: API p95 < 500 ms без сети провайдера, error rate < 1%,
+  availability 99,5%; CDEK timeout 10 s; outbound 200 RPS.
+- TDD: AC → RED-тест (unit/API/e2e) → GREEN → REFACTOR.
+- Mutation/SAST: owner exception до Q1.3/Q1.4; property/contract/threat
+  model в этом PBI.
 
 ## Decisions
 
@@ -20,129 +33,165 @@
 
 `DeliveryProvider`:
 
-- `quote(input): QuoteResult` — `fromCityCode`, `toCityCode`,
-  `pointCode`, `packages`.
-- `createShipment(input): { providerOrderId, status }`.
+- `listCities(query)`, `listPoints(cityCode)`.
+- `quote(input): QuoteResult` — from shop city/shipment point to buyer
+  city/point; packages.
+- `listTariffs(input): Tariff[]` — seller choice.
+- `createShipment(input): { providerOrderId, number, status }`.
 - `getShipment(providerOrderId): { statusCode, statusName, track? }`.
-- `cancel?`.
-- `manual` — без API: quote 0/«уточнит продавец»? В v1 quote только
-  CDEK; manual — fallback для уже оплаченного заказа, если CDEK create
-  недоступен.
-- Ozon adapter позже, без изменения заказа/UI.
+- `ensureWebhook(): void`, `parseWebhook` — CDEK-specific at adapter.
+- `manual` — только seller-side fallback, не quote/checkout.
 
 ### Схема `0006`
 
 - `products`: `weight_g int null check >0`, `length_cm/width_cm/
-  height_cm int null check >0`. Для физического checkout все обязательны;
-  иначе 409 `delivery_dimensions_missing`.
-- `shops`: `city_code int null`, `city_name text null` — город отправки
-  продавца (CDEK city code); продавец заполняет в `/admin/shop`; для
-  quote обязателен, иначе 409 `shop_city_missing`.
+  height_cm int null check >0`.
+- `shops`: `cdek_city_code int null`, `cdek_city_name text null`,
+  `cdek_shipment_point text null` — город/ПВЗ сдачи продавца.
 - `orders`: `delivery_kopecks bigint not null default 0 check >=0`;
-  `total_kopecks` включает доставку. Существующие заказы — 0.
+  `total_kopecks = items + delivery` (инвариант, check в сервисе).
 - `order_deliveries`: `order_id` unique FK orders cascade, `provider`
   (`cdek|manual`), `status`
-  (`pending|created|in_transit|delivered|canceled|manual|failed`),
+  (`quoted|created|in_transit|delivered|canceled|manual|failed`),
   `city_code`, `city_name`, `point_code`, `point_address`,
-  `recipient_name`, `recipient_phone`, `tariff_code`, `tariff_name`,
-  `price_kopecks`, `period_min/max`, `cdek_order_uuid`,
-  `cdek_number`, `carrier`, `track_number`, `last_status_code`,
-  `last_status_at`, `created_at`, `updated_at`.
+  `recipient_name`, `recipient_phone`, `provider_tariff_code`,
+  `tariff_name`, `price_kopecks`, `period_min/max`,
+  `provider_order_id`, `provider_number`, `carrier`, `track_number`,
+  `last_status_code`, `last_status_at`, `created_at`, `updated_at`.
 - `delivery_events`: id, delivery_id FK cascade, status_code,
   status_name, occurred_at, payload_hash, created_at; unique
-  `(delivery_id, status_code, occurred_at)`.
-- Миграция аддитивная, down SQL/runbook `delivery-rollback.md`;
-  enum rebuild не требуется.
+  `(delivery_id, status_code, occurred_at)` (CDEK не даёт event id;
+  нормализуем `status_date_time`).
+- `orders.delivery_kopecks` — snapshot для оплаты; `order_deliveries.
+  price_kopecks` — источник цены доставки; инвариант проверяется
+  тестом/сервисом, manual цену не меняет (0/уже оплачено).
+- Down SQL/runbook: откат `0006`, очистка webhook-подписки, что делать
+  с оплаченными заказами (delivery snapshot остаётся в выгрузке;
+  `orders.total` не пересчитывать).
 
-### Checkout и quote
+### Quote и checkout
 
-- `GET /delivery/cities?query=` — CDEK city suggest, public, rate-limit
-  30/min, no PII; `GET /delivery/points?cityCode=` — PVZ list.
+- `GET /delivery/cities?query=` — CDEK suggest, public, 30/min.
+- `GET /delivery/points?cityCode=` — PVZ, public, 30/min; точка
+  проверяется на принадлежность городу.
 - `POST /delivery/quote` body `{items: [{productId}], cityCode,
-  pointCode}`; auth не обязателен (корзина публична), rate-limit 30/min.
-  Сервер группирует items по shop, проверяет published/dimensions/
-  shop.city, зовёт CDEK `calculator/tarifflist` (from shop city to
-  PVZ city, packages = одна упаковка на заказ: сумма веса, max
-  габариты), выбирает самый дешёвый тариф с доставкой до ПВЗ.
-  Ответ: `{shops: [{shopId, tariffCode, tariffName, priceKopecks,
-  periodMin, periodMax, pointCode, cityCode}]}`.
-- Проверка цены на checkout: клиент присылает `delivery: {cityCode,
-  pointCode, recipientName}`; сервер **пересчитывает** quote, не
-  доверяет цене клиента. Телефон получателя — `buyer_phone` сессии
-  (snapshot), отдельно не собираем.
-- `POST /checkout` расширяется `delivery`; для каждого shop создаётся
-  заказ с `delivery_kopecks` из quote; `total_kopecks = items +
-  delivery`. Если quote/размеры/город недоступны — 409/502, заказ не
-  создаётся.
-- `orders`/`checkout-orders` API возвращают delivery snapshot (без
-  PII сверх текущих правил).
+  pointCode}`; auth не обязателен, 30/min; сервер:
+  - группирует items по shop; проверяет published, dimensions,
+    shop city/shipment point;
+  - точки: `point.city_code == cityCode`;
+  - packages: одна упаковка на заказ; вес = сумма, габариты = max;
+    объёмный вес `L*W*H/5000` (граммы) и `max(weight, volumetric)`;
+  - CDEK `calculator/tarifflist`, самый дешёвый тариф с доставкой до
+    ПВЗ; `delivery_sum`, `period_min/max`;
+  - возвращает `{ quoteToken, expiresAt, shops:[...] }`; `quoteToken`
+    HMAC (`DELIVERY_QUOTE_SECRET`) с hash(sorted productIds), city,
+    point, price/tariff, exp 10 мин.
+- Checkout body: `delivery: { cityCode, pointCode, recipientName,
+  quoteToken }`; phone — `buyer_phone` сессии.
+  - verify HMAC/TTL/hash/city/point; цена берётся из подписанного
+    quote, не от клиента;
+  - если products изменились/цена устарела — 409
+    `delivery_quote_stale`, новый quote;
+  - создаёт order с `delivery_kopecks`, `total=items+delivery`,
+    `order_deliveries` `quoted` snapshot;
+  - нет quote/размеров/города — 409/502, без частичного заказа.
+- `DELIVERY_PROVIDER=fake` — deterministic quote для test/e2e, без
+  сети; `manual` не используется в checkout.
 
-### CDEK adapter (test/platform)
+### Seller: тариф и отправление
 
-- Env: `DELIVERY_PROVIDER=cdek|manual`, `DELIVERY_ENV=test|live`,
-  `CDEK_CLIENT_ID`, `CDEK_CLIENT_SECRET`, `CDEK_API_URL`,
-  `CDEK_WEBHOOK_URL`, `CDEK_DEFAULT_TARIFF?` (если не выбран).
-- OAuth `POST /v2/oauth/token?grant_type=client_credentials...`,
-  token cache до `expires_in` (3599), Bearer.
-- Quote `POST /v2/calculator/tarifflist`; request `type:1`,
-  `from_location.code`, `to_location.code`/`delivery_point`,
-  `packages` (weight grams, dimensions cm).
-- Create `POST /v2/orders` with `number = order-{id}`,
-  `tariff_code`, `recipient` (name/phone), `packages`, `delivery_point`,
-  `from_location`; response `202`, store `request_uuid`/`cdek_order_uuid`;
-  poll `GET /v2/orders/{uuid}` через 2–3 с, timeout 60 с; не считать
-  `202` успехом. `im_number` — только поиск, `number` — уникальный
-  номер (см. integration doc).
-- Webhook `POST /delivery/cdek/webhook`; no signature — verify via
-  `GET /v2/orders/{uuid}`, сверять `cdek_number`/`number`; events
-  идемпотентны; rate-limit 60/min; no-store.
-- Reconcile: pending/created deliveries раз в 60 с; poll CDEK; unknown
-  -> failed/manual_review (delivery status `failed`), ops.
-- Status mapping: `DELIVERED` -> `delivered`;
-  `NOT_DELIVERED`/`RETURNED` -> `canceled`; `CREATED`/`ACCEPTED` ->
-  `created`; остальные известные -> `in_transit`; неизвестный ->
-  `in_transit` + raw code (не терять).
-- Manual fallback: `PATCH /seller/orders/:id/delivery` body
-  `{carrier, trackNumber}`; status `manual`/`shipped` (в v1 `manual`);
-  доступно, если CDEK create вернул 502/409 или `DELIVERY_PROVIDER=
-  manual`; buyer видит carrier/track. Не отменяет CDEK-попытку
-  автоматически.
-- Ozon adapter later: same interface; product/order fields нейтральны.
+- `GET /seller/orders/:id/delivery/tariffs` — для paid-заказа:
+  CDEK `tarifflist` from shop city/shipment point to buyer PVZ;
+  возвращает список тарифов; seller выбирает.
+- `POST /seller/orders/:id/delivery` body `{tariffCode}`; paid-only;
+  idempotent by order; если delivery уже `created+` — 409/return;
+  `number = order-{id}`, `im_number` только search; packages из
+  order items; `shipment_point = shop.cdek_shipment_point`,
+  recipient buyer name/phone, delivery_point buyer point.
+  CDEK `POST /v2/orders` → 202; store provider order id/request uuid;
+  status `created`; poll.
+- `GET /seller/orders/:id/delivery` — snapshot/events.
+- Manual `PATCH /seller/orders/:id/delivery` `{carrier, trackNumber}`:
+  - только paid;
+  - только если нет `provider_order_id` и нет CDEK-заказа (проверить
+    `GET /v2/orders?im_number=number` / local status);
+  - status `manual`, track; не перезаписывает CDEK;
+  - повтор/изменение — 409 `delivery_already_exists`.
+- `DELIVERY_PROVIDER=manual` — только seller fallback, checkout всё
+  равно требует quote (fake/test в preview).
 
-### API и UI
+### CDEK adapter
 
-- Buyer: checkout city/PVZ/quote; `/orders/:id` — delivery card
-  (carrier, PVZ, price, period, track, status) без чужих данных.
-- Seller: `/admin/orders/:id` — «Создать отправление СДЭК» для paid;
-  manual carrier/track; status/events; `/admin/shop` — city.
-- Authz: buyer own order, seller own shop; чужие 404.
-- PII: recipient name/phone, PVZ; не в логах, не в публичных ответах;
-  `no-store`; тестовые данные.
+- Env: `CDEK_CLIENT_ID/SECRET`, `CDEK_API_URL`,
+  `CDEK_WEBHOOK_URL=https://.../delivery/cdek/webhook`,
+  `DELIVERY_ENV=test|live`, `DELIVERY_LIVE_PII=false`.
+- OAuth `POST /v2/oauth/token?grant_type=client_credentials...`; cache
+  token до `expires_in` (3599); Bearer; 401 → refresh once.
+- Outbound limiter 200 RPS (token bucket), timeout 10 s, retry only
+  GET/5xx/429 with backoff.
+- `ensureWebhook`: `GET /v2/webhooks`; if no matching `ORDER_STATUS` +
+  URL and <2 subscriptions — `POST /v2/webhooks`; if 2 and no match —
+  log/ops, не создавать третий. Runbook.
+- Webhook `POST /delivery/cdek/webhook`:
+  - no signature; lookup `uuid`/`cdek_number`/`number`; verify via
+    `GET /v2/orders/{uuid}`; unknown → 404/200? Return 404 for unknown
+    local, 400 invalid; provider retries; log code.
+  - idempotent event by `(delivery_id,status_code,occurred_at)`;
+  - status mapping: `DELIVERED`→delivered; `NOT_DELIVERED`/`RETURNED`
+    →canceled; `CREATED/ACCEPTED`→created; known → in_transit;
+    unknown → in_transit + raw code;
+  - no-store, 60/min IP.
+- Reconcile 60 s: `created|in_transit` older 2 min → `GET`; update;
+  `quoted` without shipment older 15 min → failed/manual? Log; do not
+  create shipment automatically.
+- URL docs sync `/delivery/cdek/webhook` (not `/payments/...`).
 
-### Ошибки
+### Manual duplicate safety
 
-- `delivery_dimensions_missing` 409, `shop_city_missing` 409,
-  `delivery_unavailable` 502, `delivery_already_created` 409,
-  `delivery_not_paid` 409, `delivery_tariff_unavailable` 409,
-  `delivery_provider_error` 502.
-- Lоги: order/delivery id, provider, status/code; без name/phone/
-  address/raw payload.
+- If CDEK create returns 5xx/timeout, do **not** mark manual
+  immediately: reconcile by `number` via `GET /v2/orders?im_number=`.
+  If CDEK order exists → keep `created`; if definitively absent and
+  provider returns 4xx/no order → manual allowed. Test both.
+- `delivery_events` unique; manual sets one event.
+
+### PII/legal
+
+- `recipient_name`/`recipient_phone`/PVZ address — PII; logs only
+  ids/provider/status; no-store; authz buyer/seller; fake data in
+  preview.
+- `DELIVERY_LIVE_PII=false` default: `live` requires explicit owner
+  env + legal pack; until then test/preview only. Test redaction.
+- Retention/deletion: order PII deletion runbook (anonymize name/phone
+  on request); no real PII in repo.
+
+### UI
+
+- Checkout: city/PVZ/quote/price/period; errors; a11y.
+- `/orders/:id`: delivery card, track, status; no PII beyond own.
+- `/admin/orders/:id`: tariff list, create, manual, events.
+- `/admin/shop`: city/shipment point; `/admin/products`: dimensions.
+- Loading/error/retry states; axe light/dark 320/1440.
+
+### Errors
+
+`delivery_dimensions_missing`, `shop_city_missing`,
+`delivery_point_invalid`, `delivery_quote_stale`,
+`delivery_unavailable`, `delivery_not_paid`,
+`delivery_already_created`, `delivery_provider_error`,
+`delivery_already_exists`.
 
 ## Alternatives
 
-- **Доставка до двери** — отложена: больше PII/адресов, юрпакет.
-- **Seller-level CDEK accounts** — отложено: онбординг и токены;
-  platform account выбран owner.
-- **Ozon сейчас** — договор/B2B, API новый; после MVP.
-- **Только manual** — не даёт цену/трек API; fallback, не замена.
-- **Цена доставки на клиенте** — отклонено: пересчёт на сервере.
+- Door delivery — later (PII/legal).
+- Seller-level CDEK — later; platform account owner decision.
+- Ozon now — contract/B2B, new API; after MVP.
+- Manual checkout — rejected (no price/quote).
+- Client price — rejected; signed server quote.
 
 ## Risks
 
-- Договор CDEK не заключён: test contour работает, live/реальные
-  отправления — после договора; manual fallback для MVP.
-- CDEK async/статусы/лимиты; 202 не success, polling/timeout.
-- PII имени/телефона/ПВЗ до юрпакета — только тест.
-- Ozon API новый/B2B; отдельный PBI после MVP.
-- `orders.total` теперь включает доставку; проверить payments/refunds,
-  старые заказы (delivery 0).
+- CDEK contract not signed: test/fake now, live later; manual fallback.
+- Async 202/timeout duplicate: reconcile before manual/retry.
+- PII/legal: live PII gate off; fake only.
+- Ozon new/B2B: separate PBI.
+- Delivery price in order total affects payments; invariant tests.

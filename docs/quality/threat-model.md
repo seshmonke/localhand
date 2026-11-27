@@ -99,3 +99,81 @@
 - Возвраты, 54-ФЗ/ККТ и юридический контур — вне change; до реальных
   денег P0 у владельца.
 - Live smoke с тестовыми ключами ЮKassa — P3, не блокирует merge.
+
+## Доставка (07-delivery)
+
+Раздел обязателен для change `07-delivery` (PII получателя, внешний
+провайдер CDEK, деньги в total, публичный webhook). Tier T2.
+
+Связанные документы: `docs/stack/adr/0005-delivery.md`,
+`docs/stack/integrations/cdek.md`,
+`docs/stack/runbooks/delivery-rollback.md`,
+`openspec/changes/07-delivery/design.md`.
+
+### Границы доверия
+
+1. Браузер покупателя ↔ API: города/ПВЗ, `POST /delivery/quote`,
+   checkout с подписанным `quoteToken`, `/orders/:id/delivery`.
+2. Браузер продавца ↔ API: тарифы, создание отправления, manual-трек,
+   город/ПВЗ магазина, габариты товара.
+3. API ↔ CDEK: OAuth (client credentials), calculator, create/get
+   order, webhooks.
+4. API ↔ PostgreSQL: `order_deliveries` (имя/телефон получателя,
+   адрес ПВЗ), `delivery_events`, `orders.delivery_kopecks`.
+5. Логи: только order/delivery id, provider, статус/код; без имени,
+   телефона, адреса и raw payload.
+
+### Активы
+
+- `recipient_name`, `recipient_phone`, адрес ПВЗ покупателя.
+- `quoteToken` (HMAC, TTL 10 мин, hash состава корзины).
+- `CDEK_CLIENT_ID/SECRET`, Bearer-токен, `DELIVERY_QUOTE_SECRET`.
+- `provider_order_id`/`provider_number`, трек и статусы.
+- `orders.total_kopecks` с доставкой; `delivery_kopecks`.
+
+### Угрозы и митигации
+
+| # | Угроза | Вектор | Митигация | Остаточный риск |
+|---|--------|--------|-----------|-----------------|
+| D1 | Подмена цены доставки | Правка тела checkout | Цена только из HMAC `quoteToken`; TTL 10 мин; hash productIds/city/point; stale → 409; клиентская цена игнорируется | Компрометация `DELIVERY_QUOTE_SECRET`; ротация секрета |
+| D2 | Подмена ПВЗ/города | pointCode от другого города | Проверка `point.city_code == cityCode` на quote и checkout; 409 `delivery_point_invalid` | Ошибка кэша городов; TTL кэша |
+| D3 | Утечка ПII получателя | Логи, ответы, кэш, URL | `no-store`, buyer/seller authz 404, логи без имени/телефона/адреса, PII не в query, redaction-тест | Телефон/имя остаются в заказе по дизайну; удаление по runbook |
+| D4 | Поддельный webhook CDEK | Прямой POST на публичный URL | Нет подписи у CDEK: серверный `GET /v2/orders/{uuid}`, сверка `number`/`cdek_number`; неизвестный → 404; rate-limit 60/мин; no-store | DoS публичного URL; in-memory limiter |
+| D5 | Повтор/дубль события | Retry провайдера, гонка | Unique `(delivery_id,status_code,occurred_at)`; нормализация `status_date_time`; replay — no-op | Нет provider event id; два события с разным временем — два ряда (допустимо) |
+| D6 | Дубль отправления | Timeout/5xx на create, повтор, manual | `number=order-{id}`; перед retry/manual — reconcile по `im_number`; manual только если CDEK-заказа точно нет; 409 `delivery_already_created` | CDEK может принять заказ после timeout; reconcile закрывает |
+| D7 | Создание отправления без оплаты | Прямой API-вызов | `paid`-гейт на create/manual/tariffs; 409 `delivery_not_paid`; seller-scoped authz | Нет |
+| D8 | Чужой заказ/доставка | Перебор id | Buyer own order, seller own shop; чужие → 404; нет утечки существования | Нет |
+| D9 | Реальные ПДн в test/preview | Preview с реальной сессией | `DELIVERY_LIVE_PII=false` default; live требует явного env + юрпакет; тестовые данные; redaction-тест | Ошибка конфигурации; startup guard |
+| D10 | Превышение лимитов CDEK | Массовые quote/create | Quote 30/мин IP, webhook 60/мин, outbound token bucket 200 RPS, timeout 10 s | Распределённый лимит — P3 |
+| D11 | Неизвестный статус теряется | Новый код CDEK | Сохраняем raw `status_code`, ставим `in_transit`, безопасный лог | Неверная интерпретация; ручная проверка |
+| D12 | PII в manual-треке | Произвольный carrier/track | Zod длина/формат, без логов значения, только seller own order | Нет |
+| D13 | Расхождение `orders.delivery_kopecks` и `order_deliveries.price_kopecks` | Баг/ручная правка | Один источник — `order_deliveries.price_kopecks` на момент checkout; snapshot в заказе; invariant-тест `total = items + delivery`; manual цену не меняет | Исторические заказы с delivery 0 — допустимо |
+
+### Проверки (где доказано)
+
+- `apps/api/src/delivery/*.test.ts`: quote token HMAC/TTL/hash, point-city,
+  volumetric weight, stale 409, multi-shop, dimensions/city 409.
+- `apps/api/src/delivery/cdek-*.test.ts`: OAuth cache, fixture
+  contract create/quote, 202+poll, status mapping, unknown code.
+- `apps/api/src/delivery/*.flow.db.test.ts`: paid-гейт, дубль create,
+  webhook spoof/unknown/replay, reconcile `created|in_transit`, manual
+  после терминального отказа, PII redaction, no-store, authz 404.
+- `apps/web/e2e/delivery-*.spec.ts`: PVZ checkout → paid → create/manual →
+  track; axe light/dark 320/1440.
+- Property: `total = items + delivery`, quote TTL, event idempotency,
+  volumetric `max(weight, L*W*H/5000)`.
+
+### Инструментальные ограничения (owner exception)
+
+- **Mutation/SAST:** как в платежах — до Q1.3/Q1.4, именованное
+  исключение владельца 27.11.2026; contract/property/threat model в этом
+  PBI обязательны.
+- **Alert/RUM:** SLO-дизайн есть, алерты/field RUM — до публичного
+  запуска (owner exception).
+
+### Остаточные риски
+
+- Договор CDEK не заключён: test/fake сейчас, live — после договора и
+  `DELIVERY_LIVE_PII=true` с юрпакетом (P0 у владельца).
+- Ozon — второй адаптер после MVP; отдельный threat model при включении.
+- Reconcile в процессе API; отдельный job — P3.
