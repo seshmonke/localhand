@@ -5,16 +5,15 @@
 ## Состояние
 
 - Репозиторий: https://github.com/seshmonke/localhand, public.
-- main: `3753a1b` (S1-4b products UI, PR #20).
+- main: `778d494` (S1-4b close + docs); S1-4b code — `3753a1b`, PR #20.
 - Sprint 1: **BUILDING**, cycle 6.
 - S1-1 auth: **done**, PR #12; tasks 1.1–1.6.
 - S1-2 shop: **done**, PR #14; tasks 2.1–2.4.
 - S1-3 products: **done**, PR #16; tasks 3.1–3.4.
 - S1-4a admin auth/shop UI: **done**, PR #18; tasks 4.1–4.3.
 - S1-4b products UI: **done**, PR #20; tasks 4.4–4.5.
-- S1-5 security/evidence/docs/archive: **ready**, не claimed. Перед
-  dispatch: brief `docs/tasks/S1-5-security-archive.md`, ветка
-  `task/S1-5-security-archive`, lease `.scrum/locks/S1-5.json`.
+- S1-5 security/evidence/docs/archive: **in_progress**, owner
+  `scrum-worker`; ветка `task/S1-5-security-archive`, lease до 06:30Z.
 
 ## Evidence
 

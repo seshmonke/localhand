@@ -113,7 +113,8 @@
 
 ### S1-5 Security, evidence, docs, archive
 
-- Статус: `ready`; brief, worktree и lease создаются перед dispatch.
+- Статус: `in_progress`, owner `scrum-worker`; ветка
+  `task/S1-5-security-archive`, lease до 06:30Z.
 - Дальше: API e2e dev OTP → shop → product → storefront; authz/
   rate-limit/log-тесты; legal/ADR SMS; verify/preview evidence;
   archive change.

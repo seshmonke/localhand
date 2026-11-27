@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-27T02:29:00Z",
+  "updated_at": "2026-11-27T02:35:00Z",
   "tasks": [
     {
       "id": "S1-1",
@@ -37,8 +37,8 @@
     {
       "id": "S1-5",
       "title": "Security, evidence, docs, archive",
-      "status": "ready",
-      "owner": null,
+      "status": "in_progress",
+      "owner": "scrum-worker",
       "change": "02-seller-onboarding",
       "pr": null
     }

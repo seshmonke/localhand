@@ -21,3 +21,4 @@
 {"ts":"2026-11-27T02:28:00Z","type":"review","sprint":1,"task":"S1-4b","pr":20,"verdict":"APPROVE","reviewer":"scrum-reviewer","head":"5789450","note":"P2 session-expired login fixed"}
 {"ts":"2026-11-27T02:28:30Z","type":"merge","sprint":1,"task":"S1-4b","pr":20,"merge_commit":"3753a1b","status":"done"}
 {"ts":"2026-11-27T02:29:00Z","type":"phase","sprint":1,"cycle":6,"from":"cycle_5","to":"cycle_6","task":"S1-5"}
+{"ts":"2026-11-27T02:35:00Z","type":"claim","sprint":1,"cycle":6,"task":"S1-5","owner":"scrum-worker","branch":"task/S1-5-security-archive","lease":".scrum/locks/S1-5.json"}
