@@ -45,7 +45,10 @@ describe("cart flow", () => {
     const app = renderApp(["/"]);
 
     expect(await screen.findByText("Куртка 90-х")).toBeInTheDocument();
-    const jacketCard = screen.getByRole("link", { name: /Куртка 90-х/ });
+    const jacketCard = screen.getByRole("link", { name: /Куртка 90-х/ }).closest("article");
+    if (!jacketCard) {
+      throw new Error("product card container was not found");
+    }
 
     await browser.click(within(jacketCard).getByRole("button", { name: "В корзину" }));
 

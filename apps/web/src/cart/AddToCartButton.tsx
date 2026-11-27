@@ -21,9 +21,7 @@ export function AddToCartButton({ item, size = "md", className }: AddToCartButto
         size={size}
         variant={inCart ? "outline" : "default"}
         className={className}
-        onClick={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
+        onClick={() => {
           const status = addItem(item);
           setLimitMessage(
             status === "limit" ? `В корзине не может быть больше ${CART_MAX_ITEMS} товаров.` : "",

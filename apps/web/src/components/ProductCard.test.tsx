@@ -85,6 +85,23 @@ describe("ProductCard", () => {
     );
   });
 
+  it("keeps the add button outside the product link and navigates only through the link", async () => {
+    const browser = userEvent.setup();
+    renderCard();
+
+    const card = screen.getByRole("article");
+    const link = screen.getByRole("link", { name: new RegExp(longName) });
+    const button = screen.getByRole("button", { name: "В корзину" });
+
+    expect(link.contains(button)).toBe(false);
+    expect(card).toContainElement(link);
+    expect(card).toContainElement(button);
+
+    await browser.click(link);
+
+    expect(screen.getByTestId("location")).toHaveTextContent(`/products/${product.id}`);
+  });
+
   it("adds the product to the cart without following the card link", async () => {
     const browser = userEvent.setup();
     renderCard();
