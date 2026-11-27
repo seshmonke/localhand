@@ -24,8 +24,10 @@ ACCEPT, change `02-seller-onboarding` заархивирован.
 
 - [Спринт 1: онбординг продавца + auth](01-seller-onboarding.md) —
   CLOSED 27.11.2026; S1-1…S1-5 (PR #12/#14/#16/#18/#20/#22), specs
-  phone-auth/seller-shop/product-management. Sprint 2 планируется
-  отдельно.
+  phone-auth/seller-shop/product-management.
+- [Спринт 2: buyer-core](02-buyer-core.md) — READY, change
+  `03-buyer-core`: каталог, корзина, checkout/orders, seller orders.
+  Закрыт: —.
 
 ## Бэклог
 
