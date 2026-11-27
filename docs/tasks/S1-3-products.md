@@ -21,9 +21,10 @@ published-товары опубликованного магазина.
       сессии — 401.
 - [ ] `PATCH /seller/products/:id`: частично меняет name/description/
       priceKopecks/imageUrl/status; чужой или несуществующий товар — 404;
-      publish разрешён только при published-магазине, иначе 409
-      `shop_not_published`; hide/draft разрешены всегда; 400 на невалидную
-      цену; 401 без сессии.
+      перевод в published разрешён только при published-магазине, иначе
+      409 `shop_not_published`; уже published товар можно редактировать
+      при draft-магазине (остаётся скрыт); hide/draft разрешены всегда;
+      400 на невалидную цену; 401 без сессии.
 - [ ] Витрина: published-товар в published-магазине виден на `/`,
       `/shops/:slug` и `/products/:id`; hidden/draft исчезает; draft-
       магазин скрывает все свои товары.
