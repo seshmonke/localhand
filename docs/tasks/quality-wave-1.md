@@ -1,6 +1,6 @@
 # Quality wave 1: TDD + gates
 
-Статус: **программа**. Q1.0 in review (docs-PR, done после merge);
+Статус: **программа**. Q1.0 done (PR #42, `91bd8a8`);
 Q1.1/Q1.2 — Sprint 4, Q1.3/Q1.4 — Sprint 5, Q1.5/Q1.6 — Sprint 6.
 Каждый пункт — отдельный PBI.
 Дата: 27.11.2026.
@@ -15,9 +15,8 @@ SLO/RUM обязательными для критических путей. Н�
 
 ## AC программы
 
-- [ ] Q1.0 (in review): TDD-evidence в PR-шаблоне; DoD/DoR содержат
-      Tier T0/T1/T2; `AGENTS.md` и `roles.md` ссылаются на методологию.
-      Done после merge docs-PR.
+- [x] Q1.0: TDD-evidence в PR-шаблоне; DoD/DoR содержат Tier T0/T1/T2;
+      `AGENTS.md` и `roles.md` ссылаются на методологию (PR #42).
 - [ ] Q1.1–Q1.6: каждый PBI имеет свой AC, evidence и owner; T2-гейты
       становятся блокирующими после merge Q1.0–Q1.6.
 - [ ] Contract-тесты web↔API на shared-схемах: изменение контракта без
@@ -39,7 +38,7 @@ SLO/RUM обязательными для критических путей. Н�
 
 | PBI | Что | Owner | Sprint | Evidence / гейт |
 |---|---|---|---|---|
-| **Q1.0** | TDD/DoD/roles/PR-шаблон | orchestrator | 3 | docs-PR, in review |
+| **Q1.0** | TDD/DoD/roles/PR-шаблон | orchestrator | 3 | PR #42, `91bd8a8` |
 | **Q1.1** | TDD/ATDD enforcement | QA + orchestrator | 4 | QA-аудит RED/GREEN, 3 PR без test-after |
 | **Q1.2** | Contract tests web↔API | Backend + Frontend | 4 | shared-схемы, negative/edge, CI gate |
 | **Q1.3** | Property/mutation | Backend + QA | 5 | fast-check payments/authz, Stryker 70% changed |

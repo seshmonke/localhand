@@ -72,3 +72,11 @@
   reconcile, fake-complete, API/DB tests. UI — B2.
 - Ветка `task/S3-1b-payments-flow`, lease до 20:00Z.
 - Блокеры: реальные ключи ЮKassa не нужны для fake; live smoke позже.
+
+### S3-1 B1 финал + методология
+
+- PR #41 payments flow backend: review 3 раунда, P1 retry/второй URL
+  и P2 disconnect/orphan закрыты; merge `51aa6f9`; api 263, 30 DB-тестов payments flow.
+- Q1.0: TDD/методологии/DoD/PR-шаблон, PR #42 merge `91bd8a8`;
+  Superpowers установлен глобально (TDD/plans/review).
+- Далее: B2 UI/ADR/runbook; Q1.1/Q1.2 — Sprint 4.

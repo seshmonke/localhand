@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-27T13:22:00Z",
+  "updated_at": "2026-11-27T14:30:00Z",
   "tasks": [
     {
       "id": "S2-1",
@@ -48,7 +48,7 @@
       "status": "in_progress",
       "owner": "scrum-worker",
       "change": "06-payments",
-      "pr": 39
+      "pr": 41
     },
     {
       "id": "S3-2",
