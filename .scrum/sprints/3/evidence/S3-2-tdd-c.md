@@ -4,9 +4,10 @@
 
 ## RED/GREEN
 
-- Pre-code RED: прогон на main — shipment endpoint 404 вместо 401;
-  `S3-2-tdd-c-precode-red.txt` (до реализации, 22:22).
-- GREEN: `pnpm verify` shared 156, web 157, api 351, OpenSpec 9/9,
+- RED: ретроспективный прогон на main — shipment endpoint 404 вместо
+  401 (`S3-2-tdd-c-precode-red.txt`); он не доказывает test-first, 3.1
+  остаётся открытым до e2e.
+- GREEN: `pnpm verify` shared 156, web 157, api 352, OpenSpec 9/9,
   public 515; см. `S3-2-verify-c.txt`.
 - Mutation-check webhook idempotency: без unique-constraint повтор
   события создаёт дубль — `S3-2-tdd-c-mutation-red.txt`.

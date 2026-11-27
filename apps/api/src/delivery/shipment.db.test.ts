@@ -429,6 +429,36 @@ describeWithDb("delivery shipment routes", () => {
     expect(createdEvents.rows[0]?.count).toBe(1);
   });
 
+  it("does not write an event when a stale same-rank webhook is ignored", async () => {
+    const order = await createPaidOrder(1, 2, "stale-webhook-shop");
+    const created = await request(
+      order.seller,
+      "POST",
+      `/seller/orders/${order.orderId}/delivery`,
+      {
+        tariffCode: "136",
+      },
+    );
+    expect(created.statusCode).toBe(201);
+    const uuid = `fake-${order.orderId}`;
+    const { getDeliveryProvider } = await import("./provider-factory.js");
+    const provider = getDeliveryProvider() as FakeDeliveryProvider;
+    const body = { type: "ORDER_STATUS" as const, uuid };
+
+    provider.setShipmentStatus(uuid, "DELIVERED", "Вручён", "2030-01-01T00:00:00.000Z");
+    expect((await request(null, "POST", "/delivery/cdek/webhook", body)).statusCode).toBe(200);
+
+    const before = await dbClient
+      .requirePool()
+      .query<{ count: number }>("SELECT count(*)::int AS count FROM delivery_events");
+    provider.setShipmentStatus(uuid, "DELIVERED", "Вручён", "2020-01-01T00:00:00.000Z");
+    expect((await request(null, "POST", "/delivery/cdek/webhook", body)).statusCode).toBe(200);
+    const after = await dbClient
+      .requirePool()
+      .query<{ count: number }>("SELECT count(*)::int AS count FROM delivery_events");
+    expect(after.rows[0]?.count).toBe(before.rows[0]?.count);
+  });
+
   it("sets no-store and rejects a foreign seller create", async () => {
     const order = await createPaidOrder(1, 2, "headers-shop");
     const otherSeller = await createUser(3);

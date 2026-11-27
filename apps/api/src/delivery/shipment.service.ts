@@ -638,7 +638,7 @@ export async function handleCdekWebhook(payload: {
     return { ok: true };
   }
   await requireDb().transaction(async (tx) => {
-    await tx
+    const [applied] = await tx
       .update(orderDeliveries)
       .set({
         status,
@@ -652,7 +652,11 @@ export async function handleCdekWebhook(payload: {
           eq(orderDeliveries.id, row.id),
           or(isNull(orderDeliveries.lastStatusAt), lte(orderDeliveries.lastStatusAt, occurredAt)),
         ),
-      );
+      )
+      .returning({ id: orderDeliveries.id });
+    if (!applied) {
+      return;
+    }
     await tx
       .insert(deliveryEvents)
       .values({
