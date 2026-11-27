@@ -13,13 +13,13 @@ Tier T2. Fake-провайдер, вымышленные данные.
 ## Verify
 
 - [S3-1b2-verify.txt](S3-1b2-verify.txt): exit 0, shared 139, web 154,
-  API 271, OpenSpec 8/8, check:public 469.
+  API 271, OpenSpec 8/8, check:public 471.
 - Production build: dev-маршруты и чанки отсутствуют.
 
 ## E2E / a11y / perf
 
 - [S3-1b2-e2e-payments.txt](S3-1b2-e2e-payments.txt): 10 dev e2e.
-- [S3-1b2-e2e-preview.txt](S3-1b2-e2e-preview.txt): 3 preview.
+- [S3-1b2-e2e-preview.txt](S3-1b2-e2e-preview.txt): 8 passed + 2 skipped (dev-only fake flow + guides).
 - [S3-1b2-axe-payments.json](S3-1b2-axe-payments.json): 16 сканов,
   0 serious/critical.
 - [S3-1b2-axe-buyer-pages.json](S3-1b2-axe-buyer-pages.json): buyer

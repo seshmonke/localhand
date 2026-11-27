@@ -107,6 +107,6 @@
 
 - PR #45 merge `3e343cb`; `06-payments` заархивирован как
   `2026-11-27-06-payments`, spec `payments` создана.
-- Verify: shared 139, web 154, api 271, OpenSpec 8/8, public 469.
+- Verify: shared 139, web 154, api 271, OpenSpec 8/8, public 471.
 - Evidence: `.scrum/sprints/3/evidence/S3-1-close.md`.
 - Live YooKassa smoke/адаптер — P3 после ключей; S3-2 CDEK — следующий.

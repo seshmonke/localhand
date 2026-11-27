@@ -3,7 +3,7 @@
 Статус: accepted.
 Дата: 2026-11-27.
 Владелец: Local Hand.
-Связанные документы: `openspec/changes/06-payments/`,
+Связанные документы: `openspec/changes/archive/2026-11-27-06-payments/`,
 `docs/stack/adr/0003-orders.md`,
 `docs/stack/runbooks/payments-manual-review.md`,
 `docs/stack/runbooks/payments-rollback.md`,
@@ -14,7 +14,7 @@
 - Sprint 3 добавляет оплату заказа на странице ЮKassa: покупатель платит,
   продавец видит статус, деньги идут продавцу; платформа не принимает их на
   свой счёт.
-  Поведение — `openspec/changes/06-payments/specs/payments/spec.md`.
+  Поведение — `openspec/specs/payments/spec.md` (архив: `openspec/changes/archive/2026-11-27-06-payments/specs/payments/spec.md`).
 - Один API-процесс Fastify + PostgreSQL 18, без Redis и отдельного
   job-сервера (`docs/stack/adr/0001-stack.md`). Идемпотентность — БД,
   advisory lock и уникальные индексы; reconcile — периодический проход в
@@ -180,8 +180,8 @@
 
 ## Источники
 
-- `openspec/changes/06-payments/design.md`,
-  `openspec/changes/06-payments/specs/payments/spec.md`.
+- `openspec/changes/archive/2026-11-27-06-payments/design.md`,
+  `openspec/specs/payments/spec.md`.
 - `docs/stack/adr/0003-orders.md` — заказы, PII, no-store,
   buyer/seller namespace.
 - `docs/stack/runbooks/payments-rollback.md`,

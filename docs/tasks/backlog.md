@@ -94,6 +94,16 @@
 
 ## P2
 
+- [ ] P2. Реальный YooKassa adapter + contract tests + live sandbox smoke:
+  `YooKassaProvider` (OAuth/Bearer, `/v3/payments`, `/v3/webhooks`),
+  fixture contract-тесты, тестовый магазин; fake/sandbox уже в main.
+  Критерий: sandbox-платёж → `paid`, вебхук/повтор, ключи владельца.
+  Источник: S3-1 close/ADR 0004. Спринт: —.
+- [ ] P2. Batch payment reads для списков заказов (N+1): endpoint/поле
+  payments в `/orders/mine` и `/seller/orders` или batch по ids.
+  Критерий: один запрос на список, нет N+1; пагинация совместима.
+  Источник: P3 ревью S3-1 B2. Спринт: —.
+
 - [ ] Отзывы, рейтинги, рекомендации. Критерий: решение о скоупе и
   законности. Источник: product.md. Спринт: —.
 - [ ] Ozon Доставка как второй перевозчик. Критерий: договор/API
@@ -186,6 +196,13 @@
 - [ ] Починить test-helper `countAdvisoryWaiters` для signed bigint hash; добавить CI fail-fast для orders DB suite. Критерий: тест с отрицательным hash, skip не молчит. Источник: P3 ревью S2-3a. Спринт: — (S2-4).
 
 ## P3
+
+- [ ] P3. Изоляция auth DB-тестов: отдельная схема/БД на файл или
+  serial; CI fail-fast на skipped. Критерий: нет флейков users/otp.
+  Источник: B2 verify флейк. Спринт: —.
+- [ ] P3. axe error/retry/manual_review состояний списков и оплаты.
+  Критерий: 0 serious/critical на error/retry. Источник: P3 ревью S3-1.
+  Спринт: —.
 
 - [ ] Зафиксировать `Cache-Control: no-store` для PII-ответов заказов в
   OpenSpec. Критерий: сценарий в `checkout-orders` (дельте) требует

@@ -1,7 +1,7 @@
 # Evidence: S3-1 payments (close)
 
 Дата: 27.11.2026. Change `06-payments` заархивирован как
-`2026-11-27-06-payments`; spec `payments` создана. Tier T2.
+`2026-11-27-06-payments`; spec `payments` создана. S3-1 Tier T2; close PR T0.
 
 ## PR и merge
 

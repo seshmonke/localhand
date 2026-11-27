@@ -7,5 +7,5 @@
   "updated_at": "2026-11-27T15:58:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 3 cycle 4: S3-1 payments CLOSED. Foundation #39 732d2cb, backend #41 51aa6f9, UI #45 3e343cb; change 06-payments archived as 2026-11-27-06-payments; spec payments created. Verify 139/154/271, OpenSpec 8/8, public 469. Next: S3-2 CDEK test contour; live YooKassa keys/real adapter P3. Sprint 3 still BUILDING."
+  "notes": "Sprint 3 cycle 4: S3-1 payments CLOSED. Foundation #39 732d2cb, backend #41 51aa6f9, UI #45 3e343cb; change 06-payments archived as 2026-11-27-06-payments; spec payments created. Verify 139/154/271, OpenSpec 8/8, public 471. Next: S3-2 CDEK test contour; live YooKassa keys/real adapter P3. Sprint 3 still BUILDING."
 }

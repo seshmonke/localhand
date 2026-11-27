@@ -232,6 +232,6 @@ DATABASE_URL="$DATABASE_URL_TEST" pnpm db:migrate
 ## Ссылки
 
 - Миграции: `apps/api/drizzle/0004_*.sql`, `0005_*.sql`.
-- Change: `openspec/changes/06-payments`, tasks 1.1/1.7.
-- Design: `openspec/changes/06-payments/design.md`.
+- Change: `openspec/changes/archive/2026-11-27-06-payments`, tasks 1.1/1.7.
+- Design: `openspec/changes/archive/2026-11-27-06-payments/design.md`.
 - Похожая процедура: `docs/stack/runbooks/orders-rollback.md`.

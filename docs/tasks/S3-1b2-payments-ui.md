@@ -7,7 +7,7 @@
 
 Tier: **T2** — деньги/PII/внешний провайдер.
 TDD обязателен: RED → GREEN → REFACTOR, evidence в PR.
-Change: `openspec/changes/06-payments/`. PR B2.
+Change: `openspec/changes/archive/2026-11-27-06-payments/`. PR B2.
 
 ## AC — UI
 
@@ -67,7 +67,7 @@ Change: `openspec/changes/06-payments/`. PR B2.
 - `docs/stack/adr/0004-payments.md`,
   `docs/stack/runbooks/payments-manual-review.md`,
   `docs/quality/threat-model.md`.
-- `openspec/changes/06-payments/tasks.md` — отметки 3.7/4.x/5.3/5.4.
+- `openspec/changes/archive/2026-11-27-06-payments/tasks.md` — отметки 3.7/4.x/5.3/5.4.
 
 Не трогать: CDEK/lifecycle/pagination, реальные ключи, миграции,
 `openspec/specs/**`, `.scrum/**` (кроме orchestrator).
