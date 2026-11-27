@@ -2,7 +2,7 @@
 
 ## Что сработало
 
-- Вертикальные срезы auth → shop → products → UI; каждый PBI独立
+- Вертикальные срезы auth → shop → products → UI; каждый PBI отдельно
   проверялся e2e/DB-тестами.
 - Независимый reviewer находил реальные P1/P2: trustProxy, blocked
   authz, cross-account cache, mobile card overlap.
@@ -23,7 +23,7 @@
 |---|---|---|
 | Добавить Playwright e2e + axe light/dark в CI (`test:e2e`), не только локально | orchestrator | Sprint 2, цикл 2 |
 | Docs/state закрывать одним чек-листом и обновлять один источник статуса | orchestrator | Sprint 2, каждый merge |
-| Дробить UI-PBI на PR ≤ 600 строк с самого начала | PO/orchestrator | Sprint 2 planning |
+| Дробить UI-PBI на PR ≤ 400 строк с самого начала | PO/orchestrator | Sprint 2 planning |
 | Вести evidence с первого цикла, не в конце | orchestrator | Sprint 2, цикл 1 |
 | Закрыть carry-over S1-5 (OTP cleanup, rate-limit store, logout trade-off) | orchestrator | Sprint 2/3 |
 
@@ -34,8 +34,12 @@
 ## Метрики
 
 - Sprint Goal: достигнут.
-- Cycle time: 6 циклов, ~3 часа от старта до архива.
-- Change fail rate: 0 code-регрессий после merge; 4 docs-ревью с
-  REQUEST_CHANGES (state/evidence), все закрыты.
+- Cycle time: 6 циклов, ~3 часа 20 минут от старта до архива.
+- Change fail rate: 0 откатов и красных `main` после merge; один
+  pre-existing UI-дефект (ProductCard 320) найден smoke в S1-5 и
+  исправлен до закрытия.
+- Docs-PR: 5 закрытий (#13/#15/#17/#19/#21), 6 раундов
+  REQUEST_CHANGES (в #13/#15/#17/#21 по одному, в #19 два), все закрыты.
 - Ceremony %: низкий, live-церемоний не было; дейли async.
-- Cost per merged task: бюджет не ограничен; 6 PBI/PR (без docs).
+- Cost per merged task: бюджет не ограничен; 5 PBI и 6 code-PR
+  (#12/#14/#16/#18/#20/#22), docs-PR отдельно.
