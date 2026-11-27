@@ -1,4 +1,4 @@
-# Handoff: Sprint 2 planning (buyer-core)
+# Handoff: Sprint 2, cycle 1 — S2-1 catalog
 
 Дата: 2026-11-27. Sprint 1 закрыт и заархивирован.
 
@@ -10,9 +10,10 @@
 - S1-1…S1-5: **done**; change `02-seller-onboarding` →
   `2026-11-27-02-seller-onboarding`; specs `phone-auth`, `seller-shop`,
   `product-management` созданы.
-- Sprint 2: **READY**, changes `03-catalog-discovery`, `04-cart`,
-  `05-checkout-orders` (valid strict), 4 PBI, 4–6 циклов; standing
-  authorization владельца.
+- Sprint 2: **BUILDING**, cycle 1; changes `03-catalog-discovery`,
+  `04-cart`, `05-checkout-orders`; 4 PBI.
+- S2-1 catalog: **in_progress**, owner `scrum-worker`; ветка
+  `task/S2-1-catalog`, lease до 07:00Z.
 
 ## Evidence S1
 
@@ -41,13 +42,10 @@
 
 ## Следующий шаг
 
-1. Merge PR плана Sprint 2: `docs/tasks/02-buyer-core.md`,
-   `openspec/changes/03-catalog-discovery`, `04-cart`,
-   `05-checkout-orders`, board/state READY.
-2. Claim S2-1: brief `docs/tasks/S2-1-catalog.md`, ветка
-   `task/S2-1-catalog`, worktree и lease; затем dispatch.
-3. S2-1 archive `03`; S2-2 cart archive `04`; S2-3 checkout/orders
-   archive `05`; S2-4 security/evidence/close отдельным PR.
+1. `scrum-worker` реализует S2-1: контракты, API search/sort/page,
+   web-контролы, тесты.
+2. Orchestrator: verify → review → PR → merge/archive `03`.
+3. S2-2 cart → S2-3 checkout/orders → S2-4 security/close.
 
 ## Гигиена
 
@@ -59,8 +57,7 @@
 - `docs/tasks/INDEX.md` — вход.
 - `openspec/specs/` — текущая правда.
 - Preview: `pnpm db:up && pnpm dev` → web 5173, API 3000, DB 5433.
-- Тестовые БД: `localhand_s1_3_test`; для Sprint 2 — отдельная
-  `localhand_s2_test`.
+- Тестовые БД: `localhand_s1_3_test`, `localhand_s2_test` (создана).
 
 ## Ограничения
 

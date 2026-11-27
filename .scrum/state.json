@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "phase": "READY",
+  "phase": "BUILDING",
   "init_closed": true,
   "sprint": 2,
   "cycle": 1,
-  "updated_at": "2026-11-27T03:12:00Z",
+  "updated_at": "2026-11-27T03:22:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 2 (buyer-core) planned: changes 03-catalog-discovery, 04-cart, 05-checkout-orders valid strict; 4 PBI, 4–6 cycles. Plan PR pending; after merge claim S2-1 per standing authorization. Budget not a blocker."
+  "notes": "Sprint 2 cycle 1: S2-1 catalog claimed by scrum-worker (branch task/S2-1-catalog, brief docs/tasks/S2-1-catalog.md, lease to 07:00Z). Changes 03-catalog-discovery/04-cart/05-checkout-orders. Budget not a blocker."
 }
