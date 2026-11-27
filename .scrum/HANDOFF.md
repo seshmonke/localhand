@@ -9,8 +9,8 @@
 - Sprint 1: **BUILDING**, cycle 3.
 - S1-1 phone auth: **done**, PR #12; tasks 1.1–1.6 отмечены.
 - S1-2 shop: **done**, PR #14; tasks 2.1–2.4 отмечены.
-- S1-3 products: **ready**, не claimed. Перед dispatch: brief
-  `docs/tasks/S1-3-products.md`, ветка `task/S1-3-products`, lease
+- S1-3 products: **ready**, не claimed. Перед dispatch: создать бриф
+  `docs/tasks/S1-3-products.md`, ветку `task/S1-3-products`, lease
   `.scrum/locks/S1-3.json`.
 - S1-4 admin UI, S1-5 security — `ready`.
 
