@@ -233,7 +233,7 @@ pnpm --filter @localhand/api test                                       # 271 pa
 
 ```text
 pnpm verify → exit 0
-shared 139, web 154, api 271, openspec 8/8, public repo 469 files (final, evidence included)
+shared 139, web 154, api 271, openspec 8/8, public repo 471 files (final, evidence included)
 production build: no DevPayments chunks, no /dev/payments route strings
 ```
 

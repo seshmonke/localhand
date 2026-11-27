@@ -6,7 +6,7 @@
 платёжного аккаунта, создание платежа, вебхук, reconcile и fake-complete
 для e2e. UI, ADR и manual-review runbook — PR B2.
 
-Change: `openspec/changes/06-payments/`.
+Change: `openspec/changes/archive/2026-11-27-06-payments/`.
 Спринт: 3, PBI S3-1. PR B1, ветка `task/S3-1b-payments-flow`.
 
 ## AC
@@ -75,7 +75,7 @@ Change: `openspec/changes/06-payments/`.
 
 - `apps/api/src/payments/**`, `apps/api/src/app.ts`, `apps/api/src/env.ts`
   (+ тесты), `packages/shared/src/contracts/payments.ts` при расширении.
-- `docs/tasks/S3-1b-payments-flow.md`, `openspec/changes/06-payments/
+- `docs/tasks/S3-1b-payments-flow.md`, `openspec/changes/archive/2026-11-27-06-payments/
   tasks.md` (отметки 2.x/3.x).
 - `.env.example`.
 - `apps/api/src/orders/**` — только helper/статусы, если нужно; не

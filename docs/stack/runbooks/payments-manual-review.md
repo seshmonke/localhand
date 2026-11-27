@@ -7,7 +7,7 @@
 
 Связанные документы: `docs/stack/adr/0004-payments.md`,
 `docs/stack/runbooks/payments-rollback.md`,
-`openspec/changes/06-payments/design.md`.
+`openspec/changes/archive/2026-11-27-06-payments/design.md`.
 
 ## Когда применять
 

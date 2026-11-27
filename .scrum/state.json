@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": 3,
   "cycle": 4,
-  "updated_at": "2026-11-27T15:25:00Z",
+  "updated_at": "2026-11-27T15:58:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 3 cycle 4: S3-1 B2 payments UI in PR #45 after review fixes (pending-no-URL retry, payment read errors, property tests, dev-route guard). Owner approved B2 size exception and mutation/SAST deferral to Q1.3/Q1.4. Verify: web 153, api 271, shared 139. Next: re-review, merge, close S3-1."
+  "notes": "Sprint 3 cycle 4: S3-1 payments CLOSED. Foundation #39 732d2cb, backend #41 51aa6f9, UI #45 3e343cb; change 06-payments archived as 2026-11-27-06-payments; spec payments created. Verify 139/154/271, OpenSpec 8/8, public 471. Next: S3-2 CDEK test contour; live YooKassa keys/real adapter P3. Sprint 3 still BUILDING."
 }

@@ -7,7 +7,7 @@
 принимает деньги на свой счёт, не хранит карты и не логирует секреты.
 Первый шаг — foundation, затем flow.
 
-Change: `openspec/changes/06-payments/` (spec/design/tasks).
+Change: `openspec/changes/archive/2026-11-27-06-payments/` (spec/design/tasks).
 Спринт: 3, PBI S3-1. PR A — foundation, PR B — flow.
 
 ## AC — PR A (foundation)
@@ -96,7 +96,7 @@ Change: `openspec/changes/06-payments/` (spec/design/tasks).
   оплаты.
 - `docs/stack/runbooks/payments-{rollback,manual-review}.md`,
   `docs/stack/adr/0004-payments.md` (PR B).
-- `openspec/changes/06-payments/tasks.md` — отметить выполненные пункты.
+- `openspec/changes/archive/2026-11-27-06-payments/tasks.md` — отметить выполненные пункты.
 
 Не трогать: CDEK/lifecycle/pagination (`07`–`09`), реальные ключи,
 `openspec/specs/**` (только archive), `.scratch`/`.scrum` (кроме

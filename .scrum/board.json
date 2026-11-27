@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-27T14:39:00Z",
+  "updated_at": "2026-11-27T15:58:00Z",
   "tasks": [
     {
       "id": "S2-1",
@@ -45,10 +45,10 @@
     {
       "id": "S3-1",
       "title": "Payments: YooKassa sandbox",
-      "status": "in_progress",
+      "status": "done",
       "owner": "scrum-worker",
       "change": "06-payments",
-      "pr": 41
+      "pr": 45
     },
     {
       "id": "S3-2",
