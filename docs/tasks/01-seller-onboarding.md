@@ -1,8 +1,8 @@
 # Спринт 1: онбординг продавца + auth
 
-Статус: **BUILDING**, cycle 5. S1-1 auth, S1-2 shop, S1-3 products и
-S1-4a admin UI смержены 27.11.2026 (PR #12/#14/#16/#18); следующий —
-S1-4b products UI.
+Статус: **BUILDING**, cycle 6. S1-1 auth, S1-2 shop, S1-3 products,
+S1-4a auth/shop UI и S1-4b products UI смержены 27.11.2026
+(PR #12/#14/#16/#18/#20); следующий — S1-5 security/evidence/archive.
 Дата планирования: 27.11.2026.
 Change: `02-seller-onboarding` (валиден strict).
 Бюджет: 4–6 циклов по 60–90 минут; церемонии ≤ 20–25%.
@@ -75,9 +75,10 @@ Change: `02-seller-onboarding` (валиден strict).
 
 ## Старт
 
-Сборка начата 27.11.2026 после явной команды владельца. Cycle 1–4
-закрыты (S1-1 auth, S1-2 shop, S1-3 products, S1-4a admin auth/shop);
-далее S1-4b products UI по плану циклов.
+Сборка начата 27.11.2026 после явной команды владельца. Cycle 1–5
+закрыты (S1-1 auth, S1-2 shop, S1-3 products, S1-4a admin auth/shop,
+S1-4b products UI); далее S1-5 security/evidence/archive по плану
+циклов.
 
 ## Evidence
 

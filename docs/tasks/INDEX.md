@@ -20,12 +20,13 @@
 
 Init закрыт 27.11.2026: product, stack, GitHub, walking skeleton
 (`2026-11-27-01-walking-skeleton`). Sprint 1 идёт: **BUILDING**,
-cycle 5.
+cycle 6.
 
 - [Спринт 1: онбординг продавца + auth](01-seller-onboarding.md) —
   BUILDING, change `02-seller-onboarding`; S1-1 auth (PR #12), S1-2 shop
-  (PR #14), S1-3 products (PR #16) и S1-4a admin UI (PR #18) смержены;
-  следующий — S1-4b products UI. Закрыт: —.
+  (PR #14), S1-3 products (PR #16), S1-4a admin auth/shop UI (PR #18) и
+  S1-4b products UI (PR #20) смержены; следующий — S1-5
+  security/evidence/archive. Закрыт: —.
 
 ## Бэклог
 

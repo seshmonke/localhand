@@ -43,3 +43,6 @@
   `/login` OTP, guard, admin shell, onboarding/settings/publish,
   cache isolation, light/dark axe clean. Следующий — S1-4b products UI.
   Sprint 1.
+- 27.11.2026. S1-4b products admin UI смержен (PR #20, `3753a1b`):
+  таблица/карточки, create/edit, publish/hide, session-expired cache
+  clear. Следующий — S1-5 security/evidence/archive. Sprint 1.

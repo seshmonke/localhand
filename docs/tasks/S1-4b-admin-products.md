@@ -8,34 +8,34 @@ error и a11y.
 
 ## AC
 
-- [ ] API client/queries: `fetchSellerProducts`, `createProduct`,
+- [x] API client/queries: `fetchSellerProducts`, `createProduct`,
       `updateProduct`; ключи под `sellerKeys.products` (namespace
       `sellerKeys.all` уже очищается при login/401/logout); invalidate
       списка после мутаций; `ApiError` 400/401/404/409.
-- [ ] `/admin/products`: список только своих товаров (все статусы),
+- [x] `/admin/products`: список только своих товаров (все статусы),
       desktop — таблица (название, цена, статус, действия), mobile —
       карточки; sticky header/тач-зоны; кнопка «Новый товар»; пустое
       состояние со ссылкой на форму; loading/error.
-- [ ] `/admin/products/new`: форма name, description, цена в рублях
+- [x] `/admin/products/new`: форма name, description, цена в рублях
       (запятая/точка → копейки через `rublesToKopecks`), imageUrl; POST;
       `description` не отправлять при пустом значении (не `null`);
       `imageUrl` пустой → `null`; успех → список/карточка; 400/409 в
       сообщения.
-- [ ] `/admin/products/:id`: редактирование из list-кэша (GET detail
+- [x] `/admin/products/:id`: редактирование из list-кэша (GET detail
       нет); PATCH только изменённых полей; publish/hide/draft отдельными
       действиями; 404 → «товар не найден»; 409 `shop_not_published` с
       подсказкой опубликовать магазин; кнопки disabled по состоянию.
-- [ ] Статусы: draft/published/hidden бейджи, не только цветом; publish
+- [x] Статусы: draft/published/hidden бейджи, не только цветом; publish
       разрешён только при published-магазине (иначе disabled + ссылка на
       магазин); hide/draft всегда; already-published товар можно
       редактировать при draft-магазине, publish-кнопка disabled.
-- [ ] Responsive 320/1440: нет горизонтальной прокрутки; таблица не
+- [x] Responsive 320/1440: нет горизонтальной прокрутки; таблица не
       уезжает, на мобильном карточки; формы в одну колонку.
-- [ ] A11y: caption/headers таблицы, labels, aria-invalid/describedby,
+- [x] A11y: caption/headers таблицы, labels, aria-invalid/describedby,
       focus после ошибки, клавиатурные действия, тач-зоны ≥44.
-- [ ] Web unit-тесты: список+empty, create (рубли→копейки), edit/PATCH,
+- [x] Web unit-тесты: список+empty, create (рубли→копейки), edit/PATCH,
       publish/hide, 409 shop_not_published, 404, no shop → ссылка.
-- [ ] `pnpm verify` — зелёный.
+- [x] `pnpm verify` — зелёный.
 
 ## Change
 

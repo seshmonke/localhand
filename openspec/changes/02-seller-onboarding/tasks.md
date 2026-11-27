@@ -28,8 +28,8 @@
 - [x] 4.1 Добавить `/login` с запросом и вводом OTP; dev-код показывается только вне production.
 - [x] 4.2 Добавить guard `/admin` по `/auth/me` и редирект на login.
 - [x] 4.3 Добавить onboarding магазина: имя, slug, описание, публикация.
-- [ ] 4.4 Добавить таблицу товаров и форму создания/редактирования; publish/hide.
-- [ ] 4.5 Сделать mobile и desktop раскладки, loading/empty/error, a11y-фокус.
+- [x] 4.4 Добавить таблицу товаров и форму создания/редактирования; publish/hide.
+- [x] 4.5 Сделать mobile и desktop раскладки, loading/empty/error, a11y-фокус.
 
 ## 5. Security, evidence, docs
 
