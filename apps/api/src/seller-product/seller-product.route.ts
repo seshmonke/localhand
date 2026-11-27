@@ -1,6 +1,7 @@
 import {
   ApiErrorSchema,
   CreateProductSchema,
+  ProductIdSchema,
   SellerProductListResponseSchema,
   SellerProductResponseSchema,
   UpdateProductSchema,
@@ -15,7 +16,7 @@ import {
   updateSellerProduct,
 } from "./seller-product.service.js";
 
-const ProductParamsSchema = z.object({ id: z.coerce.number().int().positive() });
+const ProductParamsSchema = z.object({ id: ProductIdSchema });
 
 export const sellerProductRoutes: FastifyPluginAsyncZod = async (app) => {
   const sessionGuard = createSessionGuard(app);

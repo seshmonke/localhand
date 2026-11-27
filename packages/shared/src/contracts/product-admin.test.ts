@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   CreateProductSchema,
   PRODUCT_PRICE_MAX_KOPECKS,
+  ProductIdSchema,
   SellerProductListResponseSchema,
   SellerProductSchema,
   UpdateProductSchema,
@@ -88,6 +89,39 @@ describe("create product contract", () => {
       CreateProductSchema.safeParse({ ...validCreate, imageUrl: "a".repeat(2000) }).success,
     ).toBe(true);
   });
+
+  it("rejects NUL bytes in name, description and image URL", () => {
+    expect(CreateProductSchema.safeParse({ ...validCreate, name: "A\u0000B" }).success).toBe(false);
+    expect(CreateProductSchema.safeParse({ ...validCreate, description: "X\u0000Y" }).success).toBe(
+      false,
+    );
+    expect(
+      CreateProductSchema.safeParse({ ...validCreate, imageUrl: "https://example.com/\u0000.jpg" })
+        .success,
+    ).toBe(false);
+  });
+});
+
+describe("product id contract", () => {
+  it("coerces a positive int4 id", () => {
+    expect(ProductIdSchema.parse("1")).toBe(1);
+    expect(ProductIdSchema.parse(2_147_483_647)).toBe(2_147_483_647);
+  });
+
+  it("rejects ids outside the PostgreSQL int4 range", () => {
+    for (const id of [
+      0,
+      -1,
+      1.5,
+      "abc",
+      2_147_483_648,
+      3_000_000_000,
+      "3000000000",
+      Number.MAX_SAFE_INTEGER,
+    ]) {
+      expect(ProductIdSchema.safeParse(id).success, String(id)).toBe(false);
+    }
+  });
 });
 
 describe("update product contract", () => {
@@ -110,6 +144,14 @@ describe("update product contract", () => {
     expect(UpdateProductSchema.safeParse({ priceKopecks: 1.5 }).success).toBe(false);
     expect(UpdateProductSchema.safeParse({ description: "a".repeat(2001) }).success).toBe(false);
     expect(UpdateProductSchema.safeParse({ imageUrl: "a".repeat(2001) }).success).toBe(false);
+  });
+
+  it("rejects NUL bytes in updated text fields", () => {
+    expect(UpdateProductSchema.safeParse({ name: "A\u0000B" }).success).toBe(false);
+    expect(UpdateProductSchema.safeParse({ description: "X\u0000Y" }).success).toBe(false);
+    expect(
+      UpdateProductSchema.safeParse({ imageUrl: "https://example.com/\u0000.jpg" }).success,
+    ).toBe(false);
   });
 });
 

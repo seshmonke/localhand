@@ -87,7 +87,7 @@ export async function updateSellerProduct(
   const db = requireDb();
 
   const [existing] = await db
-    .select({ id: products.id, shopStatus: shops.status })
+    .select({ id: products.id, status: products.status, shopStatus: shops.status })
     .from(products)
     .innerJoin(shops, eq(products.shopId, shops.id))
     .innerJoin(sellers, eq(shops.sellerId, sellers.id))
@@ -98,7 +98,13 @@ export async function updateSellerProduct(
     return { ok: false, error: "not_found" };
   }
 
-  if (input.status === "published" && existing.shopStatus !== "published") {
+  // Publishing is a transition: re-sending `published` for an already
+  // published product must not block unrelated edits while the shop is a draft.
+  if (
+    input.status === "published" &&
+    existing.status !== "published" &&
+    existing.shopStatus !== "published"
+  ) {
     return { ok: false, error: "shop_not_published" };
   }
 

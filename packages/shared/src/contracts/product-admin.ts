@@ -7,15 +7,34 @@ export const PRODUCT_NAME_MAX_LENGTH = 120;
 export const PRODUCT_DESCRIPTION_MAX_LENGTH = 2000;
 export const PRODUCT_IMAGE_URL_MAX_LENGTH = 2000;
 
+function hasNoNulByte(value: string): boolean {
+  return !value.includes("\u0000");
+}
+
+const NUL_BYTE_MESSAGE = { message: "nul_byte" };
+
+export const ProductIdSchema = z.coerce.number().int().positive().max(2_147_483_647);
+
 export const ProductStatusSchema = z.enum(["draft", "published", "hidden"]);
 
-export const ProductNameSchema = z.string().trim().min(1).max(PRODUCT_NAME_MAX_LENGTH);
+export const ProductNameSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(PRODUCT_NAME_MAX_LENGTH)
+  .refine(hasNoNulByte, NUL_BYTE_MESSAGE);
 
-export const ProductDescriptionSchema = z.string().max(PRODUCT_DESCRIPTION_MAX_LENGTH);
+export const ProductDescriptionSchema = z
+  .string()
+  .max(PRODUCT_DESCRIPTION_MAX_LENGTH)
+  .refine(hasNoNulByte, NUL_BYTE_MESSAGE);
 
 export const ProductPriceSchema = z.number().int().min(0).max(PRODUCT_PRICE_MAX_KOPECKS);
 
-export const ProductImageUrlSchema = z.string().max(PRODUCT_IMAGE_URL_MAX_LENGTH);
+export const ProductImageUrlSchema = z
+  .string()
+  .max(PRODUCT_IMAGE_URL_MAX_LENGTH)
+  .refine(hasNoNulByte, NUL_BYTE_MESSAGE);
 
 export const SellerProductSchema = z.object({
   id: z.number().int().positive(),

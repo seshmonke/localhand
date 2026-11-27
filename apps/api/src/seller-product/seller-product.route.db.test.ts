@@ -227,6 +227,9 @@ describeWithDb("seller product routes with a real database", () => {
       { ...valid, priceKopecks: "420000" },
       { ...valid, description: "a".repeat(2001) },
       { ...valid, imageUrl: "a".repeat(2001) },
+      { ...valid, name: "A\u0000B" },
+      { ...valid, description: "X\u0000Y" },
+      { ...valid, imageUrl: "https://example.com/\u0000.jpg" },
     ];
 
     for (const payload of invalidPayloads) {
@@ -318,6 +321,37 @@ describeWithDb("seller product routes with a real database", () => {
     });
     expect(published.statusCode).toBe(200);
     expect(published.json()).toEqual({ product: { ...product, status: "published" } });
+  });
+
+  it("allows editing an already published product while the shop is a draft", async () => {
+    const user = await createUser(1);
+    const shop = await createShop(user, "vintage-shop");
+    await publishShop(user);
+    const product = await createProduct(user, { name: "Куртка 90-х", priceKopecks: 420_000 });
+    const published = await request(user, "PATCH", `/seller/products/${product.id}`, {
+      status: "published",
+    });
+    expect(published.statusCode).toBe(200);
+
+    const unpublished = await request(user, "PATCH", "/seller/shop", { status: "draft" });
+    expect(unpublished.statusCode).toBe(200);
+    const hidden = await app.inject({ method: "GET", url: `/products/${product.id}` });
+    expect(hidden.statusCode).toBe(404);
+
+    const edit = await request(user, "PATCH", `/seller/products/${product.id}`, {
+      name: "Куртка 90-х, обновлённая",
+      status: "published",
+    });
+    expect(edit.statusCode).toBe(200);
+    expect(edit.json()).toEqual({
+      product: { ...product, name: "Куртка 90-х, обновлённая", status: "published" },
+    });
+
+    await publishShop(user);
+    const visible = await app.inject({ method: "GET", url: `/products/${product.id}` });
+    expect(visible.statusCode).toBe(200);
+    expect(visible.json()).toEqual(expect.objectContaining({ name: "Куртка 90-х, обновлённая" }));
+    expect((await app.inject({ method: "GET", url: `/shops/${shop.slug}` })).statusCode).toBe(200);
   });
 
   it("hides, republishes and drafts a product on the storefront", async () => {
@@ -476,6 +510,9 @@ describeWithDb("seller product routes with a real database", () => {
       { name: "a".repeat(121) },
       { description: "a".repeat(2001) },
       { imageUrl: "a".repeat(2001) },
+      { name: "A\u0000B" },
+      { description: "X\u0000Y" },
+      { imageUrl: "https://example.com/\u0000.jpg" },
       { status: "blocked" },
     ];
 
@@ -489,6 +526,31 @@ describeWithDb("seller product routes with a real database", () => {
     expect(await listProducts(user)).toEqual([product]);
   });
 
+  it("rejects NUL bytes in text fields without creating or changing anything", async () => {
+    const user = await createUser(1);
+    await createShop(user, "vintage-shop");
+
+    const create = await request(user, "POST", "/seller/products", {
+      name: "A\u0000B",
+      priceKopecks: 420_000,
+    });
+    expect(create.statusCode).toBe(400);
+    expect(create.json()).toEqual({ error: "invalid_request" });
+    expect(await countProducts()).toBe(0);
+
+    const product = await createProduct(user, {
+      name: "Куртка 90-х",
+      description: "Старое описание",
+      priceKopecks: 420_000,
+    });
+    const update = await request(user, "PATCH", `/seller/products/${product.id}`, {
+      description: "X\u0000Y",
+    });
+    expect(update.statusCode).toBe(400);
+    expect(update.json()).toEqual({ error: "invalid_request" });
+    expect(await listProducts(user)).toEqual([product]);
+  });
+
   it("returns 400 for a malformed product id", async () => {
     const user = await createUser(1);
     await createShop(user, "vintage-shop");
@@ -497,6 +559,22 @@ describeWithDb("seller product routes with a real database", () => {
 
     expect(response.statusCode).toBe(400);
     expect(response.json()).toEqual({ error: "invalid_request" });
+  });
+
+  it("rejects out-of-range product ids with 400 and the int4 max with 404", async () => {
+    const user = await createUser(1);
+    await createShop(user, "vintage-shop");
+
+    for (const id of ["2147483648", "3000000000"]) {
+      const response = await request(user, "PATCH", `/seller/products/${id}`, { name: "X" });
+
+      expect(response.statusCode, id).toBe(400);
+      expect(response.json()).toEqual({ error: "invalid_request" });
+    }
+
+    const maxId = await request(user, "PATCH", "/seller/products/2147483647", { name: "X" });
+    expect(maxId.statusCode).toBe(404);
+    expect(maxId.json()).toEqual({ error: "not_found" });
   });
 
   it("returns 404 for another seller's product and leaves it unchanged", async () => {
