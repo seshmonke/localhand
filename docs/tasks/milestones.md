@@ -66,3 +66,6 @@
   checkout/orders, seller orders; PR #26/#28/#30/#31/#33, changes
   `03`/`04`/`05` заархивированы. LCP: lab/preview gate принят владельцем
   как DoD-прокси v1, field p75/RUM — бэклог. Sprint 2.
+- 27.11.2026. LAYOUT-1: единая layout-система web (PageShell, 12 колонок,
+  8pt, 44px header, overlay, screenshot-тесты 320/768/1440); PR #35,
+  merge `5d91cc5`, review APPROVE. Post-sprint PBI.

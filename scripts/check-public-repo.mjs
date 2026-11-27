@@ -36,7 +36,7 @@ const contentRules = [
   },
   {
     label: "absolute local path",
-    pattern: /(\/home\/[A-Za-z0-9._-]+\/|\/Users\/[A-Za-z0-9._-]+\/)/,
+    pattern: /(\/home\/[A-Za-z0-9._-]+\/|\/Users\/[A-Za-z0-9._-]+\/|\/tmp\/)/,
   },
   {
     label: "real-looking phone",

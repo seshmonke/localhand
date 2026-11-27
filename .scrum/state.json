@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "phase": "BUILDING",
+  "phase": "CLOSED",
   "init_closed": true,
   "sprint": 2,
   "cycle": 4,
-  "updated_at": "2026-11-27T09:11:00Z",
+  "updated_at": "2026-11-27T09:45:30Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 2 CLOSED. Post-sprint LAYOUT-1 (owner-approved design system) in progress: branch task/layout-system, brief docs/tasks/S3-0-layout-system.md. Sprint 3 not started; field RUM/LCP backlog."
+  "notes": "Sprint 2 CLOSED 27.11.2026. Post-sprint LAYOUT-1 (owner-approved design system) merged 5d91cc5 (PR #35): PageShell/PageHeader/Stack/Card/Grid/Sidebar/Guides, 12-col, 8pt, 44px header nav. Sprint 3 not started; needs plan and owner command. Field RUM/LCP, seller header entry on mobile, badge content-box check, code splitting in backlog."
 }
