@@ -51,3 +51,6 @@
 {"ts":"2026-11-27T09:11:00Z","type":"claim","sprint":null,"task":"LAYOUT-1","owner":"scrum-worker","branch":"task/layout-system","change":null,"lease":".scrum/locks/layout-system.json","note":"owner-approved post-Sprint-2 design PBI"}
 {"ts":"2026-11-27T09:43:30Z","type":"review","scope":"layout","task":"LAYOUT-1","verdict":"APPROVE","head":"e0a578f"}
 {"ts":"2026-11-27T09:44:48Z","type":"merge","sprint":null,"task":"LAYOUT-1","pr":35,"merge_commit":"5d91cc5","status":"done"}
+{"ts":"2026-11-27T11:49:00Z","type":"decision","scope":"sprint_3_scope","sprint":3,"owner":"human","decision":"approve_money_path_scope","pbis":["payments","delivery","order_lifecycle","hardening"],"constraints":"sandbox_test_keys_no_real_money_no_address_pii"}
+{"ts":"2026-11-27T11:50:00Z","type":"sprint_started","sprint":3,"cycle":1,"goal":"paid order in YooKassa sandbox, CDEK test shipment, lifecycle, hardening","plan":"docs/tasks/03-money-path.md"}
+{"ts":"2026-11-27T11:52:00Z","type":"claim","sprint":3,"cycle":1,"task":"S3-1","owner":"scrum-worker","branch":"task/S3-1-payments","change":"06-payments","lease":".scrum/locks/S3-1.json"}

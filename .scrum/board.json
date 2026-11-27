@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-27T09:45:30Z",
+  "updated_at": "2026-11-27T11:50:00Z",
   "tasks": [
     {
       "id": "S2-1",
@@ -41,6 +41,38 @@
       "owner": "scrum-worker",
       "change": null,
       "pr": 35
+    },
+    {
+      "id": "S3-1",
+      "title": "Payments: YooKassa sandbox",
+      "status": "in_progress",
+      "owner": "scrum-worker",
+      "change": "06-payments",
+      "pr": null
+    },
+    {
+      "id": "S3-2",
+      "title": "Delivery: CDEK test contour",
+      "status": "pending",
+      "owner": "scrum-worker",
+      "change": "07-delivery",
+      "pr": null
+    },
+    {
+      "id": "S3-3",
+      "title": "Order lifecycle: paid/shipped/delivered",
+      "status": "pending",
+      "owner": "scrum-worker",
+      "change": "08-order-lifecycle",
+      "pr": null
+    },
+    {
+      "id": "S3-4",
+      "title": "Hardening: orders pagination, mobile entry",
+      "status": "pending",
+      "owner": "scrum-worker",
+      "change": "09-orders-pagination",
+      "pr": null
     }
   ]
 }
