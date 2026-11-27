@@ -5,17 +5,17 @@
 ## Состояние
 
 - Репозиторий: https://github.com/seshmonke/localhand, public.
-- main: `92b4b9d` (S2-2 cart, PR #28); close PR #29.
+- main: `2849d8c` (S2-3b orders UI, PR #31); close PR #32.
 - Sprint 1: **CLOSED**, review ACCEPT, retro записан.
 - S1-1…S1-5: **done**; change `02-seller-onboarding` →
   `2026-11-27-02-seller-onboarding`; specs `phone-auth`, `seller-shop`,
   `product-management` созданы.
-- Sprint 2: **BUILDING**, cycle 3; `03`, `04` archived;
-  `05-checkout-orders` active.
-- S2-1 catalog: **done**, PR #26; `03` archived.
-- S2-2 cart: **done**, PR #28; `04` archived.
-- S2-3 checkout/orders: **in_progress** (UI 3b), owner `scrum-worker`;
-  ветка `task/S2-3b-orders-ui`, lease до 09:30Z. API 3a merged `b909f30`.
+- Sprint 2: **BUILDING**, cycle 4; changes `03`, `04`, `05` archived.
+- S2-1 catalog: **done**, PR #26.
+- S2-2 cart: **done**, PR #28.
+- S2-3 checkout/orders: **done**, PR #30/#31.
+- S2-4 security/e2e/close: **ready**, не claimed. Перед dispatch: бриф
+  `docs/tasks/S2-4-security.md`, ветка `task/S2-4-security`, lease.
 
 ## Evidence S1
 

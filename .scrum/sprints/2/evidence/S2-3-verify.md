@@ -28,6 +28,9 @@ openspec validate --all --strict
 Totals: 7 passed, 0 failed (7 items)
 ```
 
+Лог verify снят до добавления evidence; на финальном дереве
+(321 tracked files) check:public — clean.
+
 ## API (3a)
 
 - Migration `0003`: orders/order_items, bigint total, unique
