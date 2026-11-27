@@ -70,8 +70,28 @@
 
 ### S1-4a Admin auth + shop UI
 
-- Статус: `in_progress`, owner `scrum-worker`; ветка
-  `task/S1-4a-admin-auth`, lease до 05:00Z.
-- Дальше: API client с cookie, `/login`, guard `/admin`, магазин
-  onboarding/settings/publish; mobile+desktop, a11y.
+- Сделано: API client с cookie, `/login` OTP, guard `/admin`, admin
+  shell, onboarding/settings/publish, blocked read-only, cache isolation,
+  responsive/a11y.
+- Ревью: **APPROVE**; P1 cross-account cache, P2 light/dark contrast
+  закрыты; axe 0 violations light/dark.
+- `pnpm verify`: exit 0; API 97/97, shared 33/33, web 15/15, OpenSpec 2/2.
+- PR #18 squash-merge `f991c93`; evidence:
+  [evidence/S1-4a-verify.md](evidence/S1-4a-verify.md),
+  скриншоты 320/1440 и dark в `evidence/`.
+- 4a закрыт; tasks 4.1–4.3 отмечены. Блокеров нет.
+
+### Итог синка
+
+- Продолжаем: 4a → merge → S1-4b products UI.
+- Перепланирование не нужно.
+- Эскалаций нет; владелец не требуется.
+
+## Cycle 5 — 27.11.2026
+
+### S1-4b Products admin UI
+
+- Статус: `ready`; brief, worktree и lease создаются перед dispatch.
+- Дальше: список/таблица/карточки, форма create/edit, publish/hide,
+  остаток 4.5 (responsive/a11y), web-тесты.
 - Блокеры: нет.

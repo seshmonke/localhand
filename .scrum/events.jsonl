@@ -14,3 +14,6 @@
 {"ts":"2026-11-27T01:00:30Z","type":"merge","sprint":1,"task":"S1-3","pr":16,"merge_commit":"b728eda","status":"done"}
 {"ts":"2026-11-27T01:01:00Z","type":"phase","sprint":1,"cycle":4,"from":"cycle_3","to":"cycle_4","task":"S1-4a"}
 {"ts":"2026-11-27T01:11:00Z","type":"claim","sprint":1,"cycle":4,"task":"S1-4a","owner":"scrum-worker","branch":"task/S1-4a-admin-auth","lease":".scrum/locks/S1-4a.json"}
+{"ts":"2026-11-27T01:49:00Z","type":"review","sprint":1,"task":"S1-4a","pr":18,"verdict":"APPROVE","reviewer":"scrum-reviewer","head":"aca0448","note":"P1 cache isolation, P2 light/dark axe fixed"}
+{"ts":"2026-11-27T01:49:30Z","type":"merge","sprint":1,"task":"S1-4a","pr":18,"merge_commit":"f991c93","status":"done"}
+{"ts":"2026-11-27T01:50:00Z","type":"phase","sprint":1,"cycle":5,"from":"cycle_4","to":"cycle_5","task":"S1-4b"}

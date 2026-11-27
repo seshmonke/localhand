@@ -7,30 +7,30 @@
 
 ## AC
 
-- [ ] API client в `apps/web`: `requestJson` с `credentials: "include"`,
+- [x] API client в `apps/web`: `requestJson` с `credentials: "include"`,
       JSON-телом, парсингом `{ error }` и типизированной `ApiError`
       (status/code); методы `fetchMe`, `requestCode`, `verifyCode`,
       `logout`, `fetchSellerShop`, `createShop`, `updateShop`.
-- [ ] `/login`: форма телефона → request-code → форма 6-значного кода →
+- [x] `/login`: форма телефона → request-code → форма 6-значного кода →
       verify; dev-код показывается только если API его вернул; успех —
       invalidate `/auth/me`, редирект на `next` или `/admin`; 400/401/429
       дают понятные сообщения; loading/disabled; labels и фокус.
-- [ ] Guard `/admin/*`: `/auth/me`; 401 → `/login?next=...`; loading-
+- [x] Guard `/admin/*`: `/auth/me`; 401 → `/login?next=...`; loading-
       состояние; logout очищает сессию и ведёт на `/login`.
-- [ ] Admin shell: desktop sidebar, mobile компактная навигация; активный
+- [x] Admin shell: desktop sidebar, mobile компактная навигация; активный
       пункт; ссылки на магазин и товары; контент в `<main>`; клавиатура.
-- [ ] `/admin/shop`: нет магазина → onboarding (name, slug, description)
+- [x] `/admin/shop`: нет магазина → onboarding (name, slug, description)
       → POST; есть магазин → settings (name/slug/description) → PATCH;
       publish/unpublish;
       статус-бейдж; 409 `slug_taken`/`shop_exists`/`shop_blocked` и 400
       маппятся в сообщения; loading/empty/error; success aria-live.
-- [ ] Responsive: 320 без горизонтальной прокрутки, формы в одну колонку;
+- [x] Responsive: 320 без горизонтальной прокрутки, формы в одну колонку;
       1024+ sidebar и две колонки; тач-зоны ≥44, поля ≥16 px.
-- [ ] A11y: labels, aria-describedby/aria-invalid, видимый focus, ошибки
+- [x] A11y: labels, aria-describedby/aria-invalid, видимый focus, ошибки
       не только цветом; клавиатурный проход login → shop → publish.
-- [ ] Web unit-тесты: login success/401/429, guard redirect, shop create
+- [x] Web unit-тесты: login success/401/429, guard redirect, shop create
       duplicate slug, shop publish; fetch замокан.
-- [ ] `pnpm verify` — зелёный.
+- [x] `pnpm verify` — зелёный.
 
 ## Change
 
