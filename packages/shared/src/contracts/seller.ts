@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 const SHOP_SLUG_PATTERN = /^[a-z0-9-]{3,40}$/;
+const CDEK_CITY_NAME_MAX_LENGTH = 120;
+const CDEK_POINT_CODE_MAX_LENGTH = 64;
 
 export const reservedShopSlugs = [
   "admin",
@@ -41,11 +43,23 @@ export const ShopDescriptionSchema = z.string().max(2000);
 
 export const SellerShopStatusSchema = z.enum(["draft", "published", "blocked"]);
 
+export const CdekCityCodeSchema = z.number().int().positive().max(2_147_483_647);
+export const CdekCityNameSchema = z.string().trim().min(1).max(CDEK_CITY_NAME_MAX_LENGTH);
+export const CdekShipmentPointSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(CDEK_POINT_CODE_MAX_LENGTH)
+  .regex(/^[A-Za-z0-9-]+$/, { message: "invalid_point_code" });
+
 export const SellerShopSchema = z.object({
   id: z.number().int().positive(),
   slug: z.string().min(1),
   name: z.string().min(1).max(80),
   description: z.string().nullable(),
+  cdekCityCode: CdekCityCodeSchema.nullable().optional(),
+  cdekCityName: CdekCityNameSchema.nullable().optional(),
+  cdekShipmentPoint: CdekShipmentPointSchema.nullable().optional(),
   status: SellerShopStatusSchema,
 });
 
@@ -66,6 +80,9 @@ export const UpdateShopSchema = z
     name: ShopNameSchema.optional(),
     slug: ShopSlugSchema.optional(),
     description: ShopDescriptionSchema.nullable().optional(),
+    cdekCityCode: CdekCityCodeSchema.nullable().optional(),
+    cdekCityName: CdekCityNameSchema.nullable().optional(),
+    cdekShipmentPoint: CdekShipmentPointSchema.nullable().optional(),
     status: UpdateShopStatusSchema.optional(),
   })
   .refine((value) => Object.keys(value).length > 0, { message: "empty_update" });

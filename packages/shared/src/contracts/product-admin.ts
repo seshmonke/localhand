@@ -6,6 +6,8 @@ export const PRODUCT_PRICE_MAX_KOPECKS = 2_147_483_647;
 export const PRODUCT_NAME_MAX_LENGTH = 120;
 export const PRODUCT_DESCRIPTION_MAX_LENGTH = 2000;
 export const PRODUCT_IMAGE_URL_MAX_LENGTH = 2000;
+export const PRODUCT_WEIGHT_MAX_G = 100_000;
+export const PRODUCT_DIMENSION_MAX_CM = 300;
 
 function hasNoNulByte(value: string): boolean {
   return !value.includes("\u0000");
@@ -36,12 +38,19 @@ export const ProductImageUrlSchema = z
   .max(PRODUCT_IMAGE_URL_MAX_LENGTH)
   .refine(hasNoNulByte, NUL_BYTE_MESSAGE);
 
+export const ProductWeightSchema = z.number().int().min(1).max(PRODUCT_WEIGHT_MAX_G);
+export const ProductDimensionSchema = z.number().int().min(1).max(PRODUCT_DIMENSION_MAX_CM);
+
 export const SellerProductSchema = z.object({
   id: z.number().int().positive(),
   name: z.string().min(1).max(PRODUCT_NAME_MAX_LENGTH),
   description: z.string().nullable(),
   priceKopecks: z.number().int().min(0).max(PRODUCT_PRICE_MAX_KOPECKS),
   imageUrl: z.string().nullable(),
+  weightG: ProductWeightSchema.nullable().optional(),
+  lengthCm: ProductDimensionSchema.nullable().optional(),
+  widthCm: ProductDimensionSchema.nullable().optional(),
+  heightCm: ProductDimensionSchema.nullable().optional(),
   status: ProductStatusSchema,
 });
 
@@ -62,6 +71,10 @@ export const CreateProductSchema = z.object({
   description: ProductDescriptionSchema.optional(),
   priceKopecks: ProductPriceSchema,
   imageUrl: ProductImageUrlSchema.nullable().optional(),
+  weightG: ProductWeightSchema.nullable().optional(),
+  lengthCm: ProductDimensionSchema.nullable().optional(),
+  widthCm: ProductDimensionSchema.nullable().optional(),
+  heightCm: ProductDimensionSchema.nullable().optional(),
 });
 
 export const UpdateProductSchema = z
@@ -70,6 +83,10 @@ export const UpdateProductSchema = z
     description: ProductDescriptionSchema.nullable().optional(),
     priceKopecks: ProductPriceSchema.optional(),
     imageUrl: ProductImageUrlSchema.nullable().optional(),
+    weightG: ProductWeightSchema.nullable().optional(),
+    lengthCm: ProductDimensionSchema.nullable().optional(),
+    widthCm: ProductDimensionSchema.nullable().optional(),
+    heightCm: ProductDimensionSchema.nullable().optional(),
     status: ProductStatusSchema.optional(),
   })
   .refine((value) => Object.keys(value).length > 0, { message: "empty_update" });
