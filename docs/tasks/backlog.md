@@ -64,12 +64,13 @@
 - [ ] Курировать палитру: ч/б + акценты, контраст, тёмная тема.
   Критерий: токены и WCAG-проверка. Источник: product.md. Спринт: —.
 
-- [ ] P1. Ввести layout system: `PageShell`/`Container`, 12-колоночная
+- [x] P1. Ввести layout system: `PageShell`/`Container`, 12-колоночная
   сетка, 8pt spacing, `Stack`/`Grid`/`Sidebar`/`Card`, единые высоты
   контролов, overlay и screenshot-тесты 320/768/1440; выровнять
   admin form/status, header, checkout. Критерий: элементы на общих
   направляющих, нет горизонтального overflow, скриншоты 3 breakpoint.
-  Источник: design review владельца 27.11.2026. Спринт: — (следующий PBI).
+  Источник: design review владельца 27.11.2026. Сделано: PR #35,
+  merge `5d91cc5`.
 
 ## P2
 

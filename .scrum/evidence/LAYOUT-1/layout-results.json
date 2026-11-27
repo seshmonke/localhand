@@ -1,0 +1,76 @@
+{
+  "generated_at": "2026-11-27T09:29:06.371Z",
+  "base": "http://localhost:5173",
+  "viewports": [
+    "320x900",
+    "768x1024",
+    "1440x900"
+  ],
+  "screenshots": [
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-catalog-320.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-cart-320.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-checkout-320.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-orders-320.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-catalog-768.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-cart-768.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-checkout-768.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-orders-768.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-catalog-1440.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-cart-1440.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-checkout-1440.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-orders-1440.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-admin-shop-320.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-admin-product-320.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-admin-orders-320.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-admin-shop-768.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-admin-product-768.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-admin-orders-768.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-admin-shop-1440.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-admin-product-1440.png",
+    "/tmp/opencode/localhand-layout/apps/web/test-results/layout-layout-holds-at-320-35281-across-storefront-and-admin-chromium/layout-admin-orders-1440.png"
+  ],
+  "headerControlsChecked": [
+    "catalog-320",
+    "catalog-768",
+    "catalog-1440"
+  ],
+  "headingLeftEdges": {
+    "storefront-320": [
+      16,
+      16,
+      16,
+      16
+    ],
+    "storefront-768": [
+      24,
+      24,
+      24,
+      24
+    ],
+    "storefront-1440": [
+      40,
+      40,
+      40,
+      40
+    ],
+    "admin-320": [
+      16,
+      16,
+      16
+    ],
+    "admin-768": [
+      24,
+      24,
+      24
+    ],
+    "admin-1440": [
+      300,
+      300,
+      300
+    ]
+  },
+  "fixture": {
+    "shopSlug": "e2e-mwys4g131",
+    "productId": 9
+  }
+}

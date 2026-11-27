@@ -1,0 +1,15 @@
+$ pnpm --filter @localhand/web test:e2e
+$ playwright test
+
+Running 6 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/a11y.spec.ts:43:1 › axe has no serious or critical findings on buyer pages in light and dark (22.9s)
+  ✓  2 [chromium] › e2e/buyer-flow.spec.ts:21:1 › buyer and seller see the same order end-to-end (4.2s)
+  ✓  3 [chromium] › e2e/layout.spec.ts:225:1 › layout holds at 320/768/1440 across storefront and admin (15.1s)
+  ✓  4 [chromium] › e2e/layout.spec.ts:356:1 › layout guides overlay renders 12 columns in dev (2.2s)
+  ✓  5 [chromium] › e2e/layout.spec.ts:405:1 › axe has no serious or critical findings on admin pages (15.5s)
+[lab-lcp-over-budget] /: lab p75 3024 ms >= 2500 ms
+[lab-lcp-over-budget] /checkout: lab p75 3060 ms >= 2500 ms
+  ✓  6 [chromium] › e2e/perf.spec.ts:113:1 › lab LCP smoke on catalog and checkout (35.8s)
+
+  6 passed (1.6m)

@@ -77,7 +77,8 @@
 
 ## Evidence
 
-Дата: 27.11.2026. Ветка `task/layout-system`, база `53abce7`.
+Дата: 27.11.2026. Ветка `task/layout-system`, база `53abce7`,
+merge `5d91cc5` (PR #35).
 
 ```bash
 DATABASE_URL_TEST='postgres://localhand:localhand@localhost:5433/localhand_s2_test' \
