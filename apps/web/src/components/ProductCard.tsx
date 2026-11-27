@@ -9,33 +9,36 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const tone = tones[product.id % tones.length] ?? "bg-ink";
 
   return (
-    <article className="flex h-full flex-col border-[3px] border-ink bg-paper p-2.5 shadow-brutal-sm transition-transform hover:-translate-y-0.5 sm:p-3">
-      <Link to={`/products/${product.id}`} className="block grow">
+    <article className="flex h-full flex-col overflow-hidden border-[3px] border-ink bg-paper">
+      <Link to={`/products/${product.id}`} className="group/link flex grow flex-col">
         {product.imageUrl ? (
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="aspect-[4/5] w-full border-[3px] border-ink object-cover"
+            className="aspect-[4/5] w-full object-cover"
             loading="lazy"
+            decoding="async"
           />
         ) : (
-          <div className={`aspect-[4/5] border-[3px] border-ink ${tone}`} aria-hidden="true" />
+          <div className={`aspect-[4/5] w-full ${tone}`} aria-hidden="true" />
         )}
-        <div className="mt-3 flex flex-col sm:flex-row sm:items-start sm:justify-between sm:gap-2">
+        <div className="flex flex-col gap-1.5 px-3 pt-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:px-4 sm:pt-4">
           <div className="min-w-0">
-            <h3 className="break-words font-display text-xs uppercase leading-tight sm:text-sm">
+            <h3 className="break-words font-display text-xs uppercase leading-tight group-hover/link:underline group-hover/link:decoration-[3px] group-hover/link:underline-offset-2 sm:text-sm">
               {product.name}
             </h3>
             <p className="mt-1 truncate font-mono text-[9px] uppercase tracking-wide sm:text-[10px]">
               {product.shop.name}
             </p>
           </div>
-          <p className="mt-1 font-mono text-xs sm:mt-0 sm:shrink-0 sm:text-sm">
+          <p className="font-mono text-xs sm:mt-0 sm:shrink-0 sm:text-sm">
             {formatRubles(kopecks(product.priceKopecks))}
           </p>
         </div>
       </Link>
-      <AddToCartButton item={cartItemFromProduct(product)} size="sm" className="mt-3 h-11 w-full" />
+      <div className="px-3 pb-3 pt-3 sm:px-4 sm:pb-4">
+        <AddToCartButton item={cartItemFromProduct(product)} size="sm" className="h-11 w-full" />
+      </div>
     </article>
   );
 }
