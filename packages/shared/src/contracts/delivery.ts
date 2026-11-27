@@ -23,7 +23,7 @@ const TRACK_NUMBER_PATTERN = /^[A-Za-z0-9-]+$/;
 const BoundedText = (max: number) =>
   z.string().trim().min(1).max(max).refine(hasNoNulByte, NUL_BYTE_MESSAGE);
 
-export const DeliveryCityCodeSchema = z.number().int().positive().max(ORDER_ID_MAX);
+export const DeliveryCityCodeSchema = z.number().int().min(0).max(ORDER_ID_MAX);
 
 export const DeliveryCitySchema = z.object({
   code: DeliveryCityCodeSchema,

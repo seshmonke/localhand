@@ -34,7 +34,7 @@ const quoteShop = {
 describe("DeliveryCitySchema", () => {
   it("accepts a city and rejects a non-positive code", () => {
     expect(DeliveryCitySchema.parse(city)).toEqual(city);
-    expect(DeliveryCitySchema.safeParse({ ...city, code: 0 }).success).toBe(false);
+    expect(DeliveryCitySchema.safeParse({ ...city, code: -1 }).success).toBe(false);
     expect(DeliveryCitySchema.safeParse({ code: 44, name: "" }).success).toBe(false);
   });
 });
@@ -42,7 +42,7 @@ describe("DeliveryCitySchema", () => {
 describe("DeliveryPointSchema", () => {
   it("accepts a PVZ and requires the city link", () => {
     expect(DeliveryPointSchema.parse(point)).toEqual(point);
-    expect(DeliveryPointSchema.safeParse({ ...point, cityCode: 0 }).success).toBe(false);
+    expect(DeliveryPointSchema.safeParse({ ...point, cityCode: -1 }).success).toBe(false);
     expect(DeliveryPointSchema.safeParse({ ...point, address: "" }).success).toBe(false);
   });
 });

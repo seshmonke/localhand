@@ -4,7 +4,7 @@ import type {
   DeliverySnapshot,
   DeliveryTariffListResponse,
 } from "@localhand/shared";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { requireDb } from "../db/client.js";
 import {
   deliveryEvents,
@@ -51,6 +51,7 @@ type DeliveryContext = {
     pointCode: string;
     pointAddress: string;
     recipientName: string;
+    recipientPhone: string;
     tariffCode: string | null;
     tariffName: string | null;
     priceKopecks: number;
@@ -74,6 +75,7 @@ const deliverySelect = {
   pointCode: orderDeliveries.pointCode,
   pointAddress: orderDeliveries.pointAddress,
   recipientName: orderDeliveries.recipientName,
+  recipientPhone: orderDeliveries.recipientPhone,
   tariffCode: orderDeliveries.providerTariffCode,
   tariffName: orderDeliveries.tariffName,
   priceKopecks: orderDeliveries.priceKopecks,
@@ -114,12 +116,14 @@ function toSnapshot(context: DeliveryContext): DeliverySnapshot | null {
   };
 }
 
+type QueryExecutor = Pick<ReturnType<typeof requireDb>, "select">;
+
 async function loadContext(
   orderId: number,
   scope: { buyerUserId?: number; sellerUserId?: number },
+  db: QueryExecutor = requireDb(),
   forUpdate = false,
 ): Promise<DeliveryContext | null> {
-  const db = requireDb();
   const scopeCondition =
     scope.buyerUserId !== undefined
       ? eq(orders.buyerUserId, scope.buyerUserId)
@@ -160,8 +164,7 @@ async function loadContext(
   };
 }
 
-async function loadPackages(orderId: number) {
-  const db = requireDb();
+async function loadPackages(orderId: number, db: QueryExecutor = requireDb()) {
   const items = await db
     .select({ productId: orderItems.productId })
     .from(orderItems)
@@ -220,6 +223,7 @@ export async function getBuyerDelivery(
   orderId: number,
 ): Promise<DeliverySnapshot | null> {
   const context = await loadContext(orderId, { buyerUserId: userId });
+
   return context ? toSnapshot(context) : null;
 }
 
@@ -295,7 +299,7 @@ export async function createSellerShipment(
   }
 
   return requireDb().transaction(async (tx) => {
-    const context = await loadContext(orderId, { sellerUserId: userId }, true);
+    const context = await loadContext(orderId, { sellerUserId: userId }, tx, true);
     if (!context) {
       return { ok: false, error: "not_found" };
     }
@@ -308,11 +312,54 @@ export async function createSellerShipment(
     if (context.delivery.providerOrderId) {
       return { ok: true, delivery: toSnapshot(context) as DeliverySnapshot };
     }
+
+    let remote = null;
+    try {
+      remote = await provider.findShipmentByNumber(`order-${orderId}`);
+    } catch {
+      return { ok: false, error: "delivery_provider_error" };
+    }
+    if (remote?.providerOrderId) {
+      const occurredAt = remote.statusDateTime ? new Date(remote.statusDateTime) : new Date();
+      const [adopted] = await tx
+        .update(orderDeliveries)
+        .set({
+          status: mapDeliveryStatus(remote.statusCode),
+          providerOrderId: remote.providerOrderId,
+          providerNumber: remote.trackNumber,
+          lastStatusCode: remote.statusCode,
+          lastStatusAt: occurredAt,
+          updatedAt: new Date(),
+        })
+        .where(eq(orderDeliveries.orderId, orderId))
+        .returning();
+      if (!adopted) {
+        return { ok: false, error: "delivery_provider_error" };
+      }
+      await tx
+        .insert(deliveryEvents)
+        .values({
+          deliveryId: context.delivery.id,
+          statusCode: remote.statusCode,
+          statusName: remote.statusName,
+          occurredAt,
+          payloadHash: statusEventHash(remote.statusCode, occurredAt),
+        })
+        .onConflictDoNothing();
+      return {
+        ok: true,
+        delivery: toSnapshot({
+          ...context,
+          delivery: { ...context.delivery, ...adopted, tariffCode: adopted.providerTariffCode },
+        }) as DeliverySnapshot,
+      };
+    }
+
     if (!context.shopCityCode || !context.shopShipmentPoint) {
       return { ok: false, error: "delivery_unavailable" };
     }
 
-    const packages = await loadPackages(orderId);
+    const packages = await loadPackages(orderId, tx);
     if (!packages) {
       return { ok: false, error: "delivery_dimensions_missing" };
     }
@@ -355,7 +402,7 @@ export async function createSellerShipment(
       return { ok: false, error: "delivery_provider_error" };
     }
 
-    const occurredAt = new Date();
+    const occurredAt = created.statusDateTime ? new Date(created.statusDateTime) : new Date();
     const [updated] = await tx
       .update(orderDeliveries)
       .set({
@@ -364,11 +411,15 @@ export async function createSellerShipment(
         providerNumber: created.providerNumber,
         lastStatusCode: created.statusCode,
         lastStatusAt: occurredAt,
-        updatedAt: occurredAt,
+        updatedAt: new Date(),
       })
-      .where(eq(orderDeliveries.orderId, orderId))
+      .where(and(eq(orderDeliveries.orderId, orderId), isNull(orderDeliveries.providerOrderId)))
       .returning();
     if (!updated) {
+      const current = await loadContext(orderId, { sellerUserId: userId }, tx);
+      if (current?.delivery?.providerOrderId) {
+        return { ok: true, delivery: toSnapshot(current) as DeliverySnapshot };
+      }
       return { ok: false, error: "delivery_provider_error" };
     }
 
@@ -399,25 +450,79 @@ export async function saveManualTrack(
   input: DeliveryManualTrack,
 ): Promise<DeliveryActionResult> {
   return requireDb().transaction(async (tx) => {
-    const context = await loadContext(orderId, { sellerUserId: userId }, true);
+    const context = await loadContext(orderId, { sellerUserId: userId }, tx, true);
     if (!context) {
       return { ok: false, error: "not_found" };
     }
     if (context.orderStatus !== "paid") {
       return { ok: false, error: "delivery_not_paid" };
     }
-    if (!context.delivery) {
-      return { ok: false, error: "delivery_snapshot_missing" };
-    }
-    if (
-      context.delivery.providerOrderId ||
-      context.delivery.status === "manual" ||
-      context.delivery.trackNumber !== null
-    ) {
-      return { ok: false, error: "delivery_already_exists" };
+    if (context.delivery) {
+      if (
+        context.delivery.providerOrderId ||
+        context.delivery.status === "manual" ||
+        context.delivery.trackNumber !== null
+      ) {
+        return { ok: false, error: "delivery_already_exists" };
+      }
+
+      const provider = getDeliveryProvider();
+      if (!provider) {
+        return { ok: false, error: "delivery_unavailable" };
+      }
+      try {
+        const remote = await provider.findShipmentByNumber(`order-${orderId}`);
+        if (remote) {
+          return { ok: false, error: "delivery_already_exists" };
+        }
+      } catch {
+        return { ok: false, error: "delivery_provider_error" };
+      }
     }
 
     const occurredAt = new Date();
+    if (!context.delivery) {
+      const [inserted] = await tx
+        .insert(orderDeliveries)
+        .values({
+          orderId,
+          provider: "manual",
+          status: "manual",
+          cityCode: 0,
+          cityName: "Не указан",
+          pointCode: "manual",
+          pointAddress: "Не указан",
+          recipientName: "Не указан",
+          recipientPhone: context.buyerPhone,
+          priceKopecks: 0,
+          carrier: input.carrier,
+          trackNumber: input.trackNumber,
+          lastStatusCode: "MANUAL",
+          lastStatusAt: occurredAt,
+        })
+        .returning();
+      if (!inserted) {
+        return { ok: false, error: "delivery_provider_error" };
+      }
+      await tx
+        .insert(deliveryEvents)
+        .values({
+          deliveryId: inserted.id,
+          statusCode: "MANUAL",
+          statusName: input.carrier,
+          occurredAt,
+          payloadHash: statusEventHash("MANUAL", occurredAt),
+        })
+        .onConflictDoNothing();
+      return {
+        ok: true,
+        delivery: toSnapshot({
+          ...context,
+          delivery: { ...inserted, tariffCode: inserted.providerTariffCode },
+        }) as DeliverySnapshot,
+      };
+    }
+
     const [updated] = await tx
       .update(orderDeliveries)
       .set({
@@ -428,10 +533,16 @@ export async function saveManualTrack(
         lastStatusAt: occurredAt,
         updatedAt: occurredAt,
       })
-      .where(eq(orderDeliveries.orderId, orderId))
+      .where(
+        and(
+          eq(orderDeliveries.orderId, orderId),
+          isNull(orderDeliveries.providerOrderId),
+          isNull(orderDeliveries.trackNumber),
+        ),
+      )
       .returning();
     if (!updated) {
-      return { ok: false, error: "delivery_provider_error" };
+      return { ok: false, error: "delivery_already_exists" };
     }
 
     await tx
@@ -474,11 +585,26 @@ export async function handleCdekWebhook(payload: {
   }
 
   const [row] = await requireDb()
-    .select({ id: orderDeliveries.id, orderId: orderDeliveries.orderId })
+    .select({
+      id: orderDeliveries.id,
+      orderId: orderDeliveries.orderId,
+      status: orderDeliveries.status,
+      providerNumber: orderDeliveries.providerNumber,
+      trackNumber: orderDeliveries.trackNumber,
+    })
     .from(orderDeliveries)
     .where(eq(orderDeliveries.providerOrderId, providerOrderId))
     .limit(1);
   if (!row) {
+    return { ok: false, error: "not_found" };
+  }
+
+  const number = payload.attributes?.number;
+  const cdekNumber = payload.attributes?.cdek_number;
+  if (
+    (number && number !== row.providerNumber && number !== `order-${row.orderId}`) ||
+    (cdekNumber && cdekNumber !== row.providerNumber && cdekNumber !== row.trackNumber)
+  ) {
     return { ok: false, error: "not_found" };
   }
 
@@ -493,7 +619,19 @@ export async function handleCdekWebhook(payload: {
   }
 
   const status = mapDeliveryStatus(state.statusCode);
-  const occurredAt = new Date();
+  const occurredAt = state.statusDateTime ? new Date(state.statusDateTime) : new Date();
+  const statusRank: Record<string, number> = {
+    quoted: 0,
+    created: 1,
+    in_transit: 2,
+    manual: 3,
+    delivered: 3,
+    canceled: 3,
+    failed: 3,
+  };
+  if ((statusRank[status] ?? 0) < (statusRank[row.status] ?? 0)) {
+    return { ok: true };
+  }
   await requireDb().transaction(async (tx) => {
     await tx
       .update(orderDeliveries)
@@ -502,7 +640,7 @@ export async function handleCdekWebhook(payload: {
         trackNumber: state.trackNumber ?? undefined,
         lastStatusCode: state.statusCode,
         lastStatusAt: occurredAt,
-        updatedAt: occurredAt,
+        updatedAt: new Date(),
       })
       .where(eq(orderDeliveries.id, row.id));
     await tx

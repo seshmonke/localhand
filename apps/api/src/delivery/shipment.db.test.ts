@@ -7,6 +7,7 @@ import {
 } from "@localhand/shared";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { SESSION_COOKIE_NAME } from "../auth/session.js";
+import type { FakeDeliveryProvider } from "./fake-provider.js";
 
 const testDatabaseUrl = process.env.DATABASE_URL_TEST;
 const describeWithDb = testDatabaseUrl ? describe : describe.skip;
@@ -223,6 +224,102 @@ describeWithDb("delivery shipment routes", () => {
     expect(foreign.statusCode).toBe(404);
   });
 
+  it("serializes concurrent creates into one shipment", async () => {
+    const order = await createPaidOrder(1, 2, "concurrent-shop");
+    const [first, second] = await Promise.all([
+      request(order.seller, "POST", `/seller/orders/${order.orderId}/delivery`, {
+        tariffCode: "136",
+      }),
+      request(order.seller, "POST", `/seller/orders/${order.orderId}/delivery`, {
+        tariffCode: "136",
+      }),
+    ]);
+    expect(first.statusCode).toBe(201);
+    expect(second.statusCode).toBe(201);
+    expect(DeliveryResponseSchema.parse(first.json()).delivery.providerOrderId).toBe(
+      DeliveryResponseSchema.parse(second.json()).delivery.providerOrderId,
+    );
+    const rows = await dbClient
+      .requirePool()
+      .query<{ count: number }>(
+        "SELECT count(*)::int AS count FROM order_deliveries WHERE order_id = $1",
+        [order.orderId],
+      );
+    expect(rows.rows[0]?.count).toBe(1);
+  });
+
+  it("adopts a remote CDEK order after a local timeout instead of creating a duplicate", async () => {
+    const order = await createPaidOrder(1, 2, "adopt-shop");
+    const created = await request(
+      order.seller,
+      "POST",
+      `/seller/orders/${order.orderId}/delivery`,
+      {
+        tariffCode: "136",
+      },
+    );
+    expect(created.statusCode).toBe(201);
+
+    await dbClient.requirePool().query(
+      `UPDATE order_deliveries
+            SET provider_order_id = NULL, provider_number = NULL, status = 'quoted'
+          WHERE order_id = $1`,
+      [order.orderId],
+    );
+
+    const retried = await request(
+      order.seller,
+      "POST",
+      `/seller/orders/${order.orderId}/delivery`,
+      { tariffCode: "136" },
+    );
+    expect(retried.statusCode).toBe(201);
+    expect(DeliveryResponseSchema.parse(retried.json()).delivery.providerOrderId).toBe(
+      `fake-${order.orderId}`,
+    );
+  });
+
+  it("rejects manual track after a CDEK shipment and allows legacy manual", async () => {
+    const order = await createPaidOrder(1, 2, "legacy-shop");
+    const created = await request(
+      order.seller,
+      "POST",
+      `/seller/orders/${order.orderId}/delivery`,
+      {
+        tariffCode: "136",
+      },
+    );
+    expect(created.statusCode).toBe(201);
+
+    const afterCdek = await request(
+      order.seller,
+      "PATCH",
+      `/seller/orders/${order.orderId}/delivery`,
+      { carrier: "СДЭК", trackNumber: "1234567890" },
+    );
+    expect(afterCdek.statusCode).toBe(409);
+    expect(afterCdek.json()).toEqual({ error: "delivery_already_exists" });
+
+    const legacyOrder = await createPaidOrder(3, 4, "legacy-only-shop");
+    await dbClient
+      .requirePool()
+      .query("DELETE FROM order_deliveries WHERE order_id = $1", [legacyOrder.orderId]);
+    const legacy = await request(
+      legacyOrder.seller,
+      "PATCH",
+      `/seller/orders/${legacyOrder.orderId}/delivery`,
+      { carrier: "Почта России", trackNumber: "LEGACY-1" },
+    );
+    expect(legacy.statusCode).toBe(200);
+    expect(DeliveryResponseSchema.parse(legacy.json()).delivery).toMatchObject({
+      provider: "manual",
+      status: "manual",
+      cityCode: 0,
+      carrier: "Почта России",
+      trackNumber: "LEGACY-1",
+    });
+  });
+
   it("rejects a tariff different from the paid one", async () => {
     const order = await createPaidOrder(1, 2, "tariff-shop");
     const response = await request(
@@ -260,6 +357,60 @@ describeWithDb("delivery shipment routes", () => {
     const otherBuyer = await createUser(4);
     const foreign = await request(otherBuyer, "GET", `/orders/${order.orderId}/delivery`);
     expect(foreign.statusCode).toBe(404);
+  });
+
+  it("deduplicates webhooks, rejects spoofed numbers and keeps the latest status", async () => {
+    const order = await createPaidOrder(1, 2, "webhook-replay-shop");
+    const created = await request(
+      order.seller,
+      "POST",
+      `/seller/orders/${order.orderId}/delivery`,
+      {
+        tariffCode: "136",
+      },
+    );
+    expect(created.statusCode).toBe(201);
+    const uuid = `fake-${order.orderId}`;
+    const { getDeliveryProvider } = await import("./provider-factory.js");
+    const provider = getDeliveryProvider() as FakeDeliveryProvider;
+
+    const event = {
+      type: "ORDER_STATUS" as const,
+      uuid,
+      attributes: { number: `order-${order.orderId}` },
+    };
+    expect((await request(null, "POST", "/delivery/cdek/webhook", event)).statusCode).toBe(200);
+    expect((await request(null, "POST", "/delivery/cdek/webhook", event)).statusCode).toBe(200);
+    const events = await dbClient
+      .requirePool()
+      .query<{ count: number }>(
+        "SELECT count(*)::int AS count FROM delivery_events WHERE status_code = 'CREATED'",
+      );
+    expect(events.rows[0]?.count).toBe(1);
+
+    const spoof = await request(null, "POST", "/delivery/cdek/webhook", {
+      ...event,
+      attributes: { number: "another-order" },
+    });
+    expect(spoof.statusCode).toBe(404);
+
+    provider.setShipmentStatus(uuid, "DELIVERED", "Вручён");
+    expect((await request(null, "POST", "/delivery/cdek/webhook", event)).statusCode).toBe(200);
+    provider.setShipmentStatus(uuid, "CREATED", "Создан");
+    expect((await request(null, "POST", "/delivery/cdek/webhook", event)).statusCode).toBe(200);
+
+    const delivery = await request(order.buyer, "GET", `/orders/${order.orderId}/delivery`);
+    expect(DeliveryResponseSchema.parse(delivery.json()).delivery.status).toBe("delivered");
+  });
+
+  it("sets no-store and rejects a foreign seller create", async () => {
+    const order = await createPaidOrder(1, 2, "headers-shop");
+    const otherSeller = await createUser(3);
+    const foreign = await request(otherSeller, "POST", `/seller/orders/${order.orderId}/delivery`, {
+      tariffCode: "136",
+    });
+    expect(foreign.statusCode).toBe(404);
+    expect(foreign.headers["cache-control"]).toBe("no-store");
   });
 
   it("accepts a verified webhook and rejects an unknown order", async () => {
