@@ -15,7 +15,7 @@ pnpm verify
 Exit code: `0`.
 
 ```text
-Public repo check: 333 tracked files, no secrets/PII patterns found
+Public repo check: 333 tracked files (лог снят до добавления evidence; финал 339), no secrets/PII patterns found
 packages/shared: 8 files / 103 tests passed
 apps/web:        19 files / 114 tests passed
 apps/api:        16 files / 156 tests passed
@@ -38,8 +38,8 @@ openspec validate --all --strict: 7 passed, 0 failed
   `/orders`; seller `/admin/orders` видит заказ.
 - Browser e2e не в CI: зафиксировано в `apps/web/e2e/README.md`; CI —
   API e2e в `pnpm verify`.
-- Логи: [S2-4-e2e-preview.log](S2-4-e2e-preview.log),
-  [S2-4-e2e-dev.log](S2-4-e2e-dev.log).
+- Логи: [S2-4-e2e-preview.txt](S2-4-e2e-preview.txt),
+  [S2-4-e2e-dev.txt](S2-4-e2e-dev.txt).
 
 ## A11y
 
