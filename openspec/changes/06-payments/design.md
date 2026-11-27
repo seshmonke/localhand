@@ -86,16 +86,16 @@ idempotent GET; токены/ключи не логируются. Без `YOOKA
   поэтому `waiting_for_capture` не используется.
 - Схема меняется двумя аддитивными миграциями: `0004` (enum и
   таблицы) и `0005` (fail-closed default `error`, reconcile-поля и
-  partial index). Опубликованную `0004` не меняем: инстансы со старой
-  версией падают на несовпадении journal `when`/hash.
+  partial index). Опубликованную `0004` не меняем; инстанс с
+  промежуточной `0004` из ветки до split лечится идемпотентной `0005`.
 - Down SQL: остановить трафик, выгрузить платежи, сначала откатить
   `0005` (drop index/constraint/columns, вернуть default `active`),
   затем `UPDATE orders SET status='new' WHERE status IN
   ('payment_pending','paid')`, удалить `payments`/
   `seller_payment_accounts`, оставить значения enum (PostgreSQL не умеет
   `DROP VALUE`); старый код читает только `new`. При повторном деплое
-  `0004` — `ADD VALUE IF NOT EXISTS`/чистка журнала drizzle, как в
-  `orders-rollback.md`. Полный rebuild enum — только скрипт с downtime
+  `0004` + `0005` — `ADD VALUE IF NOT EXISTS`/идемпотентные
+  колонки/индекс и чистка журнала drizzle, как в `orders-rollback.md`. Полный rebuild enum — только скрипт с downtime
   и потерей статусов. Runbook:
   `docs/stack/runbooks/payments-rollback.md`.
 

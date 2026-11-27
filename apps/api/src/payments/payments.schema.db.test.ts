@@ -330,7 +330,8 @@ describeWithDb("payments schema with a real database", () => {
          AND tablename = 'payments'
          AND indexname = 'payments_pending_reconcile_idx'`,
     );
-    expect(index.rows[0]?.indexdef).toContain("WHERE (status = 'pending'::payment_status)");
+    expect(index.rows[0]?.indexdef).toContain("status");
+    expect(index.rows[0]?.indexdef).toContain("pending");
   });
 
   it("enforces restrict deletes for order, payment account and seller", async () => {

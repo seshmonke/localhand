@@ -12,7 +12,7 @@ Change: `openspec/changes/06-payments/` (spec/design/tasks).
 
 ## AC — PR A (foundation)
 
-- [ ] Миграция `0004`: enum `payment_status`
+- [ ] Миграции `0004`–`0005`: enum `payment_status`
       (`pending|succeeded|canceled|failed|manual_review`),
       `order_status += payment_pending|paid`; таблицы
       `seller_payment_accounts` (версии, `is_test`, шифротекст токена,
@@ -41,10 +41,11 @@ Change: `openspec/changes/06-payments/` (spec/design/tasks).
       `YOOKASSA_REDIRECT_URI`; в live fake и `isTest` запрещены;
       `.env.example` без секретов; startup fail на неполном yookassa.
 - [ ] Down SQL + runbook `docs/stack/runbooks/payments-rollback.md`:
-      выгрузить платежи, `UPDATE orders SET status='new' WHERE status IN
-      ('payment_pending','paid')`, удалить таблицы, enum-значения
-      оставить, повторный деплой — `ADD VALUE IF NOT EXISTS`; откат
-      проверен на тестовой БД.
+      выгрузить платежи, сначала down `0005`, затем `UPDATE orders SET
+      status='new' WHERE status IN ('payment_pending','paid')`, удалить
+      таблицы, enum-значения оставить, повторный деплой `0004`+`0005` —
+      `ADD VALUE IF NOT EXISTS`/идемпотентные объекты; откат проверен на
+      тестовой БД.
 - [ ] `pnpm verify` + `openspec validate 06-payments --strict` зелёные;
       evidence в PR.
 
@@ -84,7 +85,7 @@ Change: `openspec/changes/06-payments/` (spec/design/tasks).
 
 ## owns
 
-- `apps/api/src/db/schema.ts`, `apps/api/drizzle/0004_*.sql`,
+- `apps/api/src/db/schema.ts`, `apps/api/drizzle/0004_*.sql`, `0005_*.sql`,
   `apps/api/drizzle/meta/**` (только сгенерированное drizzle-kit).
 - `apps/api/src/payments/**`, `apps/api/src/env.ts` (+ тесты).
 - `packages/shared/src/contracts/{order,payments}.ts` (+ тесты).
@@ -104,7 +105,7 @@ orchestrator), чужие изменения.
 ## Контракты/данные
 
 - TEST DB: `DATABASE_URL_TEST=postgres://localhand:localhand@localhost:5433/localhand_s2_test`,
-  guard `_test`; миграция `0004`.
+  guard `_test`; миграции `0004`–`0005`.
 - Деньги — `bigint` копейки, RUB, `capture: true`; без карт и PAN.
 - Токен — только шифротекст; ключи из env, не в репо.
 - Все ответы платежей — `no-store`; логи без PII/токена/тела.
