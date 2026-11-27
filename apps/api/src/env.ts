@@ -38,6 +38,14 @@ const RedirectUriSchema = z.url().refine(
   { message: "YOOKASSA_REDIRECT_URI must be an http(s) URL" },
 );
 
+const WebhookUrlSchema = z.url().refine(
+  (value) => {
+    const protocol = new URL(value).protocol;
+    return protocol === "https:" || protocol === "http:";
+  },
+  { message: "PAYMENTS_WEBHOOK_URL must be an http(s) URL" },
+);
+
 function isLocalhost(hostname: string): boolean {
   return (
     hostname === "localhost" ||
@@ -73,6 +81,7 @@ const EnvSchema = z
       z.coerce.number().int().positive().optional(),
     ),
     YOOKASSA_REDIRECT_URI: z.preprocess(emptyToUndefined, RedirectUriSchema.optional()),
+    PAYMENTS_WEBHOOK_URL: z.preprocess(emptyToUndefined, WebhookUrlSchema.optional()),
   })
   .superRefine((value, ctx) => {
     if (value.NODE_ENV !== "test") {
@@ -166,8 +175,32 @@ const EnvSchema = z
       });
     }
 
+    // The provider calls this URL with events: a live deployment must expose
+    // https (localhost is the local exception used by sandbox/test). HTTP is
+    // never accepted on a public host in live.
+    if (
+      value.PAYMENTS_WEBHOOK_URL &&
+      value.PAYMENTS_ENV === "live" &&
+      !isLiveRedirectUriAllowed(value.PAYMENTS_WEBHOOK_URL)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["PAYMENTS_WEBHOOK_URL"],
+        message:
+          "PAYMENTS_WEBHOOK_URL must use https in PAYMENTS_ENV=live; http is allowed only for localhost",
+      });
+    }
+
     if (value.PAYMENTS_PROVIDER === undefined) {
       return;
+    }
+
+    if (!value.PAYMENTS_WEBHOOK_URL) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["PAYMENTS_WEBHOOK_URL"],
+        message: "PAYMENTS_WEBHOOK_URL is required when a payment provider is configured",
+      });
     }
 
     if (!value.PAYMENTS_STATE_SECRET) {
@@ -247,6 +280,7 @@ export type PaymentsSettings = {
   tokenKeyring: TokenKeyring;
   tokenKeyVersion: number;
   yookassaRedirectUri: string | null;
+  webhookUrl: string;
 };
 
 /**
@@ -258,11 +292,17 @@ export function resolvePaymentsSettings(parsed: ParsedEnv): PaymentsSettings | n
     return null;
   }
 
-  const { PAYMENTS_STATE_SECRET, PAYMENTS_TOKEN_KEYS, PAYMENTS_TOKEN_KEY_VERSION } = parsed;
+  const {
+    PAYMENTS_STATE_SECRET,
+    PAYMENTS_TOKEN_KEYS,
+    PAYMENTS_TOKEN_KEY_VERSION,
+    PAYMENTS_WEBHOOK_URL,
+  } = parsed;
   if (
     PAYMENTS_STATE_SECRET === undefined ||
     PAYMENTS_TOKEN_KEYS === undefined ||
-    PAYMENTS_TOKEN_KEY_VERSION === undefined
+    PAYMENTS_TOKEN_KEY_VERSION === undefined ||
+    PAYMENTS_WEBHOOK_URL === undefined
   ) {
     throw new Error("payments env invariant violated");
   }
@@ -275,6 +315,7 @@ export function resolvePaymentsSettings(parsed: ParsedEnv): PaymentsSettings | n
     tokenKeyring: parseTokenKeyring(PAYMENTS_TOKEN_KEYS),
     tokenKeyVersion: PAYMENTS_TOKEN_KEY_VERSION,
     yookassaRedirectUri: parsed.YOOKASSA_REDIRECT_URI ?? null,
+    webhookUrl: PAYMENTS_WEBHOOK_URL,
   };
 }
 

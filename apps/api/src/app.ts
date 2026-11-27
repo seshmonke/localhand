@@ -11,9 +11,13 @@ import {
 } from "fastify-type-provider-zod";
 import { authRoutes } from "./auth/auth.route.js";
 import { createSmsProvider } from "./auth/sms/sms-provider.js";
-import { env, jwtSecret, trustProxy, type TrustProxyConfig } from "./env.js";
+import { env, jwtSecret, paymentsSettings, trustProxy, type TrustProxyConfig } from "./env.js";
 import { healthRoutes } from "./health/health.route.js";
 import { ordersRoutes } from "./orders/orders.route.js";
+import { createPaymentsRuntime } from "./payments/context.js";
+import type { PaymentProvider } from "./payments/provider.js";
+import { startPaymentsReconcile } from "./payments/payments.reconcile.scheduler.js";
+import { paymentsRoutes } from "./payments/payments.route.js";
 import { sellerProductRoutes } from "./seller-product/seller-product.route.js";
 import { sellerShopRoutes } from "./seller-shop/seller-shop.route.js";
 import { storefrontRoutes } from "./storefront/storefront.route.js";
@@ -22,6 +26,10 @@ export type BuildAppOptions = {
   trustProxy?: TrustProxyConfig;
   /** Test hook: capture the real pino output (serializers included). */
   logger?: FastifyServerOptions["logger"];
+  /** Test hook: replace the provider while keeping one instance per app. */
+  paymentProvider?: PaymentProvider;
+  /** Test hook: disable the 60s reconcile scheduler (it runs on every startup otherwise). */
+  reconcile?: boolean;
 };
 
 export function buildApp(options: BuildAppOptions = {}) {
@@ -53,12 +61,29 @@ export function buildApp(options: BuildAppOptions = {}) {
     smsruApiId: env.SMSRU_API_ID,
   });
 
+  const payments = createPaymentsRuntime({
+    settings: paymentsSettings,
+    webOrigin: env.WEB_ORIGIN,
+    ...(options.paymentProvider === undefined ? {} : { provider: options.paymentProvider }),
+  });
+  app.decorate("payments", payments);
+
   app.register(healthRoutes);
   app.register(storefrontRoutes);
   app.register(authRoutes, { smsProvider });
   app.register(sellerShopRoutes);
   app.register(sellerProductRoutes);
   app.register(ordersRoutes);
+  app.register(paymentsRoutes);
+
+  const reconcileEnabled =
+    options.reconcile ?? (env.NODE_ENV !== "test" && env.DATABASE_URL !== undefined);
+  if (payments && reconcileEnabled) {
+    const scheduler = startPaymentsReconcile(app, payments);
+    app.addHook("onReady", async () => {
+      scheduler.runNow();
+    });
+  }
 
   return app;
 }

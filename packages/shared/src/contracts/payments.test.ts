@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   CreatePaymentResponseSchema,
   IdempotencyKeySchema,
+  OrderPaymentResponseSchema,
   OrderPaymentSchema,
   PAYMENT_ERROR_CODES,
+  PaymentConnectResponseSchema,
   PaymentErrorSchema,
   PaymentStatusSchema,
   SELLER_PAYMENT_ACCOUNT_STATUSES,
@@ -127,9 +129,20 @@ describe("OrderPaymentSchema", () => {
 describe("payment responses", () => {
   it("parses create payment and seller account responses", () => {
     expect(CreatePaymentResponseSchema.parse({ payment })).toEqual({ payment });
+    expect(OrderPaymentResponseSchema.parse({ payment })).toEqual({ payment });
+    expect(OrderPaymentResponseSchema.parse({ payment: null })).toEqual({ payment: null });
     expect(SellerPaymentAccountSchema.parse(account)).toEqual(account);
     expect(SellerPaymentAccountResponseSchema.parse({ account })).toEqual({ account });
     expect(SellerPaymentAccountResponseSchema.parse({ account: null })).toEqual({ account: null });
+  });
+
+  it("parses a provider consent URL and rejects unsafe schemes", () => {
+    const consentUrl = "https://yookassa.ru/oauth/v2/authorize?client_id=abc&state=xyz";
+    expect(PaymentConnectResponseSchema.parse({ consentUrl })).toEqual({ consentUrl });
+    expect(
+      PaymentConnectResponseSchema.safeParse({ consentUrl: "javascript:alert(1)" }).success,
+    ).toBe(false);
+    expect(PaymentConnectResponseSchema.safeParse({ consentUrl: "not-a-url" }).success).toBe(false);
   });
 
   it("keeps the internal superseded account status out of the public contract", () => {

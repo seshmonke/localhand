@@ -79,6 +79,22 @@ export const CreatePaymentResponseSchema = z.object({
   payment: OrderPaymentSchema,
 });
 
+/**
+ * Buyer/seller read of the current payment. `null` means the order has no
+ * payment attempt yet; the seller namespace returns the same shape without
+ * `confirmationUrl`.
+ */
+export const OrderPaymentResponseSchema = z.object({
+  payment: OrderPaymentSchema.nullable(),
+});
+
+/**
+ * Seller OAuth start: the client navigates the browser to `consentUrl`.
+ */
+export const PaymentConnectResponseSchema = z.object({
+  consentUrl: ConfirmationUrlSchema,
+});
+
 export const SellerPaymentAccountSchema = z.object({
   id: PaymentIdSchema,
   provider: PaymentProviderSchema,
@@ -119,7 +135,9 @@ export type PaymentStatus = z.infer<typeof PaymentStatusSchema>;
 export type PaymentProvider = z.infer<typeof PaymentProviderSchema>;
 export type SellerPaymentAccountStatus = z.infer<typeof SellerPaymentAccountStatusSchema>;
 export type OrderPayment = z.infer<typeof OrderPaymentSchema>;
+export type OrderPaymentResponse = z.infer<typeof OrderPaymentResponseSchema>;
 export type CreatePaymentResponse = z.infer<typeof CreatePaymentResponseSchema>;
+export type PaymentConnectResponse = z.infer<typeof PaymentConnectResponseSchema>;
 export type SellerPaymentAccount = z.infer<typeof SellerPaymentAccountSchema>;
 export type SellerPaymentAccountResponse = z.infer<typeof SellerPaymentAccountResponseSchema>;
 export type PaymentErrorCode = z.infer<typeof PaymentErrorCodeSchema>;

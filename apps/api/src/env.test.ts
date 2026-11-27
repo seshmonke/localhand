@@ -120,6 +120,7 @@ function paymentsEnv(overrides: Record<string, string | undefined> = {}) {
     PAYMENTS_TOKEN_KEYS: PAYMENT_TOKEN_KEYS,
     PAYMENTS_TOKEN_KEY_VERSION: "1",
     PAYMENTS_STATE_SECRET,
+    PAYMENTS_WEBHOOK_URL: "https://example.com/payments/yookassa/webhook",
     ...overrides,
   };
 }
@@ -175,6 +176,7 @@ describe("payments env", () => {
       expect(settings?.tokenKeyVersion).toBe(1);
       expect(settings?.tokenKeyring.get(1)?.toString("base64")).toBe(PAYMENT_KEY_ONE);
       expect(settings?.yookassaRedirectUri).toBeNull();
+      expect(settings?.webhookUrl).toBe("https://example.com/payments/yookassa/webhook");
     }
   });
 
@@ -260,6 +262,77 @@ describe("payments env", () => {
     }
   });
 
+  it("requires a webhook URL when a provider is configured", () => {
+    expect(() =>
+      parseEnv(
+        paymentsEnv({
+          PAYMENTS_PROVIDER: "fake",
+          PAYMENTS_FAKE_ENABLED: "true",
+          PAYMENTS_ENV: "test",
+          PAYMENTS_WEBHOOK_URL: undefined,
+        }),
+      ),
+    ).toThrow(/PAYMENTS_WEBHOOK_URL/);
+  });
+
+  it("requires https for a live webhook URL, except localhost", () => {
+    expect(() =>
+      parseEnv(
+        paymentsEnv({
+          PAYMENTS_PROVIDER: "yookassa",
+          PAYMENTS_ENV: "live",
+          YOOKASSA_REDIRECT_URI: "https://example.com/seller/payments/callback",
+          PAYMENTS_WEBHOOK_URL: "http://example.com/payments/yookassa/webhook",
+        }),
+      ),
+    ).toThrow(/PAYMENTS_WEBHOOK_URL/);
+
+    for (const webhookUrl of [
+      "https://example.com/payments/yookassa/webhook",
+      "http://localhost:3000/payments/yookassa/webhook",
+      "http://127.0.0.1:3000/payments/yookassa/webhook",
+    ]) {
+      const parsed = parseEnv(
+        paymentsEnv({
+          PAYMENTS_PROVIDER: "yookassa",
+          PAYMENTS_ENV: "live",
+          YOOKASSA_REDIRECT_URI: "https://example.com/seller/payments/callback",
+          PAYMENTS_WEBHOOK_URL: webhookUrl,
+        }),
+      );
+      expect(resolvePaymentsSettings(parsed)?.webhookUrl).toBe(webhookUrl);
+    }
+  });
+
+  it("accepts http webhook URLs in sandbox and test", () => {
+    for (const environment of ["sandbox", "test"] as const) {
+      const parsed = parseEnv(
+        paymentsEnv({
+          PAYMENTS_PROVIDER: "fake",
+          PAYMENTS_FAKE_ENABLED: "true",
+          PAYMENTS_ENV: environment,
+          PAYMENTS_WEBHOOK_URL: "http://example.com/payments/yookassa/webhook",
+        }),
+      );
+      expect(resolvePaymentsSettings(parsed)?.webhookUrl).toBe(
+        "http://example.com/payments/yookassa/webhook",
+      );
+    }
+  });
+
+  it("rejects a non-http webhook URL", () => {
+    expect(() =>
+      parseEnv(
+        paymentsEnv({
+          PAYMENTS_PROVIDER: "fake",
+          PAYMENTS_FAKE_ENABLED: "true",
+          PAYMENTS_ENV: "test",
+          PAYMENTS_WEBHOOK_URL: "ftp://example.com/payments/yookassa/webhook",
+        }),
+      ),
+    ).toThrow(/PAYMENTS_WEBHOOK_URL/);
+  });
+
   it("rejects an invalid token keyring", () => {
     expect(() => parseEnv(paymentsEnv({ PAYMENTS_TOKEN_KEYS: "not-json" }))).toThrow(
       /PAYMENTS_TOKEN_KEYS/,
@@ -302,11 +375,13 @@ describe("payments env", () => {
       PAYMENTS_TOKEN_KEY_VERSION: "",
       PAYMENTS_STATE_SECRET: "",
       YOOKASSA_REDIRECT_URI: "",
+      PAYMENTS_WEBHOOK_URL: "",
     });
 
     expect(parsed.PAYMENTS_PROVIDER).toBeUndefined();
     expect(parsed.PAYMENTS_TOKEN_KEYS).toBeUndefined();
     expect(parsed.PAYMENTS_TOKEN_KEY_VERSION).toBeUndefined();
+    expect(parsed.PAYMENTS_WEBHOOK_URL).toBeUndefined();
     expect(resolvePaymentsSettings(parsed)).toBeNull();
   });
 });
