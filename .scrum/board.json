@@ -1,46 +1,11 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-27T02:30:00Z",
+  "updated_at": "2026-11-27T02:40:00Z",
   "tasks": [
-    {
-      "id": "S1-1",
-      "title": "Phone auth: OTP, session, rate-limit",
-      "status": "ready",
-      "owner": null,
-      "change": "02-seller-onboarding",
-      "pr": null
-    },
-    {
-      "id": "S1-2",
-      "title": "Seller shop: create, edit, publish",
-      "status": "ready",
-      "owner": null,
-      "change": "02-seller-onboarding",
-      "pr": null
-    },
-    {
-      "id": "S1-3",
-      "title": "Products: CRUD, publish/hide, authz",
-      "status": "ready",
-      "owner": null,
-      "change": "02-seller-onboarding",
-      "pr": null
-    },
-    {
-      "id": "S1-4",
-      "title": "Seller admin UI: login, onboarding, products",
-      "status": "ready",
-      "owner": null,
-      "change": "02-seller-onboarding",
-      "pr": null
-    },
-    {
-      "id": "S1-5",
-      "title": "Security, evidence, docs, archive",
-      "status": "ready",
-      "owner": null,
-      "change": "02-seller-onboarding",
-      "pr": null
-    }
+    {"id": "S1-1", "title": "Phone auth: OTP, session, rate-limit", "status": "in_progress", "owner": "scrum-worker", "change": "02-seller-onboarding", "pr": null},
+    {"id": "S1-2", "title": "Seller shop: create, edit, publish", "status": "ready", "owner": null, "change": "02-seller-onboarding", "pr": null},
+    {"id": "S1-3", "title": "Products: CRUD, publish/hide, authz", "status": "ready", "owner": null, "change": "02-seller-onboarding", "pr": null},
+    {"id": "S1-4", "title": "Seller admin UI: login, onboarding, products", "status": "ready", "owner": null, "change": "02-seller-onboarding", "pr": null},
+    {"id": "S1-5", "title": "Security, evidence, docs, archive", "status": "ready", "owner": null, "change": "02-seller-onboarding", "pr": null}
   ]
 }
