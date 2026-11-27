@@ -16,9 +16,11 @@ Change: `openspec/changes/06-payments/` (spec/design/tasks).
       (`pending|succeeded|canceled|failed|manual_review`),
       `order_status += payment_pending|paid`; таблицы
       `seller_payment_accounts` (версии, `is_test`, шифротекст токена,
-      `expires_at`, partial unique active) и `payments` (unique
-      `order_id+idempotency_key`, partial unique active/manual,
-      partial unique `provider_payment_id`); индексы.
+      `expires_at`, `status` default `error` fail-closed, partial unique
+      active) и `payments` (unique `order_id+idempotency_key`, partial
+      unique active/manual, partial unique `provider_payment_id`,
+      `reconcile_attempts`/`last_checked_at`, partial index pending);
+      индексы.
 - [ ] `OrderStatusSchema`/`statusLabels`/тесты: `new|payment_pending|
       paid`; checkout по-прежнему создаёт `new`; бейдж
       `manual_review` — отдельно от статуса заказа.
@@ -27,8 +29,8 @@ Change: `openspec/changes/06-payments/` (spec/design/tasks).
       `PaymentErrorCode`; UUID `Idempotency-Key` нормализуется в lower.
 - [ ] `PaymentProvider` интерфейс: connection, exchange, account info,
       subscribe/unsubscribe webhooks, create/get/revoke; fake-провайдер
-      с `PAYMENTS_FAKE_ENABLED` и dev-complete endpoint (только
-      fake/test, authz покупателя).
+      с `PAYMENTS_FAKE_ENABLED`. HTTP dev-complete endpoint — PR B
+      (только fake/test, authz покупателя), не входит в PR A.
 - [ ] AES-256-GCM: формат `version||iv||tag||ciphertext`, keyring
       `PAYMENTS_TOKEN_KEYS` + `PAYMENTS_TOKEN_KEY_VERSION`; roundtrip/
       tamper/rotation тесты.

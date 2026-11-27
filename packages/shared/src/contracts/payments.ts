@@ -43,6 +43,15 @@ export const PaymentIdSchema = z.number().int().positive().max(ORDER_ID_MAX);
 export const PaymentAmountSchema = z.number().int().min(0).max(ORDER_TOTAL_MAX_KOPECKS);
 
 /**
+ * Confirmation URLs are opened by the browser: only http(s) is allowed.
+ * `javascript:`, `data:` and `ftp:` would turn a provider response into an
+ * injection vector, so the contract rejects them before they reach the client.
+ */
+const ConfirmationUrlSchema = z.url().refine((value) => /^https?:\/\//i.test(value), {
+  message: "confirmation_url_http_s",
+});
+
+/**
  * `confirmationUrl` is present only while the payment is `pending`; the schema
  * rejects a terminal payment that still exposes a provider URL.
  */
@@ -52,7 +61,7 @@ export const OrderPaymentSchema = z
     status: PaymentStatusSchema,
     amountKopecks: PaymentAmountSchema,
     currency: PaymentCurrencySchema,
-    confirmationUrl: z.url().nullable(),
+    confirmationUrl: ConfirmationUrlSchema.nullable(),
     createdAt: z.iso.datetime({ offset: true }),
     paidAt: z.iso.datetime({ offset: true }).nullable(),
   })

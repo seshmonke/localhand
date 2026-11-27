@@ -6,6 +6,7 @@ import {
   PAYMENT_ERROR_CODES,
   PaymentErrorSchema,
   PaymentStatusSchema,
+  SELLER_PAYMENT_ACCOUNT_STATUSES,
   SellerPaymentAccountResponseSchema,
   SellerPaymentAccountSchema,
 } from "./payments.js";
@@ -92,10 +93,24 @@ describe("OrderPaymentSchema", () => {
     { ...payment, amountKopecks: 1.5 },
     { ...payment, currency: "USD" },
     { ...payment, confirmationUrl: "not-a-url" },
+    { ...payment, confirmationUrl: "javascript:alert(1)" },
+    { ...payment, confirmationUrl: "data:text/html,<script>alert(1)</script>" },
+    { ...payment, confirmationUrl: "ftp://example.com/payment" },
     { ...payment, createdAt: "2026-11-27" },
     { ...payment, paidAt: "2026-11-27T10:00:00.000Z", status: "failed" },
   ])("rejects invalid payment %#", (input) => {
     expect(OrderPaymentSchema.safeParse(input).success).toBe(false);
+  });
+
+  it("accepts http and https confirmation URLs", () => {
+    for (const confirmationUrl of [
+      "https://yoomoney.ru/checkout/payments/v2/contract?orderId=abc",
+      "http://localhost:3000/dev/payments/fake_123/complete",
+    ]) {
+      expect(OrderPaymentSchema.parse({ ...payment, confirmationUrl }).confirmationUrl).toBe(
+        confirmationUrl,
+      );
+    }
   });
 
   it("allows paidAt on a succeeded payment", () => {
@@ -115,6 +130,15 @@ describe("payment responses", () => {
     expect(SellerPaymentAccountSchema.parse(account)).toEqual(account);
     expect(SellerPaymentAccountResponseSchema.parse({ account })).toEqual({ account });
     expect(SellerPaymentAccountResponseSchema.parse({ account: null })).toEqual({ account: null });
+  });
+
+  it("keeps the internal superseded account status out of the public contract", () => {
+    // The DB enum has `superseded` for account history; the seller API exposes
+    // only the current version and must not accept the internal value.
+    expect(SELLER_PAYMENT_ACCOUNT_STATUSES).not.toContain("superseded");
+    expect(SellerPaymentAccountSchema.safeParse({ ...account, status: "superseded" }).success).toBe(
+      false,
+    );
   });
 
   it("accepts every payment error code", () => {

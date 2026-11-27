@@ -58,8 +58,9 @@ idempotent GET; токены/ключи не логируются. Без `YOOKA
   `id`, `seller_id` FK sellers restrict, `provider` text,
   `provider_account_id` text, `is_test` bool, `token_ciphertext` bytea,
   `token_key_version` smallint, `status`
-  (`active|superseded|disabled|error`), `expires_at`,
-  `connected_at`, `updated_at`.
+  (`active|superseded|disabled|error`) default `error` (fail-closed:
+  новая версия становится `active` только после успешного обмена и
+  подписки на вебхуки), `expires_at`, `connected_at`, `updated_at`.
   Partial unique `(seller_id) WHERE status = 'active'` — один активный
   аккаунт. При повторном подключении старый становится `superseded`,
   его токен остаётся для pending-платежей; `payments` ссылается на
@@ -70,12 +71,17 @@ idempotent GET; токены/ключи не логируются. Без `YOOKA
   (`pending|succeeded|canceled|failed|manual_review`),
   `amount_kopecks` bigint check ≥0, `currency` char(3) default `RUB`,
   `confirmation_url` text null, `idempotency_key` uuid, `created_at`,
-  `updated_at`, `paid_at`.
+  `updated_at`, `paid_at`, `reconcile_attempts` smallint default 0
+  check ≥0 (неудачные попытки reconcile), `last_checked_at`
+  timestamptz null (последняя проверка провайдера).
   - unique `(order_id, idempotency_key)` (UUID в нижнем регистре);
   - partial unique `payments(order_id) WHERE status IN
     ('pending','manual_review')` — один активный/спорный платёж;
   - partial unique `provider_payment_id WHERE provider_payment_id IS NOT
-    NULL`.
+    NULL`;
+  - partial index `payments_pending_reconcile_idx(created_at) WHERE
+    status = 'pending'` — выборка pending для reconcile без полного
+    скана.
 - `order_status` расширяется `payment_pending`, `paid`. `capture: true`,
   поэтому `waiting_for_capture` не используется.
 - Миграция аддитивная. Down SQL: остановить трафик, выгрузить платежи,
@@ -213,7 +219,11 @@ idempotent GET; токены/ключи не логируются. Без `YOOKA
   `order_status=payment_pending` без терминального платежа, вызывать
   `getPayment`; `pending` без provider id старше 15 минут →
   `manual_review` (не `failed`: исход вызова неизвестен). Условие
-  выборки — `pending` с provider id и заказ `payment_pending`.
+  выборки — `pending` с provider id и заказ `payment_pending`;
+  выборку ускоряет partial index `payments_pending_reconcile_idx` по
+  `created_at WHERE status = 'pending'`. Каждая неудачная проверка
+  увеличивает `reconcile_attempts` и пишет `last_checked_at`; после 3
+  неудачных попыток платёж уходит в `manual_review`.
   Reconcile берёт тот же order-lock и перечитывает платёж/заказ под
   ним, поэтому не гоняется с вебхуком. 401 токена → аккаунт `error`;
   если есть новая active-версия с тем же `provider_account_id`,

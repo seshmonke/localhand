@@ -171,7 +171,7 @@ export const sellerPaymentAccounts = pgTable(
     isTest: boolean("is_test").notNull().default(false),
     tokenCiphertext: bytea("token_ciphertext").notNull(),
     tokenKeyVersion: smallint("token_key_version").notNull(),
-    status: sellerPaymentAccountStatusEnum("status").notNull().default("active"),
+    status: sellerPaymentAccountStatusEnum("status").notNull().default("error"),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
     connectedAt: timestamp("connected_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -212,6 +212,8 @@ export const payments = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     paidAt: timestamp("paid_at", { withTimezone: true }),
+    reconcileAttempts: smallint("reconcile_attempts").notNull().default(0),
+    lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
   },
   (table) => [
     unique("payments_order_id_idempotency_key_unique").on(table.orderId, table.idempotencyKey),
@@ -223,8 +225,12 @@ export const payments = pgTable(
       .where(sql`${table.providerPaymentId} IS NOT NULL`),
     index("payments_order_id_created_at_idx").on(table.orderId, table.createdAt.desc()),
     index("payments_seller_account_id_idx").on(table.sellerAccountId),
+    index("payments_pending_reconcile_idx")
+      .on(table.createdAt)
+      .where(sql`${table.status} = 'pending'`),
     check("payments_amount_kopecks_check", sql`${table.amountKopecks} >= 0`),
     check("payments_currency_check", sql`${table.currency} = 'RUB'`),
+    check("payments_reconcile_attempts_check", sql`${table.reconcileAttempts} >= 0`),
   ],
 );
 

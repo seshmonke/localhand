@@ -38,6 +38,20 @@ const RedirectUriSchema = z.url().refine(
   { message: "YOOKASSA_REDIRECT_URI must be an http(s) URL" },
 );
 
+function isLocalhost(hostname: string): boolean {
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "::1" ||
+    hostname === "[::1]"
+  );
+}
+
+function isLiveRedirectUriAllowed(raw: string): boolean {
+  const url = new URL(raw);
+  return url.protocol === "https:" || isLocalhost(url.hostname);
+}
+
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -200,6 +214,20 @@ const EnvSchema = z
         code: "custom",
         path: ["YOOKASSA_REDIRECT_URI"],
         message: "YOOKASSA_REDIRECT_URI is required for the yookassa provider",
+      });
+    }
+
+    if (
+      value.PAYMENTS_PROVIDER === "yookassa" &&
+      value.PAYMENTS_ENV === "live" &&
+      value.YOOKASSA_REDIRECT_URI &&
+      !isLiveRedirectUriAllowed(value.YOOKASSA_REDIRECT_URI)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["YOOKASSA_REDIRECT_URI"],
+        message:
+          "YOOKASSA_REDIRECT_URI must use https in PAYMENTS_ENV=live; http is allowed only for localhost",
       });
     }
   });

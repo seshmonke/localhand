@@ -218,6 +218,48 @@ describe("payments env", () => {
     ).toThrow(/YOOKASSA_REDIRECT_URI/);
   });
 
+  it("accepts http redirects outside live", () => {
+    for (const environment of ["sandbox", "test"] as const) {
+      const parsed = parseEnv(
+        paymentsEnv({
+          PAYMENTS_PROVIDER: "yookassa",
+          PAYMENTS_ENV: environment,
+          YOOKASSA_REDIRECT_URI: "http://example.com/seller/payments/callback",
+        }),
+      );
+      expect(resolvePaymentsSettings(parsed)?.yookassaRedirectUri).toBe(
+        "http://example.com/seller/payments/callback",
+      );
+    }
+  });
+
+  it("requires https for a live redirect, except localhost", () => {
+    expect(() =>
+      parseEnv(
+        paymentsEnv({
+          PAYMENTS_PROVIDER: "yookassa",
+          PAYMENTS_ENV: "live",
+          YOOKASSA_REDIRECT_URI: "http://example.com/seller/payments/callback",
+        }),
+      ),
+    ).toThrow(/YOOKASSA_REDIRECT_URI/);
+
+    for (const redirect of [
+      "https://example.com/seller/payments/callback",
+      "http://localhost:3000/seller/payments/callback",
+      "http://127.0.0.1:3000/seller/payments/callback",
+    ]) {
+      const parsed = parseEnv(
+        paymentsEnv({
+          PAYMENTS_PROVIDER: "yookassa",
+          PAYMENTS_ENV: "live",
+          YOOKASSA_REDIRECT_URI: redirect,
+        }),
+      );
+      expect(resolvePaymentsSettings(parsed)?.yookassaRedirectUri).toBe(redirect);
+    }
+  });
+
   it("rejects an invalid token keyring", () => {
     expect(() => parseEnv(paymentsEnv({ PAYMENTS_TOKEN_KEYS: "not-json" }))).toThrow(
       /PAYMENTS_TOKEN_KEYS/,
