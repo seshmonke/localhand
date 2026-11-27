@@ -1,0 +1,29 @@
+{
+  "generated_at": "2026-11-27T06:15:00.000Z",
+  "source": "pnpm --filter @localhand/web build (Vite 8.4.0, prod)",
+  "baseline": {
+    "ref": "S2-3-verify: 553.5 kB JS / 157.4 kB gzip",
+    "js_kb": 553.5,
+    "gzip_kb": 157.4
+  },
+  "current": {
+    "js_kb": 553.65,
+    "gzip_kb": 157.42,
+    "css_kb": 39.95,
+    "css_gzip_kb": 10.92,
+    "js_file": "dist/assets/index-Bp2_S5mh.js",
+    "css_file": "dist/assets/index-BsHzcJ5s.css"
+  },
+  "delta": {
+    "js_kb": 0.15,
+    "js_percent": 0.03,
+    "gzip_kb": 0.02,
+    "budget": "<= +10% and <= +20 kB gzip",
+    "verdict": "within budget"
+  },
+  "notes": [
+    "Runtime code changes in S2-4 are limited to Tailwind utility classes on MarketplacePage (dark-theme contrast fix); no new runtime dependency.",
+    "S2-4 follow-up changed only e2e config/types/docs and the API health probe, so the web bundle stayed within measurement noise.",
+    "@axe-core/playwright is a devDependency and is not part of the web bundle."
+  ]
+}

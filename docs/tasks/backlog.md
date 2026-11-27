@@ -64,6 +64,13 @@
 - [ ] Курировать палитру: ч/б + акценты, контраст, тёмная тема.
   Критерий: токены и WCAG-проверка. Источник: product.md. Спринт: —.
 
+- [ ] P1. Ввести layout system: `PageShell`/`Container`, 12-колоночная
+  сетка, 8pt spacing, `Stack`/`Grid`/`Sidebar`/`Card`, единые высоты
+  контролов, overlay и screenshot-тесты 320/768/1440; выровнять
+  admin form/status, header, checkout. Критерий: элементы на общих
+  направляющих, нет горизонтального overflow, скриншоты 3 breakpoint.
+  Источник: design review владельца 27.11.2026. Спринт: — (следующий PBI).
+
 ## P2
 
 - [ ] Отзывы, рейтинги, рекомендации. Критерий: решение о скоупе и
@@ -170,6 +177,6 @@
   light/dark, 320/1440) и закрыть находки. Критерий: 0
   serious/critical в отчёте. Источник: P3 ревью S2-4. Спринт: —.
 - [ ] Собрать field p75 LCP (RUM или Lighthouse с CPU/network
-  throttling на реальном стенде); lab smoke S2-4 не заменяет DoD
-  «средний мобильный». Критерий: field p75 < 2,5 с на `/` и
+  throttling на реальном стенде); lab smoke S2-4 — owner-approved proxy v1,
+  field p75 остаётся DoD для публичного запуска. Критерий: field p75 < 2,5 с на `/` и
   `/checkout`. Источник: P3 ревью S2-4. Спринт: —.

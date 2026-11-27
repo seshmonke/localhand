@@ -25,10 +25,9 @@ ACCEPT, change `02-seller-onboarding` заархивирован.
 - [Спринт 1: онбординг продавца + auth](01-seller-onboarding.md) —
   CLOSED 27.11.2026; S1-1…S1-5 (PR #12/#14/#16/#18/#20/#22), specs
   phone-auth/seller-shop/product-management.
-- [Спринт 2: buyer-core](02-buyer-core.md) — BUILDING, cycle 4; changes
-  `03-catalog-discovery`, `04-cart`, `05-checkout-orders` (все в архиве):
-  каталог, корзина, checkout/orders, seller orders. Следующий — S2-4
-  security/close. Закрыт: —.
+- [Спринт 2: buyer-core](02-buyer-core.md) — CLOSED 27.11.2026;
+  S2-1…S2-4 (PR #26/#28/#30/#31/#33), changes `03`/`04`/`05` в архиве.
+  LCP: owner-approved lab/preview proxy, field RUM в бэклоге.
 
 ## Бэклог
 

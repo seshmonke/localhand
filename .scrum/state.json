@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "phase": "BUILDING",
+  "phase": "CLOSED",
   "init_closed": true,
   "sprint": 2,
   "cycle": 4,
-  "updated_at": "2026-11-27T05:45:00Z",
+  "updated_at": "2026-11-27T06:40:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 2 cycle 4: S2-4 security/e2e/close claimed by scrum-worker (branch task/S2-4-security, brief docs/tasks/S2-4-security.md, lease to 10:00Z). All buyer-core changes archived. Budget not a blocker."
+  "notes": "Sprint 2 CLOSED 27.11.2026: buyer-core changes 03/04/05 archived, review ACCEPT, retro written. Owner-approved LCP exception: lab/preview gate as v1 DoD proxy, field p75/RUM in backlog. Next: layout-system PBI, then Sprint 3 plan only by owner command."
 }

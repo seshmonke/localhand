@@ -1,0 +1,48 @@
+{
+  "kind": "lab",
+  "field_p75": false,
+  "generated_at": "2026-11-27T08:38:13.882Z",
+  "base": "http://127.0.0.1:4173",
+  "budget": {
+    "limit_ms": 2500,
+    "enforced": true,
+    "target": "preview-or-forced",
+    "catalog_met": true,
+    "checkout_met": true,
+    "note": "Enforced on the built preview bundle (or PERF_ENFORCE=1): both pages must stay under the lab budget; a regression fails the run."
+  },
+  "runs": 5,
+  "viewport": "390x844 @2x mobile",
+  "conditions": {
+    "network": "CDP Slow 4G: 150 ms RTT, 1.6 Mbps down, 750 kbps up",
+    "cpu_throttling": "4x (CDP Emulation.setCPUThrottlingRate)",
+    "network_throttling": "CDP Network.emulateNetworkConditions (Lighthouse mobileSlow4G preset)",
+    "images": "placeholder blocks; no real product images",
+    "browser": "headless Chromium"
+  },
+  "note": "Lab smoke only. Not field p75 and not the DoD average-mobile metric; field p75 requires RUM or real-device/Lighthouse field data (backlog P3).",
+  "metrics": {
+    "catalog": {
+      "url": "/",
+      "runs": [
+        560,
+        508,
+        508,
+        476,
+        476
+      ],
+      "labP75": 508
+    },
+    "checkout": {
+      "url": "/checkout",
+      "runs": [
+        664,
+        632,
+        688,
+        700,
+        660
+      ],
+      "labP75": 688
+    }
+  }
+}
