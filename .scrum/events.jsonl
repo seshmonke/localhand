@@ -33,3 +33,4 @@
 {"ts":"2026-11-27T03:51:30Z","type":"merge","sprint":2,"task":"S2-1","pr":26,"merge_commit":"7ab658e","status":"done"}
 {"ts":"2026-11-27T03:52:00Z","type":"archive","sprint":2,"change":"03-catalog-discovery","archive":"2026-11-27-03-catalog-discovery","specs":["catalog-discovery"]}
 {"ts":"2026-11-27T03:52:30Z","type":"phase","sprint":2,"cycle":2,"from":"cycle_1","to":"cycle_2","task":"S2-2"}
+{"ts":"2026-11-27T03:55:00Z","type":"claim","sprint":2,"cycle":2,"task":"S2-2","owner":"scrum-worker","branch":"task/S2-2-cart","change":"04-cart","lease":".scrum/locks/S2-2.json"}

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-27T03:52:00Z",
+  "updated_at": "2026-11-27T03:55:00Z",
   "tasks": [
     {
       "id": "S2-1",
@@ -13,8 +13,8 @@
     {
       "id": "S2-2",
       "title": "Cart: localStorage, groups, badge",
-      "status": "ready",
-      "owner": null,
+      "status": "in_progress",
+      "owner": "scrum-worker",
       "change": "04-cart",
       "pr": null
     },

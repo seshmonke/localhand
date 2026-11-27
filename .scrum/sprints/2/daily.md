@@ -24,7 +24,8 @@
 
 ### S2-2 Cart
 
-- Статус: `ready`; brief, worktree и lease создаются перед dispatch.
+- Статус: `in_progress`, owner `scrum-worker`; ветка `task/S2-2-cart`,
+  lease до 07:30Z.
 - Дальше: localStorage-корзина, группы по магазинам, badge, `/cart`,
   тесты, mobile/a11y.
 - Блокеры: нет.

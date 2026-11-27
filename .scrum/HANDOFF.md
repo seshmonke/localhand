@@ -13,8 +13,8 @@
 - Sprint 2: **BUILDING**, cycle 2; `03-catalog-discovery` archived;
   `04-cart`, `05-checkout-orders` active.
 - S2-1 catalog: **done**, PR #26; change `03` archived.
-- S2-2 cart: **ready**, не claimed. Перед dispatch: brief
-  `docs/tasks/S2-2-cart.md`, ветка `task/S2-2-cart`, lease.
+- S2-2 cart: **in_progress**, owner `scrum-worker`; ветка
+  `task/S2-2-cart`, lease до 07:30Z.
 
 ## Evidence S1
 
@@ -43,8 +43,8 @@
 
 ## Следующий шаг
 
-1. Claim S2-2: brief `docs/tasks/S2-2-cart.md`, ветка
-   `task/S2-2-cart`, worktree/lease; dispatch.
+1. `scrum-worker` реализует S2-2: cart storage/context, add/remove,
+   badge, `/cart`, тесты.
 2. Orchestrator: verify → review → PR → merge/archive `04`.
 3. S2-3 checkout/orders → S2-4 security/close.
 
