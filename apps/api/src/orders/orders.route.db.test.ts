@@ -334,6 +334,21 @@ describeWithDb("checkout and orders routes with a real database", () => {
     expect((repeated.json().orders as OrderBody[]).map((order) => order.id)).toEqual(createdIds);
     expect(await countOrders()).toEqual({ orders: 2, items: 2 });
 
+    // A replay is keyed only by clientCheckoutId: different items still return
+    // the orders created by the first request. The client must send a new UUID
+    // when the cart composition changes.
+    const differentItems = await checkout(buyer, [second.id], { clientCheckoutId });
+    expect(differentItems.statusCode).toBe(201);
+    const replayed = differentItems.json().orders as OrderBody[];
+    expect(replayed.map((order) => order.id)).toEqual(createdIds);
+    const replayedProductIds = replayed.flatMap((order) =>
+      order.items.map((item) => item.productId),
+    );
+    expect(replayedProductIds.sort((left, right) => (left ?? 0) - (right ?? 0))).toEqual(
+      [first.id, second.id].sort((left, right) => left - right),
+    );
+    expect(await countOrders()).toEqual({ orders: 2, items: 2 });
+
     const otherId = await checkout(buyer, [first.id]);
     expect(otherId.statusCode).toBe(201);
     expect(await countOrders()).toEqual({ orders: 3, items: 3 });

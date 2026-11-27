@@ -1,5 +1,5 @@
 {
-  "id": "d033d8bf-3bde-4776-b43b-b9ccca77ce1e",
+  "id": "5caa58f9-ba1b-4bb7-afd5-a7f641ed4c28",
   "prevId": "d1a408ec-fa86-4706-a108-dd15cf6b3377",
   "version": "7",
   "dialect": "postgresql",
@@ -130,6 +130,10 @@
         "order_items_price_kopecks_check": {
           "name": "order_items_price_kopecks_check",
           "value": "\"order_items\".\"price_kopecks\" >= 0"
+        },
+        "order_items_quantity_check": {
+          "name": "order_items_quantity_check",
+          "value": "\"order_items\".\"quantity\" = 1"
         }
       },
       "isRLSEnabled": false

@@ -130,6 +130,7 @@ export const orderItems = pgTable(
   },
   (table) => [
     check("order_items_price_kopecks_check", sql`${table.priceKopecks} >= 0`),
+    check("order_items_quantity_check", sql`${table.quantity} = 1`),
     index("order_items_order_id_idx").on(table.orderId),
   ],
 );

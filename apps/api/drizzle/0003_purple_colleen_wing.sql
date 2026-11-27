@@ -6,7 +6,8 @@ CREATE TABLE "order_items" (
 	"name" text NOT NULL,
 	"price_kopecks" integer NOT NULL,
 	"quantity" integer DEFAULT 1 NOT NULL,
-	CONSTRAINT "order_items_price_kopecks_check" CHECK ("order_items"."price_kopecks" >= 0)
+	CONSTRAINT "order_items_price_kopecks_check" CHECK ("order_items"."price_kopecks" >= 0),
+	CONSTRAINT "order_items_quantity_check" CHECK ("order_items"."quantity" = 1)
 );
 --> statement-breakpoint
 CREATE TABLE "orders" (

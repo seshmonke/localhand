@@ -167,7 +167,7 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
           ),
         )
         .orderBy(products.id)
-        .for("update");
+        .for("update", { of: products });
 
       if (productRows.length !== productIds.length) {
         return null;
