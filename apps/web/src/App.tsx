@@ -7,6 +7,7 @@ import { CartProvider, useCart } from "./cart/CartContext.js";
 import { pluralizeItems } from "./cart/item-count.js";
 import { AdminGuard } from "./components/admin/AdminGuard.js";
 import { AdminShell } from "./components/admin/AdminShell.js";
+import { LayoutGuides, PageShell } from "./components/layout/index.js";
 import { ApiError } from "./lib/api.js";
 import { clearBuyerQueries, clearSellerQueries, useMeQuery } from "./lib/queries.js";
 import { AdminOrderPage } from "./pages/AdminOrderPage.js";
@@ -29,47 +30,73 @@ function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b-[3px] border-ink bg-paper">
-      <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 sm:h-20 sm:px-6 lg:px-10">
+      <PageShell className="h-16 flex-row items-center justify-between gap-4 sm:h-20">
         <Link
           to="/"
-          className="font-display text-lg font-extrabold uppercase leading-none tracking-tight sm:text-xl"
+          className="inline-flex min-h-11 shrink-0 items-center font-display text-lg font-extrabold uppercase leading-none tracking-tight sm:text-xl"
         >
           Local Hand
         </Link>
 
-        <nav className="hidden items-center gap-6 font-mono text-xs uppercase tracking-wide md:flex">
-          <Link className="hover:text-accent-red-text" to="/">
+        <nav
+          data-header-nav=""
+          className="hidden items-center gap-2 font-mono text-xs uppercase tracking-wide md:flex"
+        >
+          <Link
+            className="inline-flex min-h-11 items-center px-2 hover:text-accent-red-text"
+            to="/"
+          >
             Каталог
           </Link>
-          <a className="hover:text-accent-red-text" href="/#how">
+          <a
+            className="inline-flex min-h-11 items-center px-2 hover:text-accent-red-text"
+            href="/#how"
+          >
             Как это работает
           </a>
-          <a className="hover:text-accent-red-text" href="/#sellers">
+          <a
+            className="inline-flex min-h-11 items-center px-2 hover:text-accent-red-text"
+            href="/#sellers"
+          >
             Продавцам
           </a>
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             aria-label="Поиск"
-            className="hidden size-11 items-center justify-center border-[3px] border-ink bg-paper hover:bg-ink hover:text-paper sm:inline-flex"
+            data-header-control=""
+            className="hidden size-11 shrink-0 items-center justify-center border-[3px] border-ink bg-paper hover:bg-ink hover:text-paper sm:inline-flex"
           >
             <Search aria-hidden="true" className="size-5" />
           </button>
-          <Link to="/login" className={buttonVariants({ variant: "outline", size: "sm" })}>
-            Открыть магазин
-          </Link>
+          <span className="hidden shrink-0 lg:inline-flex">
+            <Link
+              to="/login"
+              data-header-control=""
+              data-header-cta=""
+              className={buttonVariants({
+                variant: "outline",
+                size: "sm",
+                className: "h-11",
+              })}
+            >
+              Открыть магазин
+            </Link>
+          </span>
           <Link
             to="/cart"
             aria-label={count > 0 ? `Корзина, ${pluralizeItems(count)}` : "Корзина"}
-            className="relative inline-flex size-11 items-center justify-center border-[3px] border-ink bg-paper hover:bg-ink hover:text-paper"
+            data-header-control=""
+            className="relative inline-flex size-11 shrink-0 items-center justify-center border-[3px] border-ink bg-paper hover:bg-ink hover:text-paper"
           >
             <ShoppingBag aria-hidden="true" className="size-5" />
             {count > 0 ? (
               <span
                 aria-hidden="true"
-                className="absolute -right-2 -top-2 inline-flex min-w-6 items-center justify-center border-[3px] border-ink bg-accent-orange px-1 font-mono text-[10px] font-bold leading-4 text-ink"
+                data-cart-badge=""
+                className="absolute -right-1 -top-1 inline-flex min-w-6 items-center justify-center border-[3px] border-ink bg-accent-orange px-1 font-mono text-[10px] font-bold leading-4 text-ink"
               >
                 {count}
               </span>
@@ -78,12 +105,13 @@ function Header() {
           <button
             type="button"
             aria-label="Меню"
-            className="inline-flex size-11 items-center justify-center border-[3px] border-ink bg-paper md:hidden"
+            data-header-control=""
+            className="inline-flex size-11 shrink-0 items-center justify-center border-[3px] border-ink bg-paper md:hidden"
           >
             <Menu aria-hidden="true" className="size-5" />
           </button>
         </div>
-      </div>
+      </PageShell>
     </header>
   );
 }
@@ -91,13 +119,13 @@ function Header() {
 function Footer() {
   return (
     <footer className="border-t-[3px] border-ink bg-paper">
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-10">
+      <PageShell className="flex-col gap-4 py-8 sm:flex-row sm:items-center sm:justify-between">
         <p className="font-display text-lg font-extrabold uppercase">Local Hand</p>
         <p className="font-mono text-[10px] uppercase tracking-wide">
           Секонд-хенд · Локальные бренды · Цифровое
         </p>
         <p className="font-mono text-[10px] uppercase tracking-wide">© 2026</p>
-      </div>
+      </PageShell>
     </footer>
   );
 }
@@ -116,11 +144,11 @@ function StorefrontLayout() {
 
 function BuyerGuardFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="mx-auto flex min-h-[60vh] w-full max-w-md items-center px-4 py-16">
-      <div className="w-full border-[3px] border-ink bg-paper p-6 shadow-brutal-sm sm:p-8">
+    <PageShell className="min-h-[60vh] items-center justify-center py-12">
+      <div className="w-full max-w-md border-[3px] border-ink bg-paper p-6 shadow-brutal-sm sm:p-8">
         {children}
       </div>
-    </div>
+    </PageShell>
   );
 }
 
@@ -185,10 +213,10 @@ function BuyerGuard() {
         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent-red-text">
           Ошибка
         </p>
-        <h1 className="mt-3 font-display text-2xl uppercase leading-tight">
+        <h1 className="mt-2 font-display text-2xl uppercase leading-tight">
           Не удалось проверить сессию
         </h1>
-        <p className="mt-3 flex items-start gap-2 text-sm leading-relaxed">
+        <p className="mt-2 flex items-start gap-2 text-sm leading-relaxed">
           <TriangleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent-red" />
           Проверьте соединение и попробуйте снова.
         </p>
@@ -235,6 +263,7 @@ export function App() {
             </Route>
           </Route>
         </Routes>
+        <LayoutGuides />
       </div>
     </CartProvider>
   );

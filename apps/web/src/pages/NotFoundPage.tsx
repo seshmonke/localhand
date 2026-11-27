@@ -1,10 +1,11 @@
 import { buttonVariants } from "@localhand/ui";
 import { Link } from "react-router";
 import { ScreenState } from "../components/ScreenState.js";
+import { PageShell } from "../components/layout/index.js";
 
 export function NotFoundPage() {
   return (
-    <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-10">
+    <PageShell className="py-10 sm:py-12">
       <ScreenState
         kind="empty"
         title="Страница не найдена"
@@ -15,6 +16,6 @@ export function NotFoundPage() {
           </Link>
         }
       />
-    </div>
+    </PageShell>
   );
 }

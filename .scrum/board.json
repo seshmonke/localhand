@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-27T06:40:00Z",
+  "updated_at": "2026-11-27T09:11:00Z",
   "tasks": [
     {
       "id": "S2-1",
@@ -33,6 +33,14 @@
       "owner": "scrum-worker",
       "change": null,
       "pr": 33
+    },
+    {
+      "id": "LAYOUT-1",
+      "title": "Layout system: grid, shell, alignment",
+      "status": "in_progress",
+      "owner": "scrum-worker",
+      "change": null,
+      "pr": null
     }
   ]
 }

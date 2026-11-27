@@ -29,6 +29,15 @@ import {
   type ProductFormValues,
 } from "../components/admin/product-form.js";
 import { ScreenState } from "../components/ScreenState.js";
+import {
+  Card,
+  Grid,
+  GridColumn,
+  PageHeader,
+  PageShell,
+  Sidebar,
+  Stack,
+} from "../components/layout/index.js";
 import { ApiError, createProduct, updateProduct } from "../lib/api.js";
 import { sellerKeys, useSellerProductsQuery, useSellerShopQuery } from "../lib/queries.js";
 
@@ -110,38 +119,37 @@ export function AdminProductNewPage() {
   const shop = shopQuery.data?.shop ?? null;
 
   return (
-    <div className="mx-auto w-full max-w-[1100px]">
-      <header className="border-b-[3px] border-ink pb-6">
-        <BackToProducts />
-        <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text">
-          Кабинет продавца
-        </p>
-        <h1 className="mt-2 font-display text-3xl uppercase leading-none sm:text-4xl">
-          Новый товар
-        </h1>
-        <p className="mt-3 max-w-2xl text-pretty text-sm leading-relaxed">
-          Карточка сохранится черновиком. Опубликовать её можно, когда магазин опубликован.
-        </p>
-      </header>
-
-      <div className="mt-6">
-        {shopQuery.isPending ? (
-          <ScreenState
-            kind="loading"
-            title="Загружаем магазин"
-            description="Секунду — проверяем, готов ли кабинет к товарам."
+    <PageShell size="admin">
+      <Stack gap={6}>
+        <Stack gap={4}>
+          <BackToProducts />
+          <PageHeader
+            size="admin"
+            eyebrow="Кабинет продавца"
+            title="Новый товар"
+            description="Карточка сохранится черновиком. Опубликовать её можно, когда магазин опубликован."
           />
-        ) : null}
+        </Stack>
 
-        {shopQuery.isError ? (
-          <ProductsLoadError error={shopQuery.error} onRetry={() => void shopQuery.refetch()} />
-        ) : null}
+        <div>
+          {shopQuery.isPending ? (
+            <ScreenState
+              kind="loading"
+              title="Загружаем магазин"
+              description="Секунду — проверяем, готов ли кабинет к товарам."
+            />
+          ) : null}
 
-        {shopQuery.isSuccess && !shop ? <ShopRequiredState /> : null}
+          {shopQuery.isError ? (
+            <ProductsLoadError error={shopQuery.error} onRetry={() => void shopQuery.refetch()} />
+          ) : null}
 
-        {shop ? <NewProductForm shopStatus={shop.status} /> : null}
-      </div>
-    </div>
+          {shopQuery.isSuccess && !shop ? <ShopRequiredState /> : null}
+
+          {shop ? <NewProductForm shopStatus={shop.status} /> : null}
+        </div>
+      </Stack>
+    </PageShell>
   );
 }
 
@@ -195,86 +203,85 @@ function NewProductForm({ shopStatus }: { shopStatus: SellerShop["status"] }) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-      <form
-        noValidate
-        onSubmit={handleSubmit}
-        aria-labelledby="product-form-title"
-        className="border-[3px] border-ink bg-paper p-4 sm:p-6"
-      >
-        <h2 id="product-form-title" className="font-display text-2xl uppercase">
-          Данные товара
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink/70">
-          Название и цена обязательны. Описание и ссылка на изображение — по желанию.
-        </p>
+    <Grid>
+      <GridColumn span={8}>
+        <Card as="form" noValidate onSubmit={handleSubmit} aria-labelledby="product-form-title">
+          <h2 id="product-form-title" className="font-display text-2xl uppercase">
+            Данные товара
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink/70">
+            Название и цена обязательны. Описание и ссылка на изображение — по желанию.
+          </p>
 
-        <div className="mt-6">
-          <ProductFormFields values={values} errors={errors} onChange={handleChange} />
-        </div>
+          <div className="mt-6">
+            <ProductFormFields values={values} errors={errors} onChange={handleChange} />
+          </div>
 
-        <div ref={formErrorRef} tabIndex={-1} className="mt-6 focus-visible:outline-none">
-          <FormError message={formError} />
-        </div>
+          <div ref={formErrorRef} tabIndex={-1} className="mt-6 focus-visible:outline-none">
+            <FormError message={formError} />
+          </div>
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full sm:w-auto"
-            disabled={createMutation.isPending}
-          >
-            {createMutation.isPending ? "Создаём…" : "Создать товар"}
-          </Button>
-          <Link
-            to="/admin/products"
-            className={buttonVariants({
-              variant: "outline",
-              size: "lg",
-              className: "w-full sm:w-auto",
-            })}
-          >
-            Отмена
-          </Link>
-        </div>
-      </form>
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:gap-4">
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full sm:w-auto"
+              disabled={createMutation.isPending}
+            >
+              {createMutation.isPending ? "Создаём…" : "Создать товар"}
+            </Button>
+            <Link
+              to="/admin/products"
+              className={buttonVariants({
+                variant: "outline",
+                size: "lg",
+                className: "w-full sm:w-auto",
+              })}
+            >
+              Отмена
+            </Link>
+          </div>
+        </Card>
+      </GridColumn>
 
-      <aside className="border-[3px] border-ink bg-inverse p-5 text-inverse-text sm:p-6">
-        <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-orange">
-          Что дальше
-        </p>
-        <ol className="mt-4 space-y-4 text-sm leading-relaxed text-inverse-text/85">
-          <li className="flex gap-3">
-            <span aria-hidden="true" className="font-mono text-accent-green">
-              01
-            </span>
-            Заполните название, цену и описание.
-          </li>
-          <li className="flex gap-3">
-            <span aria-hidden="true" className="font-mono text-accent-green">
-              02
-            </span>
-            Сохраните карточку: она станет черновиком.
-          </li>
-          <li className="flex gap-3">
-            <span aria-hidden="true" className="font-mono text-accent-green">
-              03
-            </span>
-            {shopStatus === "published"
-              ? "Опубликуйте товар — он появится на витрине."
-              : "Опубликуйте магазин, затем товар."}
-          </li>
-        </ol>
-        {shopStatus !== "published" ? (
-          <Link
-            to="/admin/shop"
-            className="mt-6 inline-flex min-h-11 items-center border-t-[3px] border-inverse-text/30 pt-4 font-mono text-[10px] uppercase tracking-wide underline decoration-[3px] underline-offset-4"
-          >
-            Настроить магазин
-          </Link>
-        ) : null}
-      </aside>
-    </div>
+      <Sidebar>
+        <Card tone="inverse">
+          <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-orange">
+            Что дальше
+          </p>
+          <ol className="mt-4 flex flex-col gap-4 text-sm leading-relaxed text-inverse-text/85">
+            <li className="flex gap-4">
+              <span aria-hidden="true" className="font-mono text-accent-green">
+                01
+              </span>
+              Заполните название, цену и описание.
+            </li>
+            <li className="flex gap-4">
+              <span aria-hidden="true" className="font-mono text-accent-green">
+                02
+              </span>
+              Сохраните карточку: она станет черновиком.
+            </li>
+            <li className="flex gap-4">
+              <span aria-hidden="true" className="font-mono text-accent-green">
+                03
+              </span>
+              {shopStatus === "published"
+                ? "Опубликуйте товар — он появится на витрине."
+                : "Опубликуйте магазин, затем товар."}
+            </li>
+          </ol>
+          {shopStatus !== "published" ? (
+            <Link
+              to="/admin/shop"
+              className="mt-6 inline-flex min-h-11 items-center border-t-[3px] border-inverse-text/30 pt-4 font-mono text-[10px] uppercase tracking-wide underline decoration-[3px] underline-offset-4"
+            >
+              Настроить магазин
+            </Link>
+          ) : null}
+        </Card>
+      </Sidebar>
+    </Grid>
   );
 }
 
@@ -289,57 +296,62 @@ export function AdminProductEditPage() {
   const loginNext = validId ? `/admin/products/${productId}` : "/admin/products";
 
   return (
-    <div className="mx-auto w-full max-w-[1100px]">
-      <header className="border-b-[3px] border-ink pb-6">
-        <BackToProducts />
-        <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text">
-          Кабинет продавца
-        </p>
-        <h1 className="mt-2 font-display text-3xl uppercase leading-none sm:text-4xl">
-          Редактирование товара
-        </h1>
-        {product ? <p className="mt-3 break-words text-sm font-semibold">{product.name}</p> : null}
-        <p className="mt-2 max-w-2xl text-pretty text-sm leading-relaxed">
-          Сохраняются только изменённые поля. Публикация и скрытие — отдельными действиями.
-        </p>
-      </header>
+    <PageShell size="admin">
+      <Stack gap={6}>
+        <Stack gap={4}>
+          <BackToProducts />
+          <PageHeader
+            size="admin"
+            eyebrow="Кабинет продавца"
+            title="Редактирование товара"
+            description={
+              <>
+                {product ? <p className="break-words font-semibold">{product.name}</p> : null}
+                <p className={product ? "mt-2" : undefined}>
+                  Сохраняются только изменённые поля. Публикация и скрытие — отдельными действиями.
+                </p>
+              </>
+            }
+          />
+        </Stack>
 
-      <div className="mt-6">
-        {!validId ? (
-          <ProductNotFoundState />
-        ) : shopQuery.isPending ? (
-          <ScreenState
-            kind="loading"
-            title="Загружаем товар"
-            description="Секунду — ищем карточку в вашем магазине."
-          />
-        ) : shopQuery.isError ? (
-          <ProductsLoadError
-            error={shopQuery.error}
-            onRetry={() => void shopQuery.refetch()}
-            next={loginNext}
-          />
-        ) : !shop ? (
-          <ShopRequiredState />
-        ) : productsQuery.isPending ? (
-          <ScreenState
-            kind="loading"
-            title="Загружаем товар"
-            description="Секунду — ищем карточку в вашем магазине."
-          />
-        ) : productsQuery.isError ? (
-          <ProductsLoadError
-            error={productsQuery.error}
-            onRetry={() => void productsQuery.refetch()}
-            next={loginNext}
-          />
-        ) : !product ? (
-          <ProductNotFoundState />
-        ) : (
-          <EditProductForm product={product} shop={shop} />
-        )}
-      </div>
-    </div>
+        <div>
+          {!validId ? (
+            <ProductNotFoundState />
+          ) : shopQuery.isPending ? (
+            <ScreenState
+              kind="loading"
+              title="Загружаем товар"
+              description="Секунду — ищем карточку в вашем магазине."
+            />
+          ) : shopQuery.isError ? (
+            <ProductsLoadError
+              error={shopQuery.error}
+              onRetry={() => void shopQuery.refetch()}
+              next={loginNext}
+            />
+          ) : !shop ? (
+            <ShopRequiredState />
+          ) : productsQuery.isPending ? (
+            <ScreenState
+              kind="loading"
+              title="Загружаем товар"
+              description="Секунду — ищем карточку в вашем магазине."
+            />
+          ) : productsQuery.isError ? (
+            <ProductsLoadError
+              error={productsQuery.error}
+              onRetry={() => void productsQuery.refetch()}
+              next={loginNext}
+            />
+          ) : !product ? (
+            <ProductNotFoundState />
+          ) : (
+            <EditProductForm product={product} shop={shop} />
+          )}
+        </div>
+      </Stack>
+    </PageShell>
   );
 }
 
@@ -456,169 +468,162 @@ function EditProductForm({ product, shop }: { product: SellerProduct; shop: Sell
   const shopPublished = shop.status === "published";
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-      <div className="space-y-4">
-        <Announcer message={announcement} />
+    <Stack gap={6}>
+      <Announcer message={announcement} />
 
-        <form
-          noValidate
-          onSubmit={handleSave}
-          aria-labelledby="product-form-title"
-          className="border-[3px] border-ink bg-paper p-4 sm:p-6"
-        >
-          <h2 id="product-form-title" className="font-display text-2xl uppercase">
-            Данные товара
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink/70">
-            Отправятся только поля, которые вы изменили.
-          </p>
-
-          <div className="mt-6">
-            <ProductFormFields values={values} errors={errors} onChange={handleChange} />
-          </div>
-
-          <div ref={formErrorRef} tabIndex={-1} className="mt-6 focus-visible:outline-none">
-            <FormError message={formError} />
-          </div>
-
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Button
-              type="submit"
-              size="lg"
-              className="w-full sm:w-auto"
-              disabled={!isDirty || busy}
-            >
-              {saveMutation.isPending ? "Сохраняем…" : "Сохранить изменения"}
-            </Button>
-            <Link
-              to="/admin/products"
-              className={buttonVariants({
-                variant: "outline",
-                size: "lg",
-                className: "w-full sm:w-auto",
-              })}
-            >
-              К списку
-            </Link>
-          </div>
-
-          {!isDirty ? (
-            <p className="mt-3 font-mono text-[10px] uppercase tracking-wide text-ink/60">
-              Изменений нет
+      <Grid>
+        <GridColumn span={8}>
+          <Card as="form" noValidate onSubmit={handleSave} aria-labelledby="product-form-title">
+            <h2 id="product-form-title" className="font-display text-2xl uppercase">
+              Данные товара
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink/70">
+              Отправятся только поля, которые вы изменили.
             </p>
-          ) : null}
-        </form>
-      </div>
 
-      <aside className="space-y-4">
-        <section
-          aria-labelledby="product-status-title"
-          className="border-[3px] border-ink bg-paper p-4 sm:p-5"
-        >
-          <h2
-            id="product-status-title"
-            className="font-mono text-[10px] uppercase tracking-[0.2em]"
-          >
-            Статус
-          </h2>
-          <div className="mt-3">
-            <ProductStatusBadge status={product.status} />
-          </div>
-          <p className="mt-3 text-sm leading-relaxed">
-            {productStatusMeta[product.status].description}
-          </p>
+            <div className="mt-6">
+              <ProductFormFields values={values} errors={errors} onChange={handleChange} />
+            </div>
 
-          {!shopPublished ? (
-            <p className="mt-3 border-l-[3px] border-accent-orange pl-2 text-sm leading-relaxed">
-              Публикация доступна после публикации магазина.{" "}
-              <Link
-                to="/admin/shop"
-                className="inline-flex min-h-11 items-center font-semibold underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
+            <div ref={formErrorRef} tabIndex={-1} className="mt-6 focus-visible:outline-none">
+              <FormError message={formError} />
+            </div>
+
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:gap-4">
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full sm:w-auto"
+                disabled={!isDirty || busy}
               >
-                Настроить магазин
-              </Link>
-            </p>
-          ) : null}
-
-          <div ref={statusErrorRef} tabIndex={-1} className="mt-3 focus-visible:outline-none">
-            {statusError ? <FormError message={statusError.message} /> : null}
-            {statusError?.shopLink ? (
+                {saveMutation.isPending ? "Сохраняем…" : "Сохранить изменения"}
+              </Button>
               <Link
-                to="/admin/shop"
-                className="mt-2 inline-flex min-h-11 items-center font-mono text-[10px] uppercase tracking-wide underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
+                to="/admin/products"
+                className={buttonVariants({
+                  variant: "outline",
+                  size: "lg",
+                  className: "w-full sm:w-auto",
+                })}
               >
-                Открыть настройки магазина
+                К списку
               </Link>
+            </div>
+
+            {!isDirty ? (
+              <p className="mt-4 font-mono text-[10px] uppercase tracking-wide text-ink/60">
+                Изменений нет
+              </p>
             ) : null}
-          </div>
+          </Card>
+        </GridColumn>
 
-          {isDirty ? (
-            <output className="mt-3 block border-l-[3px] border-accent-orange pl-2 text-sm font-semibold leading-relaxed">
-              Сначала сохраните изменения.
-            </output>
-          ) : null}
+        <Sidebar>
+          <Stack gap={4}>
+            <Card as="section" aria-labelledby="product-status-title">
+              <h2
+                id="product-status-title"
+                className="font-mono text-[10px] uppercase tracking-[0.2em]"
+              >
+                Статус
+              </h2>
+              <div className="mt-4">
+                <ProductStatusBadge status={product.status} />
+              </div>
+              <p className="mt-4 text-sm leading-relaxed">
+                {productStatusMeta[product.status].description}
+              </p>
 
-          <div className="mt-4 flex flex-col gap-3">
-            <Button
-              type="button"
-              size="md"
-              className="w-full"
-              onClick={() => {
-                setStatusError(null);
-                statusMutation.mutate("published");
-              }}
-              disabled={product.status === "published" || !shopPublished || isDirty || busy}
-            >
-              {publishPending ? "Публикуем…" : "Опубликовать"}
-            </Button>
+              {!shopPublished ? (
+                <p className="mt-4 border-l-[3px] border-accent-orange pl-2 text-sm leading-relaxed">
+                  Публикация доступна после публикации магазина.{" "}
+                  <Link
+                    to="/admin/shop"
+                    className="inline-flex min-h-11 items-center font-semibold underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
+                  >
+                    Настроить магазин
+                  </Link>
+                </p>
+              ) : null}
 
-            <Button
-              type="button"
-              variant="outline"
-              size="md"
-              className="w-full"
-              onClick={() => {
-                setStatusError(null);
-                statusMutation.mutate("hidden");
-              }}
-              disabled={product.status === "hidden" || isDirty || busy}
-            >
-              {hidePending ? "Скрываем…" : "Скрыть"}
-            </Button>
+              <div ref={statusErrorRef} tabIndex={-1} className="mt-4 focus-visible:outline-none">
+                {statusError ? <FormError message={statusError.message} /> : null}
+                {statusError?.shopLink ? (
+                  <Link
+                    to="/admin/shop"
+                    className="mt-2 inline-flex min-h-11 items-center font-mono text-[10px] uppercase tracking-wide underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
+                  >
+                    Открыть настройки магазина
+                  </Link>
+                ) : null}
+              </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="md"
-              className="w-full"
-              onClick={() => {
-                setStatusError(null);
-                statusMutation.mutate("draft");
-              }}
-              disabled={product.status === "draft" || isDirty || busy}
-            >
-              {draftPending ? "Возвращаем…" : "Вернуть в черновик"}
-            </Button>
-          </div>
-        </section>
+              {isDirty ? (
+                <output className="mt-4 block border-l-[3px] border-accent-orange pl-2 text-sm font-semibold leading-relaxed">
+                  Сначала сохраните изменения.
+                </output>
+              ) : null}
 
-        <section
-          aria-labelledby="product-public-title"
-          className="border-[3px] border-ink bg-paper p-4 sm:p-5"
-        >
-          <h2
-            id="product-public-title"
-            className="font-mono text-[10px] uppercase tracking-[0.2em]"
-          >
-            На витрине
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed">
-            {product.status === "published" && shopPublished
-              ? "Товар виден покупателям в вашем магазине."
-              : "Товар не показывается покупателям, пока не опубликованы и магазин, и товар."}
-          </p>
-        </section>
-      </aside>
-    </div>
+              <div className="mt-6 flex flex-col gap-4">
+                <Button
+                  type="button"
+                  size="md"
+                  className="w-full"
+                  onClick={() => {
+                    setStatusError(null);
+                    statusMutation.mutate("published");
+                  }}
+                  disabled={product.status === "published" || !shopPublished || isDirty || busy}
+                >
+                  {publishPending ? "Публикуем…" : "Опубликовать"}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="md"
+                  className="w-full"
+                  onClick={() => {
+                    setStatusError(null);
+                    statusMutation.mutate("hidden");
+                  }}
+                  disabled={product.status === "hidden" || isDirty || busy}
+                >
+                  {hidePending ? "Скрываем…" : "Скрыть"}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="md"
+                  className="w-full"
+                  onClick={() => {
+                    setStatusError(null);
+                    statusMutation.mutate("draft");
+                  }}
+                  disabled={product.status === "draft" || isDirty || busy}
+                >
+                  {draftPending ? "Возвращаем…" : "Вернуть в черновик"}
+                </Button>
+              </div>
+            </Card>
+
+            <Card as="section" aria-labelledby="product-public-title">
+              <h2
+                id="product-public-title"
+                className="font-mono text-[10px] uppercase tracking-[0.2em]"
+              >
+                На витрине
+              </h2>
+              <p className="mt-4 text-sm leading-relaxed">
+                {product.status === "published" && shopPublished
+                  ? "Товар виден покупателям в вашем магазине."
+                  : "Товар не показывается покупателям, пока не опубликованы и магазин, и товар."}
+              </p>
+            </Card>
+          </Stack>
+        </Sidebar>
+      </Grid>
+    </Stack>
   );
 }

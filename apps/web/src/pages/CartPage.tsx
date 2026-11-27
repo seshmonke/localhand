@@ -5,6 +5,15 @@ import { Link } from "react-router";
 import { useCart } from "../cart/CartContext.js";
 import { pluralizeItems } from "../cart/item-count.js";
 import { ScreenState } from "../components/ScreenState.js";
+import {
+  Card,
+  Grid,
+  GridColumn,
+  PageHeader,
+  PageShell,
+  Sidebar,
+  Stack,
+} from "../components/layout/index.js";
 
 const tones = ["bg-accent-red", "bg-accent-orange", "bg-accent-green", "bg-ink"];
 
@@ -12,7 +21,7 @@ function CartItemRow({ item, onRemove }: { item: CartItem; onRemove: () => void 
   const tone = tones[item.productId % tones.length] ?? "bg-ink";
 
   return (
-    <li className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
+    <li className="flex items-center gap-4 p-4">
       {item.imageUrl ? (
         <img
           src={item.imageUrl}
@@ -34,7 +43,7 @@ function CartItemRow({ item, onRemove }: { item: CartItem; onRemove: () => void 
         >
           {item.name}
         </Link>
-        <p className="mt-1 font-mono text-xs sm:text-sm">
+        <p className="mt-2 font-mono text-xs sm:text-sm">
           {formatRubles(kopecks(item.priceKopecks))}
         </p>
       </div>
@@ -58,20 +67,20 @@ export function CartPage() {
 
   if (!isHydrated) {
     return (
-      <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-10">
+      <PageShell className="py-10 sm:py-12">
         <h1 className="sr-only">Корзина</h1>
         <ScreenState
           kind="loading"
           title="Загружаем корзину"
           description="Товары восстанавливаются с этого устройства."
         />
-      </div>
+      </PageShell>
     );
   }
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-10">
+      <PageShell className="py-10 sm:py-12">
         <h1 className="sr-only">Корзина</h1>
         <ScreenState
           kind="empty"
@@ -83,87 +92,93 @@ export function CartPage() {
             </Link>
           }
         />
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b-[3px] border-ink pb-6">
-        <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text">
-            Корзина
-          </p>
-          <h1 className="mt-2 font-display text-4xl uppercase leading-none sm:text-5xl">Корзина</h1>
-          <p className="mt-3 font-mono text-xs uppercase tracking-wide">{pluralizeItems(count)}</p>
-        </div>
-        <Button variant="outline" onClick={clear}>
-          Очистить корзину
-        </Button>
-      </div>
+    <PageShell className="py-10 sm:py-12">
+      <Stack gap={8}>
+        <PageHeader
+          eyebrow="Корзина"
+          title="Корзина"
+          description={pluralizeItems(count)}
+          descriptionClassName="font-mono text-xs uppercase tracking-wide"
+          actions={
+            <Button variant="outline" onClick={clear}>
+              Очистить корзину
+            </Button>
+          }
+        />
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-        <div className="min-w-0 space-y-6">
-          {groups.map((group) => {
-            const headingId = `cart-shop-${group.shopSlug}`;
-            return (
-              <section
-                key={group.shopSlug}
-                aria-labelledby={headingId}
-                className="min-w-0 border-[3px] border-ink bg-paper"
+        <Grid>
+          <GridColumn span={8}>
+            <Stack gap={6}>
+              {groups.map((group) => {
+                const headingId = `cart-shop-${group.shopSlug}`;
+                return (
+                  <Card
+                    key={group.shopSlug}
+                    as="section"
+                    padding="none"
+                    aria-labelledby={headingId}
+                  >
+                    <header className="flex min-w-0 flex-wrap items-center justify-between gap-4 border-b-[3px] border-ink p-4">
+                      <h2 id={headingId} className="min-w-0 font-display text-xl uppercase">
+                        <Link
+                          to={`/shops/${group.shopSlug}`}
+                          className="break-words underline-offset-4 hover:underline"
+                        >
+                          {group.shopName}
+                        </Link>
+                      </h2>
+                      <p className="font-mono text-xs uppercase tracking-wide">
+                        Итого: {formatRubles(kopecks(group.totalKopecks))}
+                      </p>
+                    </header>
+                    <ul className="divide-y-[3px] divide-ink">
+                      {group.items.map((item) => (
+                        <CartItemRow
+                          key={item.productId}
+                          item={item}
+                          onRemove={() => removeItem(item.productId)}
+                        />
+                      ))}
+                    </ul>
+                  </Card>
+                );
+              })}
+            </Stack>
+          </GridColumn>
+
+          <Sidebar sticky aria-labelledby="cart-total-title">
+            <Card shadow>
+              <h2 id="cart-total-title" className="font-display text-2xl uppercase">
+                Итог
+              </h2>
+              <dl className="mt-4 flex flex-col gap-2 font-mono text-xs uppercase tracking-wide">
+                <div className="flex justify-between gap-4">
+                  <dt>Товаров</dt>
+                  <dd>{pluralizeItems(count)}</dd>
+                </div>
+                <div className="flex justify-between gap-4 border-t-[3px] border-ink pt-2 text-base">
+                  <dt>Итого</dt>
+                  <dd>{formatRubles(kopecks(totalKopecks))}</dd>
+                </div>
+              </dl>
+              <Link
+                to="/checkout"
+                className={buttonVariants({ size: "lg", className: "mt-6 w-full" })}
               >
-                <header className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-b-[3px] border-ink p-4">
-                  <h2 id={headingId} className="min-w-0 font-display text-xl uppercase">
-                    <Link
-                      to={`/shops/${group.shopSlug}`}
-                      className="break-words underline-offset-4 hover:underline"
-                    >
-                      {group.shopName}
-                    </Link>
-                  </h2>
-                  <p className="font-mono text-xs uppercase tracking-wide">
-                    Итого: {formatRubles(kopecks(group.totalKopecks))}
-                  </p>
-                </header>
-                <ul className="divide-y-[3px] divide-ink">
-                  {group.items.map((item) => (
-                    <CartItemRow
-                      key={item.productId}
-                      item={item}
-                      onRemove={() => removeItem(item.productId)}
-                    />
-                  ))}
-                </ul>
-              </section>
-            );
-          })}
-        </div>
-
-        <aside
-          aria-labelledby="cart-total-title"
-          className="border-[3px] border-ink bg-paper p-5 shadow-brutal-sm lg:sticky lg:top-28"
-        >
-          <h2 id="cart-total-title" className="font-display text-2xl uppercase">
-            Итог
-          </h2>
-          <dl className="mt-4 space-y-2 font-mono text-xs uppercase tracking-wide">
-            <div className="flex justify-between gap-4">
-              <dt>Товаров</dt>
-              <dd>{pluralizeItems(count)}</dd>
-            </div>
-            <div className="flex justify-between gap-4 border-t-[3px] border-ink pt-2 text-base">
-              <dt>Итого</dt>
-              <dd>{formatRubles(kopecks(totalKopecks))}</dd>
-            </div>
-          </dl>
-          <Link to="/checkout" className={buttonVariants({ size: "lg", className: "mt-5 w-full" })}>
-            Оформить
-          </Link>
-          <p className="mt-3 text-xs leading-relaxed">
-            Войдите по телефону и проверьте состав — цену и наличие подтвердит продавец.
-          </p>
-        </aside>
-      </div>
-    </div>
+                Оформить
+              </Link>
+              <p className="mt-4 text-xs leading-relaxed">
+                Войдите по телефону и проверьте состав — цену и наличие подтвердит продавец.
+              </p>
+            </Card>
+          </Sidebar>
+        </Grid>
+      </Stack>
+    </PageShell>
   );
 }

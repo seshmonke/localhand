@@ -19,6 +19,10 @@
 
   --shadow-brutal: 6px 6px 0 var(--color-ink);
   --shadow-brutal-sm: 3px 3px 0 var(--color-ink);
+
+  /* Layout containers: storefront 1440, seller cabinet content 1200. */
+  --container-page: 90rem;
+  --container-admin: 75rem;
 }
 
 :root {
