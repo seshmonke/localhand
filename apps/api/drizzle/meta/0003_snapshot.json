@@ -1,5 +1,5 @@
 {
-  "id": "40a6b86b-c57c-46c8-8509-e9cdaf733498",
+  "id": "d033d8bf-3bde-4776-b43b-b9ccca77ce1e",
   "prevId": "d1a408ec-fa86-4706-a108-dd15cf6b3377",
   "version": "7",
   "dialect": "postgresql",
@@ -166,7 +166,7 @@
         },
         "total_kopecks": {
           "name": "total_kopecks",
-          "type": "integer",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },

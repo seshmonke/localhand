@@ -5,6 +5,7 @@ import {
   ORDER_COMMENT_MAX_LENGTH,
   ORDER_ID_MAX,
   ORDER_MAX_ITEMS,
+  ORDER_TOTAL_MAX_KOPECKS,
   OrderItemSchema,
   OrderListResponseSchema,
   OrderResponseSchema,
@@ -91,6 +92,29 @@ describe("OrderSummarySchema", () => {
 
   it("accepts a null productId after the product is deleted", () => {
     expect(OrderItemSchema.parse({ ...summary.items[0], productId: null }).productId).toBeNull();
+  });
+
+  it("accepts totals beyond int4 up to the JS safe integer", () => {
+    expect(OrderSummarySchema.parse({ ...summary, totalKopecks: 4_294_967_294 }).totalKopecks).toBe(
+      4_294_967_294,
+    );
+    expect(
+      OrderSummarySchema.parse({ ...summary, totalKopecks: ORDER_TOTAL_MAX_KOPECKS }).totalKopecks,
+    ).toBe(ORDER_TOTAL_MAX_KOPECKS);
+  });
+
+  it("rejects totals outside the safe integer range and keeps item prices at int4", () => {
+    expect(
+      OrderSummarySchema.safeParse({ ...summary, totalKopecks: ORDER_TOTAL_MAX_KOPECKS + 1 })
+        .success,
+    ).toBe(false);
+    expect(OrderSummarySchema.safeParse({ ...summary, totalKopecks: 1.5 }).success).toBe(false);
+    expect(
+      OrderSummarySchema.safeParse({
+        ...summary,
+        items: [{ ...summary.items[0], priceKopecks: ORDER_ID_MAX + 1 }],
+      }).success,
+    ).toBe(false);
   });
 
   it.each([

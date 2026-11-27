@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  bigint,
   check,
   index,
   integer,
@@ -92,7 +93,7 @@ export const orders = pgTable(
       .notNull()
       .references(() => shops.id, { onDelete: "restrict" }),
     status: orderStatusEnum("status").notNull().default("new"),
-    totalKopecks: integer("total_kopecks").notNull(),
+    totalKopecks: bigint("total_kopecks", { mode: "number" }).notNull(),
     buyerPhone: text("buyer_phone").notNull(),
     comment: text("comment"),
     clientCheckoutId: uuid("client_checkout_id").notNull(),

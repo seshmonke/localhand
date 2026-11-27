@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
+import { CheckoutResponseSchema, OrderResponseSchema } from "@localhand/shared";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { SESSION_COOKIE_NAME } from "../auth/session.js";
 
@@ -568,5 +569,44 @@ describeWithDb("checkout and orders routes with a real database", () => {
     expect(detail.json().order.items).toEqual([
       { productId: null, name: "Куртка", priceKopecks: 100_000, quantity: 1 },
     ]);
+  });
+
+  it("sums int4-max item prices into a bigint total without overflowing", async () => {
+    const seller = await createUser(1);
+    const buyer = await createUser(2);
+    await createShop(seller, "first-shop");
+    const first = await createPublishedProduct(seller, {
+      name: "Максимальная цена",
+      priceKopecks: 2_147_483_647,
+    });
+    const second = await createPublishedProduct(seller, {
+      name: "Вторая максимальная цена",
+      priceKopecks: 2_147_483_647,
+    });
+
+    const response = await checkout(buyer, [first.id, second.id]);
+    expect(response.statusCode).toBe(201);
+
+    const parsed = CheckoutResponseSchema.parse(response.json());
+    expect(parsed.orders).toHaveLength(1);
+    const order = parsed.orders[0]!;
+    expect(order.totalKopecks).toBe(4_294_967_294);
+    expect(order.items.map((item) => item.priceKopecks)).toEqual([2_147_483_647, 2_147_483_647]);
+
+    const detail = await request(buyer, "GET", `/orders/${order.id}`);
+    expect(detail.statusCode).toBe(200);
+    expect(OrderResponseSchema.parse(detail.json()).order.totalKopecks).toBe(4_294_967_294);
+
+    const stored = await dbClient.requirePool().query<{
+      total: string;
+      column_type: string;
+    }>(
+      `SELECT total_kopecks::text AS total,
+              (SELECT data_type FROM information_schema.columns
+                WHERE table_name = 'orders' AND column_name = 'total_kopecks') AS column_type
+         FROM orders WHERE id = $1`,
+      [order.id],
+    );
+    expect(stored.rows[0]).toEqual({ total: "4294967294", column_type: "bigint" });
   });
 });

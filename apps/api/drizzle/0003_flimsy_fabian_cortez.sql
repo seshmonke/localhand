@@ -14,7 +14,7 @@ CREATE TABLE "orders" (
 	"buyer_user_id" integer NOT NULL,
 	"shop_id" integer NOT NULL,
 	"status" "order_status" DEFAULT 'new' NOT NULL,
-	"total_kopecks" integer NOT NULL,
+	"total_kopecks" bigint NOT NULL,
 	"buyer_phone" text NOT NULL,
 	"comment" text,
 	"client_checkout_id" uuid NOT NULL,
