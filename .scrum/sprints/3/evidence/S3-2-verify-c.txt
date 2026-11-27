@@ -6,8 +6,8 @@ packages/shared typecheck$ tsc --noEmit
 packages/ui typecheck$ tsc --noEmit
 packages/ui typecheck: Done
 packages/shared typecheck: Done
-apps/api typecheck$ tsc --noEmit
 apps/web typecheck$ tsc --noEmit && tsc -p tsconfig.e2e.json --noEmit
+apps/api typecheck$ tsc --noEmit
 apps/web typecheck: Done
 apps/api typecheck: Done
 $ oxlint .
@@ -15,7 +15,7 @@ $ prettier --check .
 Checking formatting...
 All matched files use Prettier code style!
 $ node scripts/check-public-repo.mjs
-Public repo check: 517 tracked files, no secrets/PII patterns found
+Public repo check: 525 tracked files, no secrets/PII patterns found
 $ pnpm --filter @localhand/shared build && pnpm -r test
 $ tsc -p tsconfig.build.json
 Scope: 4 of 5 workspace projects
@@ -36,8 +36,11 @@ packages/ui test: Done
 packages/shared test: 
 packages/shared test:  Test Files  12 passed (12)
 packages/shared test:       Tests  156 passed (156)
-packages/shared test:    Start at  22:35:18
-packages/shared test:    Duration  792ms (import 67%, tests 20%, transform 7%, worker 4%)
+packages/shared test:    Start at  22:50:50
+packages/shared test:    Duration  2.35s (import 69%, tests 22%, transform 5%, worker 4%)
+packages/shared test: 
+packages/shared test:     Isolate  12 workers spawned · ~523ms startup each (spawn + environment, per file)
+packages/shared test:              at least ~374ms faster with isolate: false — reuses workers across files instead of one per file
 packages/shared test: 
 packages/shared test: Done
 apps/api test$ vitest run
@@ -51,27 +54,27 @@ apps/web test:
 apps/web test: 
 apps/web test:  Test Files  22 passed (22)
 apps/web test:       Tests  157 passed (157)
-apps/web test:    Start at  22:35:19
-apps/web test:    Duration  13.57s (tests 36%, environment 32%, import 22%, setup 7%, transform 3%)
+apps/web test:    Start at  22:50:53
+apps/web test:    Duration  33.26s (tests 36%, environment 31%, import 23%, setup 7%, transform 4%)
 apps/web test: 
-apps/web test: Environment  jsdom was created 22 times · 26.91s total, 32% of tracked time
+apps/web test: Environment  jsdom was created 22 times · 60.54s total, 31% of tracked time
 apps/web test:              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
 apps/web test:              learn more: https://vitest.dev/guide/improving-performance#test-environments
 apps/web test: 
 apps/web test: Done
 apps/api test: 
-apps/api test:  Test Files  37 passed (37)
-apps/api test:       Tests  347 passed (347)
-apps/api test:    Start at  22:35:19
-apps/api test:    Duration  42.93s (tests 82%, import 17%)
+apps/api test:  Test Files  38 passed (38)
+apps/api test:       Tests  350 passed (350)
+apps/api test:    Start at  22:50:53
+apps/api test:    Duration  95.28s (tests 87%, import 13%)
 apps/api test: 
-apps/api test:     Isolate  37 workers spawned · ~117ms startup each (spawn + environment, per file)
-apps/api test:              at least ~4.21s faster with isolate: false — reuses workers across files instead of one per file
+apps/api test:     Isolate  38 workers spawned · ~220ms startup each (spawn + environment, per file)
+apps/api test:              at least ~8.13s faster with isolate: false — reuses workers across files instead of one per file
 apps/api test: 
 apps/api test: Done
 $ pnpm -r build
-packages/shared build$ tsc -p tsconfig.build.json
 packages/ui build$ tsc --noEmit
+packages/shared build$ tsc -p tsconfig.build.json
 packages/shared build: Done
 apps/api build$ tsc -p tsconfig.build.json
 packages/ui build: Done
@@ -90,14 +93,14 @@ apps/web build: dist/assets/golos-text-cyrillic-wght-normal-mKek_fSS.woff2      
 apps/web build: dist/assets/martian-mono-latin-wght-normal-5W32yIyr.woff2        23.55 kB
 apps/web build: dist/assets/golos-text-latin-wght-normal-BS5oQT7X.woff2          37.91 kB
 apps/web build: dist/assets/index-BZBymkKD.css                                   41.87 kB │ gzip:  11.25 kB
-apps/web build: dist/assets/index-CiG2biTW.js                                   586.91 kB │ gzip: 165.96 kB
+apps/web build: dist/assets/index-WgEMQ7hI.js                                   586.94 kB │ gzip: 165.97 kB
 apps/web build: 
 apps/web build: [plugin builtin:vite-reporter] 
 apps/web build: (!) Some chunks are larger than 500 kB after minification. Consider:
 apps/web build: - Using dynamic import() to code-split the application
 apps/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 apps/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-apps/web build: ✓ built in 690ms
+apps/web build: ✓ built in 1.35s
 apps/web build: Done
 apps/api build: Done
 $ openspec validate --all --strict
