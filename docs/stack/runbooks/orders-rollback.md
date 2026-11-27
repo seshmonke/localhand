@@ -102,4 +102,6 @@ DB-тесты снова зелёные.
 ## Ссылки
 
 - Миграция: `apps/api/drizzle/0003_*.sql`.
-- Change: `openspec/changes/05-checkout-orders`, task 3.7.
+- Change: `openspec/changes/archive/2026-11-27-05-checkout-orders`,
+  task 3.7.
+- ADR: `docs/stack/adr/0003-orders.md`.

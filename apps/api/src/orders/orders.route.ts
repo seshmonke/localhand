@@ -30,6 +30,14 @@ const CHECKOUT_RATE_LIMIT = {
 export const ordersRoutes: FastifyPluginAsyncZod = async (app) => {
   const sessionGuard = createSessionGuard(app);
 
+  // Checkout and order responses carry the buyer's phone and comment: browsers,
+  // proxies and shared caches must never store them. Errors share the header so
+  // an intermediary cannot cache a 401/404 either.
+  app.addHook("onSend", async (_request, reply, payload) => {
+    reply.header("Cache-Control", "no-store");
+    return payload;
+  });
+
   app.setErrorHandler<FastifyError>((error, request, reply) => {
     if (error.validation) {
       return reply.code(400).send({ error: "invalid_request" });
