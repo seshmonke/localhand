@@ -1,6 +1,7 @@
 # Quality wave 1: TDD + gates
 
-Статус: **backlog**, кандидат в Sprint 4.
+Статус: **программа**, Q1.0 done (docs-PR), Q1.1–Q1.6 — backlog,
+каждый пункт отдельный PBI. Кандидат Sprint 4.
 Дата: 27.11.2026.
 Источник: решение владельца «TDD внедрить обязательно» + quality-план
 `docs/quality/methodologies.md`.
@@ -11,39 +12,41 @@
 SLO/RUM обязательными для критических путей. Не увеличивать церемонии, а
 встроить проверки в существующие PR/CI.
 
-## AC
+## AC программы
 
-- [ ] TDD-evidence в PR: RED-тест падал по ожидаемой причине, GREEN
-      прошёл; шаблон PR обновлён.
-- [ ] DoD/DoR содержат Tier T0/T1/T2 и гейты T2; `AGENTS.md` и
-      `roles.md` ссылаются на методологию.
+- [x] Q1.0: TDD-evidence в PR-шаблоне; DoD/DoR содержат Tier T0/T1/T2;
+      `AGENTS.md` и `roles.md` ссылаются на методологию.
+- [ ] Q1.1–Q1.6: каждый PBI имеет свой AC, evidence и owner; T2-гейты
+      становятся блокирующими после Q1.3+Q1.4 Done.
 - [ ] Contract-тесты web↔API на shared-схемах: изменение контракта без
       теста валит CI.
 - [ ] Property-based тесты для денег/идемпотентности/статусов.
-- [ ] Mutation-отчёт T2 (payments/auth) ≥ 70% на изменённых модулях;
-      nightly или перед релизом.
+- [ ] Q1.3: mutation T2 ≥ 70% changed pre-merge после Done Q1.3;
+      до этого — nightly-отчёт и owner-исключение.
 - [ ] Threat model для payments/address PII записан в
       `docs/quality/threat-model.md`; abuse cases в change.
 - [ ] Semgrep important-only в PR-гейте; CodeQL/SBOM — nightly.
-- [ ] SLO checkout/payments + логи/метрики/алерты; field RUM или явное
-      исключение owner до публичного запуска.
-- [ ] Performance/load: API p95 и load-сценарий checkout/payments.
+- [ ] Q1.5: SLO checkout/payments — API p95 < 500 ms без сети провайдера,
+      error rate < 1%, availability 99,5%; логи/метрики/алерты; field RUM
+      или owner-исключение до публичного запуска.
+- [ ] Q1.6: API p95/load-сценарий checkout/payments в тех же бюджетах.
 - [ ] `pnpm verify` + `openspec validate --all --strict` зелёные;
       evidence в `.scrum/sprints/4/evidence/`.
 
-## Задачи
+## Пункты программы (отдельные PBI)
 
-1. **TDD/ATDD:** шаблон PR, red/green evidence, QA-аудит; обновить
-   `roles.md`/`dod.md` (сделано в docs-PR).
-2. **Contracts:** shared Zod-схемы + contract-тесты web↔API;
-   negative/edge cases.
-3. **Property/mutation:** fast-check инварианты payments/authz;
-   StrykerJS на критических модулях, порог 70% changed.
-4. **Security:** threat model payments/address, Semgrep important-only,
-   CodeQL/SBOM nightly, ASVS-чек-лист T2.
-5. **Observability:** SLO checkout/payments, structured logs/metrics,
-   dashboard/alert, RUM.
-6. **Performance:** API p95 бюджеты, k6/autocannon сценарии.
+| PBI | Что | AC/гейт |
+|---|---|---|
+| **Q1.0** | TDD/DoD/roles/PR-шаблон | done в docs-PR |
+| **Q1.1** | TDD/ATDD enforcement | QA-аудит RED/GREEN, 3 PR подряд без test-after |
+| **Q1.2** | Contract tests web↔API | shared-схемы, negative/edge, CI gate |
+| **Q1.3** | Property/mutation | fast-check payments/authz, Stryker 70% changed |
+| **Q1.4** | Security | threat model payments/address, Semgrep PR, CodeQL/SBOM nightly |
+| **Q1.5** | Observability | SLO 99,5%/p95<500ms/error<1%, logs/metrics/alert/RUM |
+| **Q1.6** | Performance | API p95 бюджеты, k6/autocannon checkout/payments |
+
+Порядок: Q1.1 → Q1.2 → Q1.3/Q1.4 → Q1.5/Q1.6. T2-гейты блокирующие
+после Q1.3+Q1.4; mutation до этого — nightly.
 
 ## Роли
 

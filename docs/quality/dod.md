@@ -1,8 +1,12 @@
 # Definition of Ready / Definition of Done
 
 Обязательные методологии и уровни риска — `docs/quality/methodologies.md`.
-Tier определяется на Planning: T0 — docs/copy, T1 — обычная фича,
-T2 — деньги, authz, PII, статусы, миграции, внешние провайдеры.
+Tier определяется на Planning: T0 — docs/copy без изменения поведения,
+T1 — обычная фича, T2 — деньги, authz, PII/адреса, критические переходы
+заказов, миграции, платёжные/внешние провайдеры.
+
+**T0:** DoR — ссылки/факты проверяемы, `No spec change`; DoD — `verify`,
+prettier/check:public, ревью. TDD, e2e и OpenSpec archive не требуются.
 
 ## Definition of Ready (PBI)
 
@@ -18,6 +22,7 @@ PBI можно брать в спринт, если:
 - [ ] Определён Tier (T0/T1/T2) и записан в change/PBI.
 - [ ] Для T1/T2 есть исполняемые acceptance-сценарии или план
       red-тестов; для T2 — threat model и contract-план.
+- [ ] Для T0 — `No spec change` и проверяемые ссылки/факты.
 - [ ] Для T2 определены SLO/логи/метрики и performance-бюджет.
 - [ ] Задача не зависит от нерешённого концептуального вопроса.
 
@@ -27,26 +32,31 @@ PBI можно брать в спринт, если:
 
 PBI Done, только если:
 
-- [ ] AC и сценарии пройдены; e2e на главный сценарий.
+- [ ] T0: `verify` + проверка ссылок/фактов; TDD/e2e/архив не нужны.
+- [ ] T1/T2: AC и сценарии пройдены; e2e на главный сценарий.
 - [ ] TDD evidence: RED-тест падал по ожидаемой причине, GREEN — прошёл;
-      для T1/T2 тест написан до кода, а не после.
+      для T1/T2 тест написан до кода, а не после; REFACTOR — тесты зелёные.
 - [ ] Unit/integration на изменённую логику; покрытие изменённых строк
       T1 ≥ 80%.
-- [ ] Для T2: property-based инварианты, mutation score изменённых
-      критических модулей ≥ 70%, contract-тесты.
+- [ ] Для T2: property-based инварианты, contract-тесты; mutation
+      ≥ 70% changed — после Done `quality-wave-1`, до этого nightly-отчёт
+      и owner-исключение.
 - [ ] Typecheck, lint, build зелёные.
 - [ ] Нет новых high/critical уязвимостей; secret scan чист; authz-тесты
       для новых ручек; для T2 threat model обновлён, SAST/Semgrep чист.
 - [ ] A11y: клавиатура, фокус, labels, контраст; axe чист на изменённых
       страницах.
-- [ ] Perf-бюджет: LCP p75 < 2,5 с на среднем мобильном; дельта бандла в
-      пределах бюджета.
+- [ ] Perf-бюджет: preview lab LCP < 2500 ms (owner-approved DoD-прокси
+      v1) и дельта бандла в бюджете; field p75 — до публичного запуска.
 - [ ] Наблюдаемость: логи/метрики/трейсы для нового пути; для T2 —
-      SLO/алерт и field RUM, если затронут фронт.
+      SLO/алерт (API p95 < 500 ms, error rate < 1%) и field RUM, если
+      затронут фронт; field RUM может быть owner-исключением до
+      публичного запуска.
 - [ ] Документация: ADR при решении, runbook при операции, changelog,
       postmortem для P0/P1.
-- [ ] OpenSpec: `verify-change` пройден, change заархивирован,
-      `openspec validate --all --strict` зелёный, спека обновлена.
+- [ ] OpenSpec: при изменении поведения — `verify-change` пройден,
+      change заархивирован, `openspec validate --all --strict` зелёный,
+      спека обновлена; при `No spec change` archive не требуется.
 - [ ] Откат: feature flag или revert; миграция обратима.
 - [ ] Preview задеплоен, smoke пройден.
 - [ ] Ревью не-автора, комментарии закрыты.
@@ -61,7 +71,8 @@ PBI Done, только если:
 - «Потом добавим a11y/perf/доки».
 - «Тесты зелёные, но написаны после кода» для T1/T2 — нет RED-evidence.
 - «Контракт поменяли, contract-тест потом».
-- «T2 без threat model, mutation и SLO».
+- «T2 без threat model/SLO; mutation — вне окна wave 1 без nightly и
+  owner-исключения».
 
 ## Исключения
 

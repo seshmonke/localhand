@@ -36,8 +36,8 @@ ACCEPT, change `02-seller-onboarding` заархивирован.
 ## Бэклог
 
 [backlog.md](backlog.md) — весь пул задач, метки P0/P1/P2.
-[Quality wave 1](quality-wave-1.md) — TDD/ATDD/contract/mutation/
-threat model/SLO, кандидат Sprint 4.
+[Quality wave 1](quality-wave-1.md) — программа Q1.1–Q1.6:
+TDD/ATDD/contract/mutation/threat model/SLO, кандидат Sprint 4.
 
 ## Milestones
 

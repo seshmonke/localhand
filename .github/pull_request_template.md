@@ -9,10 +9,17 @@
 
 - [ ] `pnpm verify` — вывод и exit code приложены (включая `check:public`)
 - [ ] Если менялось поведение — OpenSpec change валиден
-- [ ] TDD evidence: RED-тест падал, GREEN прошёл (для T1/T2)
+- [ ] TDD evidence заполнен ниже (для T1/T2); для T0 — N/A
 - [ ] Contract-тесты при изменении API/shared; для T2 — mutation/property
 - [ ] Threat model/SAST обновлены для T2; SLO/логи для критического пути
 - [ ] Скриншоты/видео для UI (320 и 1440), ПДн замазаны
+
+## TDD evidence (T1/T2)
+
+- RED: команда, имя теста, вывод/ссылка на упавший commit или CI
+- GREEN: команда, вывод
+- REFACTOR: тесты остались зелёными, поведение не менялось
+- Для T0: N/A — docs/copy без изменения поведения
 
 ## Ревью
 

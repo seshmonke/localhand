@@ -35,10 +35,11 @@
 
 ## P1
 
-- [ ] P1. Quality wave 1: TDD/ATDD, contract/property/mutation,
-  threat model, SLO/RUM, Semgrep important-only. Критерий: TDD-evidence
-  в PR, contract-тесты web↔API, mutation T2 ≥ 70%, threat model
-  payments/address, SLO checkout/payments; `pnpm verify` зелёный.
+- [ ] P1. Quality wave 1 (программа Q1.1–Q1.6): TDD/ATDD, contract,
+  property/mutation, threat model, SLO/RUM, Semgrep important-only.
+  Каждый пункт — отдельный PBI; Q1.0 (docs/DoD/PR-шаблон) сделан.
+  Критерий: TDD-evidence, contract-тесты web↔API, mutation T2 ≥ 70%
+  changed, threat model payments/address, SLO p95<500ms/error<1%.
   Источник: решение владельца 27.11.2026, `docs/quality/methodologies.md`.
   Спринт: — (кандидат Sprint 4). Бриф:
   [quality-wave-1.md](quality-wave-1.md).

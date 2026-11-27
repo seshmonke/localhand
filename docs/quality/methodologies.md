@@ -22,24 +22,30 @@
 В PR/отчёте фиксируется evidence:
 
 ```text
-RED:   payments retry returned 200 with a second confirmationUrl
-       test: payments.flow.db.test.ts > stale failed key
-GREEN: same test passes; api 263/263
+RED:   DATABASE_URL_TEST=... pnpm --filter @localhand/api test
+       test: payments.flow.db.test.ts > refuses a failed-key retry after
+       the seller disconnects
+       expected 409, received 200 with confirmationUrl
+GREEN: same command; api 263/263 (DB suite included)
+REFACTOR: same tests green; behavior unchanged
 ```
 
 Правила:
 
 - Код, написанный до теста, удаляется или переписывается test-first.
 - Тест должен падать **без** реализации, а не просто существовать.
-- Для T2 (деньги, authz, PII, статусы) дополнительно нужны
+- Для T2 (деньги, authz, PII/адреса, критические переходы заказов) дополнительно нужны
   property-based инварианты и mutation-проверка критического модуля.
 - Исключения: сгенерированный код, миграции (проверяются up/down),
-  одноразовый spike (удаляется), docs/copy. Исключение фиксируется в PR.
+  одноразовый spike (удаляется). Docs/copy — это T0, а не исключение:
+  для них TDD не применяется по определению.
 
 TDD реализуется скиллом Superpowers `test-driven-development`; остальные
 скиллы Superpowers (`brainstorming`, `writing-plans`,
 `systematic-debugging`, `requesting-code-review`,
 `verification-before-completion`) используются как обёртка вокруг цикла.
+Плагин глобальный, версия не пинится; если скилл недоступен, действует
+этот документ — процесс не зависит от наличия плагина.
 
 ## Уровни риска
 
@@ -47,10 +53,11 @@ TDD реализуется скиллом Superpowers `test-driven-development`;
 |---|---|---|
 | **T0** | docs, copy, косметика без поведения | typecheck/lint/build, a11y если UI |
 | **T1** | обычная фича/багфикс | TDD, unit/integration, e2e главного сценария |
-| **T2** | деньги, authz, PII, статусы, миграции, внешние провайдеры | T1 + threat model, contract tests, property-based, mutation, SLO/логи, runbook |
+| **T2** | деньги, authz, PII/адреса, критические переходы заказов, миграции, платёжные/внешние провайдеры | T1 + threat model, contract tests, property-based, mutation, SLO/логи, runbook |
 
 Tier определяется на Planning и фиксируется в change/PBI. Если
-сомневаешься между T1 и T2 — выбирай T2.
+сомневаешься между T1 и T2 — выбирай T2. Обычный CRUD, UI-косметика
+и тексты в T2 не переводятся.
 
 ## 10 обязательных практик
 
@@ -86,8 +93,9 @@ Property-based (fast-check) генерирует краевые случаи; mu
 
 - Артефакт: инварианты (идемпотентность, суммы, переходы статусов),
   mutation-отчёт changed-модуля.
-- Гейт: mutation score T2 ≥ 70% на изменённых критических модулях;
-  цель расти, а не блокировать всё сразу.
+- Гейт: после завершения quality-wave-1 — mutation score T2 ≥ 70% на
+  изменённых критических модулях pre-merge; до этого mutation идёт
+  nightly-отчётом и не блокирует merge без owner-исключения.
 
 ### 5. Shift-left security
 
@@ -104,6 +112,9 @@ secret scan, SBOM; перед релизом — DAST/smoke. OWASP ASVS — че
 error budget; field RUM для фронта. Нельзя улучшать то, что не измеряешь.
 
 - Артефакт: SLO checkout/payments, дашборд, алерты, RUM.
+- SLO v1 (проверить в wave 1): API p95 < 500 ms без сети провайдера,
+  error rate < 1%, availability 99,5% в месяц; LCP — preview-прокси
+  < 2500 ms, field RUM — до публичного запуска или owner-исключение.
 - Гейт: новый критический путь без логов/метрик не Done.
 
 ### 7. Performance budgets + load testing
@@ -140,9 +151,11 @@ canary/blue-green и быстрый rollback. Ручные изменения VM
 
 ## Волны внедрения
 
-**Волна 1 — сейчас (Sprint 3–4):**
+**Волна 1 — Sprint 3–4:**
 TDD, ATDD, contract tests, property/mutation для T2, threat model,
 SLO/RUM на checkout/payments, Semgrep important-only.
+T2-гейты становятся блокирующими после Done `quality-wave-1` (Q1.1–Q1.6);
+до этого артефакты обязательны, mutation — nightly, исключение — owner.
 
 **Волна 2 — Sprint 5–6:**
 trunk-based + feature flags, performance/load budgets, postmortems.
@@ -150,8 +163,9 @@ trunk-based + feature flags, performance/load budgets, postmortems.
 **Волна 3 — до публичного запуска:**
 IaC + progressive delivery, ASVS/SBOM/DAST, debt-бюджет.
 
-Порядок не отменяет обязательность: все 10 входят в DoD по мере
-внедрения, но волны не дают церемонии съесть спринт.
+Порядок не отменяет обязательность: все 10 входят в DoD **по волнам**;
+DoD содержит гейты волны 1, гейты волн 2–3 добавляются при активации.
+Волны не дают церемонии съесть спринт.
 
 ## Роли
 
@@ -177,8 +191,9 @@ IaC + progressive delivery, ASVS/SBOM/DAST, debt-бюджет.
 
 ## Исключения
 
-Любое исключение — только owner-approved, с причиной, сроком и
-артефактом в PR/ADR. Просроченное исключение становится P1-долгом.
+Исключение из TDD/гейта — только owner-approved, с причиной, сроком и
+артефактом в PR/ADR. T0 (docs/copy) не является исключением и не требует
+owner-approval. Просроченное исключение становится P1-долгом.
 Молчаливое ослабление тестов, CI или порогов запрещено.
 
 ## Текущее состояние
