@@ -35,6 +35,7 @@ const summary = {
   buyerPhone: testPhone(),
   comment: "Позвонить перед доставкой",
   createdAt: "2026-11-27T10:00:00.000Z",
+  delivery: null,
   items: [
     {
       productId: 5,

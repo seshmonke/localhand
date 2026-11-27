@@ -90,6 +90,16 @@ describe("create product contract", () => {
     ).toBe(true);
   });
 
+  it("accepts positive dimensions and rejects zero/negative/fractional values", () => {
+    const dimensions = { weightG: 1200, lengthCm: 40, widthCm: 30, heightCm: 10 };
+    expect(CreateProductSchema.safeParse({ ...validCreate, ...dimensions }).success).toBe(true);
+    expect(CreateProductSchema.safeParse({ ...validCreate, weightG: 0 }).success).toBe(false);
+    expect(CreateProductSchema.safeParse({ ...validCreate, heightCm: -1 }).success).toBe(false);
+    expect(CreateProductSchema.safeParse({ ...validCreate, widthCm: 2.5 }).success).toBe(false);
+    expect(UpdateProductSchema.safeParse({ weightG: 0 }).success).toBe(false);
+    expect(UpdateProductSchema.safeParse({ weightG: null }).success).toBe(true);
+  });
+
   it("rejects NUL bytes in name, description and image URL", () => {
     expect(CreateProductSchema.safeParse({ ...validCreate, name: "A\u0000B" }).success).toBe(false);
     expect(CreateProductSchema.safeParse({ ...validCreate, description: "X\u0000Y" }).success).toBe(
@@ -162,6 +172,10 @@ describe("seller product response contract", () => {
     description: null,
     priceKopecks: 420_000,
     imageUrl: null,
+    weightG: null,
+    lengthCm: null,
+    widthCm: null,
+    heightCm: null,
     status: "draft",
   };
 
@@ -170,6 +184,19 @@ describe("seller product response contract", () => {
     expect(SellerProductSchema.parse({ ...product, status: "published" }).status).toBe("published");
     expect(SellerProductSchema.parse({ ...product, status: "hidden" }).status).toBe("hidden");
     expect(SellerProductSchema.parse({ ...product, updatedAt: "2026-01-01" })).toEqual(product);
+  });
+
+  it("exposes nullable physical dimensions", () => {
+    const sized = {
+      ...product,
+      weightG: 1200,
+      lengthCm: 40,
+      widthCm: 30,
+      heightCm: 10,
+    };
+    expect(SellerProductSchema.parse(sized)).toEqual(sized);
+    expect(SellerProductSchema.safeParse({ ...sized, weightG: 0 }).success).toBe(false);
+    expect(SellerProductSchema.safeParse({ ...sized, lengthCm: 1.5 }).success).toBe(false);
   });
 
   it("rejects unknown statuses and non-integer prices", () => {

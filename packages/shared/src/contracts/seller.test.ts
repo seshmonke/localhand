@@ -79,6 +79,14 @@ describe("update shop contract", () => {
     expect(UpdateShopSchema.safeParse({ description: null }).success).toBe(true);
     expect(UpdateShopSchema.safeParse({ status: "published" }).success).toBe(true);
     expect(UpdateShopSchema.safeParse({ status: "draft" }).success).toBe(true);
+    expect(
+      UpdateShopSchema.safeParse({
+        cdekCityCode: 44,
+        cdekCityName: "Москва",
+        cdekShipmentPoint: "MSK123",
+      }).success,
+    ).toBe(true);
+    expect(UpdateShopSchema.safeParse({ cdekCityCode: null }).success).toBe(true);
   });
 
   it("rejects an empty update and the platform-only blocked status", () => {
@@ -87,6 +95,8 @@ describe("update shop contract", () => {
     expect(UpdateShopSchema.safeParse({ name: "" }).success).toBe(false);
     expect(UpdateShopSchema.safeParse({ slug: "admin" }).success).toBe(false);
     expect(UpdateShopSchema.safeParse({ description: "a".repeat(2001) }).success).toBe(false);
+    expect(UpdateShopSchema.safeParse({ cdekCityCode: 0 }).success).toBe(false);
+    expect(UpdateShopSchema.safeParse({ cdekShipmentPoint: "  " }).success).toBe(false);
   });
 });
 
@@ -101,6 +111,9 @@ describe("seller shop response contract", () => {
       slug: "vintage-shop",
       name: "Винтаж на районе",
       description: null,
+      cdekCityCode: null,
+      cdekCityName: null,
+      cdekShipmentPoint: null,
       status: "draft",
     };
 
