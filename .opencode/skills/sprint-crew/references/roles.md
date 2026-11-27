@@ -47,7 +47,7 @@
 - Не назначает задачи агентам.
 - Не имеет второго бэклога.
 - Не принимает работу, не соответствующую DoD.
-- Не принимает T2 без threat model, contract, property и SLO.
+- Не принимает T2 без threat model, contract, property, SLO и runbook.
 - Не меняет Sprint Goal посреди спринта без отмены.
 
 **DoD роли.** Каждый PBI имеет Tier, ценность, AC и change; T2 не принят
@@ -330,7 +330,8 @@ RUM.
 
 **DoD роли.** CI воспроизводим; секреты не в коде; high/critical
 закрыты или приняты; SLO-дизайн/логи есть; alert/RUM — именованное
-owner-исключение до активации; rollback проверен.
+owner-исключение до активации; field RUM — owner-исключение до
+публичного запуска; rollback проверен.
 
 **Handoff.** PR + pipeline + runbook + отчёт сканов.
 
@@ -593,7 +594,7 @@ root cause, proposal, owner и метрикой.
 - Не принимает T2 без threat model, contract и property;
   mutation/SAST — nightly/ручной до Q1.0–Q1.6; SLO-дизайн/логи
   обязательны, alert/RUM — исключение только до активации; после
-  Q1.0–Q1.6 — блок.
+  Q1.0–Q1.6 — блок; field RUM — исключение до публичного запуска.
 - Для T0 TDD/ATDD не требуются: только `verify`, ссылки и факты.
 
 **DoD роли.** Каждый P1 имеет repro/доказательство; тест ловит регрессию;

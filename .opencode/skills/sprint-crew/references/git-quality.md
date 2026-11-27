@@ -96,7 +96,10 @@ archive, rollback, preview, ревью не-автора, живая прове�
 
 - [ ] Tier T0/T1/T2; T0 не требует TDD/ATDD.
 - [ ] T1/T2: ATDD happy/error и RED-evidence (тест падал без кода).
-- [ ] T2: threat model, contract/property, mutation/SAST/SLO по волне.
+- [ ] T2: threat model, contract/property, runbook/rollback; SLO/логи
+      обязательны.
+- [ ] T2: mutation/SAST/alert/RUM — по волне; field RUM — до публичного
+      запуска.
 - [ ] Исключение: owner/причина/срок/артефакт.
 - [ ] P3 debt owner/срок; P0/P1 postmortem.
 - [ ] Соответствует AC и спеке.
