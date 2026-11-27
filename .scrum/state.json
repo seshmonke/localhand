@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": 3,
   "cycle": 4,
-  "updated_at": "2026-11-27T14:39:00Z",
+  "updated_at": "2026-11-27T15:25:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 3 cycle 4: S3-1 PR B2 payments UI in progress (branch task/S3-1b2-payments-ui): admin connect, order pay/status/polling, admin payment badges, dev fake pages, ADR 0004, manual-review runbook, threat model, browser e2e/axe/LCP. T2 TDD required. B1 merged 51aa6f9; methodology Q1.0 merged."
+  "notes": "Sprint 3 cycle 4: S3-1 B2 payments UI in PR #45 after review fixes (pending-no-URL retry, payment read errors, property tests, dev-route guard). Owner approved B2 size exception and mutation/SAST deferral to Q1.3/Q1.4. Verify: web 153, api 271, shared 139. Next: re-review, merge, close S3-1."
 }

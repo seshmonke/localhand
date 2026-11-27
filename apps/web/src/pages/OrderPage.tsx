@@ -161,10 +161,12 @@ function PaymentDetails({
     if (payment.confirmationUrl === null) {
       return (
         <>
-          <p className="mt-4 text-sm font-semibold leading-relaxed">Не удалось создать платёж</p>
+          <p className="mt-4 text-sm font-semibold leading-relaxed">
+            Не удалось подтвердить оплату
+          </p>
           <p className="mt-2 text-sm leading-relaxed">
-            Платёж не был создан у провайдера. Повторите оплату — попытка сохранит тот же ключ и не
-            создаст второе списание.
+            Исход создания платежа неизвестен. Повторите оплату — тот же ключ не создаст второе
+            списание.
           </p>
           <dl className="mt-4 flex flex-col gap-2 text-sm">
             <div className="flex flex-wrap items-baseline justify-between gap-2">

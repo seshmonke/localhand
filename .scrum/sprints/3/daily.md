@@ -91,3 +91,14 @@
 - Docs: ADR 0004, manual-review runbook, threat model.
 - E2E: connect → pay → complete/webhook → paid; axe/LCP.
 - Ветка `task/S3-1b2-payments-ui`, lease до 22:00Z.
+
+### S3-1 B2 review/fix
+
+- PR #45: review #1 REQUEST_CHANGES — P1 pending без URL, T2 property/
+  SAST, PR size; P2 payment-read errors, 409 invalid, manual copy.
+- Fix `049b6f2`: retry pending без URL, error/paid fallback, property
+  tests (fast-check), dev-route guard, docs copy.
+- Owner 27.11.2026: B2 size exception; mutation/SAST до Q1.3/Q1.4;
+  property/threat model/contract в B2.
+- Verify: shared 139, web 153, api 271, OpenSpec 8/8, public 441.
+- Ждём re-review.

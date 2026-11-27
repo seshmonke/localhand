@@ -1,0 +1,10 @@
+$ playwright test e2e/payments-flow.spec.ts e2e/payments-a11y.spec.ts
+
+Running 4 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/payments-a11y.spec.ts:63:1 › axe has no serious or critical findings on payment pages (22.6s)
+  ✓  2 [chromium] › e2e/payments-flow.spec.ts:29:1 › seller connects fake payments, buyer pays, seller sees paid (5.4s)
+  ✓  3 [chromium] › e2e/payments-flow.spec.ts:117:1 › a 409 payment_in_progress refetches the active payment instead of duplicating it (1.2s)
+  ✓  4 [chromium] › e2e/payments-flow.spec.ts:155:1 › manual_review is a payment state, not an order status, for buyer and seller (2.1s)
+
+  4 passed (32.1s)

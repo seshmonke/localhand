@@ -1,0 +1,143 @@
+{
+  "generated_at": "2026-11-27T15:29:54.569Z",
+  "base": "http://127.0.0.1:4173",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa",
+    "wcag22a",
+    "wcag22aa"
+  ],
+  "orderId": 78,
+  "scans": {
+    "admin-shop-320-light": {
+      "url": "http://127.0.0.1:4173/admin/shop",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "admin-orders-320-light": {
+      "url": "http://127.0.0.1:4173/admin/orders",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "admin-order-320-light": {
+      "url": "http://127.0.0.1:4173/admin/orders/78",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "order-320-light": {
+      "url": "http://127.0.0.1:4173/orders/78",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "admin-shop-320-dark": {
+      "url": "http://127.0.0.1:4173/admin/shop",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "admin-orders-320-dark": {
+      "url": "http://127.0.0.1:4173/admin/orders",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "admin-order-320-dark": {
+      "url": "http://127.0.0.1:4173/admin/orders/78",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "order-320-dark": {
+      "url": "http://127.0.0.1:4173/orders/78",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "admin-shop-1440-light": {
+      "url": "http://127.0.0.1:4173/admin/shop",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "admin-orders-1440-light": {
+      "url": "http://127.0.0.1:4173/admin/orders",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "admin-order-1440-light": {
+      "url": "http://127.0.0.1:4173/admin/orders/78",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "order-1440-light": {
+      "url": "http://127.0.0.1:4173/orders/78",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "admin-shop-1440-dark": {
+      "url": "http://127.0.0.1:4173/admin/shop",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "admin-orders-1440-dark": {
+      "url": "http://127.0.0.1:4173/admin/orders",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "admin-order-1440-dark": {
+      "url": "http://127.0.0.1:4173/admin/orders/78",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "order-1440-dark": {
+      "url": "http://127.0.0.1:4173/orders/78",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    }
+  }
+}

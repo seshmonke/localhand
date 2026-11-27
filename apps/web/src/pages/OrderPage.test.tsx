@@ -238,7 +238,7 @@ describe("OrderPage", () => {
 
     const paymentSection = await screen.findByRole("region", { name: "Оплата" });
     expect(
-      await within(paymentSection).findByText("Не удалось создать платёж"),
+      await within(paymentSection).findByText("Не удалось подтвердить оплату"),
     ).toBeInTheDocument();
     expect(within(paymentSection).queryByText(/Проверяем оплату/)).not.toBeInTheDocument();
 

@@ -1,0 +1,9 @@
+$ playwright test e2e/payments-a11y.spec.ts e2e/a11y.spec.ts e2e/perf.spec.ts
+
+Running 3 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/a11y.spec.ts:43:1 › axe has no serious or critical findings on buyer pages in light and dark (17.1s)
+  ✓  2 [chromium] › e2e/payments-a11y.spec.ts:63:1 › axe has no serious or critical findings on payment pages (15.0s)
+  ✓  3 [chromium] › e2e/perf.spec.ts:113:1 › lab LCP smoke on catalog and checkout (11.0s)
+
+  3 passed (43.9s)
