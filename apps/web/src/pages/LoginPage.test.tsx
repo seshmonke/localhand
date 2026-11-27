@@ -1,6 +1,8 @@
+import { QueryClient } from "@tanstack/react-query";
 import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { sellerKeys } from "../lib/queries.js";
 import { installFetchMock } from "../test/mock-api.js";
 import { renderApp } from "../test/render-app.js";
 import { safeNext } from "./LoginPage.js";
@@ -155,5 +157,49 @@ describe("LoginPage", () => {
       "/api/seller/shop",
       expect.objectContaining({ credentials: "include" }),
     );
+  });
+
+  it("clears the previous seller cache before opening another account", async () => {
+    const client = new QueryClient({
+      defaultOptions: {
+        queries: { staleTime: 30_000, retry: false },
+        mutations: { retry: false },
+      },
+    });
+    const previousShop = {
+      id: 1,
+      slug: "previous-shop",
+      name: "Магазин A",
+      description: null,
+      status: "published" as const,
+    };
+    client.setQueryData(sellerKeys.shop, { shop: previousShop });
+
+    let meCalls = 0;
+    installFetchMock({
+      "GET /auth/me": () => {
+        meCalls += 1;
+        return meCalls === 1
+          ? { status: 401, body: { error: "unauthorized" } }
+          : { body: { user: demoUser } };
+      },
+      "POST /auth/request-code": { body: { ok: true } },
+      "POST /auth/verify-code": { body: { user: demoUser } },
+      "GET /seller/shop": () => new Promise<never>(() => {}),
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/login"], client);
+
+    await browser.type(screen.getByLabelText("Телефон"), typedPhone);
+    await browser.click(screen.getByRole("button", { name: "Получить код" }));
+    await browser.type(await screen.findByLabelText("Код из сообщения"), "123456");
+    await browser.click(screen.getByRole("button", { name: "Войти" }));
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Загружаем магазин" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Магазин A")).not.toBeInTheDocument();
+    expect(client.getQueryData(sellerKeys.shop)).toBeUndefined();
   });
 });

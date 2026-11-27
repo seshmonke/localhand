@@ -11,7 +11,7 @@ import {
   FormField,
 } from "../components/FormField.js";
 import { ApiError, requestCode, verifyCode } from "../lib/api.js";
-import { authKeys, useMeQuery } from "../lib/queries.js";
+import { authKeys, clearSellerQueries, useMeQuery } from "../lib/queries.js";
 
 const PHONE_HINT = "Российский мобильный: 10 цифр после +7. Пароль не нужен.";
 const PHONE_PLACEHOLDER = "+7 ··· ···-··-··";
@@ -114,7 +114,8 @@ export function LoginPage() {
 
   const verifyCodeMutation = useMutation({
     mutationFn: verifyCode,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      await clearSellerQueries(queryClient);
       queryClient.setQueryData(authKeys.me, { user: data.user });
       void queryClient.invalidateQueries({ queryKey: authKeys.me });
       navigate(next, { replace: true });
@@ -190,12 +191,12 @@ export function LoginPage() {
         <div className="w-full max-w-md">
           <Link
             to="/"
-            className="hidden min-h-11 items-center gap-2 font-mono text-[10px] uppercase tracking-wide underline decoration-[3px] underline-offset-4 hover:text-accent-red lg:inline-flex"
+            className="hidden min-h-11 items-center gap-2 font-mono text-[10px] uppercase tracking-wide underline decoration-[3px] underline-offset-4 hover:text-accent-red-text lg:inline-flex"
           >
             <ArrowLeft aria-hidden="true" className="size-4" />В каталог
           </Link>
 
-          <p className="mt-8 font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red lg:mt-12">
+          <p className="mt-8 font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text lg:mt-12">
             Кабинет продавца
           </p>
           <h1 className="mt-3 text-balance font-display text-4xl uppercase leading-[0.95] sm:text-5xl">
@@ -303,7 +304,7 @@ export function LoginPage() {
                   <button
                     type="button"
                     onClick={handleChangePhone}
-                    className="inline-flex min-h-11 items-center justify-center gap-2 font-mono text-[10px] uppercase tracking-wide underline decoration-[3px] underline-offset-4 hover:text-accent-red"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 font-mono text-[10px] uppercase tracking-wide underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
                   >
                     <KeyRound aria-hidden="true" className="size-4" />
                     Изменить номер
@@ -312,7 +313,7 @@ export function LoginPage() {
                     type="button"
                     onClick={handleResend}
                     disabled={requestPending}
-                    className="inline-flex min-h-11 items-center justify-center font-mono text-[10px] uppercase tracking-wide underline decoration-[3px] underline-offset-4 hover:text-accent-red disabled:opacity-50"
+                    className="inline-flex min-h-11 items-center justify-center font-mono text-[10px] uppercase tracking-wide underline decoration-[3px] underline-offset-4 hover:text-accent-red-text disabled:opacity-50"
                   >
                     {requestPending ? "Отправляем…" : "Отправить код ещё раз"}
                   </button>

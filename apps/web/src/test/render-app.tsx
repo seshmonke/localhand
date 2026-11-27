@@ -3,13 +3,15 @@ import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { App } from "../App.js";
 
-export function renderApp(initialEntries: string[] = ["/"]) {
-  const client = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false, staleTime: 0 },
-      mutations: { retry: false },
-    },
-  });
+export function renderApp(initialEntries: string[] = ["/"], externalClient?: QueryClient) {
+  const client =
+    externalClient ??
+    new QueryClient({
+      defaultOptions: {
+        queries: { retry: false, staleTime: 0 },
+        mutations: { retry: false },
+      },
+    });
 
   const result = render(
     <QueryClientProvider client={client}>

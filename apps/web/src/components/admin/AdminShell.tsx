@@ -4,7 +4,7 @@ import { LogOut, Package, Store } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router";
 import { ApiError, logout } from "../../lib/api.js";
-import { authKeys, sellerKeys, useMeQuery } from "../../lib/queries.js";
+import { authKeys, clearSellerQueries, useMeQuery } from "../../lib/queries.js";
 
 function formatPhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
@@ -46,9 +46,9 @@ export function AdminShell() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  function finishLogout() {
+  async function finishLogout() {
+    await clearSellerQueries(queryClient);
     queryClient.removeQueries({ queryKey: authKeys.me });
-    queryClient.removeQueries({ queryKey: sellerKeys.shop });
     navigate("/login", { replace: true });
   }
 
@@ -57,7 +57,7 @@ export function AdminShell() {
     onSuccess: finishLogout,
     onError: (error) => {
       if (error instanceof ApiError && error.status === 401) {
-        finishLogout();
+        void finishLogout();
       }
     },
   });
@@ -79,7 +79,7 @@ export function AdminShell() {
             <span className="font-display text-lg font-extrabold uppercase leading-none tracking-tight">
               Local Hand
             </span>
-            <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.22em] text-accent-green">
+            <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.22em] text-accent-green-text">
               Кабинет продавца
             </span>
           </Link>

@@ -6,7 +6,7 @@ export function AdminProductsPage() {
   return (
     <div className="mx-auto w-full max-w-[1100px]">
       <header className="border-b-[3px] border-ink pb-6">
-        <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red">
+        <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text">
           Кабинет продавца
         </p>
         <h1 className="mt-2 font-display text-3xl uppercase leading-none sm:text-4xl">Товары</h1>
@@ -19,7 +19,7 @@ export function AdminProductsPage() {
         <ScreenState
           kind="empty"
           title="Скоро"
-          description="Управление товарами выйдет в следующем обновлении кабинета (S1-4b). Пока настройте магазин и опубликуйте его."
+          description="Управление товарами появится скоро. Пока настройте магазин и опубликуйте его."
           action={
             <Link to="/admin/shop" className={buttonVariants({ variant: "outline" })}>
               К настройкам магазина

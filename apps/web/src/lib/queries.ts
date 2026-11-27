@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type QueryClient } from "@tanstack/react-query";
 import { fetchCatalog, fetchMe, fetchProduct, fetchSellerShop, fetchShop } from "./api.js";
 
 export const authKeys = {
@@ -6,8 +6,14 @@ export const authKeys = {
 };
 
 export const sellerKeys = {
+  all: ["seller"] as const,
   shop: ["seller", "shop"] as const,
 };
+
+export async function clearSellerQueries(queryClient: QueryClient): Promise<void> {
+  await queryClient.cancelQueries({ queryKey: sellerKeys.all });
+  queryClient.removeQueries({ queryKey: sellerKeys.all });
+}
 
 export function useMeQuery() {
   return useQuery({

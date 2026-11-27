@@ -23,13 +23,13 @@ function Header() {
         </Link>
 
         <nav className="hidden items-center gap-6 font-mono text-xs uppercase tracking-wide md:flex">
-          <Link className="hover:text-accent-red" to="/">
+          <Link className="hover:text-accent-red-text" to="/">
             Каталог
           </Link>
-          <a className="hover:text-accent-red" href="/#how">
+          <a className="hover:text-accent-red-text" href="/#how">
             Как это работает
           </a>
-          <a className="hover:text-accent-red" href="/#sellers">
+          <a className="hover:text-accent-red-text" href="/#sellers">
             Продавцам
           </a>
         </nav>

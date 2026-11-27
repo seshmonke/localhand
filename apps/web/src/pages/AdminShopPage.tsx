@@ -88,7 +88,7 @@ export function AdminShopPage() {
   return (
     <div className="mx-auto w-full max-w-[1100px]">
       <header className="border-b-[3px] border-ink pb-6">
-        <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red">
+        <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text">
           Кабинет продавца
         </p>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
@@ -135,7 +135,7 @@ function ShopLoadError({ error, onRetry }: { error: unknown; onRetry: () => void
   if (error instanceof ApiError && error.status === 401) {
     return (
       <ScreenState
-        kind="empty"
+        kind="error"
         title="Сессия истекла"
         description="Войдите снова, чтобы открыть магазин."
         action={
@@ -647,7 +647,7 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
           {shop.status === "published" ? (
             <Link
               to={`/shops/${shop.slug}`}
-              className="mt-4 inline-flex min-h-11 items-center gap-2 font-mono text-[10px] uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red"
+              className="mt-4 inline-flex min-h-11 items-center gap-2 font-mono text-[10px] uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
             >
               Открыть витрину
               <ExternalLink aria-hidden="true" className="size-4" />

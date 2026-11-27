@@ -1,9 +1,10 @@
 import { Button } from "@localhand/ui";
+import { useQueryClient } from "@tanstack/react-query";
 import { TriangleAlert } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
 import { ApiError } from "../../lib/api.js";
-import { useMeQuery } from "../../lib/queries.js";
+import { clearSellerQueries, useMeQuery } from "../../lib/queries.js";
 
 function GuardFrame({ children }: { children: ReactNode }) {
   return (
@@ -13,6 +14,35 @@ function GuardFrame({ children }: { children: ReactNode }) {
       </div>
     </div>
   );
+}
+
+function UnauthorizedRedirect({ next }: { next: string }) {
+  const queryClient = useQueryClient();
+  const [cleared, setCleared] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void clearSellerQueries(queryClient).finally(() => {
+      if (active) {
+        setCleared(true);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [queryClient]);
+
+  if (!cleared) {
+    return (
+      <GuardFrame>
+        <output className="block font-mono text-xs uppercase tracking-[0.2em]">
+          Проверяем сессию…
+        </output>
+      </GuardFrame>
+    );
+  }
+
+  return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
 }
 
 export function AdminGuard() {
@@ -35,13 +65,15 @@ export function AdminGuard() {
 
   if (me.isError) {
     if (me.error instanceof ApiError && me.error.status === 401) {
-      const next = `${location.pathname}${location.search}`;
-      return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
+      const next = `${location.pathname}${location.search}${location.hash}`;
+      return <UnauthorizedRedirect next={next} />;
     }
 
     return (
       <GuardFrame>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent-red">Ошибка</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent-red-text">
+          Ошибка
+        </p>
         <h1 className="mt-3 font-display text-2xl uppercase leading-tight">
           Не удалось проверить сессию
         </h1>
