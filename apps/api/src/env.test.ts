@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { isForbiddenSecret, parseEnv, resolvePaymentsSettings, resolveTrustProxy } from "./env.js";
+import {
+  isForbiddenSecret,
+  parseEnv,
+  resolveDeliverySettings,
+  resolvePaymentsSettings,
+  resolveTrustProxy,
+} from "./env.js";
 
 const RANDOM_SECRET = "q7Zr3mB9xK2pL5wN8cV1tY4hJ6sD0fGz";
 const CI_JWT_SECRET = "ci-only-secret-that-is-long-enough-123456";
@@ -383,5 +389,172 @@ describe("payments env", () => {
     expect(parsed.PAYMENTS_TOKEN_KEY_VERSION).toBeUndefined();
     expect(parsed.PAYMENTS_WEBHOOK_URL).toBeUndefined();
     expect(resolvePaymentsSettings(parsed)).toBeNull();
+  });
+});
+
+const DELIVERY_QUOTE_SECRET = "d3LvR8sQ1nX6pK4mT9wY2cB7hJ5fG0zA";
+
+function deliveryEnv(overrides: Record<string, string | undefined> = {}) {
+  return {
+    NODE_ENV: "test",
+    DELIVERY_QUOTE_SECRET,
+    ...overrides,
+  };
+}
+
+describe("delivery env", () => {
+  it("defaults to test with delivery disabled", () => {
+    const parsed = parseEnv({ NODE_ENV: "test" });
+
+    expect(parsed.DELIVERY_ENV).toBe("test");
+    expect(parsed.DELIVERY_PROVIDER).toBeUndefined();
+    expect(parsed.DELIVERY_LIVE_PII).toBe(false);
+    expect(resolveDeliverySettings(parsed)).toBeNull();
+  });
+
+  it("requires a quote secret when a provider is configured", () => {
+    expect(() =>
+      parseEnv({
+        NODE_ENV: "test",
+        DELIVERY_PROVIDER: "fake",
+        DELIVERY_ENV: "test",
+      }),
+    ).toThrow(/DELIVERY_QUOTE_SECRET/);
+  });
+
+  it("accepts the fake provider in test", () => {
+    const parsed = parseEnv(deliveryEnv({ DELIVERY_PROVIDER: "fake", DELIVERY_ENV: "test" }));
+    const settings = resolveDeliverySettings(parsed);
+
+    expect(settings?.provider).toBe("fake");
+    expect(settings?.environment).toBe("test");
+    expect(settings?.cdek).toBeNull();
+    expect(settings?.quoteSecret).toBe(DELIVERY_QUOTE_SECRET);
+  });
+
+  it("rejects the fake provider in live", () => {
+    expect(() =>
+      parseEnv(deliveryEnv({ DELIVERY_PROVIDER: "fake", DELIVERY_ENV: "live" })),
+    ).toThrow(/DELIVERY_PROVIDER/);
+  });
+
+  it("fails startup on live CDEK without the live PII gate", () => {
+    expect(() =>
+      parseEnv(
+        deliveryEnv({
+          DELIVERY_PROVIDER: "cdek",
+          DELIVERY_ENV: "live",
+          CDEK_CLIENT_ID: "client-id",
+          CDEK_CLIENT_SECRET: "client-secret",
+          CDEK_API_URL: "https://api.cdek.ru",
+          CDEK_WEBHOOK_URL: "https://example.com/delivery/cdek/webhook",
+        }),
+      ),
+    ).toThrow(/DELIVERY_LIVE_PII/);
+  });
+
+  it("accepts live CDEK only with the PII gate and production host", () => {
+    const parsed = parseEnv(
+      deliveryEnv({
+        DELIVERY_PROVIDER: "cdek",
+        DELIVERY_ENV: "live",
+        DELIVERY_LIVE_PII: "true",
+        CDEK_CLIENT_ID: "client-id",
+        CDEK_CLIENT_SECRET: "client-secret",
+        CDEK_API_URL: "https://api.cdek.ru",
+        CDEK_WEBHOOK_URL: "https://example.com/delivery/cdek/webhook",
+      }),
+    );
+    const settings = resolveDeliverySettings(parsed);
+
+    expect(settings?.provider).toBe("cdek");
+    expect(settings?.livePii).toBe(true);
+    expect(settings?.cdek?.apiUrl).toBe("https://api.cdek.ru");
+  });
+
+  it("rejects the educational CDEK host in live", () => {
+    expect(() =>
+      parseEnv(
+        deliveryEnv({
+          DELIVERY_PROVIDER: "cdek",
+          DELIVERY_ENV: "live",
+          DELIVERY_LIVE_PII: "true",
+          CDEK_CLIENT_ID: "client-id",
+          CDEK_CLIENT_SECRET: "client-secret",
+          CDEK_API_URL: "https://api.edu.cdek.ru",
+          CDEK_WEBHOOK_URL: "https://example.com/delivery/cdek/webhook",
+        }),
+      ),
+    ).toThrow(/CDEK_API_URL/);
+  });
+
+  it("fails startup on an incomplete CDEK config", () => {
+    expect(() =>
+      parseEnv(deliveryEnv({ DELIVERY_PROVIDER: "cdek", DELIVERY_ENV: "test" })),
+    ).toThrow(/CDEK_CLIENT_ID|CDEK_CLIENT_SECRET|CDEK_API_URL|CDEK_WEBHOOK_URL/);
+  });
+
+  it("allows only the fake provider in a production preview without live PII", () => {
+    expect(() =>
+      parseEnv(
+        deliveryEnv({
+          NODE_ENV: "production",
+          JWT_SECRET: RANDOM_SECRET,
+          OTP_SECRET: `${RANDOM_SECRET}-2`,
+          SMS_PROVIDER: "smsru",
+          SMSRU_API_ID: "smsru-api-id",
+          DELIVERY_PROVIDER: "cdek",
+          DELIVERY_ENV: "test",
+          CDEK_CLIENT_ID: "client-id",
+          CDEK_CLIENT_SECRET: "client-secret",
+          CDEK_API_URL: "https://api.edu.cdek.ru",
+          CDEK_WEBHOOK_URL: "https://example.com/delivery/cdek/webhook",
+        }),
+      ),
+    ).toThrow(/DELIVERY_PROVIDER/);
+
+    expect(
+      parseEnv(
+        deliveryEnv({
+          NODE_ENV: "production",
+          JWT_SECRET: RANDOM_SECRET,
+          OTP_SECRET: `${RANDOM_SECRET}-2`,
+          SMS_PROVIDER: "smsru",
+          SMSRU_API_ID: "smsru-api-id",
+          DELIVERY_PROVIDER: "fake",
+          DELIVERY_ENV: "test",
+        }),
+      ).DELIVERY_PROVIDER,
+    ).toBe("fake");
+  });
+
+  it("rejects the production CDEK host in the test contour", () => {
+    expect(() =>
+      parseEnv(
+        deliveryEnv({
+          DELIVERY_PROVIDER: "cdek",
+          DELIVERY_ENV: "test",
+          CDEK_CLIENT_ID: "client-id",
+          CDEK_CLIENT_SECRET: "client-secret",
+          CDEK_API_URL: "https://api.cdek.ru",
+          CDEK_WEBHOOK_URL: "http://localhost:3000/delivery/cdek/webhook",
+        }),
+      ),
+    ).toThrow(/CDEK_API_URL/);
+  });
+
+  it("accepts the complete CDEK test contour", () => {
+    const parsed = parseEnv(
+      deliveryEnv({
+        DELIVERY_PROVIDER: "cdek",
+        DELIVERY_ENV: "test",
+        CDEK_CLIENT_ID: "client-id",
+        CDEK_CLIENT_SECRET: "client-secret",
+        CDEK_API_URL: "https://api.edu.cdek.ru",
+        CDEK_WEBHOOK_URL: "http://localhost:3000/delivery/cdek/webhook",
+      }),
+    );
+
+    expect(resolveDeliverySettings(parsed)?.cdek?.apiUrl).toBe("https://api.edu.cdek.ru");
   });
 });

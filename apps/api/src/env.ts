@@ -82,6 +82,17 @@ const EnvSchema = z
     ),
     YOOKASSA_REDIRECT_URI: z.preprocess(emptyToUndefined, RedirectUriSchema.optional()),
     PAYMENTS_WEBHOOK_URL: z.preprocess(emptyToUndefined, WebhookUrlSchema.optional()),
+    DELIVERY_PROVIDER: z.preprocess(
+      emptyToUndefined,
+      z.enum(["cdek", "fake", "manual"]).optional(),
+    ),
+    DELIVERY_ENV: z.enum(["test", "live"]).default("test"),
+    DELIVERY_QUOTE_SECRET: OptionalSecretSchema,
+    DELIVERY_LIVE_PII: BooleanFlagSchema,
+    CDEK_CLIENT_ID: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
+    CDEK_CLIENT_SECRET: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
+    CDEK_API_URL: z.preprocess(emptyToUndefined, WebhookUrlSchema.optional()),
+    CDEK_WEBHOOK_URL: z.preprocess(emptyToUndefined, WebhookUrlSchema.optional()),
   })
   .superRefine((value, ctx) => {
     if (value.NODE_ENV !== "test") {
@@ -189,6 +200,97 @@ const EnvSchema = z
         message:
           "PAYMENTS_WEBHOOK_URL must use https in PAYMENTS_ENV=live; http is allowed only for localhost",
       });
+    }
+
+    if (value.DELIVERY_PROVIDER !== undefined) {
+      if (!value.DELIVERY_QUOTE_SECRET) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["DELIVERY_QUOTE_SECRET"],
+          message: "DELIVERY_QUOTE_SECRET is required when a delivery provider is configured",
+        });
+      }
+      if (value.DELIVERY_PROVIDER === "fake" && value.DELIVERY_ENV === "live") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["DELIVERY_PROVIDER"],
+          message: "DELIVERY_PROVIDER=fake is not allowed when DELIVERY_ENV=live",
+        });
+      }
+      // A production build without the live-PII gate is a preview: it must
+      // never talk to a real carrier, so only the deterministic fake runs.
+      if (
+        value.NODE_ENV === "production" &&
+        !value.DELIVERY_LIVE_PII &&
+        value.DELIVERY_PROVIDER !== "fake"
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["DELIVERY_PROVIDER"],
+          message: "production without DELIVERY_LIVE_PII=true allows only DELIVERY_PROVIDER=fake",
+        });
+      }
+      if (value.DELIVERY_PROVIDER === "cdek") {
+        for (const [path, setting] of [
+          ["CDEK_CLIENT_ID", value.CDEK_CLIENT_ID],
+          ["CDEK_CLIENT_SECRET", value.CDEK_CLIENT_SECRET],
+          ["CDEK_API_URL", value.CDEK_API_URL],
+          ["CDEK_WEBHOOK_URL", value.CDEK_WEBHOOK_URL],
+        ] as const) {
+          if (!setting) {
+            ctx.addIssue({
+              code: "custom",
+              path: [path],
+              message: `${path} is required for the cdek delivery provider`,
+            });
+          }
+        }
+        if (value.DELIVERY_ENV === "test" && value.CDEK_API_URL) {
+          const testApiUrl = new URL(value.CDEK_API_URL);
+          if (testApiUrl.hostname !== "api.edu.cdek.ru" && testApiUrl.hostname !== "localhost") {
+            ctx.addIssue({
+              code: "custom",
+              path: ["CDEK_API_URL"],
+              message: "DELIVERY_ENV=test requires the CDEK educational host or localhost",
+            });
+          }
+        }
+        if (value.DELIVERY_ENV === "live") {
+          if (!value.DELIVERY_LIVE_PII) {
+            ctx.addIssue({
+              code: "custom",
+              path: ["DELIVERY_LIVE_PII"],
+              message:
+                "DELIVERY_ENV=live requires DELIVERY_LIVE_PII=true after the legal package is approved",
+            });
+          }
+          if (value.CDEK_API_URL) {
+            const apiUrl = new URL(value.CDEK_API_URL);
+            if (apiUrl.protocol !== "https:") {
+              ctx.addIssue({
+                code: "custom",
+                path: ["CDEK_API_URL"],
+                message: "CDEK_API_URL must use https when DELIVERY_ENV=live",
+              });
+            }
+            if (apiUrl.hostname === "api.edu.cdek.ru") {
+              ctx.addIssue({
+                code: "custom",
+                path: ["CDEK_API_URL"],
+                message: "the CDEK educational host is not allowed when DELIVERY_ENV=live",
+              });
+            }
+          }
+          if (value.CDEK_WEBHOOK_URL && !isLiveRedirectUriAllowed(value.CDEK_WEBHOOK_URL)) {
+            ctx.addIssue({
+              code: "custom",
+              path: ["CDEK_WEBHOOK_URL"],
+              message:
+                "CDEK_WEBHOOK_URL must use https in DELIVERY_ENV=live; http is allowed only for localhost",
+            });
+          }
+        }
+      }
     }
 
     if (value.PAYMENTS_PROVIDER === undefined) {
@@ -319,8 +421,64 @@ export function resolvePaymentsSettings(parsed: ParsedEnv): PaymentsSettings | n
   };
 }
 
+export type DeliverySettings = {
+  provider: "cdek" | "fake" | "manual";
+  environment: "test" | "live";
+  quoteSecret: string;
+  livePii: boolean;
+  cdek: {
+    clientId: string;
+    clientSecret: string;
+    apiUrl: string;
+    webhookUrl: string;
+  } | null;
+};
+
+/**
+ * Returns the validated delivery block or `null` when delivery is disabled.
+ * Client credentials and the quote secret stay in memory and are never logged.
+ */
+export function resolveDeliverySettings(parsed: ParsedEnv): DeliverySettings | null {
+  if (!parsed.DELIVERY_PROVIDER) {
+    return null;
+  }
+
+  const { DELIVERY_QUOTE_SECRET } = parsed;
+  if (DELIVERY_QUOTE_SECRET === undefined) {
+    throw new Error("delivery env invariant violated");
+  }
+
+  if (parsed.DELIVERY_PROVIDER === "cdek") {
+    const { CDEK_CLIENT_ID, CDEK_CLIENT_SECRET, CDEK_API_URL, CDEK_WEBHOOK_URL } = parsed;
+    if (!CDEK_CLIENT_ID || !CDEK_CLIENT_SECRET || !CDEK_API_URL || !CDEK_WEBHOOK_URL) {
+      throw new Error("delivery env invariant violated");
+    }
+    return {
+      provider: "cdek",
+      environment: parsed.DELIVERY_ENV,
+      quoteSecret: DELIVERY_QUOTE_SECRET,
+      livePii: parsed.DELIVERY_LIVE_PII,
+      cdek: {
+        clientId: CDEK_CLIENT_ID,
+        clientSecret: CDEK_CLIENT_SECRET,
+        apiUrl: CDEK_API_URL,
+        webhookUrl: CDEK_WEBHOOK_URL,
+      },
+    };
+  }
+
+  return {
+    provider: parsed.DELIVERY_PROVIDER,
+    environment: parsed.DELIVERY_ENV,
+    quoteSecret: DELIVERY_QUOTE_SECRET,
+    livePii: parsed.DELIVERY_LIVE_PII,
+    cdek: null,
+  };
+}
+
 export const env = parseEnv(process.env);
 export const paymentsSettings = resolvePaymentsSettings(env);
+export const deliverySettings = resolveDeliverySettings(env);
 
 function parseProxyEntry(entry: string): string {
   const [address, prefix, extra] = entry.split("/");
