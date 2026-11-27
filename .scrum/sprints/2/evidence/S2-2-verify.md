@@ -29,10 +29,14 @@ Totals: 7 passed, 0 failed (7 items)
 
 Web suite 3× подряд — 87/87; LoginPage-флейк исправлен `waitFor`.
 
+Лог verify снят до добавления evidence; на финальном дереве
+(295 tracked files) check:public — clean.
+
 ## A11y / browser
 
 - `/cart` 320/1440, каталог 320/1440: axe-core 4.14.1 — 0 violations,
-  nested-interactive 0, overflow 0.
+  nested-interactive 0, overflow 0 (raw-отчёт не сохранён; ручная
+  Playwright-проверка + скриншоты).
 - Длинные неразрывные имена товара/магазина: scrollWidth=320/1440;
   «Керамическая кружка» переносится по словам, не внутри.
 - Remove на mobile — 44×44 icon-only с aria-label; на desktop с текстом.
