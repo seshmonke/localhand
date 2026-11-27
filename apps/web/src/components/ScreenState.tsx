@@ -57,7 +57,7 @@ export function ProductGridSkeleton() {
           <div className="flex grow flex-col gap-2 px-4 pt-4">
             <div className="h-10 w-2/3 bg-ink/20 sm:h-4" />
             <div className="h-3 w-1/2 bg-ink/10" />
-            <div className="h-3 w-1/3 bg-ink/10" />
+            <div className="h-3 w-1/3 bg-ink/10 sm:hidden" />
           </div>
           <div className="px-4 pb-4 pt-4">
             <div className="h-11 w-full bg-ink/20" />

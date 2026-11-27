@@ -105,6 +105,28 @@ async function expectHeaderCta(page: Page, label: string, visible: boolean): Pro
   expect(box?.height ?? 0, `${label}: header CTA height`).toBeCloseTo(44, 0);
 }
 
+async function expectCardFocusRing(page: Page, label: string): Promise<void> {
+  const link = page.locator('article a[href^="/products/"]').first();
+  await link.focus();
+
+  const geometry = await link.evaluate((element) => {
+    const card = element.closest("article");
+    if (!card) {
+      throw new Error("product card article is missing");
+    }
+    const style = getComputedStyle(card);
+    return {
+      outlineStyle: style.outlineStyle,
+      outlineWidth: Number.parseFloat(style.outlineWidth),
+      overflow: style.overflow,
+    };
+  });
+
+  expect(geometry.outlineStyle, `${label}: card focus outline style`).not.toBe("none");
+  expect(geometry.outlineWidth, `${label}: card focus outline width`).toBeGreaterThanOrEqual(4);
+  expect(geometry.overflow, `${label}: card focus not clipped`).toBe("visible");
+}
+
 async function expectAddToCartSingleLine(page: Page, label: string): Promise<void> {
   const button = page.getByRole("button", { name: /^В корзину:/ }).first();
   const geometry = await button.evaluate((element) => {
@@ -298,6 +320,7 @@ test("layout holds at 320/768/1440 across storefront and admin", async ({
 
           if (viewport.width === 320) {
             await expectAddToCartSingleLine(page, `catalog ${viewport.key}`);
+            await expectCardFocusRing(page, `catalog ${viewport.key}`);
           }
 
           controlChecks.push(`${target.key}-${viewport.key}`);
