@@ -49,5 +49,5 @@
 {"ts":"2026-11-27T06:38:30Z","type":"merge","sprint":2,"task":"S2-4","pr":33,"merge_commit":"8b748b2","status":"done"}
 {"ts":"2026-11-27T06:39:00Z","type":"sprint_closed","sprint":2,"status":"accepted","goal_achieved":true,"review":"ACCEPT","retro":".scrum/sprints/2/retro.md"}
 {"ts":"2026-11-27T09:11:00Z","type":"claim","sprint":null,"task":"LAYOUT-1","owner":"scrum-worker","branch":"task/layout-system","change":null,"lease":".scrum/locks/layout-system.json","note":"owner-approved post-Sprint-2 design PBI"}
-{"ts":"2026-11-27T09:49:00Z","type":"review","scope":"layout","task":"LAYOUT-1","verdict":"APPROVE","head":"e0a578f"}
-{"ts":"2026-11-27T09:50:00Z","type":"merge","sprint":null,"task":"LAYOUT-1","pr":35,"merge_commit":"5d91cc5","status":"done"}
+{"ts":"2026-11-27T09:43:30Z","type":"review","scope":"layout","task":"LAYOUT-1","verdict":"APPROVE","head":"e0a578f"}
+{"ts":"2026-11-27T09:44:48Z","type":"merge","sprint":null,"task":"LAYOUT-1","pr":35,"merge_commit":"5d91cc5","status":"done"}

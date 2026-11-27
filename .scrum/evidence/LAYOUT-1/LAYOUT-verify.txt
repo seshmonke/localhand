@@ -21,10 +21,10 @@ Scope: 4 of 5 workspace projects
 packages/shared test$ vitest run --passWithNoTests
 packages/ui test$ vitest run --passWithNoTests
 packages/shared test: 
-packages/shared test:  RUN  v5.1.2 /tmp/opencode/localhand-layout/packages/shared
+packages/shared test:  RUN  v5.1.2 packages/shared
 packages/shared test: 
 packages/ui test: 
-packages/ui test:  RUN  v5.1.2 /tmp/opencode/localhand-layout/packages/ui
+packages/ui test:  RUN  v5.1.2 packages/ui
 packages/ui test: 
 packages/ui test: No test files found, exiting with code 0
 packages/ui test: 
@@ -42,10 +42,10 @@ packages/shared test: Done
 apps/api test$ vitest run
 apps/web test$ vitest run
 apps/api test: 
-apps/api test:  RUN  v5.1.2 /tmp/opencode/localhand-layout/apps/api
+apps/api test:  RUN  v5.1.2 apps/api
 apps/api test: 
 apps/web test: 
-apps/web test:  RUN  v5.1.2 /tmp/opencode/localhand-layout/apps/web
+apps/web test:  RUN  v5.1.2 apps/web
 apps/web test: 
 apps/web test: 
 apps/web test:  Test Files  19 passed (19)

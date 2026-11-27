@@ -15,7 +15,7 @@ OTP_SECRET='review-otp-secret-that-is-long-enough-123456' pnpm verify
 Exit code: `0`.
 
 ```text
-Public repo check: 352 tracked files, no secrets/PII patterns found
+Public repo check: 352 tracked files (review run; final tree 380 (after lcp-results))
 packages/shared: 103 passed
 apps/web:        114 passed
 apps/api:        156 passed
@@ -29,14 +29,15 @@ openspec validate --all --strict: 7 passed, 0 failed
 - Dev: 6 passed ([LAYOUT-e2e-dev.txt](LAYOUT-e2e-dev.txt)).
 - Preview: 5 passed, 1 skipped — guides dev-only
   ([LAYOUT-e2e-preview.txt](LAYOUT-e2e-preview.txt)).
-- Preview LCP: `/` 504 ms, `/checkout` 720 ms, gate enforced <2500.
+- Preview LCP: `/` 532 ms, `/checkout` 720 ms, gate enforced <2500
+  ([lcp-results.json](lcp-results.json)).
 - Dev LCP: 3024/3060 ms — info-only, gate off.
 
 ## Screenshots
 
-21 PNG: 7 страниц (`/`, `/cart`, `/checkout`, `/orders`, `/admin/shop`,
-`/admin/products/:id`, `/admin/orders`) × 320/768/1440, плюс guides
-1440. Данные вымышленные (e2e fixtures).
+22 PNG: 21 layout (7 страниц — `/`, `/cart`, `/checkout`, `/orders`,
+`/admin/shop`, `/admin/products/:id`, `/admin/orders` — × 320/768/1440)
+плюс guides 1440. Данные вымышленные (e2e fixtures).
 
 ## Layout checks
 

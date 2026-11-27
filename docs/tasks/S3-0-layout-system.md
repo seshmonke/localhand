@@ -85,7 +85,7 @@ DATABASE_URL_TEST='postgres://localhand:localhand@localhost:5433/localhand_s2_te
 JWT_SECRET='review-jwt-secret-that-is-long-enough-123456' \
 OTP_SECRET='review-otp-secret-that-is-long-enough-123456' pnpm verify
 # exit 0: shared 103, web 114, api 156, OpenSpec 7/7,
-# check:public 352 tracked files
+# check:public 352 tracked files (review); final tree 380 (after lcp-results)
 pnpm test:e2e
 # exit 0: 6 passed (dev, 1.6m)
 PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173 pnpm test:e2e
@@ -101,7 +101,8 @@ PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173 pnpm test:e2e
 - `?guides=1`: 4/8/12 видимых колонок на 320/768/1440.
 - axe: admin 12 сканов (3 страницы × 2 viewport × 2 темы) — 0;
   buyer 320/1440 light/dark — 0 serious/critical.
-- Preview LCP: 504 ms `/`, 720 ms `/checkout`, gate enforced <2500.
+- Preview LCP: 532 ms `/`, 720 ms `/checkout`, gate enforced <2500;
+  raw `.scrum/evidence/LAYOUT-1/lcp-results.json`.
 - Bundle: JS 550.05 kB / 157.88 gzip, CSS 40.46 / 11.06; роста нет
   (main 553.65 / 157.42), прежний warning chunk >500 kB.
 - P3: CTA и меню скрыты/инертны на <lg — точка входа продавца в
