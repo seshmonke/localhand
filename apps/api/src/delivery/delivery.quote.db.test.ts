@@ -202,7 +202,7 @@ describeWithDb("delivery quote and checkout", () => {
     await createShop(seller, "rate-shop");
     const productId = await createPublishedProduct(seller);
 
-    const quoteFrom = (index: number) =>
+    const quoteFrom = () =>
       app.inject({
         method: "POST",
         url: "/delivery/quote",
@@ -211,10 +211,10 @@ describeWithDb("delivery quote and checkout", () => {
       });
 
     for (let index = 0; index < 30; index += 1) {
-      const response = await quoteFrom(index);
+      const response = await quoteFrom();
       expect(response.statusCode, String(index)).toBe(200);
     }
-    const limited = await quoteFrom(30);
+    const limited = await quoteFrom();
     expect(limited.statusCode).toBe(429);
     expect(limited.json()).toEqual({ error: "rate_limited" });
   });

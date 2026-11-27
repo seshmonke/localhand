@@ -210,10 +210,7 @@ async function findOrdersByClientCheckoutId(
 }
 
 export type CheckoutError =
-  | "product_unavailable"
-  | "delivery_required"
-  | "delivery_unavailable"
-  | "delivery_quote_stale";
+  "product_unavailable" | "delivery_required" | "delivery_unavailable" | "delivery_quote_stale";
 
 export type CheckoutResult =
   { ok: true; orders: OrderSummary[] } | { ok: false; error: CheckoutError };
