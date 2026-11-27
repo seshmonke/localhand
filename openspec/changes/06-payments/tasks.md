@@ -6,14 +6,17 @@ PBI делится на два PR/цикла: **A. foundation** (схема, к�
 
 ## 1. Foundation (PR A)
 
-- [ ] 1.1 Добавить enum `payment_status` (`pending|succeeded|canceled|failed|manual_review`), `order_status += payment_pending|paid`, таблицы `seller_payment_accounts` (версии, partial unique active), `payments` (unique order+idempotency, partial unique active/manual, partial unique provider id), индексы и миграцию `0004`.
-- [ ] 1.2 Обновить `OrderStatusSchema`/`statusLabels` и тесты контракта: `new|payment_pending|paid`; checkout по-прежнему создаёт `new`; бейдж `manual_review` — отдельно от статуса заказа (detail/list).
-- [ ] 1.3 Добавить Zod-контракты: `PaymentStatus`, `OrderPayment`, `CreatePaymentResponse`, `SellerPaymentAccount`, `PaymentErrorCode`.
-- [ ] 1.4 Описать `PaymentProvider`: connection, exchange, `getAccountInfo`, `subscribeWebhooks`, `unsubscribeWebhooks`, create/get/revoke; fake-провайдер с явным `PAYMENTS_FAKE_ENABLED` и `/dev/payments/:id/complete`.
-- [ ] 1.5 AES-256-GCM: формат `version||iv||tag||ciphertext`, keyring `PAYMENTS_TOKEN_KEYS` + `PAYMENTS_TOKEN_KEY_VERSION`, roundtrip/tamper/rotation тесты.
-- [ ] 1.6 Env и production guard: `PAYMENTS_PROVIDER`, `PAYMENTS_ENV=live|sandbox|test` (default `live`), `PAYMENTS_FAKE_ENABLED`, `PAYMENTS_STATE_SECRET`, `YOOKASSA_REDIRECT_URI`; в `live` запрещены fake и `isTest`; `.env.example` без секретов; startup fail на неполном yookassa-конфиге.
-- [ ] 1.7 Down SQL и runbook `payments-rollback.md`: выгрузить платежи, `UPDATE orders SET status='new' WHERE status IN ('payment_pending','paid')`, удалить таблицы, значения enum оставить (PostgreSQL не умеет DROP VALUE), повторный деплой `0004` — `ADD VALUE IF NOT EXISTS`/чистка журнала drizzle; полный rebuild — только с downtime; проверить откат на тестовой БД.
-- [ ] 1.8 `pnpm verify` + `openspec validate 06-payments --strict`; PR A может превысить 400 строк — зафиксировать исключение в PR (cohesive foundation) или разрезать на schema+contracts / crypto+adapter.
+- [x] 1.1 Добавить enum `payment_status` (`pending|succeeded|canceled|failed|manual_review`), `order_status += payment_pending|paid`, таблицы `seller_payment_accounts` (версии, partial unique active), `payments` (unique order+idempotency, partial unique active/manual, partial unique provider id), индексы и миграцию `0004`; отдельная `0005` — fail-closed default `error`, reconcile-поля и partial index.
+- [x] 1.2 Обновить `OrderStatusSchema`/`statusLabels` и тесты контракта: `new|payment_pending|paid`; checkout по-прежнему создаёт `new`.
+  > PR A: контракты, labels и тесты. Бейдж `manual_review` — отдельный UI-бейдж, не статус заказа; реализация в PR B (4.3).
+- [x] 1.3 Добавить Zod-контракты: `PaymentStatus`, `OrderPayment`, `CreatePaymentResponse`, `SellerPaymentAccount`, `PaymentErrorCode`.
+- [x] 1.4 Описать `PaymentProvider`: connection, exchange, `getAccountInfo`, `subscribeWebhooks`, `unsubscribeWebhooks`, create/get/revoke; fake-провайдер с явным `PAYMENTS_FAKE_ENABLED`.
+  > PR A: интерфейс, fake-провайдер и тестовый hook `completePayment` есть; HTTP `/dev/payments/:id/complete` — PR B (нужны routes, только fake/test, authz покупателя).
+- [x] 1.5 AES-256-GCM: формат `version||iv||tag||ciphertext`, keyring `PAYMENTS_TOKEN_KEYS` + `PAYMENTS_TOKEN_KEY_VERSION`, roundtrip/tamper/rotation тесты.
+- [x] 1.6 Env и production guard: `PAYMENTS_PROVIDER`, `PAYMENTS_ENV=live|sandbox|test` (default `live`), `PAYMENTS_FAKE_ENABLED`, `PAYMENTS_STATE_SECRET`, `YOOKASSA_REDIRECT_URI`; в `live` запрещены fake и `isTest`; `.env.example` без секретов; startup fail на неполном yookassa-конфиге.
+  > PR A: env-валидация, live-запрет fake, live-https redirect и pure `assertPaymentAccountAllowed` для `isTest`. Вызов guard в callback подключения аккаунта — PR B (2.2), без него аккаунт не создаётся.
+- [x] 1.7 Down SQL и runbook `payments-rollback.md`: сначала откат `0005` (drop index/constraint/columns, default `active`), затем общий откат `0004` — выгрузить платежи, `UPDATE orders SET status='new' WHERE status IN ('payment_pending','paid')`, удалить таблицы, значения enum оставить (PostgreSQL не умеет DROP VALUE), повторный деплой `0004` + `0005` — `ADD VALUE IF NOT EXISTS`/идемпотентные колонки/индекс и чистка журнала drizzle; полный rebuild — только с downtime; проверить откат на тестовой БД.
+- [x] 1.8 `pnpm verify` + `openspec validate 06-payments --strict`; PR A может превысить 400 строк — зафиксировать исключение в PR (cohesive foundation) или разрезать на schema+contracts / crypto+adapter.
 
 ## 2. Аккаунт продавца (PR B)
 

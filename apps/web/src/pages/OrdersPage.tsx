@@ -1,6 +1,7 @@
 import {
   formatRubles,
   kopecks,
+  ORDER_STATUS_LABELS,
   type OrderItem,
   type OrderStatus,
   type OrderSummary,
@@ -15,9 +16,7 @@ import { ApiError } from "../lib/api.js";
 import { useMyOrdersQuery } from "../lib/queries.js";
 import { pluralizeItems } from "../cart/item-count.js";
 
-const statusLabels: Record<OrderStatus, string> = {
-  new: "Новый",
-};
+const statusLabels: Record<OrderStatus, string> = ORDER_STATUS_LABELS;
 
 const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
   dateStyle: "long",
