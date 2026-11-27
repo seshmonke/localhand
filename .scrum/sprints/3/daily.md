@@ -80,3 +80,14 @@
 - Q1.0: TDD/методологии/DoD/PR-шаблон, PR #42 merge `91bd8a8`;
   Superpowers установлен глобально (TDD/plans/review).
 - Далее: B2 UI/ADR/runbook; Q1.1/Q1.2 — Sprint 4.
+
+## Cycle 4 — 27.11.2026
+
+### S3-1 Payments UI + close (PR B2)
+
+- Tier T2: threat model + TDD RED/GREEN обязательны.
+- UI: /admin/shop connect, /orders/:id pay/status/polling, /admin/orders
+  badge, dev fake pages.
+- Docs: ADR 0004, manual-review runbook, threat model.
+- E2E: connect → pay → complete/webhook → paid; axe/LCP.
+- Ветка `task/S3-1b2-payments-ui`, lease до 22:00Z.

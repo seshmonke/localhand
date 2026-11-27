@@ -3,9 +3,9 @@
   "phase": "BUILDING",
   "init_closed": true,
   "sprint": 3,
-  "cycle": 3,
-  "updated_at": "2026-11-27T14:30:00Z",
+  "cycle": 4,
+  "updated_at": "2026-11-27T14:39:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 3 cycle 3: S3-1 PR B1 payments flow merged 51aa6f9 (PR #41): seller account, create/read, webhook, reconcile, fake-complete, 263 api tests. Quality methodology Q1.0 merged 91bd8a8 (PR #42); Superpowers installed globally in OpenCode (TDD/plans/review skills). Next: B2 payments UI + ADR 0004/manual-review runbook; Quality Q1.1/Q1.2 planned Sprint 4. No real keys; fake path."
+  "notes": "Sprint 3 cycle 4: S3-1 PR B2 payments UI in progress (branch task/S3-1b2-payments-ui): admin connect, order pay/status/polling, admin payment badges, dev fake pages, ADR 0004, manual-review runbook, threat model, browser e2e/axe/LCP. T2 TDD required. B1 merged 51aa6f9; methodology Q1.0 merged."
 }
