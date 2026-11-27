@@ -1,5 +1,11 @@
-import type { ProductCard, ProductDetail, ShopPage } from "@localhand/shared";
-import { and, desc, eq } from "drizzle-orm";
+import type {
+  CatalogQuery,
+  CatalogResponse,
+  ProductCard,
+  ProductDetail,
+  ShopPage,
+} from "@localhand/shared";
+import { and, asc, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
 import { requireDb } from "../db/client.js";
 import { products, shops } from "../db/schema.js";
 
@@ -34,16 +40,72 @@ const productColumns = {
   shopName: shops.name,
 };
 
-export async function listPublishedProducts(): Promise<ProductCard[]> {
-  const rows = await requireDb()
-    .select(productColumns)
+/**
+ * Escapes LIKE wildcards so a buyer searching for "%" or "_" gets a literal
+ * match instead of every product. PostgreSQL uses the backslash as the default
+ * LIKE escape character.
+ */
+export function escapeLikePattern(value: string): string {
+  return value.replace(/[\\%_]/g, "\\$&");
+}
+
+function catalogWhere(query: CatalogQuery) {
+  const conditions: SQL[] = [eq(products.status, "published"), eq(shops.status, "published")];
+
+  if (query.q) {
+    const pattern = `%${escapeLikePattern(query.q)}%`;
+    const search = or(ilike(products.name, pattern), ilike(shops.name, pattern));
+    if (search) {
+      conditions.push(search);
+    }
+  }
+
+  return and(...conditions);
+}
+
+function catalogOrder(query: CatalogQuery): SQL[] {
+  if (query.sort === "price_asc") {
+    return [asc(products.priceKopecks), desc(products.id)];
+  }
+  if (query.sort === "price_desc") {
+    return [desc(products.priceKopecks), desc(products.id)];
+  }
+  return [desc(products.createdAt), desc(products.id)];
+}
+
+export async function listPublishedProducts(query: CatalogQuery): Promise<CatalogResponse> {
+  const db = requireDb();
+  const where = catalogWhere(query);
+
+  const [totalRow] = await db
+    .select({ total: count() })
     .from(products)
     .innerJoin(shops, eq(products.shopId, shops.id))
-    .where(and(eq(products.status, "published"), eq(shops.status, "published")))
-    .orderBy(desc(products.createdAt))
-    .limit(100);
+    .where(where);
 
-  return rows.map(toProductCard);
+  const total = totalRow?.total ?? 0;
+  const offset = (query.page - 1) * query.pageSize;
+  const hasMore = query.page * query.pageSize < total;
+
+  const rows =
+    Number.isSafeInteger(offset) && offset < total
+      ? await db
+          .select(productColumns)
+          .from(products)
+          .innerJoin(shops, eq(products.shopId, shops.id))
+          .where(where)
+          .orderBy(...catalogOrder(query))
+          .limit(query.pageSize)
+          .offset(offset)
+      : [];
+
+  return {
+    products: rows.map(toProductCard),
+    page: query.page,
+    pageSize: query.pageSize,
+    total,
+    hasMore,
+  };
 }
 
 export async function getPublishedShop(slug: string): Promise<ShopPage | null> {

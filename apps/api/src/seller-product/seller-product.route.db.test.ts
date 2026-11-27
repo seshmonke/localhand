@@ -367,7 +367,13 @@ describeWithDb("seller product routes with a real database", () => {
     const hiddenDraft = async () => {
       const catalog = await app.inject({ method: "GET", url: "/catalog/products" });
       expect(catalog.statusCode).toBe(200);
-      expect(catalog.json()).toEqual({ products: [] });
+      expect(catalog.json()).toEqual({
+        products: [],
+        page: 1,
+        pageSize: 100,
+        total: 0,
+        hasMore: false,
+      });
 
       const shopPage = await app.inject({ method: "GET", url: `/shops/${shop.slug}` });
       expect(shopPage.statusCode).toBe(200);
@@ -400,7 +406,13 @@ describeWithDb("seller product routes with a real database", () => {
     };
 
     const catalog = await app.inject({ method: "GET", url: "/catalog/products" });
-    expect(catalog.json()).toEqual({ products: [card] });
+    expect(catalog.json()).toEqual({
+      products: [card],
+      page: 1,
+      pageSize: 100,
+      total: 1,
+      hasMore: false,
+    });
 
     const shopPage = await app.inject({ method: "GET", url: `/shops/${shop.slug}` });
     expect(shopPage.json()).toEqual({
@@ -426,6 +438,10 @@ describeWithDb("seller product routes with a real database", () => {
     expect(republish.statusCode).toBe(200);
     expect((await app.inject({ method: "GET", url: "/catalog/products" })).json()).toEqual({
       products: [card],
+      page: 1,
+      pageSize: 100,
+      total: 1,
+      hasMore: false,
     });
 
     const toDraft = await request(user, "PATCH", `/seller/products/${product.id}`, {
@@ -613,7 +629,13 @@ describeWithDb("seller product routes with a real database", () => {
     expect(unpublished.statusCode).toBe(200);
 
     const catalog = await app.inject({ method: "GET", url: "/catalog/products" });
-    expect(catalog.json()).toEqual({ products: [] });
+    expect(catalog.json()).toEqual({
+      products: [],
+      page: 1,
+      pageSize: 100,
+      total: 0,
+      hasMore: false,
+    });
 
     const shopPage = await app.inject({ method: "GET", url: `/shops/${shop.slug}` });
     expect(shopPage.statusCode).toBe(404);

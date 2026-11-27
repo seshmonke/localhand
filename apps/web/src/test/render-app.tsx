@@ -1,7 +1,16 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
-import { MemoryRouter } from "react-router";
+import { MemoryRouter, useLocation } from "react-router";
 import { App } from "../App.js";
+
+function LocationProbe() {
+  const location = useLocation();
+  return (
+    <div data-testid="location" hidden>
+      {`${location.pathname}${location.search}`}
+    </div>
+  );
+}
 
 export function renderApp(initialEntries: string[] = ["/"], externalClient?: QueryClient) {
   const client =
@@ -17,6 +26,7 @@ export function renderApp(initialEntries: string[] = ["/"], externalClient?: Que
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={initialEntries}>
         <App />
+        <LocationProbe />
       </MemoryRouter>
     </QueryClientProvider>,
   );

@@ -14,14 +14,31 @@ const labels = {
 } as const;
 
 export function ScreenState({ kind, title, description, action }: ScreenStateProps) {
-  return (
-    <div className="border-[3px] border-ink bg-paper p-6 sm:p-8">
+  const content = (
+    <>
       <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent-orange-text">
         {labels[kind]}
       </p>
       <h2 className="mt-3 font-display text-2xl uppercase sm:text-3xl">{title}</h2>
       {description ? <p className="mt-3 max-w-xl text-sm leading-relaxed">{description}</p> : null}
       {action ? <div className="mt-5">{action}</div> : null}
+    </>
+  );
+
+  if (kind === "loading") {
+    return (
+      <output aria-live="polite" className="block border-[3px] border-ink bg-paper p-6 sm:p-8">
+        {content}
+      </output>
+    );
+  }
+
+  return (
+    <div
+      role={kind === "error" ? "alert" : undefined}
+      className="border-[3px] border-ink bg-paper p-6 sm:p-8"
+    >
+      {content}
     </div>
   );
 }

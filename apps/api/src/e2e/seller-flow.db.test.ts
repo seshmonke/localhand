@@ -221,7 +221,13 @@ describeWithDb("seller flow end-to-end with a real database", () => {
 
     const emptyCatalog = await app.inject({ method: "GET", url: "/catalog/products" });
     expect(emptyCatalog.statusCode).toBe(200);
-    expect(emptyCatalog.json()).toEqual({ products: [] });
+    expect(emptyCatalog.json()).toEqual({
+      products: [],
+      page: 1,
+      pageSize: 100,
+      total: 0,
+      hasMore: false,
+    });
 
     await publishProduct(session, product.id);
 
@@ -235,7 +241,13 @@ describeWithDb("seller flow end-to-end with a real database", () => {
 
     const catalog = await app.inject({ method: "GET", url: "/catalog/products" });
     expect(catalog.statusCode).toBe(200);
-    expect(catalog.json()).toEqual({ products: [card] });
+    expect(catalog.json()).toEqual({
+      products: [card],
+      page: 1,
+      pageSize: 100,
+      total: 1,
+      hasMore: false,
+    });
 
     const shopPage = await app.inject({ method: "GET", url: `/shops/${FIRST_SHOP_SLUG}` });
     expect(shopPage.statusCode).toBe(200);

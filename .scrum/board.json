@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-27T03:13:00Z",
+  "updated_at": "2026-11-27T03:22:00Z",
   "tasks": [
     {
       "id": "S2-1",
       "title": "Catalog discovery: search, sort, pagination",
-      "status": "ready",
-      "owner": null,
+      "status": "in_progress",
+      "owner": "scrum-worker",
       "change": "03-catalog-discovery",
       "pr": null
     },

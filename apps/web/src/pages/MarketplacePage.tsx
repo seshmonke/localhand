@@ -1,6 +1,8 @@
+import { type CatalogQuery, CatalogSortSchema, type CatalogSort } from "@localhand/shared";
 import { Button, buttonVariants } from "@localhand/ui";
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router";
+import { useState, type FormEvent } from "react";
+import { Link, useSearchParams } from "react-router";
 import { ProductCard } from "../components/ProductCard.js";
 import { ProductGridSkeleton, ScreenState } from "../components/ScreenState.js";
 import { useCatalogQuery } from "../lib/queries.js";
@@ -11,7 +13,7 @@ const steps = [
   {
     number: "01",
     title: "Найдите вещь",
-    text: "Каталог маркетплейса: фильтры по категории, цене, состоянию и магазину.",
+    text: "Каталог маркетплейса: поиск по названию, сортировка и страницы с товарами.",
   },
   {
     number: "02",
@@ -25,16 +27,88 @@ const steps = [
   },
 ];
 
+const CATALOG_PAGE_SIZE = 12;
+
+const sortOptions: Array<{ value: CatalogSort; label: string }> = [
+  { value: "newest", label: "Сначала новые" },
+  { value: "price_asc", label: "Сначала дешёвые" },
+  { value: "price_desc", label: "Сначала дорогие" },
+];
+
+type CatalogState = {
+  q: string;
+  sort: CatalogSort;
+  page: number;
+};
+
+function readCatalogState(params: URLSearchParams): CatalogState {
+  const rawQuery = params.get("q")?.trim() ?? "";
+  const q = rawQuery.slice(0, 100);
+  const rawPage = Number(params.get("page") ?? "1");
+  const page = Number.isSafeInteger(rawPage) && rawPage >= 1 ? rawPage : 1;
+  const parsedSort = CatalogSortSchema.safeParse(params.get("sort"));
+
+  return {
+    q,
+    page,
+    sort: parsedSort.success ? parsedSort.data : "newest",
+  };
+}
+
 export function MarketplacePage() {
-  const catalog = useCatalogQuery();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { q, sort, page } = readCatalogState(searchParams);
+  const [searchText, setSearchText] = useState(q);
+  const [syncedQuery, setSyncedQuery] = useState(q);
+
+  if (q !== syncedQuery) {
+    setSyncedQuery(q);
+    setSearchText(q);
+  }
+
+  const query: CatalogQuery = {
+    q: q || undefined,
+    sort,
+    page,
+    pageSize: CATALOG_PAGE_SIZE,
+  };
+  const catalog = useCatalogQuery(query);
   const products = catalog.data?.products ?? [];
+  const total = catalog.data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / CATALOG_PAGE_SIZE));
+  const pageOutOfRange = catalog.isSuccess && products.length === 0 && total > 0;
+
+  function applyState(next: CatalogState) {
+    const params = new URLSearchParams(searchParams);
+    if (next.q) {
+      params.set("q", next.q);
+    } else {
+      params.delete("q");
+    }
+    if (next.sort !== "newest") {
+      params.set("sort", next.sort);
+    } else {
+      params.delete("sort");
+    }
+    if (next.page > 1) {
+      params.set("page", String(next.page));
+    } else {
+      params.delete("page");
+    }
+    setSearchParams(params);
+  }
+
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    applyState({ q: searchText.trim().slice(0, 100), sort, page: 1 });
+  }
 
   return (
     <>
       <section className="border-b-[3px] border-ink">
         <div className="mx-auto grid max-w-[1440px] gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1.2fr_0.8fr] lg:px-10 lg:py-20">
           <div className="flex flex-col justify-center">
-            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red sm:text-xs">
+            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text sm:text-xs">
               Маркетплейс нового типа
             </p>
             <h1 className="mt-4 max-w-4xl text-balance font-display text-4xl uppercase leading-[0.95] sm:text-6xl lg:text-7xl">
@@ -60,7 +134,7 @@ export function MarketplacePage() {
               </div>
               <div>
                 <dt className="font-mono text-[10px] uppercase tracking-wide">Товары</dt>
-                <dd className="mt-1 font-display text-2xl">{products.length || "—"}</dd>
+                <dd className="mt-1 font-display text-2xl">{catalog.data ? total : "—"}</dd>
               </div>
               <div>
                 <dt className="font-mono text-[10px] uppercase tracking-wide">Города РФ</dt>
@@ -115,47 +189,160 @@ export function MarketplacePage() {
         <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red">
+              <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text">
                 Каталог
               </p>
               <h2 id="catalog-title" className="mt-2 font-display text-3xl uppercase sm:text-4xl">
                 Вещи, которые стоит найти
               </h2>
             </div>
-            <a
-              href="#catalog"
-              className="font-mono text-xs uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red"
+            <button
+              type="button"
+              onClick={() => applyState({ q: "", sort: "newest", page: 1 })}
+              className="font-mono text-xs uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
             >
               Все товары
-            </a>
+            </button>
           </div>
 
-          <div className="mt-8">
-            {catalog.isPending ? <ProductGridSkeleton /> : null}
+          <div className="mt-8 grid gap-4 border-[3px] border-ink bg-paper p-4 sm:p-5 lg:grid-cols-[1fr_auto] lg:items-end">
+            <search className="min-w-0">
+              <form onSubmit={submitSearch}>
+                <label
+                  htmlFor="catalog-search"
+                  className="font-mono text-[10px] uppercase tracking-[0.2em]"
+                >
+                  Поиск по каталогу
+                </label>
+                <div className="mt-2 flex gap-2">
+                  <input
+                    id="catalog-search"
+                    type="search"
+                    name="q"
+                    value={searchText}
+                    onChange={(event) => setSearchText(event.target.value)}
+                    maxLength={100}
+                    placeholder="Название товара или магазина"
+                    className="h-12 min-w-0 flex-1 border-[3px] border-ink bg-paper px-3 font-body text-base"
+                  />
+                  <Button type="submit" className="shrink-0">
+                    Найти
+                  </Button>
+                </div>
+              </form>
+            </search>
 
-            {catalog.isError ? (
-              <ScreenState
-                kind="error"
-                title="Каталог не загрузился"
-                description="Проверьте соединение и попробуйте снова."
-                action={<Button onClick={() => void catalog.refetch()}>Повторить</Button>}
-              />
-            ) : null}
-
-            {catalog.isSuccess && products.length === 0 ? (
-              <ScreenState
-                kind="empty"
-                title="Пока пусто"
-                description="Первые товары появятся здесь, когда продавцы опубликуют магазины."
-              />
-            ) : null}
-
-            {products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+            <div>
+              <label
+                htmlFor="catalog-sort"
+                className="font-mono text-[10px] uppercase tracking-[0.2em]"
+              >
+                Сортировка
+              </label>
+              <select
+                id="catalog-sort"
+                value={sort}
+                onChange={(event) => {
+                  const parsedSort = CatalogSortSchema.safeParse(event.target.value);
+                  applyState({ q, sort: parsedSort.success ? parsedSort.data : "newest", page: 1 });
+                }}
+                className="mt-2 h-12 w-full border-[3px] border-ink bg-paper px-3 font-body text-base lg:w-56"
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
                 ))}
-              </div>
+              </select>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            {catalog.isSuccess ? (
+              <output className="block font-mono text-[10px] uppercase tracking-[0.2em]">
+                Найдено товаров: {total}
+              </output>
+            ) : null}
+
+            <div className="mt-4">
+              {catalog.isPending ? <ProductGridSkeleton /> : null}
+
+              {catalog.isError ? (
+                <ScreenState
+                  kind="error"
+                  title="Каталог не загрузился"
+                  description="Проверьте соединение и попробуйте снова."
+                  action={<Button onClick={() => void catalog.refetch()}>Повторить</Button>}
+                />
+              ) : null}
+
+              {catalog.isSuccess && products.length === 0 && !pageOutOfRange ? (
+                <ScreenState
+                  kind="empty"
+                  title={q ? "Ничего не найдено" : "Пока пусто"}
+                  description={
+                    q
+                      ? `По запросу «${q}» нет опубликованных товаров. Попробуйте другое название.`
+                      : "Первые товары появятся здесь, когда продавцы опубликуют магазины."
+                  }
+                  action={
+                    q ? (
+                      <Button
+                        variant="outline"
+                        onClick={() => applyState({ q: "", sort, page: 1 })}
+                      >
+                        Сбросить поиск
+                      </Button>
+                    ) : undefined
+                  }
+                />
+              ) : null}
+
+              {pageOutOfRange ? (
+                <ScreenState
+                  kind="empty"
+                  title="На этой странице товаров нет"
+                  description={`Всего найдено товаров: ${total}. Вернитесь на первую страницу.`}
+                  action={
+                    <Button variant="outline" onClick={() => applyState({ q, sort, page: 1 })}>
+                      На первую страницу
+                    </Button>
+                  }
+                />
+              ) : null}
+
+              {products.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                  {products.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            {catalog.isSuccess && total > CATALOG_PAGE_SIZE && !pageOutOfRange ? (
+              <nav
+                aria-label="Страницы каталога"
+                className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t-[3px] border-ink pt-5"
+              >
+                <Button
+                  variant="outline"
+                  disabled={page <= 1}
+                  onClick={() => applyState({ q, sort, page: page - 1 })}
+                >
+                  Назад
+                </Button>
+                <p aria-live="polite" className="font-mono text-xs uppercase tracking-wide">
+                  Страница {page} из {totalPages}
+                </p>
+                <Button
+                  variant="outline"
+                  disabled={!catalog.data.hasMore}
+                  onClick={() => applyState({ q, sort, page: page + 1 })}
+                >
+                  Дальше
+                </Button>
+              </nav>
             ) : null}
           </div>
         </div>
@@ -169,7 +356,7 @@ export function MarketplacePage() {
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {steps.map((step) => (
               <article key={step.number} className="border-[3px] border-ink bg-paper p-5">
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-orange">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-orange-text">
                   {step.number}
                 </p>
                 <h3 className="mt-4 font-display text-xl uppercase">{step.title}</h3>
@@ -203,7 +390,7 @@ export function MarketplacePage() {
       <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-6 lg:px-10">
         <Link
           to="/shops/local-hand-demo"
-          className="font-mono text-xs uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red"
+          className="font-mono text-xs uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
         >
           Открыть демо-магазин
         </Link>
