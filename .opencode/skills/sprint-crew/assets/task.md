@@ -15,12 +15,13 @@ T0 / T1 / T2 — почему. Сомнение T1/T2 → T2.
 ## Change
 
 `openspec/changes/NN-…` или `No spec change: <причина>`.
+T0: `No spec change`; archive не требуется.
 
 ## Test plan (ATDD)
 
 - AC-1: Given / When / Then; happy/error.
 - Главный e2e-сценарий:
-- T0: TDD/ATDD не требуются; `verify` + ссылки/факты.
+- T0: TDD/ATDD/e2e/archive не требуются; `verify` + ссылки/факты.
 
 ## TDD evidence (RED/GREEN/REFACTOR)
 

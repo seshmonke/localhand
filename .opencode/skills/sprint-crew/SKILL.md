@@ -228,8 +228,10 @@ Read-only к коду/скиллу/спекам; единственная зап
 - [ ] Мерж последовательный; main зелёный.
 - [ ] Change заархивирован; спека обновлена.
 - [ ] Дейлик, review, retro записаны.
-- [ ] Tier T0/T1/T2 записан в PBI/change; T0 не требует TDD/ATDD.
-- [ ] Для T1/T2 есть ATDD happy/error и RED-evidence до кода.
+- [ ] Tier T0/T1/T2 записан в PBI/change; T0 не требует TDD/ATDD, e2e
+      и OpenSpec archive.
+- [ ] Для T1/T2 есть ATDD happy/error, RED-evidence и e2e главного
+      сценария.
 - [ ] T2: threat model, contract/property, runbook/rollback;
       SLO-дизайн/логи обязательны; mutation/SAST/alert/RUM — по волне.
 - [ ] Field RUM — owner-исключение до публичного запуска.
