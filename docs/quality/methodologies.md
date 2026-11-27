@@ -152,7 +152,7 @@ canary/blue-green и быстрый rollback. Ручные изменения VM
 
 ## Волны внедрения
 
-**Волна 1 — Sprint 3–4:**
+**Волна 1 — Q1.0–Q1.6 (Sprint 3–6):**
 TDD, ATDD, contract tests, property/mutation для T2, threat model,
 SLO/RUM на checkout/payments, Semgrep important-only.
 **Активация T2-гейтов:** одна точка — после merge всей программы
@@ -164,6 +164,7 @@ merge; field RUM — именованное owner-исключение до пу
 
 **Волна 2 — Sprint 5–6:**
 trunk-based + feature flags, performance/load budgets, postmortems.
+Идёт параллельно с завершением Q1.3–Q1.6.
 
 **Волна 3 — до публичного запуска:**
 IaC + progressive delivery, ASVS/SBOM/DAST, debt-бюджет.
