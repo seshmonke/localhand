@@ -58,7 +58,8 @@
 
 ### S2-4 Security, e2e, evidence, close
 
-- Статус: `ready`; бриф `docs/tasks/S2-4-security.md`.
+- Статус: `in_progress`, owner `scrum-worker`; ветка `task/S2-4-security`,
+  lease до 10:00Z.
 - Дальше: Playwright e2e + API buyer flow, authz/PII/logs, ADR/legal,
   axe/LCP/бандл, Sprint 2 review/retro/close.
 - Блокеры: нет.

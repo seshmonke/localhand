@@ -44,3 +44,4 @@
 {"ts":"2026-11-27T05:35:30Z","type":"merge","sprint":2,"task":"S2-3b","pr":31,"merge_commit":"2849d8c","status":"done"}
 {"ts":"2026-11-27T05:36:00Z","type":"archive","sprint":2,"change":"05-checkout-orders","archive":"2026-11-27-05-checkout-orders","specs":["checkout-orders"]}
 {"ts":"2026-11-27T05:36:30Z","type":"phase","sprint":2,"cycle":4,"from":"cycle_3","to":"cycle_4","task":"S2-4"}
+{"ts":"2026-11-27T05:45:00Z","type":"claim","sprint":2,"cycle":4,"task":"S2-4","owner":"scrum-worker","branch":"task/S2-4-security","change":null,"lease":".scrum/locks/S2-4.json"}

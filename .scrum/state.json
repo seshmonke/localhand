@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": 2,
   "cycle": 4,
-  "updated_at": "2026-11-27T05:36:00Z",
+  "updated_at": "2026-11-27T05:45:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 2 cycle 4: S2-3 checkout/orders merged (PR #30/#31), change 05 archived; S2-4 security/e2e/close next (ready). Budget not a blocker."
+  "notes": "Sprint 2 cycle 4: S2-4 security/e2e/close claimed by scrum-worker (branch task/S2-4-security, brief docs/tasks/S2-4-security.md, lease to 10:00Z). All buyer-core changes archived. Budget not a blocker."
 }
