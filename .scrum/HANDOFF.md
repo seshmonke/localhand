@@ -14,8 +14,8 @@
 - S2-1 catalog: **done**, PR #26.
 - S2-2 cart: **done**, PR #28.
 - S2-3 checkout/orders: **done**, PR #30/#31.
-- S2-4 security/e2e/close: **ready**, не claimed. Перед dispatch: бриф
-  `docs/tasks/S2-4-security.md`, ветка `task/S2-4-security`, lease.
+- S2-4 security/e2e/close: **in_progress**, owner `scrum-worker`; ветка
+  `task/S2-4-security`, lease до 10:00Z.
 
 ## Evidence S1
 
@@ -44,9 +44,9 @@
 
 ## Следующий шаг
 
-1. Claim S2-4: brief `docs/tasks/S2-4-security.md`, ветка
-   `task/S2-4-security`, worktree/lease; dispatch.
-2. Playwright/API e2e, authz/PII/logs, ADR/legal, axe/LCP/бандл.
+1. `scrum-worker` реализует S2-4: Playwright/API e2e, authz/PII/logs,
+   ADR/legal, axe/LCP/бандл, evidence.
+2. Orchestrator: verify → review → PR/merge.
 3. Sprint 2 review/retro/close; Sprint 3 — только по плану/команде.
 
 ## Гигиена

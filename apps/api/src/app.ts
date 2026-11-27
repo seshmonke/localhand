@@ -3,7 +3,7 @@ import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import jwt from "@fastify/jwt";
 import rateLimit from "@fastify/rate-limit";
-import Fastify from "fastify";
+import Fastify, { type FastifyServerOptions } from "fastify";
 import {
   serializerCompiler,
   validatorCompiler,
@@ -20,11 +20,13 @@ import { storefrontRoutes } from "./storefront/storefront.route.js";
 
 export type BuildAppOptions = {
   trustProxy?: TrustProxyConfig;
+  /** Test hook: capture the real pino output (serializers included). */
+  logger?: FastifyServerOptions["logger"];
 };
 
 export function buildApp(options: BuildAppOptions = {}) {
   const app = Fastify({
-    logger: env.NODE_ENV !== "test",
+    logger: options.logger ?? env.NODE_ENV !== "test",
     trustProxy: options.trustProxy ?? trustProxy,
   }).withTypeProvider<ZodTypeProvider>();
 

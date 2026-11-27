@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-27T05:36:00Z",
+  "updated_at": "2026-11-27T05:45:00Z",
   "tasks": [
     {
       "id": "S2-1",
@@ -29,8 +29,8 @@
     {
       "id": "S2-4",
       "title": "Security, e2e, evidence, archive",
-      "status": "ready",
-      "owner": null,
+      "status": "in_progress",
+      "owner": "scrum-worker",
       "change": null,
       "pr": null
     }
