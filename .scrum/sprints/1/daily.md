@@ -34,7 +34,8 @@
 
 ### S1-2 Seller shop
 
-- Статус: `ready`; бриф, worktree и lease создаются перед dispatch.
+- Статус: `in_progress`, owner `scrum-worker`; ветка `task/S1-2-shop`,
+  lease до 03:30Z.
 - Дальше: API создания/редактирования/публикации своего магазина,
   уникальный slug, authz-тесты.
 - Блокеры: нет.

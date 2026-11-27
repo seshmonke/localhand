@@ -5,12 +5,12 @@
 ## Состояние
 
 - Репозиторий: https://github.com/seshmonke/localhand, public.
-- main: `d3e42b7` (squash PR #12, phone auth) + docs-закрытие S1-1.
+- main: `0c5c480` (S1-1 auth + docs-закрытие), PR #12/#13 merged.
 - Sprint 1: **BUILDING**, cycle 2.
 - S1-1 phone auth: **done**, PR #12 merged; tasks 1.1–1.6 отмечены.
-- S1-2 shop: **ready**, не claimed. Перед dispatch: brief
-  `docs/tasks/S1-2-seller-shop.md`, worktree `task/S1-2-shop`, lease
-  `.scrum/locks/S1-2.json`.
+- S1-2 shop: **in_progress**, owner `scrum-worker`; brief
+  `docs/tasks/S1-2-seller-shop.md`, ветка `task/S1-2-shop`, lease
+  `.scrum/locks/S1-2.json` до 03:30Z.
 - S1-3 products, S1-4 admin UI, S1-5 security — `ready`.
 
 ## S1-1 evidence
@@ -31,14 +31,13 @@
 - S1-5 берёт carry-over по приоритету; из tasks 5.2 — только проверка
   authz/rate-limit/логов. Состав S1-2 не расширяется.
 
-## Следующий шаг
+## Текущий шаг
 
-1. Создать ветку `task/S1-2-shop` от main и бриф
-   `docs/tasks/S1-2-seller-shop.md` (AC — change tasks 2.1–2.4).
-2. Создать worktree и lease, перевести board S1-2 в `in_progress`.
-3. Dispatch `scrum-worker`: контракты slug/резервов, `GET/POST/PATCH
-   /seller/shop`, публикация, уникальный slug, чужая лавка 404, без
-   сессии 401.
+1. `scrum-worker` реализует S1-2 в ветке `task/S1-2-shop`: контракты
+   slug/резервов, `GET/POST/PATCH /seller/shop`, публикация, уникальный
+   slug, чужая лавка 404, без сессии 401.
+2. Orchestrator: verify → independent review → PR → squash-merge.
+3. После merge — tasks 2.1–2.4, board/state/daily/evidence, затем S1-3.
 
 ## Гигиена
 

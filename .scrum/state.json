@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": 1,
   "cycle": 2,
-  "updated_at": "2026-11-27T00:13:00Z",
+  "updated_at": "2026-11-27T00:16:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "S1-1 phone auth merged (PR #12, squash d3e42b7), tasks 1.1–1.6 done. Cycle 2 opens with S1-2 shop ready: brief + worktree + lease are created before dispatch. Carry-over P2/P3 from S1-1 review is in backlog."
+  "notes": "Cycle 2: S1-2 seller shop claimed by scrum-worker (branch task/S1-2-shop, brief docs/tasks/S1-2-seller-shop.md, lease expires 03:30Z). S1-1 merged (PR #12, d3e42b7)."
 }
