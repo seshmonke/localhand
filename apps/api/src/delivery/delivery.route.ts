@@ -111,7 +111,16 @@ export const deliveryRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
+      const startedAt = Date.now();
       const result = await quoteDelivery(request.body);
+      request.log.info(
+        {
+          shops: result.ok ? result.quote.shops.length : 0,
+          durationMs: Date.now() - startedAt,
+          error: result.ok ? undefined : result.error,
+        },
+        "delivery quote",
+      );
       if (!result.ok) {
         return reply
           .code(result.error === "delivery_unavailable" ? 502 : 409)

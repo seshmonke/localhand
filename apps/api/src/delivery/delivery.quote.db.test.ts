@@ -98,7 +98,16 @@ describeWithDb("delivery quote and checkout", () => {
       return;
     }
     process.env.DATABASE_URL = testDatabaseUrl;
+    process.env.DELIVERY_PROVIDER = "fake";
+    process.env.DELIVERY_ENV = "test";
+    process.env.DELIVERY_QUOTE_SECRET = "s3-delivery-quote-secret-9Qm2Vx7Lp4Rt8Wc1";
     dbClient = await import("../db/client.js");
+    const database = await dbClient
+      .requirePool()
+      .query<{ name: string }>("SELECT current_database() AS name");
+    if (!database.rows[0]?.name.endsWith("_test")) {
+      throw new Error("delivery DB tests require a database whose name ends with _test");
+    }
     const { migrate } = await import("drizzle-orm/node-postgres/migrator");
     await migrate(dbClient.requireDb(), { migrationsFolder });
 
@@ -110,6 +119,9 @@ describeWithDb("delivery quote and checkout", () => {
   afterAll(async () => {
     await app?.close();
     await dbClient?.requirePool().end();
+    delete process.env.DELIVERY_PROVIDER;
+    delete process.env.DELIVERY_ENV;
+    delete process.env.DELIVERY_QUOTE_SECRET;
   });
 
   beforeEach(async () => {
@@ -154,6 +166,57 @@ describeWithDb("delivery quote and checkout", () => {
     const response = await quote(productId, 137, "MSK001");
     expect(response.statusCode).toBe(409);
     expect(response.json()).toEqual({ error: "delivery_point_invalid" });
+  });
+
+  it("rejects a shop with a city but no shipment point", async () => {
+    const seller = await createUser(1);
+    const created = await request(seller, "POST", "/seller/shop", {
+      name: "Магазин без ПВЗ",
+      slug: "no-point-shop",
+    });
+    expect(created.statusCode).toBe(201);
+    const cityOnly = await request(seller, "PATCH", "/seller/shop", {
+      cdekCityCode: 44,
+      cdekCityName: "Москва",
+    });
+    expect(cityOnly.statusCode).toBe(200);
+    const productId = await createPublishedProduct(seller);
+
+    const response = await quote(productId);
+    expect(response.statusCode).toBe(409);
+    expect(response.json()).toEqual({ error: "shop_shipment_point_missing" });
+  });
+
+  it("sets no-store on delivery responses", async () => {
+    const seller = await createUser(1);
+    await createShop(seller, "cache-shop");
+    const productId = await createPublishedProduct(seller);
+
+    const response = await quote(productId);
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["cache-control"]).toBe("no-store");
+  });
+
+  it("rate-limits quote requests to 30 per minute", async () => {
+    const seller = await createUser(1);
+    await createShop(seller, "rate-shop");
+    const productId = await createPublishedProduct(seller);
+
+    const quoteFrom = () =>
+      app.inject({
+        method: "POST",
+        url: "/delivery/quote",
+        remoteAddress: "203.0.113.30",
+        payload: { items: [{ productId }], cityCode: 137, pointCode: "SPB001" },
+      });
+
+    for (let index = 0; index < 30; index += 1) {
+      const response = await quoteFrom();
+      expect(response.statusCode, String(index)).toBe(200);
+    }
+    const limited = await quoteFrom();
+    expect(limited.statusCode).toBe(429);
+    expect(limited.json()).toEqual({ error: "rate_limited" });
   });
 
   it("rejects products without dimensions or a shop origin", async () => {
