@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "retrieved_at": "2026-11-27",
+  "integrations": {
+    "yookassa": {
+      "name": "ЮKassa API",
+      "api": "v3",
+      "openapi": "3.0.2",
+      "spec_url": "https://yookassa.ru/developers/api/yookassa-openapi-specification.yaml",
+      "spec_sha256": "9b3db11fad0884207880da6aff75aa31258aece455f77af384c3c4773505fb99",
+      "docs_url": "https://yookassa.ru/developers/api",
+      "oauth_url": "https://yookassa.ru/oauth/v2/",
+      "notes": "Partner OAuth; API v3; OpenAPI spec is YAML."
+    },
+    "cdek": {
+      "name": "СДЭК API",
+      "api": "v2",
+      "openapi": "3.0.1",
+      "protocol_version": "1.0.0",
+      "spec_url": "https://gateway.cdek.ru/api-cdek-docs/web/docs/merged?sectionId=api_v2_integration",
+      "spec_sha256": "14ef63a9517d6102bbc69312b4eecd8e51127a1e89160bd99a361359380e7d2f",
+      "docs_url": "https://apidoc.cdek.ru/",
+      "test_url": "https://api.edu.cdek.ru",
+      "prod_url": "https://api.cdek.ru",
+      "notes": "Client integration protocol 1.0.0; API v2."
+    }
+  }
+}

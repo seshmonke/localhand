@@ -1,0 +1,20 @@
+name: Integrations check
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+      - name: Check YooKassa and CDEK specifications
+        run: node scripts/check-integrations.mjs
