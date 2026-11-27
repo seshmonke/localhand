@@ -37,7 +37,8 @@ openspec show <change> --diff
 - [ ] Contract/property:
 - [ ] Mutation: nightly / ≥ 70% changed (волна):
 - [ ] SAST: ручной Semgrep / owner-исключение:
-- [ ] SLO/логи; alert/RUM — исключение:
+- [ ] SLO-дизайн/логи (обязательно):
+- [ ] Alert/RUM — owner-исключение до активации:
 - [ ] Runbook/rollback:
 
 ## Проверки

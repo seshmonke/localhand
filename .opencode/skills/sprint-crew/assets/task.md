@@ -35,7 +35,8 @@ T0 / T1 / T2 — почему. Сомнение T1/T2 → T2.
 - Threat model:
 - Contract/property:
 - Mutation (волна):
-- SLO/логи/alert/RUM:
+- SLO-дизайн/логи (обязательно):
+- Alert/RUM (исключение до активации):
 - Runbook/rollback:
 
 ## owns
