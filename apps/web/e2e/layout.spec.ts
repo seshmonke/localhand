@@ -77,6 +77,34 @@ async function expectHeaderControls(page: Page, label: string): Promise<void> {
   );
 }
 
+async function expectHeaderNav(page: Page, label: string): Promise<void> {
+  const heights = await page.locator("header [data-header-nav] a").evaluateAll((elements) =>
+    elements
+      .map((element) => element.getBoundingClientRect())
+      .filter((rect) => rect.width > 0 && rect.height > 0)
+      .map((rect) => rect.height),
+  );
+
+  expect(heights.length, `${label}: visible nav links`).toBeGreaterThanOrEqual(3);
+
+  for (const height of heights) {
+    expect(height, `${label}: nav link height`).toBeGreaterThanOrEqual(44);
+  }
+}
+
+async function expectHeaderCta(page: Page, label: string, visible: boolean): Promise<void> {
+  const cta = page.locator("header [data-header-cta]");
+
+  if (!visible) {
+    await expect(cta, `${label}: header CTA hidden`).toBeHidden();
+    return;
+  }
+
+  await expect(cta, `${label}: header CTA visible`).toBeVisible();
+  const box = await cta.boundingBox();
+  expect(box?.height ?? 0, `${label}: header CTA height`).toBeCloseTo(44, 0);
+}
+
 async function expectCartBadgeInsideHeader(page: Page): Promise<void> {
   const header = await page.locator("header").first().boundingBox();
   const shell = await page.locator("header [data-page-shell]").first().boundingBox();
@@ -247,6 +275,12 @@ test("layout holds at 320/768/1440 across storefront and admin", async ({
         if (target.key === "catalog") {
           await expectHeaderControls(page, `catalog ${viewport.key}`);
           await expectCartBadgeInsideHeader(page);
+          await expectHeaderCta(page, `catalog ${viewport.key}`, viewport.width >= 1024);
+
+          if (viewport.width >= 768) {
+            await expectHeaderNav(page, `catalog ${viewport.key}`);
+          }
+
           controlChecks.push(`${target.key}-${viewport.key}`);
         }
 
@@ -325,20 +359,30 @@ test("layout guides overlay renders 12 columns in dev", async ({ page }, testInf
     "guides overlay is a dev-only tool and does not exist in the production preview bundle",
   );
 
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/?guides=1");
+  const columnsByViewport = [
+    { width: 320, height: 900, columns: 4 },
+    { width: 768, height: 1024, columns: 8 },
+    { width: 1440, height: 900, columns: 12 },
+  ] as const;
 
-  const overlay = page.getByTestId("layout-guides");
-  await expect(overlay).toBeVisible();
+  for (const viewport of columnsByViewport) {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto("/?guides=1");
 
-  const visibleColumns = await overlay.locator("[data-guide-column]").evaluateAll((elements) =>
-    elements.filter((element) => {
-      const rect = element.getBoundingClientRect();
-      const style = getComputedStyle(element);
-      return rect.width > 0 && style.display !== "none";
-    }),
-  );
-  expect(visibleColumns).toHaveLength(12);
+    const overlay = page.getByTestId("layout-guides");
+    await expect(overlay).toBeVisible();
+
+    const visibleColumns = await overlay.locator("[data-guide-column]").evaluateAll((elements) =>
+      elements.filter((element) => {
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return rect.width > 0 && style.display !== "none";
+      }),
+    );
+    expect(visibleColumns, `guides ${viewport.width}: visible columns`).toHaveLength(
+      viewport.columns,
+    );
+  }
 
   await page.screenshot({
     path: testInfo.outputPath("layout-guides-1440.png"),

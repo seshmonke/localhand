@@ -116,8 +116,10 @@ Page-level — CSS Grid: 4 колонки на mobile, 8 на планшете, 
 
 `Announcer` стоит над `Grid`, а не внутри левой колонки. Поэтому
 `form` и первая `Card` status-aside начинают на одной линии.
-`Grid` использует `items-start` на `lg`, `gap-y-6`, одинаковые
-`Card` padding.
+`Grid` даёт `gap-y-6` и одинаковые `Card` padding. Страницы с
+независимыми по высоте колонками (`/orders`, `/admin/orders`)
+добавляют `lg:items-start`; в форме товара верхнее выравнивание
+обеспечено тем, что `Announcer` стоит над сеткой.
 
 ## Таблицы и touch
 
@@ -146,10 +148,12 @@ http://localhost:5173/?guides=1
 - скриншоты `/`, `/cart`, `/checkout`, `/orders`, `/admin/shop`,
   `/admin/products/:id`, `/admin/orders` на 320/768/1440;
 - нет горизонтального overflow;
-- header-контролы: высота 44, центры ±1 px;
+- header-контролы и nav-ссылки: высота ≥44, центры ±1 px; CTA видна
+  только с `lg`;
 - form и status-aside в admin product edit: top ±1 px на 1440;
-- левые края `PageShell` совпадают на storefront- и admin-страницах;
-- `?guides=1` даёт 12 видимых колонок;
+- левые края заголовков совпадают внутри storefront-группы (16/24/40)
+  и внутри admin-группы (16/24/300: сайдбар 260 + padding 40);
+- `?guides=1` даёт 4/8/12 видимых колонок на 320/768/1440;
 - axe light/dark на admin-страницах: 0 serious/critical.
 
 ## Источники

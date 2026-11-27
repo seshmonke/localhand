@@ -4,13 +4,18 @@ import { useLocation } from "react-router";
 /**
  * Development-only 12-column overlay: `?guides=1`. It mirrors the page grid
  * (4 / 8 / 12 columns) and the 1440 container with 16/24/40 padding. The
- * overlay is disabled in production builds and is never linked from the UI.
+ * public wrapper is replaced with `null` in production builds, so the
+ * overlay and its router hook never ship as visible UI.
  */
 export function LayoutGuides() {
+  return import.meta.env.DEV ? <DevLayoutGuides /> : null;
+}
+
+function DevLayoutGuides() {
   const location = useLocation();
   const requested = new URLSearchParams(location.search).get("guides") === "1";
 
-  if (!import.meta.env.DEV || !requested) {
+  if (!requested) {
     return null;
   }
 

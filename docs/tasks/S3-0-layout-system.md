@@ -17,11 +17,12 @@
       `Grid`/`Sidebar` (page-level 12-col: `lg:grid-cols-12`,
       `gap-x-4 lg:gap-x-6`), `LayoutGuides` (dev overlay 12 колонок при
       `?guides=1`).
-- [x] Header: все контролы одной высоты 44 px (`h-11`/`size-11`),
-      `shrink-0`; CTA не ломает 320 (скрыть/сжать по breakpoint);
-      badge корзины не выходит за сетку; вертикальные центры совпадают.
+- [x] Header: все контролы и nav-ссылки одной высоты 44 px
+      (`h-11`/`min-h-11`), `shrink-0`; CTA не ломает 320 (скрыть/сжать
+      по breakpoint); badge корзины не выходит за сетку; вертикальные
+      центры совпадают.
 - [x] Admin product edit: `Announcer` вынести над grid; form и status
-      aside стартуют на одной линии; `items-start`/`gap` одинаковы.
+      aside стартуют на одной линии; `gap` одинаков.
 - [x] Admin/Storefront/Checkout/Cart/Orders: один контейнер и padding
       на страницах; никаких локальных `max-w-[1100px]` вразнобой;
       заголовки/линии карточек совпадают по левому краю.
@@ -76,11 +77,34 @@
 
 ## Evidence
 
-- `pnpm verify` — exit code, хвост.
-- `pnpm test:e2e` layout + screenshots 320/768/1440.
-- `?guides=1` overlay screenshot.
-- axe light/dark 0; bundle delta.
-- Orchestrator запишет evidence.
+Дата: 27.11.2026. Ветка `task/layout-system`, база `53abce7`.
+
+```bash
+DATABASE_URL_TEST='postgres://localhand:localhand@localhost:5433/localhand_s2_test' \
+JWT_SECRET='review-jwt-secret-that-is-long-enough-123456' \
+OTP_SECRET='review-otp-secret-that-is-long-enough-123456' pnpm verify
+# exit 0: shared 103, web 114, api 156, OpenSpec 7/7,
+# check:public 352 tracked files
+pnpm test:e2e
+# exit 0: 6 passed (dev, 1.6m)
+PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173 pnpm test:e2e
+# exit 0: 5 passed, 1 skipped (guides — dev-only)
+```
+
+- Скриншоты: 7 страниц × 320/768/1440 = 21 PNG; guides 1440.
+  `apps/web/test-results/layout-*/`; JSON `layout-results.json`.
+- Header: контролы и nav 44 px, центры ±1; CTA видна с `lg`;
+  badge внутри header container.
+- Admin product 1440: form/status top delta ≤1 px.
+- Левые края: storefront 16/24/40, admin 16/24/300.
+- `?guides=1`: 4/8/12 видимых колонок на 320/768/1440.
+- axe: admin 12 сканов (3 страницы × 2 viewport × 2 темы) — 0;
+  buyer 320/1440 light/dark — 0 serious/critical.
+- Preview LCP: 504 ms `/`, 720 ms `/checkout`, gate enforced <2500.
+- Bundle: JS 550.05 kB / 157.88 gzip, CSS 40.46 / 11.06; роста нет
+  (main 553.65 / 157.42), прежний warning chunk >500 kB.
+- P3: CTA и меню скрыты/инертны на <lg — точка входа продавца в
+  header на мобильных отсутствует; вынести в следующий PBI.
 
 ## Границы
 

@@ -33,19 +33,31 @@ function Header() {
       <PageShell className="h-16 flex-row items-center justify-between gap-4 sm:h-20">
         <Link
           to="/"
-          className="shrink-0 font-display text-lg font-extrabold uppercase leading-none tracking-tight sm:text-xl"
+          className="inline-flex min-h-11 shrink-0 items-center font-display text-lg font-extrabold uppercase leading-none tracking-tight sm:text-xl"
         >
           Local Hand
         </Link>
 
-        <nav className="hidden items-center gap-6 font-mono text-xs uppercase tracking-wide md:flex">
-          <Link className="hover:text-accent-red-text" to="/">
+        <nav
+          data-header-nav=""
+          className="hidden items-center gap-2 font-mono text-xs uppercase tracking-wide md:flex"
+        >
+          <Link
+            className="inline-flex min-h-11 items-center px-2 hover:text-accent-red-text"
+            to="/"
+          >
             Каталог
           </Link>
-          <a className="hover:text-accent-red-text" href="/#how">
+          <a
+            className="inline-flex min-h-11 items-center px-2 hover:text-accent-red-text"
+            href="/#how"
+          >
             Как это работает
           </a>
-          <a className="hover:text-accent-red-text" href="/#sellers">
+          <a
+            className="inline-flex min-h-11 items-center px-2 hover:text-accent-red-text"
+            href="/#sellers"
+          >
             Продавцам
           </a>
         </nav>
@@ -63,6 +75,7 @@ function Header() {
             <Link
               to="/login"
               data-header-control=""
+              data-header-cta=""
               className={buttonVariants({
                 variant: "outline",
                 size: "sm",

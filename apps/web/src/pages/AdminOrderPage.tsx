@@ -100,7 +100,9 @@ export function AdminOrderPage() {
             eyebrow="Кабинет продавца"
             title={`Заказ №${order.id}`}
             actions={<OrderStatusBadge status={order.status} />}
-            description={`Создан ${formatOrderDate(order.createdAt)}`}
+            description={
+              <time dateTime={order.createdAt}>Создан {formatOrderDate(order.createdAt)}</time>
+            }
             descriptionClassName="font-mono text-[10px] uppercase tracking-wide text-ink/60"
           />
         </Stack>
