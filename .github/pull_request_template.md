@@ -10,7 +10,7 @@
 - [ ] `pnpm verify` — вывод и exit code приложены (включая `check:public`)
 - [ ] Если менялось поведение — OpenSpec change валиден
 - [ ] TDD evidence заполнен ниже (для T1/T2); для T0 — N/A
-- [ ] Contract-тесты при изменении API/shared; T2: TDD/contract/property/threat model блокируют; mutation/SAST — nightly/ручной до Q1.0–Q1.6; SLO-дизайн/логи обязательны, alert/RUM — исключение только до активации; после Q1.0–Q1.6 — блок
+- [ ] Contract-тесты при изменении API/shared; T2: TDD/contract/property/threat model блокируют; mutation/SAST — nightly/ручной до Q1.0–Q1.6; SLO-дизайн/логи обязательны, alert/RUM — именованное owner-исключение до активации; после Q1.0–Q1.6 — блок (field RUM — до публичного запуска)
 - [ ] Threat model/SAST обновлены для T2; SLO/логи для критического пути
 - [ ] Скриншоты/видео для UI (320 и 1440), ПДн замазаны
 
