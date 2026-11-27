@@ -144,11 +144,15 @@ describe("CartPage", () => {
     const shopLink = await screen.findByRole("link", { name: longProduct.shopName });
     const productLink = screen.getByRole("link", { name: longProduct.name });
 
-    expect(shopLink).toHaveClass("[overflow-wrap:anywhere]");
-    expect(productLink).toHaveClass("[overflow-wrap:anywhere]");
-    expect(
-      screen.getByRole("button", { name: `Удалить «${longProduct.name}» из корзины` }),
-    ).toBeInTheDocument();
+    expect(shopLink).toHaveClass("break-words");
+    expect(shopLink).not.toHaveClass("[overflow-wrap:anywhere]");
+    expect(productLink).toHaveClass("break-words");
+    expect(productLink).not.toHaveClass("[overflow-wrap:anywhere]");
+
+    const remove = screen.getByRole("button", {
+      name: `Удалить «${longProduct.name}» из корзины`,
+    });
+    expect(remove).toHaveClass("h-11", "w-11", "px-0", "sm:h-12", "sm:w-auto", "sm:px-5");
   });
 
   it("keeps checkout disabled with a visible hint until S2-3 ships it", async () => {

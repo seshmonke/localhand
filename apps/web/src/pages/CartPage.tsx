@@ -30,7 +30,7 @@ function CartItemRow({ item, onRemove }: { item: CartItem; onRemove: () => void 
       <div className="min-w-0 flex-1">
         <Link
           to={`/products/${item.productId}`}
-          className="break-words font-display text-sm uppercase leading-tight underline-offset-4 [overflow-wrap:anywhere] hover:underline sm:text-base"
+          className="break-words font-display text-sm uppercase leading-tight underline-offset-4 hover:underline sm:text-base"
         >
           {item.name}
         </Link>
@@ -42,7 +42,7 @@ function CartItemRow({ item, onRemove }: { item: CartItem; onRemove: () => void 
       <Button
         variant="ghost"
         size="md"
-        className="shrink-0"
+        className="h-11 w-11 shrink-0 px-0 sm:h-12 sm:w-auto sm:px-5"
         aria-label={`Удалить «${item.name}» из корзины`}
         onClick={onRemove}
       >
@@ -116,7 +116,7 @@ export function CartPage() {
                   <h2 id={headingId} className="min-w-0 font-display text-xl uppercase">
                     <Link
                       to={`/shops/${group.shopSlug}`}
-                      className="break-words [overflow-wrap:anywhere] underline-offset-4 hover:underline"
+                      className="break-words underline-offset-4 hover:underline"
                     >
                       {group.shopName}
                     </Link>
