@@ -8,8 +8,9 @@
 
 ## AC
 
-- [ ] 5.1 Browser e2e Playwright: `playwright.config.ts`, root
-      `test:e2e`, запуск против local preview (web 5173, API 3000, dev
+- [ ] 5.1 Browser e2e Playwright: `apps/web/playwright.config.ts`,
+      `apps/web` script + root delegate `test:e2e` (`pnpm --filter
+      @localhand/web test:e2e`), запуск против local preview (web 5173, API 3000, dev
       OTP); сценарий login → каталог/поиск → корзина → checkout →
       заказ → `/orders` → seller `/admin/orders`. API e2e для
       checkout/authz — отдельно. Если CI-браузеры нестабильны — e2e
@@ -21,7 +22,9 @@
       `docs/legal/context.md`; runbook down SQL `0003`.
 - [ ] 5.4 Evidence: `pnpm verify`, `openspec validate --all --strict`,
       preview smoke, axe light/dark 320/1440 на catalog/cart/checkout/
-      orders, LCP и дельта бандла, e2e видео/скриншоты; записать
+      orders, LCP p75 < 2,5 с (Playwright PerformanceObserver, 5 прогонов)
+      и дельта бандла (build output, ориентир ≤ +10% / +20 KB gzip),
+      e2e видео/скриншоты; записать
       `.scrum/sprints/2/evidence/S2-4-verify.md`.
 - [ ] 5.5 Close: review/retro Sprint 2, state CLOSED, board done,
       events; Sprint 3 — только по плану/команде (вне standing
@@ -29,9 +32,9 @@
 
 ## owns
 
-- `playwright.config.ts`, `apps/web/e2e/**`, root `package.json`
-  (`test:e2e`), при необходимости `@axe-core/playwright` devDep с
-  обоснованием.
+- `apps/web/playwright.config.ts`, `apps/web/e2e/**`, `apps/web` script,
+  root `package.json` delegate (`test:e2e`), при необходимости
+  `@axe-core/playwright` devDep в `apps/web` с обоснованием.
 - `apps/api/src/e2e/**` buyer-flow тест.
 - `docs/stack/adr/0003-orders.md`, `docs/legal/context.md`,
   `docs/stack/runbooks/orders-rollback.md`.

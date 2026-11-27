@@ -48,7 +48,8 @@ S2-2, `05` в S2-3. S2-4 закрывает спринт отдельным clos
 - [ ] Mobile 320 и desktop 1440; loading/empty/error; a11y-фокус,
       клавиатура, axe light/dark на всех изменённых страницах.
 - [ ] Browser e2e (Playwright) + API e2e: dev OTP → каталог → корзина →
-      checkout → заказ → seller view; скриншоты/видео evidence.
+      checkout → заказ → seller view; скриншоты/видео evidence. Axe —
+      manual DevTools в S2-1–S2-3, автоматический axe — S2-4.
 - [ ] `pnpm verify`, `openspec validate --all --strict`, preview smoke —
       зелёные; LCP/бандл-дельта записаны.
 - [ ] Changes заархивированы по PBI, specs обновлены; review/retro.
@@ -70,7 +71,7 @@ S2-2, `05` в S2-3. S2-4 закрывает спринт отдельным clos
   «заявка продавцу». Реальная оплата — Sprint 3.
 - **Корзина stale.** Сервер пересчитывает и отклоняет недоступное;
   snapshot фиксируется при заказе.
-- **Дубли заказа.** `clientCheckoutId` + unique(buyer, key) + disabled
+- **Дубли заказа.** `clientCheckoutId` + unique(buyer, key, shop) + disabled
   submit; повтор возвращает существующие заказы.
 - **Гонки.** Нет резерва: два покупателя могут заказать последний товар;
   для v1 допустимо, фиксируем.
