@@ -362,6 +362,7 @@ describe("CheckoutPage", () => {
     renderApp(["/checkout"]);
 
     await screen.findByRole("heading", { level: 1, name: "Проверьте заказ" });
+    await screen.findByRole("option", { name: "Санкт-Петербург" });
     await browser.click(screen.getByRole("button", { name: "Оформить заказ" }));
 
     expect(
