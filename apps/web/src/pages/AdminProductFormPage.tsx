@@ -70,7 +70,15 @@ function ShopRequiredState() {
   );
 }
 
-function ProductsLoadError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
+function ProductsLoadError({
+  error,
+  onRetry,
+  next = "/admin/products",
+}: {
+  error: unknown;
+  onRetry: () => void;
+  next?: string;
+}) {
   if (error instanceof ApiError && error.status === 401) {
     return (
       <ScreenState
@@ -79,7 +87,7 @@ function ProductsLoadError({ error, onRetry }: { error: unknown; onRetry: () => 
         description="Войдите снова, чтобы открыть товары."
         action={
           <Link
-            to={`/login?next=${encodeURIComponent("/admin/products")}`}
+            to={`/login?next=${encodeURIComponent(next)}`}
             className={buttonVariants({ variant: "outline" })}
           >
             Войти
@@ -291,6 +299,7 @@ export function AdminProductEditPage() {
   const shop = shopQuery.data?.shop ?? null;
   const productsQuery = useSellerProductsQuery(shop !== null && validId);
   const product = productsQuery.data?.products.find((item) => item.id === productId) ?? null;
+  const loginNext = validId ? `/admin/products/${productId}` : "/admin/products";
 
   return (
     <div className="mx-auto w-full max-w-[1100px]">
@@ -318,7 +327,11 @@ export function AdminProductEditPage() {
             description="Секунду — ищем карточку в вашем магазине."
           />
         ) : shopQuery.isError ? (
-          <ProductsLoadError error={shopQuery.error} onRetry={() => void shopQuery.refetch()} />
+          <ProductsLoadError
+            error={shopQuery.error}
+            onRetry={() => void shopQuery.refetch()}
+            next={loginNext}
+          />
         ) : !shop ? (
           <ShopRequiredState />
         ) : productsQuery.isPending ? (
@@ -331,6 +344,7 @@ export function AdminProductEditPage() {
           <ProductsLoadError
             error={productsQuery.error}
             onRetry={() => void productsQuery.refetch()}
+            next={loginNext}
           />
         ) : !product ? (
           <ProductNotFoundState />
@@ -551,6 +565,12 @@ function EditProductForm({ product, shop }: { product: SellerProduct; shop: Sell
             ) : null}
           </div>
 
+          {isDirty ? (
+            <output className="mt-3 block border-l-[3px] border-accent-orange pl-2 text-sm font-semibold leading-relaxed">
+              Сначала сохраните изменения.
+            </output>
+          ) : null}
+
           <div className="mt-4 flex flex-col gap-3">
             <Button
               type="button"
@@ -560,7 +580,7 @@ function EditProductForm({ product, shop }: { product: SellerProduct; shop: Sell
                 setStatusError(null);
                 statusMutation.mutate("published");
               }}
-              disabled={product.status === "published" || !shopPublished || busy}
+              disabled={product.status === "published" || !shopPublished || isDirty || busy}
             >
               {publishPending ? "Публикуем…" : "Опубликовать"}
             </Button>
@@ -574,7 +594,7 @@ function EditProductForm({ product, shop }: { product: SellerProduct; shop: Sell
                 setStatusError(null);
                 statusMutation.mutate("hidden");
               }}
-              disabled={product.status === "hidden" || busy}
+              disabled={product.status === "hidden" || isDirty || busy}
             >
               {hidePending ? "Скрываем…" : "Скрыть"}
             </Button>
@@ -588,7 +608,7 @@ function EditProductForm({ product, shop }: { product: SellerProduct; shop: Sell
                 setStatusError(null);
                 statusMutation.mutate("draft");
               }}
-              disabled={product.status === "draft" || busy}
+              disabled={product.status === "draft" || isDirty || busy}
             >
               {draftPending ? "Возвращаем…" : "Вернуть в черновик"}
             </Button>

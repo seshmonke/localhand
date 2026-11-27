@@ -221,6 +221,66 @@ describe("AdminProductEditPage", () => {
     expect(screen.getByText("Изменений нет")).toBeInTheDocument();
   });
 
+  it("keeps the product id in the login return path after a 401", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "GET /seller/products": { status: 401, body: { error: "unauthorized" } },
+    });
+
+    renderApp(["/admin/products/11"]);
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Сессия истекла" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Войти" })).toHaveAttribute(
+      "href",
+      "/login?next=%2Fadmin%2Fproducts%2F11",
+    );
+  });
+
+  it("locks status actions until unsaved edits are saved", async () => {
+    let current = { ...draftProduct };
+    let patchBody: unknown;
+
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "GET /seller/products": () => ({ body: { products: [current] } }),
+      "PATCH /seller/products/11": ({ body }) => {
+        patchBody = body;
+        current = { ...current, ...(body as Partial<typeof current>) };
+        return { body: { product: current } };
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/products/11"]);
+
+    const nameInput = await screen.findByLabelText("Название");
+    expect(screen.getByRole("button", { name: "Опубликовать" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Скрыть" })).toBeEnabled();
+
+    await browser.clear(nameInput);
+    await browser.type(nameInput, "Куртка с правками");
+
+    const dirtyHint = screen.getByText("Сначала сохраните изменения.");
+    expect(screen.getAllByRole("status")).toContain(dirtyHint);
+    expect(screen.getByRole("button", { name: "Опубликовать" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Скрыть" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Вернуть в черновик" })).toBeDisabled();
+
+    await browser.click(screen.getByRole("button", { name: "Сохранить изменения" }));
+
+    await waitFor(() => expect(patchBody).toEqual({ name: "Куртка с правками" }));
+    expect(await screen.findByText("Изменения сохранены.")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByText("Сначала сохраните изменения.")).not.toBeInTheDocument(),
+    );
+    expect(screen.getByRole("button", { name: "Опубликовать" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Скрыть" })).toBeEnabled();
+  });
+
   it("publishes and hides a product through separate PATCH status actions", async () => {
     let current = { ...draftProduct };
     const statusBodies: unknown[] = [];
