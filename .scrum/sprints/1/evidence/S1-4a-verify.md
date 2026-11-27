@@ -35,7 +35,7 @@ openspec validate --all --strict
 Totals: 2 passed, 0 failed (2 items)
 ```
 
-Лог снят до добавления evidence; на финальном дереве (207 tracked
+Лог снят до добавления evidence; на финальном дереве (206 tracked
 files) `node scripts/check-public-repo.mjs` — clean.
 
 ## Browser smoke (local preview)
@@ -54,13 +54,13 @@ API → `/admin/shop` → create shop → publish → статус published.
 
 ## A11y
 
-- axe-core 4.14.1, Chromium, WCAG 2.1/2.2 AA.
+- axe-core 4.14.1, Chromium, WCAG 2.1/2.2 AA. Raw:
+  [S1-4a-axe.json](S1-4a-axe.json) — 9 сканов, `testEngine` 4.14.1,
+  tags wcag2a/2aa/21a/21aa/22a/22aa.
 - Light: `/login` 320/1440, `/admin/shop` 320/1440, `/admin/products`
-  1440 — 0 violations. Raw:
-  [S1-4a-axe-light.json](S1-4a-axe-light.json).
+  1440 — 0 violations.
 - Dark (`data-theme="dark"`): `/login` 320/1440, `/admin/shop`
-  onboarding 320/1440 — 0 violations. Raw:
-  [S1-4a-axe-dark.json](S1-4a-axe-dark.json).
+  onboarding 320/1440 — 0 violations.
 - Focus полей — контрастный ink-ring; ошибки текстом + иконкой,
   aria-invalid/aria-describedby, aria-live.
 - Скрипт — локальный (вне репо); axe-гейт в CI — carry-over S1-5.
