@@ -20,21 +20,30 @@ PBI делится на два PR/цикла: **A. foundation** (схема, к�
 
 ## 2. Аккаунт продавца (PR B)
 
-- [ ] 2.1 `POST /seller/payments/connect`: HMAC-state (TTL 10 мин, seller_id), `consentUrl`, `YOOKASSA_REDIRECT_URI`.
-- [ ] 2.2 `GET /seller/payments/callback`: сессия продавца, state/TTL/sellerId, exchange code, `getAccountInfo`, `subscribeWebhooks`, encrypt token, новая версия аккаунта, старая `superseded`; ошибка подписки → `error` только для новой версии, текущий active не трогать; `isTest` в `live` отклоняется.
-- [ ] 2.3 `GET /seller/payments/account`: текущая версия `active|error|disabled` или `null` (маска, `isTest`, `expiresAt`); `DELETE` (`disabled`, 409 при активных платежах, токен для поздних вебхуков); `unsubscribeWebhooks`, best-effort `revoke`, идемпотентная повторная подписка.
+- [x] 2.1 `POST /seller/payments/connect`: HMAC-state (TTL 10 мин, seller_id), `consentUrl`, `YOOKASSA_REDIRECT_URI`.
+- [x] 2.2 `GET /seller/payments/callback`: сессия продавца, state/TTL/sellerId, exchange code, `getAccountInfo`, `subscribeWebhooks`, encrypt token, новая версия аккаунта, старая `superseded`; ошибка подписки → `error` только для новой версии, текущий active не трогать; `isTest` в `live` отклоняется.
+- [x] 2.3 `GET /seller/payments/account`: текущая версия `active|error|disabled` или `null` (маска, `isTest`, `expiresAt`); `DELETE` (`disabled`, 409 при активных платежах, токен для поздних вебхуков); `unsubscribeWebhooks`, best-effort `revoke`, идемпотентная повторная подписка.
 - [ ] 2.4 UI `/admin/shop`: карточка «Приём платежей», статусы active/error/disabled, тестовый бейдж, подключить/отключить/повторить.
-- [ ] 2.5 Тесты: 401, чужой seller, state, повторное подключение/версии, ошибка подписки, disconnect с платежом, истёкший токен → error.
+- [x] 2.5 Тесты: 401, чужой seller, state, повторное подключение/версии, ошибка подписки, disconnect с платежом, истёкший токен → error.
 
 ## 3. Платёж и вебхук (PR B)
 
-- [ ] 3.1 `POST /orders/:id/payments`: UUID header (400), authz 404, active account своего магазина, zero amount, rate-limit 5/мин, advisory lock `order:{id}`; **сначала lookup по `(order, key)` и replay до статусного гейта**, затем для нового ключа `SELECT orders FOR UPDATE`, `paid` и active/`manual_review` независимо от статуса заказа; unique violation active-индекса → 409; идемпотентность.
-- [ ] 3.2 Создание: insert payment + commit до вызова провайдера; вызов вне транзакции (timeout 10 с) с metadata `orderId`/`paymentId`; 401/403 → аккаунт `error` + 409, другой 4xx → `failed` + 502, 5xx/timeout → `pending` + 502; тот же ключ ретраит, новый 409; provider id/URL сохранять под lock после перечитывания строки; условный `new → payment_pending`.
-- [ ] 3.3 `POST /payments/yookassa/webhook`: body limit, lookup by provider id, неизвестный → 503, `getPayment`, order-lock, amount/currency/order match, `succeeded`/`canceled`/`manual_review`, 200 только после обработки.
-- [ ] 3.4 Reconcile раз в 60 с и на старте под order-lock: pending с provider id > 2 мин → `getPayment`, pending без provider id > 15 мин → `manual_review`; 401 → аккаунт `error`, новая active-версия с тем же account id или после 3 неудач `manual_review`; graceful shutdown; тесты потерянного вебхука и сироты.
-- [ ] 3.5 Buyer `GET /orders/:id/payment` (активный, иначе последний терминальный; `payment: null`; URL только pending) и seller `GET /seller/orders/:id/payment` (без URL); 404 на чужих.
-- [ ] 3.6 DB-тесты: успех, повтор после create и после `paid` (возврат платежа, не 409), повтор при manual_review → 409; `payment_pending` без active → 409 invalid_order_transition; параллельные вебхуки, гонка create/webhook (нет второй строки `payments`), mismatch → manual_review и блокировка нового платежа, canceled при другом платеже, unknown → 503, 5xx → тот же ключ ретраит / новый 409, 15 мин → manual_review → новый 409 `payment_requires_review`, 4xx → failed и новый ключ проходит, 429.
+- [x] 3.1 `POST /orders/:id/payments`: UUID header (400), authz 404, active account своего магазина, zero amount, rate-limit 5/мин, advisory lock `order:{id}`; **сначала lookup по `(order, key)` и replay до статусного гейта**, затем для нового ключа `SELECT orders FOR UPDATE`, `paid` и active/`manual_review` независимо от статуса заказа; unique violation active-индекса → 409; идемпотентность.
+- [x] 3.2 Создание: insert payment + commit до вызова провайдера; вызов вне транзакции (timeout 10 с) с metadata `orderId`/`paymentId`; 401/403 → аккаунт `error` + 409, другой 4xx → `failed` + 502, 5xx/timeout → `pending` + 502; тот же ключ ретраит, новый 409; provider id/URL сохранять под lock после перечитывания строки; условный `new → payment_pending`.
+- [x] 3.3 `POST /payments/yookassa/webhook`: body limit, lookup by provider id, неизвестный → 503, `getPayment`, order-lock, amount/currency/order match, `succeeded`/`canceled`/`manual_review`, 200 только после обработки.
+- [x] 3.4 Reconcile раз в 60 с и на старте под order-lock: pending с provider id > 2 мин → `getPayment`, pending без provider id > 15 мин → `manual_review`; 401 → аккаунт `error`, новая active-версия с тем же account id или после 3 неудач `manual_review`; graceful shutdown; тесты потерянного вебхука и сироты.
+- [x] 3.5 Buyer `GET /orders/:id/payment` (активный, иначе последний терминальный; `payment: null`; URL только pending) и seller `GET /seller/orders/:id/payment` (без URL); 404 на чужих.
+- [x] 3.6 DB-тесты: успех, повтор после create и после `paid` (возврат платежа, не 409), повтор при manual_review → 409; `payment_pending` без active → 409 invalid_order_transition; параллельные вебхуки, гонка create/webhook (нет второй строки `payments`), mismatch → manual_review и блокировка нового платежа, canceled при другом платеже, unknown → 503, 5xx → тот же ключ ретраит / новый 409, 15 мин → manual_review → новый 409 `payment_requires_review`, 4xx → failed и новый ключ проходит, 429.
+> PR B1: rate-limit, no-store и логи без PII/токена/тела сделаны;
+> runbook `payments-manual-review.md` — PR B2.
+
 - [ ] 3.7 Логи/метрики: коды без PII/токена/тела, rate-limit вебхука 60/мин, no-store на всех ответах; runbook `payments-manual-review.md` с тремя исходами: платежа нет → canceled/new, возврат в ЮKassa → canceled/new, оплата подтверждена → succeeded/paid + provider id/paid_at.
+
+> PR B1 review #2: stale `failed`-ключ проходит повторный гейт под
+> order-lock, retry берёт active-аккаунт продавца и свежий `createdAt`;
+> `provider_payment_id`-конфликт → 409 без отмены чужого платежа;
+> терминальный статус create → `manual_review`. Reconcile получает статус
+> провайдера вне транзакции.
 
 ## 4. UI оплаты (PR B)
 
@@ -45,8 +54,8 @@ PBI делится на два PR/цикла: **A. foundation** (схема, к�
 
 ## 5. Проверка и evidence
 
-- [ ] 5.1 Unit: crypto roundtrip/tamper/rotation, fake-провайдер, state HMAC, amount match.
-- [ ] 5.2 API e2e: buyer → payment → fake complete → webhook → order paid; seller sees paid; replay no-op; unknown 503 → retry; 5xx same-key retry, 4xx new-key retry.
+- [x] 5.1 Unit: crypto roundtrip/tamper/rotation, fake-провайдер, state HMAC, amount match.
+- [x] 5.2 API e2e: buyer → payment → fake complete → webhook → order paid; seller sees paid; replay no-op; unknown 503 → retry; 5xx same-key retry, 4xx new-key retry.
 - [ ] 5.3 Browser e2e: оплата из заказа, возврат, статус, manual_review; axe; preview LCP <2500.
 - [ ] 5.4 `pnpm verify`, `openspec validate 06-payments --strict`, bundle delta; evidence в `.scrum/sprints/3/evidence/S3-1-*`.
 - [ ] 5.5 Live sandbox smoke после тестовых ключей владельца; без ключей — P3, не блокирует merge.

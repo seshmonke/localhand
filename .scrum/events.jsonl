@@ -54,3 +54,7 @@
 {"ts":"2026-11-27T11:49:00Z","type":"decision","scope":"sprint_3_scope","sprint":3,"owner":"human","decision":"approve_money_path_scope","pbis":["payments","delivery","order_lifecycle","hardening"],"constraints":"sandbox_test_keys_no_real_money_no_address_pii"}
 {"ts":"2026-11-27T11:50:00Z","type":"sprint_started","sprint":3,"cycle":1,"goal":"paid order in YooKassa sandbox, CDEK test shipment, lifecycle, hardening","plan":"docs/tasks/03-money-path.md"}
 {"ts":"2026-11-27T11:52:00Z","type":"claim","sprint":3,"cycle":1,"task":"S3-1","owner":"scrum-worker","branch":"task/S3-1-payments","change":"06-payments","lease":".scrum/locks/S3-1.json"}
+{"ts":"2026-11-27T12:09:30Z","type":"cycle_started","sprint":3,"cycle":2,"task":"S3-1","scope":"payments_foundation","pr":"A"}
+{"ts":"2026-11-27T12:55:00Z","type":"merge","sprint":3,"cycle":2,"task":"S3-1","pr":39,"merge_commit":"732d2cb","scope":"payments_foundation","status":"done"}
+{"ts":"2026-11-27T13:18:00Z","type":"merge","sprint":null,"task":"UI-CARDS","pr":40,"merge_commit":"26e321e","scope":"flat_product_cards","status":"done"}
+{"ts":"2026-11-27T13:22:00Z","type":"cycle_started","sprint":3,"cycle":3,"task":"S3-1","scope":"payments_flow_backend","pr":"B1"}

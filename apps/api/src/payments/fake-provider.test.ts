@@ -83,7 +83,7 @@ describe("FakePaymentProvider payments", () => {
     expect(created.status).toBe("pending");
     expect(created.providerPaymentId).toMatch(/^fake_/);
     expect(created.confirmationUrl).toBe(
-      `${WEB_ORIGIN}/dev/payments/${created.providerPaymentId}/complete`,
+      `${WEB_ORIGIN}/dev/payments/${PAYMENT_INPUT.paymentId}/complete`,
     );
     await expect(
       provider.getPayment(accessToken, created.providerPaymentId),
@@ -134,6 +134,23 @@ describe("FakePaymentProvider payments", () => {
     const created = await provider.createPayment(accessToken, PAYMENT_INPUT);
 
     expect(provider.completePayment(created.providerPaymentId, "canceled").status).toBe("canceled");
+  });
+
+  it("best-effort cancels a pending payment and ignores terminal ones", async () => {
+    const provider = createProvider();
+    const accessToken = await connect(provider);
+    const created = await provider.createPayment(accessToken, PAYMENT_INPUT);
+
+    await provider.cancelPayment(accessToken, created.providerPaymentId);
+    await expect(
+      provider.getPayment(accessToken, created.providerPaymentId),
+    ).resolves.toMatchObject({ status: "canceled" });
+
+    // Idempotent for an already-canceled payment and for an unknown id.
+    await expect(
+      provider.cancelPayment(accessToken, created.providerPaymentId),
+    ).resolves.toBeUndefined();
+    await expect(provider.cancelPayment(accessToken, "fake_missing")).resolves.toBeUndefined();
   });
 
   it("returns not_found for an unknown provider payment", async () => {
