@@ -1,11 +1,14 @@
 import { Link, Navigate, Outlet, Route, Routes } from "react-router";
 import { Menu, Search, ShoppingBag } from "lucide-react";
 import { buttonVariants } from "@localhand/ui";
+import { CartProvider, useCart } from "./cart/CartContext.js";
+import { pluralizeItems } from "./cart/item-count.js";
 import { AdminGuard } from "./components/admin/AdminGuard.js";
 import { AdminShell } from "./components/admin/AdminShell.js";
 import { AdminProductEditPage, AdminProductNewPage } from "./pages/AdminProductFormPage.js";
 import { AdminProductsPage } from "./pages/AdminProductsPage.js";
 import { AdminShopPage } from "./pages/AdminShopPage.js";
+import { CartPage } from "./pages/CartPage.js";
 import { LoginPage } from "./pages/LoginPage.js";
 import { MarketplacePage } from "./pages/MarketplacePage.js";
 import { NotFoundPage } from "./pages/NotFoundPage.js";
@@ -13,6 +16,8 @@ import { ProductPage } from "./pages/ProductPage.js";
 import { ShopPage } from "./pages/ShopPage.js";
 
 function Header() {
+  const { count } = useCart();
+
   return (
     <header className="sticky top-0 z-40 border-b-[3px] border-ink bg-paper">
       <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 sm:h-20 sm:px-6 lg:px-10">
@@ -46,13 +51,21 @@ function Header() {
           <Link to="/login" className={buttonVariants({ variant: "outline", size: "sm" })}>
             Открыть магазин
           </Link>
-          <button
-            type="button"
-            aria-label="Корзина"
-            className="inline-flex size-11 items-center justify-center border-[3px] border-ink bg-paper hover:bg-ink hover:text-paper"
+          <Link
+            to="/cart"
+            aria-label={count > 0 ? `Корзина, ${pluralizeItems(count)}` : "Корзина"}
+            className="relative inline-flex size-11 items-center justify-center border-[3px] border-ink bg-paper hover:bg-ink hover:text-paper"
           >
             <ShoppingBag aria-hidden="true" className="size-5" />
-          </button>
+            {count > 0 ? (
+              <span
+                aria-hidden="true"
+                className="absolute -right-2 -top-2 inline-flex min-w-6 items-center justify-center border-[3px] border-ink bg-accent-orange px-1 font-mono text-[10px] font-bold leading-4 text-ink"
+              >
+                {count}
+              </span>
+            ) : null}
+          </Link>
           <button
             type="button"
             aria-label="Меню"
@@ -94,28 +107,31 @@ function StorefrontLayout() {
 
 export function App() {
   return (
-    <div className="flex min-h-dvh flex-col bg-paper text-ink">
-      <Routes>
-        <Route element={<StorefrontLayout />}>
-          <Route path="/" element={<MarketplacePage />} />
-          <Route path="/shops/:slug" element={<ShopPage />} />
-          <Route path="/products/:id" element={<ProductPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-
-        <Route path="/login" element={<LoginPage />} />
-
-        <Route path="/admin" element={<AdminGuard />}>
-          <Route element={<AdminShell />}>
-            <Route index element={<Navigate to="shop" replace />} />
-            <Route path="shop" element={<AdminShopPage />} />
-            <Route path="products" element={<AdminProductsPage />} />
-            <Route path="products/new" element={<AdminProductNewPage />} />
-            <Route path="products/:id" element={<AdminProductEditPage />} />
-            <Route path="*" element={<Navigate to="shop" replace />} />
+    <CartProvider>
+      <div className="flex min-h-dvh flex-col bg-paper text-ink">
+        <Routes>
+          <Route element={<StorefrontLayout />}>
+            <Route path="/" element={<MarketplacePage />} />
+            <Route path="/shops/:slug" element={<ShopPage />} />
+            <Route path="/products/:id" element={<ProductPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
-        </Route>
-      </Routes>
-    </div>
+
+          <Route path="/login" element={<LoginPage />} />
+
+          <Route path="/admin" element={<AdminGuard />}>
+            <Route element={<AdminShell />}>
+              <Route index element={<Navigate to="shop" replace />} />
+              <Route path="shop" element={<AdminShopPage />} />
+              <Route path="products" element={<AdminProductsPage />} />
+              <Route path="products/new" element={<AdminProductNewPage />} />
+              <Route path="products/:id" element={<AdminProductEditPage />} />
+              <Route path="*" element={<Navigate to="shop" replace />} />
+            </Route>
+          </Route>
+        </Routes>
+      </div>
+    </CartProvider>
   );
 }

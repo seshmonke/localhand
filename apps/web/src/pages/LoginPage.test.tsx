@@ -1,5 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
-import { cleanup, screen } from "@testing-library/react";
+import { cleanup, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { sellerKeys } from "../lib/queries.js";
@@ -153,9 +153,11 @@ describe("LoginPage", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Ваш магазин" }),
     ).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/seller/shop",
-      expect.objectContaining({ credentials: "include" }),
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/seller/shop",
+        expect.objectContaining({ credentials: "include" }),
+      ),
     );
   });
 

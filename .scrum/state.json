@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": 2,
   "cycle": 2,
-  "updated_at": "2026-11-27T03:52:00Z",
+  "updated_at": "2026-11-27T03:55:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 2 cycle 2: S2-1 catalog merged (PR #26, 7ab658e), change 03 archived; S2-2 cart next (ready). Budget not a blocker."
+  "notes": "Sprint 2 cycle 2: S2-2 cart claimed by scrum-worker (branch task/S2-2-cart, brief docs/tasks/S2-2-cart.md, lease to 07:30Z). S2-1 merged/archived. Budget not a blocker."
 }
