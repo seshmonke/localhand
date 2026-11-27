@@ -29,9 +29,12 @@
 | Гейт | Волна | Статус | Evidence |
 |---|---|---|---|
 | TDD/ATDD | 1 | | |
-| contract/property/threat | 1 | | |
+| contract/property/threat/runbook | 1 | | |
 | SLO-дизайн/логи | 1 | | |
-| mutation/SAST; alert/RUM | 1 / после Q1.0–Q1.6 | | |
+| mutation | nightly сейчас; блокирует после Q1.0–Q1.6 | | |
+| SAST | ручной/исключение сейчас; блокирует после Q1.0–Q1.6 | | |
+| alert/RUM | owner-исключение сейчас; блокирует после Q1.0–Q1.6 | | |
+| field RUM | до публичного запуска | | |
 | trunk-based/flags/perf | 2 | | |
 | IaC/progressive/debt/postmortem | 3 | | |
 

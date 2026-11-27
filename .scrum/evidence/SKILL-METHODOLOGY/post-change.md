@@ -72,5 +72,34 @@ alert/RUM — исключение» допускала ложное чтени�
 
 > SLO-дизайн/логи обязательны, alert/RUM — именованное исключение.
 
-Контрольный прогон — ниже.
+### Контрольный прогон T2
+
+Свежий агент на обновлённом скилле подтвердил:
+
+> Tier T2. Обязательны TDD/ATDD, threat model, contract/property,
+> SLO-дизайн/логи, runbook/rollback. Сейчас блокируют TDD/ATDD,
+> contract, property, threat model, SLO-дизайн/логи; mutation — nightly,
+> SAST — ручной/исключение, alert/RUM — owner-исключение. После
+> Q1.0–Q1.6 блокируют все T2-гейты.
+
+Он нашёл два пробела: `runbook/rollback` не назван в волновой строке и
+`field RUM` не имел исключения до публичного запуска (оно есть в
+`docs/quality/dod.md`). Исправлено в `SKILL.md`, `assets/task.md`,
+`assets/pr.md`, `references/roles.md`, `references/git-quality.md`,
+`assets/sprint.md`.
+
+Итог после правки:
+
+> `runbook/rollback` — в T2-артефактах и волне 1;
+> `field RUM` — именованное owner-исключение до публичного запуска.
+
+### Финальный контроль
+
+Свежий агент подтвердил оба пункта. Остались две неточности: Reviewer не
+перечислял `runbook` в явном запрете принимать T2; `sprint.md` группировал
+mutation/SAST/alert/RUM одной строкой. Исправлено: Reviewer требует
+`runbook`; `sprint.md` разделяет режимы «сейчас» и «после Q1.0–Q1.6».
+
+Дополнительно закрыт инвариант T0/T1: T0 не требует e2e и OpenSpec
+archive; T1/T2 требуют e2e главного сценария.
 
