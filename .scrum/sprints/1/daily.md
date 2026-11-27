@@ -70,7 +70,8 @@
 
 ### S1-4a Admin auth + shop UI
 
-- Статус: `ready`; brief, worktree и lease создаются перед dispatch.
+- Статус: `in_progress`, owner `scrum-worker`; ветка
+  `task/S1-4a-admin-auth`, lease до 05:00Z.
 - Дальше: API client с cookie, `/login`, guard `/admin`, магазин
   onboarding/settings/publish; mobile+desktop, a11y.
 - Блокеры: нет.

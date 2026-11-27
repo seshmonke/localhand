@@ -1,6 +1,11 @@
-import { Link, Route, Routes } from "react-router";
+import { Link, Navigate, Outlet, Route, Routes } from "react-router";
 import { Menu, Search, ShoppingBag } from "lucide-react";
 import { buttonVariants } from "@localhand/ui";
+import { AdminGuard } from "./components/admin/AdminGuard.js";
+import { AdminShell } from "./components/admin/AdminShell.js";
+import { AdminProductsPage } from "./pages/AdminProductsPage.js";
+import { AdminShopPage } from "./pages/AdminShopPage.js";
+import { LoginPage } from "./pages/LoginPage.js";
 import { MarketplacePage } from "./pages/MarketplacePage.js";
 import { NotFoundPage } from "./pages/NotFoundPage.js";
 import { ProductPage } from "./pages/ProductPage.js";
@@ -18,13 +23,13 @@ function Header() {
         </Link>
 
         <nav className="hidden items-center gap-6 font-mono text-xs uppercase tracking-wide md:flex">
-          <Link className="hover:text-accent-red" to="/">
+          <Link className="hover:text-accent-red-text" to="/">
             Каталог
           </Link>
-          <a className="hover:text-accent-red" href="/#how">
+          <a className="hover:text-accent-red-text" href="/#how">
             Как это работает
           </a>
-          <a className="hover:text-accent-red" href="/#sellers">
+          <a className="hover:text-accent-red-text" href="/#sellers">
             Продавцам
           </a>
         </nav>
@@ -37,9 +42,9 @@ function Header() {
           >
             <Search aria-hidden="true" className="size-5" />
           </button>
-          <a href="/#sellers" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          <Link to="/login" className={buttonVariants({ variant: "outline", size: "sm" })}>
             Открыть магазин
-          </a>
+          </Link>
           <button
             type="button"
             aria-label="Корзина"
@@ -74,19 +79,40 @@ function Footer() {
   );
 }
 
+function StorefrontLayout() {
+  return (
+    <>
+      <Header />
+      <main id="main" className="flex-1">
+        <Outlet />
+      </main>
+      <Footer />
+    </>
+  );
+}
+
 export function App() {
   return (
     <div className="flex min-h-dvh flex-col bg-paper text-ink">
-      <Header />
-      <main className="flex-1">
-        <Routes>
+      <Routes>
+        <Route element={<StorefrontLayout />}>
           <Route path="/" element={<MarketplacePage />} />
           <Route path="/shops/:slug" element={<ShopPage />} />
           <Route path="/products/:id" element={<ProductPage />} />
           <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </main>
-      <Footer />
+        </Route>
+
+        <Route path="/login" element={<LoginPage />} />
+
+        <Route path="/admin" element={<AdminGuard />}>
+          <Route element={<AdminShell />}>
+            <Route index element={<Navigate to="shop" replace />} />
+            <Route path="shop" element={<AdminShopPage />} />
+            <Route path="products" element={<AdminProductsPage />} />
+            <Route path="*" element={<Navigate to="shop" replace />} />
+          </Route>
+        </Route>
+      </Routes>
     </div>
   );
 }

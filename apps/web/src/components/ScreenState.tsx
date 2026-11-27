@@ -16,7 +16,7 @@ const labels = {
 export function ScreenState({ kind, title, description, action }: ScreenStateProps) {
   return (
     <div className="border-[3px] border-ink bg-paper p-6 sm:p-8">
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent-orange">
+      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent-orange-text">
         {labels[kind]}
       </p>
       <h2 className="mt-3 font-display text-2xl uppercase sm:text-3xl">{title}</h2>
