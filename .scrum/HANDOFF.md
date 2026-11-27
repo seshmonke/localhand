@@ -5,13 +5,13 @@
 ## Состояние
 
 - Репозиторий: https://github.com/seshmonke/localhand, public.
-- main: `11ca2c0` (S1-2 shop, PR #14); до него `0c5c480` (S1-1 + docs).
+- main: `f7f26ba` (S1-2 close + docs); S1-2 code — `11ca2c0`, PR #14.
 - Sprint 1: **BUILDING**, cycle 3.
 - S1-1 phone auth: **done**, PR #12; tasks 1.1–1.6 отмечены.
 - S1-2 shop: **done**, PR #14; tasks 2.1–2.4 отмечены.
-- S1-3 products: **ready**, не claimed. Перед dispatch: создать бриф
-  `docs/tasks/S1-3-products.md`, ветку `task/S1-3-products`, lease
-  `.scrum/locks/S1-3.json`.
+- S1-3 products: **in_progress**, owner `scrum-worker`; бриф
+  `docs/tasks/S1-3-products.md`, ветка `task/S1-3-products`, lease
+  `.scrum/locks/S1-3.json` до 04:30Z.
 - S1-4 admin UI, S1-5 security — `ready`.
 
 ## Evidence
@@ -53,13 +53,12 @@
 
 ## Текущий шаг
 
-1. Создать ветку `task/S1-3-products` от main, бриф
-   `docs/tasks/S1-3-products.md` (AC — change tasks 3.1–3.4), worktree и
-   lease.
-2. Dispatch `scrum-worker`: product-admin контракты, `GET/POST
-   /seller/products`, `PATCH /seller/products/:id`, publish/hide, authz
-   только своего магазина, DB-тесты.
-3. Orchestrator: verify → independent review → PR → squash-merge.
+1. `scrum-worker` реализует S1-3 в ветке `task/S1-3-products`:
+   product-admin контракты, `GET/POST /seller/products`,
+   `PATCH /seller/products/:id`, publish/hide, authz своего магазина,
+   DB-тесты.
+2. Orchestrator: verify → independent review → PR → squash-merge.
+3. После merge — tasks 3.1–3.4, board/state/daily/evidence, затем S1-4.
 
 ## Гигиена
 

@@ -9,3 +9,4 @@
 {"ts":"2026-11-27T00:38:00Z","type":"review","sprint":1,"task":"S1-2","pr":14,"verdict":"APPROVE","reviewer":"scrum-reviewer","head":"ef819f3","note":"P2-1/P2-2 fixed in a5f67f1"}
 {"ts":"2026-11-27T00:38:30Z","type":"merge","sprint":1,"task":"S1-2","pr":14,"merge_commit":"11ca2c0","status":"done"}
 {"ts":"2026-11-27T00:39:00Z","type":"phase","sprint":1,"cycle":3,"from":"cycle_2","to":"cycle_3","task":"S1-3"}
+{"ts":"2026-11-27T00:44:00Z","type":"claim","sprint":1,"cycle":3,"task":"S1-3","owner":"scrum-worker","branch":"task/S1-3-products","lease":".scrum/locks/S1-3.json"}
