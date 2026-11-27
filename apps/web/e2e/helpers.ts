@@ -65,10 +65,32 @@ async function requestDevCode(request: APIRequestContext, phone: string): Promis
   return payload.devCode;
 }
 
+/**
+ * Refuses to run the browser e2e against an API that would send real SMS or
+ * hide the dev OTP. The check runs before the first request-code, so a
+ * misconfigured stand cannot burn SMS balance or hang waiting for a code.
+ */
+export async function requireDevSmsProvider(request: APIRequestContext): Promise<void> {
+  const response = await request.get("/api/health");
+  if (!response.ok()) {
+    throw new Error(`health preflight failed: HTTP ${response.status()}`);
+  }
+
+  const payload = (await response.json()) as { smsProvider?: string };
+  if (payload.smsProvider !== "dev") {
+    throw new Error(
+      `browser e2e requires SMS_PROVIDER=dev: GET /health returned smsProvider=${String(
+        payload.smsProvider,
+      )}. Start the API with the dev provider (the default outside production).`,
+    );
+  }
+}
+
 export async function loginViaApi(
   request: APIRequestContext,
   phone = uniquePhone(),
 ): Promise<ApiSession> {
+  await requireDevSmsProvider(request);
   const code = await requestDevCode(request, phone);
   const response = await request.post("/api/auth/verify-code", { data: { phone, code } });
   expect(response.ok(), "verify-code must succeed").toBeTruthy();
@@ -174,6 +196,8 @@ export async function seedBrowserSession(
 
 /** Logs in through the real login form and waits for the post-login page. */
 export async function loginViaUi(page: Page, phone: string): Promise<void> {
+  await requireDevSmsProvider(page.request);
+
   await page.getByLabel("Телефон").fill(phone);
   await page.getByRole("button", { name: "Получить код" }).click();
 

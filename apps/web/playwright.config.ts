@@ -1,15 +1,16 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Browser e2e for the buyer core.
+ * Browser e2e for the buyer core. This is a manual local gate, not part of CI:
+ * CI runs only API e2e through `pnpm verify`. Run the stack yourself with
+ * `pnpm dev` (web :5173, API :3000 with the dev OTP provider) and execute
+ * `pnpm test:e2e`; evidence is the run log plus step screenshots, and
+ * video/trace/screenshots are retained on failure.
  *
- * The stack is not started automatically: run `pnpm dev` first (web :5173, API
- * :3000 with the dev OTP provider) and, optionally, seed the database. The
- * tests create their own seller, shop, products and orders through the public
- * API using fake phones.
- *
- * For production-like numbers (LCP, bundle) build the web app and run
- * `pnpm preview`, then set PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173.
+ * For a lab smoke on the built bundle, run `pnpm preview` and set
+ * PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173. LCP numbers from this harness are
+ * lab-only: loopback, no CPU/network throttling, no real images. They are not
+ * field p75 and do not replace the DoD average-mobile measurement.
  */
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5173";
 // Escape hatch for machines where Playwright browsers are not installable:
@@ -30,7 +31,7 @@ export default defineConfig({
     locale: "ru-RU",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
-    video: "on",
+    video: "retain-on-failure",
     actionTimeout: 10_000,
     navigationTimeout: 20_000,
   },

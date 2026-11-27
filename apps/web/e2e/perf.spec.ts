@@ -10,12 +10,12 @@ import {
 } from "./helpers.js";
 
 const RUNS = 5;
-const LCP_BUDGET_MS = 2_500;
+const LAB_LCP_BUDGET_MS = 2_500;
 
-type LcpResult = {
+type LabLcpResult = {
   url: string;
   runs: number[];
-  p75: number;
+  labP75: number;
 };
 
 /**
@@ -42,7 +42,7 @@ async function readLcp(page: Page): Promise<number> {
   );
 }
 
-async function measureLcp(page: Page, url: string): Promise<LcpResult> {
+async function measureLcp(page: Page, url: string): Promise<LabLcpResult> {
   const runs: number[] = [];
 
   for (let run = 0; run < RUNS; run += 1) {
@@ -53,16 +53,25 @@ async function measureLcp(page: Page, url: string): Promise<LcpResult> {
   }
 
   const sorted = [...runs].sort((left, right) => left - right);
-  const p75 = sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.75) - 1)] ?? 0;
-  return { url, runs, p75 };
+  const labP75 = sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.75) - 1)] ?? 0;
+  return { url, runs, labP75 };
 }
 
 /**
- * Core Web Vitals evidence: LCP p75 over five navigations on the catalog and
- * the checkout, measured in Chromium with PerformanceObserver. The stack is the
- * one from `pnpm dev` (or a production preview via PLAYWRIGHT_BASE_URL).
+ * Lab smoke only, not a field Core Web Vitals measurement:
+ * - loopback dev/preview stack, headless Chromium;
+ * - no CPU or network throttling;
+ * - no real product images, only placeholder blocks;
+ * - one machine and five navigations.
+ *
+ * These numbers catch bundle/render regressions. They are not field p75 and
+ * do not prove the DoD "average mobile" budget; field p75 needs RUM or
+ * Lighthouse with CPU/network throttling on a real stand (backlog P3).
  */
-test("LCP p75 stays under 2.5s on catalog and checkout", async ({ browser, request }, testInfo) => {
+test("lab LCP smoke stays under 2.5s on catalog and checkout", async ({
+  browser,
+  request,
+}, testInfo) => {
   test.slow();
 
   const catalog = await createPublishedCatalog(request);
@@ -89,19 +98,29 @@ test("LCP p75 stays under 2.5s on catalog and checkout", async ({ browser, reque
     const checkoutLcp = await measureLcp(page, "/checkout");
 
     const evidence = {
+      kind: "lab",
+      field_p75: false,
       generated_at: new Date().toISOString(),
       base: BASE_URL,
-      budget_ms: LCP_BUDGET_MS,
+      budget_ms: LAB_LCP_BUDGET_MS,
       runs: RUNS,
       viewport: "390x844 @2x mobile",
+      conditions: {
+        network: "loopback (localhost / 127.0.0.1)",
+        cpu_throttling: "none",
+        network_throttling: "none",
+        images: "placeholder blocks; no real product images",
+        browser: "headless Chromium",
+      },
+      note: "Lab smoke only. Not field p75 and not the DoD average-mobile metric; field p75 requires RUM or Lighthouse throttling on a real stand (backlog P3).",
       metrics: { catalog: catalogLcp, checkout: checkoutLcp },
     };
     const body = JSON.stringify(evidence, null, 2);
     await writeFile(testInfo.outputPath("lcp-results.json"), body);
     await testInfo.attach("lcp-results.json", { body, contentType: "application/json" });
 
-    expect(catalogLcp.p75, "catalog LCP p75").toBeLessThan(LCP_BUDGET_MS);
-    expect(checkoutLcp.p75, "checkout LCP p75").toBeLessThan(LCP_BUDGET_MS);
+    expect(catalogLcp.labP75, "catalog lab LCP p75").toBeLessThan(LAB_LCP_BUDGET_MS);
+    expect(checkoutLcp.labP75, "checkout lab LCP p75").toBeLessThan(LAB_LCP_BUDGET_MS);
   } finally {
     await context.close();
   }

@@ -16,6 +16,7 @@ describe("health", () => {
       status: "ok",
       service: "localhand-api",
       version: "0.0.0",
+      smsProvider: "dev",
     });
   });
 });
