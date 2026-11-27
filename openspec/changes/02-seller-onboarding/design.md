@@ -117,8 +117,8 @@
 ## Migration Plan
 
 1. Миграция `users`, `otp_codes`, `sellers.user_id`.
-2. Seed demo-user и привязка demo-продавца — отложено до S1-2 (не
-   входило в AC S1-1).
+2. Seed demo-user и привязка demo-продавца — отложено до S1-5 (не
+   входило в AC S1-1/S1-2; задача в бэклоге).
 3. Применить, проверить storefront не сломан.
 4. Откат: миграции Drizzle без down; для локальной БД — volume, для
    прода — бэкап и revert.

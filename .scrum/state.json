@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": 1,
   "cycle": 2,
-  "updated_at": "2026-11-27T00:07:00Z",
+  "updated_at": "2026-11-27T00:13:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "S1-1 phone auth merged (PR #12, squash d3e42b7), tasks 1.1–1.6 done. Cycle 2: S1-2 seller shop in progress. Carry-over P2/P3 from S1-1 review — S1-5/backlog."
+  "notes": "S1-1 phone auth merged (PR #12, squash d3e42b7), tasks 1.1–1.6 done. Cycle 2 opens with S1-2 shop ready: brief + worktree + lease are created before dispatch. Carry-over P2/P3 from S1-1 review is in backlog."
 }

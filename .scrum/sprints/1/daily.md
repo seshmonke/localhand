@@ -25,7 +25,8 @@
   закрыт; P2/P3 перенесены в S1-5/бэклог.
 - `pnpm verify` (DATABASE_URL_TEST): exit 0; API 58/58, shared 8/8,
   web 1/1, build OK, `openspec validate --all --strict` 2/2,
-  `check:public` чист. Лог: `/tmp/opencode/S1-1-verify-resume.log`.
+  `check:public` чист. Evidence:
+  [evidence/S1-1-verify.md](evidence/S1-1-verify.md).
 - PR #12: `verify` + `review-gate` зелёные, squash-merge `d3e42b7`.
 - S1-1 закрыт; tasks 1.1–1.6 отмечены.
 
@@ -33,7 +34,7 @@
 
 ### S1-2 Seller shop
 
-- Сделано: —
+- Статус: `ready`; бриф, worktree и lease создаются перед dispatch.
 - Дальше: API создания/редактирования/публикации своего магазина,
   уникальный slug, authz-тесты.
 - Блокеры: нет.

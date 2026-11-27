@@ -19,11 +19,12 @@
 <!-- - [Спринт 1: …](01-….md) — …. Закрыт ДД.ММ.ГГГГ. -->
 
 Init закрыт 27.11.2026: product, stack, GitHub, walking skeleton
-(`2026-11-27-01-walking-skeleton`). Спринт 1 спланирован, но не начат —
-ждёт явной команды владельца.
+(`2026-11-27-01-walking-skeleton`). Sprint 1 идёт: **BUILDING**,
+cycle 2.
 
 - [Спринт 1: онбординг продавца + auth](01-seller-onboarding.md) —
-  PLANNING/READY, change `02-seller-onboarding`. Закрыт: —.
+  BUILDING, change `02-seller-onboarding`; S1-1 auth смержен (PR #12,
+  `d3e42b7`), следующий — S1-2 shop. Закрыт: —.
 
 ## Бэклог
 

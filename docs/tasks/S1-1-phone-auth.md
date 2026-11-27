@@ -68,7 +68,8 @@
 
 ## Evidence
 
-- `pnpm verify` — exit 0 (лог `/tmp/opencode/S1-1-verify-resume.log`):
+- `pnpm verify` — exit 0; evidence:
+  [`../../.scrum/sprints/1/evidence/S1-1-verify.md`](../../.scrum/sprints/1/evidence/S1-1-verify.md):
   API 58/58, shared 8/8, web 1/1, build OK, `check:public` чист.
 - `openspec validate --all --strict` — 2/2 passed.
 - HTTP-контракты покрыты route-тестами: request/verify/me/logout,
@@ -114,11 +115,12 @@
 ## Итог ревью
 
 - Вердикт: **APPROVE** на `9ee2360`; blocking P0/P1 нет.
-- P2 (S1-5, не блокирует): `TRUST_PROXY=false`/`/0` в production —
+- P2 (бэклог/S1-5, не блокирует): `TRUST_PROXY=false`/`/0` в production —
   конфигурационный footgun для IP-лимита; тест TTL-константы 5 минут;
   тест отсутствия телефона/кода в логах; `DATABASE_URL` fail-fast в
-  production; seed demo-user из design.
-- P3 (S1-5/бэклог): OTP cleanup/retention, rollback SQL, auth-метрики,
-  design.md про лимиты, evidence и addenda оформлены.
+  production; seed demo-user.
+- P3: закрыто в этом PR — design.md про лимиты, evidence, addenda;
+  перенесено в бэклог/S1-5 — OTP cleanup/retention, rollback SQL,
+  auth-метрики.
 - Занесено в `docs/tasks/backlog.md`; S1-2 не расширять.
 
