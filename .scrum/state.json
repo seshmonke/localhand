@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": 2,
   "cycle": 1,
-  "updated_at": "2026-11-27T03:05:00Z",
+  "updated_at": "2026-11-27T03:12:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 2 (buyer-core) planned: change 03-buyer-core valid strict, 5 PBI, 4–6 cycles. Plan PR pending; after merge claim S2-1 per standing authorization. Budget not a blocker."
+  "notes": "Sprint 2 (buyer-core) planned: changes 03-catalog-discovery, 04-cart, 05-checkout-orders valid strict; 4 PBI, 4–6 cycles. Plan PR pending; after merge claim S2-1 per standing authorization. Budget not a blocker."
 }

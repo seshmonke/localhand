@@ -51,5 +51,5 @@
   `2026-11-27-02-seller-onboarding`, specs phone-auth/seller-shop/
   product-management созданы; review ACCEPT, retro записан. Sprint 1.
 - 27.11.2026. Sprint 2 спланирован: buyer-core — каталог/поиск/сортировка,
-  корзина, checkout/orders, seller orders; change `03-buyer-core`, 5 PBI,
+  корзина, checkout/orders, seller orders; changes `03-catalog-discovery`, `04-cart`, `05-checkout-orders`, 4 PBI,
   4–6 циклов; без реальных платежей/доставки. Sprint 2.

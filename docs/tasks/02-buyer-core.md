@@ -2,7 +2,7 @@
 
 Статус: **PLANNING / READY**.
 Дата планирования: 27.11.2026.
-Change: `03-buyer-core`.
+Changes: `03-catalog-discovery`, `04-cart`, `05-checkout-orders`.
 Направление: buyer-first ядро — покупатель находит товар, открывает
 магазин/карточку, оформляет заказ. Оплата и доставка — следующие
 спринты.
@@ -20,30 +20,38 @@ Change: `03-buyer-core`.
 
 ## Состав
 
-| PBI | Приоритет | Результат | Задачи change | Зависит от |
-|---|---|---|---|---|
-| S2-1 Catalog discovery | P0 | Поиск, сортировка, пагинация каталога; стабильная выдача | 1.1–1.4 | S1 |
-| S2-2 Cart | P0 | Корзина в localStorage, группировка по магазинам, add/remove, badge | 2.1–2.4 | S2-1 |
-| S2-3 Checkout & orders API | P0 | Buyer auth, заказ на магазин, snapshot цен, свои заказы, seller orders API | 3.1–3.6 | S2-2 |
-| S2-4 Orders UI | P0 | Checkout, buyer orders list/detail, seller orders list/detail | 4.1–4.5 | S2-3 |
-| S2-5 Security & evidence | P0 | Authz/PII/logs, e2e buyer flow, preview evidence, архив | 5.1–5.5 | S2-1–S2-4 |
+| PBI | Приоритет | Результат | Change | Задачи | Зависит от |
+|---|---|---|---|---|---|
+| S2-1 Catalog discovery | P1 (срез первый) | Поиск, сортировка, пагинация; стабильная выдача | `03-catalog-discovery` | 1.1–1.4 | S1 |
+| S2-2 Cart | P0 | localStorage-корзина, группы, add/remove, badge | `04-cart` | 2.1–2.4 | S2-1 |
+| S2-3 Checkout & orders | P0 | Buyer auth, заказ на магазин, snapshot, buyer/seller API+UI | `05-checkout-orders` | 3.1–3.7, 4.1–4.5 | S2-2 |
+| S2-4 Security & evidence | P0 | Authz/PII/logs, browser+API e2e, preview, archive | нет нового behavior | 5.1–5.5 | S2-1–S2-3 |
+
+Архив change — после merge соответствующего PBI: `03` в S2-1, `04` в
+S2-2, `05` в S2-3. S2-4 закрывает спринт отдельным close-PR.
 
 ## Критерии приёмки спринта
 
 - [ ] Покупатель ищет по названию товара/магазина, сортирует по цене и
       новизне, листает страницы; скрытые/черновые товары не видны.
 - [ ] Корзина переживает перезагрузку, группирует товары по магазинам,
-      считает итог; товар можно удалить/очистить.
-- [ ] Checkout требует сессию; без неё — login с возвратом; заказ
-      создаётся на каждый магазин, цена/название — snapshot сервера.
+      считает итог; товар можно удалить/очистить; лимит 50.
+- [ ] Checkout требует сессию; без неё — login с возвратом на
+      `/checkout`; `safeNext` разрешает только внутренние
+      `/checkout`, `/orders`, `/orders/:id`, `/admin`.
+- [ ] Заказ создаётся на каждый магазин; цена/название — snapshot
+      сервера; повтор с `clientCheckoutId` не создаёт дубль.
 - [ ] Покупатель видит только свои заказы; продавец — только заказы
       своего магазина; чужой id → 404, без сессии 401.
+- [ ] Телефон/комментарий заказа не видны публично и не попадают в
+      логи.
 - [ ] Mobile 320 и desktop 1440; loading/empty/error; a11y-фокус,
-      клавиатура, axe light/dark на изменённых страницах.
-- [ ] e2e: dev OTP → каталог → корзина → checkout → заказ → seller view.
+      клавиатура, axe light/dark на всех изменённых страницах.
+- [ ] Browser e2e (Playwright) + API e2e: dev OTP → каталог → корзина →
+      checkout → заказ → seller view; скриншоты/видео evidence.
 - [ ] `pnpm verify`, `openspec validate --all --strict`, preview smoke —
-      зелёные; evidence записан.
-- [ ] Change заархивирован, specs обновлены.
+      зелёные; LCP/бандл-дельта записаны.
+- [ ] Changes заархивированы по PBI, specs обновлены; review/retro.
 
 ## Вне скоупа
 
@@ -51,7 +59,7 @@ Change: `03-buyer-core`.
 - Цифровые товары, S3/фото, категории/фильтры по состоянию.
 - Модерация, жалобы, owner-admin, AI-агент.
 - Реальная SMS-отправка и прод-ключи.
-- Резервирование остатков: stock/quantity в v1 нет.
+- Серверная корзина, резервирование остатков, quantity > 1.
 
 ## Риски и решения
 
@@ -60,35 +68,36 @@ Change: `03-buyer-core`.
   согласий/оферты — отдельный legal-пакет до публичного запуска.
 - **Платёж отсутствует.** Заказ `new` без оплаты; checkout —
   «заявка продавцу». Реальная оплата — Sprint 3.
-- **Корзина stale.** Товар могли снять с публикации/изменить цену;
-  сервер пересчитывает и отклоняет недоступное, snapshot фиксируется
-  при заказе.
+- **Корзина stale.** Сервер пересчитывает и отклоняет недоступное;
+  snapshot фиксируется при заказе.
+- **Дубли заказа.** `clientCheckoutId` + unique(buyer, key) + disabled
+  submit; повтор возвращает существующие заказы.
 - **Гонки.** Нет резерва: два покупателя могут заказать последний товар;
   для v1 допустимо, фиксируем.
-- **localStorage.** Корзина не синхронизируется между устройствами;
-  v1 — один браузер.
-- **Объём.** При перерасходе режем поиск/сортировку или seller UI, не
-  checkout и authz.
+- **Объём.** При перерасходе режем S2-1 (поиск/сортировка) и
+  desktop-полировку seller orders; checkout/authz/401 не режем.
+- **e2e.** Playwright-конфиг/скрипт добавляются в S2-4; до этого
+  browser-smoke вручную. Если CI-браузеры нестабильны, e2e остаётся
+  локальным гейтом с evidence, CI — API e2e.
 
 ## План циклов
 
 1. Catalog: контракты, API search/sort/page, web-контролы, тесты.
 2. Cart: storage/context, add/remove, cart page, badge, тесты.
-3. Checkout API: схема `0003`, contracts, POST /checkout, orders read,
-   seller orders, DB-тесты.
-4. Orders UI: checkout + auth gate, buyer orders, seller orders,
-   responsive/a11y.
-5. Security/evidence: e2e buyer flow, authz/PII/logs, docs, preview.
-6. Buffer/close: archive change, review/retro; при перерасходе — срез
-   скоупа.
+3. Checkout API: `0003`, contracts, POST /checkout, orders read, seller
+   API, DB-тесты, down SQL.
+4. Orders UI: checkout + auth gate, buyer/seller orders, responsive/a11y.
+5. Security/evidence: browser Playwright + API e2e, authz/PII/logs,
+   docs, preview, LCP/бандл.
+6. Buffer/close: archive changes, review/retro.
 
 ## Старт
 
 Владелец дал standing authorization на buyer-core и авто-старт после
-Sprint 1. План и change `03-buyer-core` фиксируются PR; после merge —
-claim S2-1 без отдельной команды.
+Sprint 1. План и changes фиксируются PR; после merge — claim S2-1 без
+отдельной команды.
 
 ## Evidence
 
 Заполняется при сборке: команда, exit code, хвост вывода, commit SHA,
-preview smoke/скриншоты, axe.
+preview smoke/скриншоты, axe, LCP/бандл, e2e (API + browser).

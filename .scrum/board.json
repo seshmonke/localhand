@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-27T03:05:00Z",
+  "updated_at": "2026-11-27T03:13:00Z",
   "tasks": [
     {
       "id": "S2-1",
       "title": "Catalog discovery: search, sort, pagination",
       "status": "ready",
       "owner": null,
-      "change": "03-buyer-core",
+      "change": "03-catalog-discovery",
       "pr": null
     },
     {
@@ -15,31 +15,23 @@
       "title": "Cart: localStorage, groups, badge",
       "status": "ready",
       "owner": null,
-      "change": "03-buyer-core",
+      "change": "04-cart",
       "pr": null
     },
     {
       "id": "S2-3",
-      "title": "Checkout and orders API",
+      "title": "Checkout and orders: API + buyer/seller UI",
       "status": "ready",
       "owner": null,
-      "change": "03-buyer-core",
+      "change": "05-checkout-orders",
       "pr": null
     },
     {
       "id": "S2-4",
-      "title": "Buyer/seller orders UI",
-      "status": "ready",
-      "owner": null,
-      "change": "03-buyer-core",
-      "pr": null
-    },
-    {
-      "id": "S2-5",
       "title": "Security, e2e, evidence, archive",
       "status": "ready",
       "owner": null,
-      "change": "03-buyer-core",
+      "change": null,
       "pr": null
     }
   ]
