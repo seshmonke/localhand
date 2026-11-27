@@ -1,6 +1,6 @@
 import { Button, cn } from "@localhand/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { LogOut, Package, Store } from "lucide-react";
+import { ClipboardList, LogOut, Package, Store } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router";
 import { ApiError, logout } from "../../lib/api.js";
@@ -102,7 +102,7 @@ export function AdminShell() {
 
         <nav
           aria-label="Разделы админки"
-          className="flex gap-2 overflow-x-auto px-4 pb-3 sm:px-6 lg:flex-col lg:px-5 lg:pb-0"
+          className="flex flex-wrap gap-2 px-4 pb-3 sm:px-6 lg:flex-col lg:flex-nowrap lg:px-5 lg:pb-0"
         >
           <AdminNavLink to="/admin/shop" icon={<Store aria-hidden="true" className="size-4" />}>
             Магазин
@@ -112,6 +112,12 @@ export function AdminShell() {
             icon={<Package aria-hidden="true" className="size-4" />}
           >
             Товары
+          </AdminNavLink>
+          <AdminNavLink
+            to="/admin/orders"
+            icon={<ClipboardList aria-hidden="true" className="size-4" />}
+          >
+            Заказы
           </AdminNavLink>
         </nav>
 

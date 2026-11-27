@@ -155,9 +155,7 @@ describe("AdminProductsPage", () => {
     sessionExpired = true;
     await browser.click(loginButton);
 
-    expect(
-      await screen.findByRole("heading", { level: 1, name: "Вход в кабинет" }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: "Вход" })).toBeInTheDocument();
     expect(client.getQueryData(authKeys.me)).toBeUndefined();
     expect(client.getQueryCache().findAll({ queryKey: sellerKeys.all })).toHaveLength(0);
   });

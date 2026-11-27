@@ -20,16 +20,33 @@ afterEach(() => {
 });
 
 describe("safeNext", () => {
-  it("keeps only admin destinations and falls back to /admin", () => {
+  it("keeps admin, checkout and buyer order destinations", () => {
     expect(safeNext("/admin")).toBe("/admin");
     expect(safeNext("/admin/shop")).toBe("/admin/shop");
     expect(safeNext("/admin/products?tab=draft#top")).toBe("/admin/products?tab=draft#top");
+    expect(safeNext("/admin/orders")).toBe("/admin/orders");
+    expect(safeNext("/checkout")).toBe("/checkout");
+    expect(safeNext("/checkout/")).toBe("/checkout/");
+    expect(safeNext("/orders")).toBe("/orders");
+    expect(safeNext("/orders/42")).toBe("/orders/42");
+    expect(safeNext("/orders/42/")).toBe("/orders/42/");
+    expect(safeNext("/orders/42?tab=items#top")).toBe("/orders/42?tab=items#top");
     expect(safeNext(null)).toBe("/admin");
+  });
+
+  it("rejects external, non-allowlisted and looping destinations", () => {
+    expect(safeNext("https://evil.example/orders")).toBe("/admin");
+    expect(safeNext("//evil.example/orders")).toBe("/admin");
+    expect(safeNext("/\\evil.example/orders")).toBe("/admin");
+    expect(safeNext("/%2F%2Fevil.example/orders")).toBe("/admin");
     expect(safeNext("/login")).toBe("/admin");
     expect(safeNext("/login?next=/login")).toBe("/admin");
+    expect(safeNext("/orders/../login")).toBe("/admin");
+    expect(safeNext("/orders//evil")).toBe("/admin");
+    expect(safeNext("/orders/abc")).toBe("/admin");
+    expect(safeNext("/orders/0")).toBe("/admin");
     expect(safeNext("/administrator")).toBe("/admin");
-    expect(safeNext("/admin/../login")).toBe("/admin");
-    expect(safeNext("//evil.example/admin")).toBe("/admin");
+    expect(safeNext("/cart")).toBe("/admin");
   });
 });
 
@@ -62,7 +79,7 @@ describe("LoginPage", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Ваш магазин" }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Вход в кабинет" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Вход" })).not.toBeInTheDocument();
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/auth/me",
@@ -95,7 +112,7 @@ describe("LoginPage", () => {
     await browser.click(screen.getByRole("button", { name: "Войти" }));
 
     expect(await screen.findByText(/Код неверный или истёк/)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Вход в кабинет" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Вход" })).toBeInTheDocument();
     expect(screen.queryByText("Дев-режим")).not.toBeInTheDocument();
   });
 
@@ -113,6 +130,60 @@ describe("LoginPage", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Слишком много запросов");
+  });
+
+  it("uses buyer-neutral copy on the login screen", async () => {
+    installFetchMock({
+      "GET /auth/me": { status: 401, body: { error: "unauthorized" } },
+    });
+
+    renderApp(["/login"]);
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Вход" })).toBeInTheDocument();
+    expect(screen.getByText(/Один вход для покупателей и продавцов/)).toBeInTheDocument();
+    expect(screen.queryByText("Кабинет продавца")).not.toBeInTheDocument();
+  });
+
+  it("returns to buyer orders after login when next points to /orders", async () => {
+    let meCalls = 0;
+    installFetchMock({
+      "GET /auth/me": () => {
+        meCalls += 1;
+        return meCalls === 1
+          ? { status: 401, body: { error: "unauthorized" } }
+          : { body: { user: demoUser } };
+      },
+      "POST /auth/request-code": { body: { ok: true } },
+      "POST /auth/verify-code": { body: { user: demoUser } },
+      "GET /orders/mine": { body: { orders: [] } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/login?next=%2Forders"]);
+
+    await browser.type(screen.getByLabelText("Телефон"), typedPhone);
+    await browser.click(screen.getByRole("button", { name: "Получить код" }));
+    await browser.type(await screen.findByLabelText("Код из сообщения"), "123456");
+    await browser.click(screen.getByRole("button", { name: "Войти" }));
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Заказов пока нет" }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("location")).toHaveTextContent("/orders");
+  });
+
+  it("falls back to the admin for an external next value", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: null } },
+    });
+
+    renderApp(["/login?next=%2F%2Fevil.example%2Forders"]);
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Ваш магазин" }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("location")).toHaveTextContent("/admin/shop");
   });
 
   it("redirects an authenticated seller from /login to the admin", async () => {
@@ -139,7 +210,7 @@ describe("LoginPage", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Ваш магазин" }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Вход в кабинет" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Вход" })).not.toBeInTheDocument();
   });
 
   it("keeps an admin destination from next after login", async () => {

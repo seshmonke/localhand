@@ -30,9 +30,7 @@ describe("admin guard", () => {
 
     renderApp(["/admin/shop"]);
 
-    expect(
-      await screen.findByRole("heading", { level: 1, name: "Вход в кабинет" }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: "Вход" })).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/auth/me",
       expect.objectContaining({ credentials: "include" }),
@@ -158,9 +156,7 @@ describe("AdminShopPage", () => {
     await screen.findByRole("heading", { level: 1, name: "Ваш магазин" });
     await browser.click(screen.getByRole("button", { name: "Выйти" }));
 
-    expect(
-      await screen.findByRole("heading", { level: 1, name: "Вход в кабинет" }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: "Вход" })).toBeInTheDocument();
     expect(loggedIn).toBe(false);
   });
 });

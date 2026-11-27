@@ -11,13 +11,33 @@ import {
   FormField,
 } from "../components/FormField.js";
 import { ApiError, requestCode, verifyCode } from "../lib/api.js";
-import { authKeys, clearSellerQueries, useMeQuery } from "../lib/queries.js";
+import { authKeys, clearBuyerQueries, clearSellerQueries, useMeQuery } from "../lib/queries.js";
 
 const PHONE_HINT = "Российский мобильный: 10 цифр после +7. Пароль не нужен.";
 const PHONE_PLACEHOLDER = "+7 ··· ···-··-··";
 
 const SAFE_NEXT_ORIGIN = "http://local";
+const BUYER_ORDER_PATH = /^\/orders\/[1-9]\d*\/?$/;
 
+function isAllowedNextPath(pathname: string): boolean {
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    return true;
+  }
+  if (pathname === "/checkout" || pathname === "/checkout/") {
+    return true;
+  }
+  if (pathname === "/orders" || pathname === "/orders/") {
+    return true;
+  }
+  return BUYER_ORDER_PATH.test(pathname);
+}
+
+/**
+ * Only internal paths from the allowlist are accepted as a post-login
+ * destination. Protocol-relative URLs, absolute URLs and anything outside
+ * `/admin`, `/checkout`, `/orders` and `/orders/:id` fall back to `/admin`.
+ * The allowlist also prevents a `/login?next=/login` redirect loop.
+ */
 export function safeNext(raw: string | null): string {
   if (!raw || !raw.startsWith("/") || raw.startsWith("//")) {
     return "/admin";
@@ -30,8 +50,7 @@ export function safeNext(raw: string | null): string {
     return "/admin";
   }
 
-  const isAdminPath = url.pathname === "/admin" || url.pathname.startsWith("/admin/");
-  if (url.origin !== SAFE_NEXT_ORIGIN || !isAdminPath) {
+  if (url.origin !== SAFE_NEXT_ORIGIN || !isAllowedNextPath(url.pathname)) {
     return "/admin";
   }
 
@@ -115,7 +134,7 @@ export function LoginPage() {
   const verifyCodeMutation = useMutation({
     mutationFn: verifyCode,
     onSuccess: async (data) => {
-      await clearSellerQueries(queryClient);
+      await Promise.all([clearSellerQueries(queryClient), clearBuyerQueries(queryClient)]);
       queryClient.setQueryData(authKeys.me, { user: data.user });
       void queryClient.invalidateQueries({ queryKey: authKeys.me });
       navigate(next, { replace: true });
@@ -197,13 +216,14 @@ export function LoginPage() {
           </Link>
 
           <p className="mt-8 font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text lg:mt-12">
-            Кабинет продавца
+            Local Hand
           </p>
           <h1 className="mt-3 text-balance font-display text-4xl uppercase leading-[0.95] sm:text-5xl">
-            Вход в кабинет
+            Вход
           </h1>
           <p className="mt-4 max-w-sm text-pretty text-sm leading-relaxed sm:text-base">
-            Введите номер телефона — пришлём код. Пароль не нужен.
+            Один вход для покупателей и продавцов. Введите номер телефона — пришлём код, пароль не
+            нужен.
           </p>
 
           {step === "phone" ? (
