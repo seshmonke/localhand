@@ -34,8 +34,19 @@
 
 ### S1-2 Seller shop
 
-- Статус: `in_progress`, owner `scrum-worker`; ветка `task/S1-2-shop`,
-  lease до 03:30Z.
-- Дальше: API создания/редактирования/публикации своего магазина,
-  уникальный slug, authz-тесты.
+- Сделано: контракты shop/slug, общий session guard, `GET/POST/PATCH
+  /seller/shop`, ленивый seller, публикация, blocked read-only, тесты.
+- Ревью: **APPROVE**; P2-1 blocked и P2-2 смена slug закрыты в `a5f67f1`.
+- `pnpm verify`: exit 0; API 78/78, shared 18/18, web 1/1, OpenSpec 2/2.
+- PR #14 squash-merge `11ca2c0`; evidence:
+  [evidence/S1-2-verify.md](evidence/S1-2-verify.md).
+- S1-2 закрыт; tasks 2.1–2.4 отмечены. Блокеров нет.
+
+## Cycle 3 — 27.11.2026
+
+### S1-3 Products
+
+- Статус: `ready`; brief, worktree и lease создаются перед dispatch.
+- Дальше: контракты product-admin, `GET/POST/PATCH /seller/products`,
+  publish/hide, authz только своего магазина, тесты.
 - Блокеры: нет.
