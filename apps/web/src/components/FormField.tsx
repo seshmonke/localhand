@@ -3,7 +3,7 @@ import { TriangleAlert } from "lucide-react";
 import type { ReactNode } from "react";
 
 export const fieldControlClass =
-  "w-full min-h-12 border-[3px] border-ink bg-paper px-3 py-3 font-body text-base leading-snug text-ink placeholder:text-ink/40 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent-orange aria-invalid:border-accent-red aria-invalid:ring-2 aria-invalid:ring-accent-red/40 disabled:opacity-60";
+  "w-full min-h-12 border-[3px] border-ink bg-paper px-3 py-3 font-body text-base leading-snug text-ink placeholder:text-ink/40 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ink aria-invalid:border-accent-red aria-invalid:ring-2 aria-invalid:ring-accent-red/40 disabled:opacity-60";
 
 type FormFieldProps = {
   id: string;

@@ -47,9 +47,12 @@ export function AdminShell() {
   const queryClient = useQueryClient();
 
   async function finishLogout() {
-    await clearSellerQueries(queryClient);
-    queryClient.removeQueries({ queryKey: authKeys.me });
-    navigate("/login", { replace: true });
+    try {
+      await clearSellerQueries(queryClient);
+    } finally {
+      queryClient.removeQueries({ queryKey: authKeys.me });
+      navigate("/login", { replace: true });
+    }
   }
 
   const logoutMutation = useMutation({

@@ -334,11 +334,11 @@ function ShopOnboarding({ onAnnounce }: ShopFormProps) {
         </div>
       </form>
 
-      <aside className="border-[3px] border-ink bg-ink p-5 text-paper sm:p-6">
+      <aside className="border-[3px] border-ink bg-inverse p-5 text-inverse-text sm:p-6">
         <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-orange">
           Как это работает
         </p>
-        <ol className="mt-4 space-y-4 text-sm leading-relaxed text-paper/85">
+        <ol className="mt-4 space-y-4 text-sm leading-relaxed text-inverse-text/85">
           <li className="flex gap-3">
             <span aria-hidden="true" className="font-mono text-accent-green">
               01
@@ -358,7 +358,7 @@ function ShopOnboarding({ onAnnounce }: ShopFormProps) {
             Опубликуйте магазин — и он появится на витрине.
           </li>
         </ol>
-        <p className="mt-6 border-t-[3px] border-paper/30 pt-4 font-mono text-[10px] uppercase leading-relaxed tracking-wide text-paper/60">
+        <p className="mt-6 border-t-[3px] border-inverse-text/30 pt-4 font-mono text-[10px] uppercase leading-relaxed tracking-wide text-inverse-text/60">
           Slug закрепляется за магазином в публичной ссылке
         </p>
       </aside>

@@ -10,6 +10,8 @@
   --color-accent-red-text: #b3261e;
   --color-accent-orange-text: #9a4a00;
   --color-accent-green-text: #006b45;
+  --color-inverse: #0a0a0a;
+  --color-inverse-text: #ffffff;
 
   --font-display: "Golos Text Variable", "Golos Text", sans-serif;
   --font-body: "Golos Text Variable", "Golos Text", sans-serif;

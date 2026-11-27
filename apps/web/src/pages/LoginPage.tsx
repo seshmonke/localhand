@@ -324,7 +324,7 @@ export function LoginPage() {
         </div>
       </main>
 
-      <aside className="hidden flex-col justify-between bg-ink p-12 text-paper lg:flex">
+      <aside className="hidden flex-col justify-between bg-inverse p-12 text-inverse-text lg:flex">
         <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-orange">
           Local Hand / Seller
         </p>
@@ -332,7 +332,7 @@ export function LoginPage() {
           <p className="text-balance font-display text-5xl font-extrabold uppercase leading-[0.92] xl:text-6xl">
             Свой магазин в общей витрине
           </p>
-          <ul className="mt-10 space-y-4 border-t-[3px] border-paper/40 pt-6 text-sm leading-relaxed text-paper/85">
+          <ul className="mt-10 space-y-4 border-t-[3px] border-inverse-text/40 pt-6 text-sm leading-relaxed text-inverse-text/85">
             <li className="flex gap-3">
               <span aria-hidden="true" className="font-mono text-accent-green">
                 01
@@ -353,7 +353,7 @@ export function LoginPage() {
             </li>
           </ul>
         </div>
-        <p className="font-mono text-[10px] uppercase tracking-wide text-paper/50">© 2026</p>
+        <p className="font-mono text-[10px] uppercase tracking-wide text-inverse-text/50">© 2026</p>
       </aside>
     </div>
   );

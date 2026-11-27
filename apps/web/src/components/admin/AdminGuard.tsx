@@ -35,7 +35,7 @@ function UnauthorizedRedirect({ next }: { next: string }) {
   if (!cleared) {
     return (
       <GuardFrame>
-        <output className="block font-mono text-xs uppercase tracking-[0.2em]">
+        <output aria-live="polite" className="block font-mono text-xs uppercase tracking-[0.2em]">
           Проверяем сессию…
         </output>
       </GuardFrame>
@@ -52,7 +52,7 @@ export function AdminGuard() {
   if (me.isPending) {
     return (
       <GuardFrame>
-        <output className="block font-mono text-xs uppercase tracking-[0.2em]">
+        <output aria-live="polite" className="block font-mono text-xs uppercase tracking-[0.2em]">
           Проверяем сессию…
         </output>
         <div aria-hidden="true" className="mt-6 space-y-3">
