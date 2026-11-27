@@ -9,7 +9,12 @@ import type {
 } from "./provider.js";
 
 export type FakeDeliveryProvider = DeliveryProvider & {
-  setShipmentStatus(providerOrderId: string, statusCode: string, statusName: string): void;
+  setShipmentStatus(
+    providerOrderId: string,
+    statusCode: string,
+    statusName: string,
+    statusDateTime?: string,
+  ): void;
 };
 
 const CITIES: DeliveryCity[] = [
@@ -161,12 +166,17 @@ export function createFakeDeliveryProvider(): FakeDeliveryProvider {
       return null;
     },
 
-    setShipmentStatus(providerOrderId: string, statusCode: string, statusName: string): void {
+    setShipmentStatus(
+      providerOrderId: string,
+      statusCode: string,
+      statusName: string,
+      statusDateTime = new Date().toISOString(),
+    ): void {
       const shipment = shipments.get(providerOrderId);
       if (shipment) {
         shipment.statusCode = statusCode;
         shipment.statusName = statusName;
-        shipment.statusDateTime = new Date().toISOString();
+        shipment.statusDateTime = statusDateTime;
       }
     },
 

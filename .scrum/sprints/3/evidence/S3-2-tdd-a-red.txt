@@ -1,0 +1,27 @@
+# S3-2 PR A RED evidence (excerpts, 2026-11-27)
+
+## Contracts missing
+ FAIL  src/contracts/delivery.test.ts [ src/contracts/delivery.test.ts ]
+Error: Cannot find module './delivery.js' imported from packages/shared/src/contracts/delivery.test.ts
+ FAIL  src/contracts/order.test.ts > OrderSummarySchema > parses an order with items and a null comment
+ FAIL  src/contracts/order.test.ts > order response contracts > parses checkout, list and detail responses
+ FAIL  src/contracts/product-admin.test.ts > create product contract > accepts positive dimensions and rejects zero/negative/fractional values
+ FAIL  src/contracts/product-admin.test.ts > seller product response contract > exposes all fields without timestamps
+ FAIL  src/contracts/product-admin.test.ts > seller product response contract > exposes nullable physical dimensions
+ FAIL  src/contracts/product-admin.test.ts > seller product response contract > wraps the list in a products object
+
+## Delivery modules missing
+ FAIL  src/delivery/fake-provider.test.ts [ src/delivery/fake-provider.test.ts ]
+Error: Cannot find module './fake-provider.js' imported from apps/api/src/delivery/fake-provider.test.ts
+ FAIL  src/delivery/packaging.test.ts [ src/delivery/packaging.test.ts ]
+Error: Cannot find module './packaging.js' imported from apps/api/src/delivery/packaging.test.ts
+ FAIL  src/delivery/quote-token.test.ts [ src/delivery/quote-token.test.ts ]
+Error: Cannot find module './quote-token.js' imported from apps/api/src/delivery/quote-token.test.ts
+      Tests  161 passed | 124 skipped (285)
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+## Env guard missing
+ FAIL  src/app.test.ts [ src/app.test.ts ]
+ FAIL  src/auth/auth.route.test.ts [ src/auth/auth.route.test.ts ]
+ FAIL  src/auth/session-guard.test.ts [ src/auth/session-guard.test.ts ]
+ FAIL  src/payments/log-redaction.test.ts [ src/payments/log-redaction.test.ts ]

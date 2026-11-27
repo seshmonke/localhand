@@ -1,0 +1,7 @@
+# S3-2 PR C RED (mutation: unique event constraint removed)
+ FAIL  src/delivery/shipment.db.test.ts > delivery shipment routes > deduplicates webhooks, rejects spoofed numbers and keeps the latest status
+AssertionError: expected 3 to be 1 // Object.is equality
+ FAIL  src/db/schema.delivery.db.test.ts > delivery schema migration 0006 > creates order_deliveries and delivery_events with idempotency keys
+AssertionError: expected [ Array(29) ] to include 'delivery_events_delivery_status_occur…'
+ FAIL  src/db/schema.delivery.db.test.ts > delivery schema migration 0006 > rejects a duplicate delivery event and cascades on order delete
+AssertionError: promise resolved "Result{ command: 'INSERT', …(9) }" instead of rejecting

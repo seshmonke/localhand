@@ -1,0 +1,14 @@
+# S3-2 property/idempotency RED (mutation checks)
+
+## TTL upper bound removed
+ FAIL  src/delivery/delivery.property.test.ts > quote token (property-based) > rejects every expiry outside the 10 minute window
+Caused by: AssertionError: expected [Function] to throw an error
+      Tests  1 failed | 185 passed | 128 skipped (314)
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+## unique event constraint dropped
+ FAIL  src/db/schema.delivery.db.test.ts > delivery schema migration 0006 > creates order_deliveries and delivery_events with idempotency keys
+AssertionError: expected [ Array(29) ] to include 'delivery_events_delivery_status_occur…'
+ FAIL  src/db/schema.delivery.db.test.ts > delivery schema migration 0006 > rejects a duplicate delivery event and cascades on order delete
+AssertionError: promise resolved "Result{ command: 'INSERT', …(9) }" instead of rejecting
+      Tests  2 failed | 312 passed (314)

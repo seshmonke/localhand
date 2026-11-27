@@ -1,8 +1,8 @@
 # S3-2 delivery — TDD trace
 
 Tier T2. Для каждого AC сначала RED-тест, затем минимальный код, затем
-refactor. Evidence: `S3-2-tdd-a-red.log`, `S3-2-tdd-a-green.log`,
-`S3-2-property-red.log`, `S3-2-tdd-b.md`; журнал в
+refactor. Evidence: `S3-2-tdd-a-red.txt`, `S3-2-tdd-a-green.txt`,
+`S3-2-property-red.txt`, `S3-2-tdd-b.md`; журнал в
 `.scrum/sprints/3/daily.md`.
 
 ## PR A — schema/contracts/provider

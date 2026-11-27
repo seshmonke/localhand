@@ -271,6 +271,25 @@ describe("CDEK delivery provider", () => {
       trackNumber: "1234567890",
     });
     expect(await provider.findShipmentByNumber("missing")).toBeNull();
+
+    const entityFetch = vi
+      .fn()
+      .mockResolvedValueOnce(json({ access_token: "token-1", expires_in: 3599 }))
+      .mockResolvedValueOnce(
+        json({
+          entity: {
+            uuid: "uuid-2",
+            cdek_number: "222",
+            number: "order-43",
+            statuses: [{ code: "CREATED", name: "Создан", date_time: "2026-11-27T16:00:00+0000" }],
+          },
+        }),
+      );
+    const entityProvider = createCdekDeliveryProvider(CONFIG, { fetch: entityFetch });
+    expect(await entityProvider.findShipmentByNumber("order-43")).toMatchObject({
+      providerOrderId: "uuid-2",
+      statusCode: "CREATED",
+    });
   });
 
   it("does not create a third webhook when two already exist", async () => {

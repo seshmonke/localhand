@@ -1,0 +1,10 @@
+# PR B RED evidence
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/delivery/delivery.quote.db.test.ts > delivery quote and checkout > suggests cities and points
+AssertionError: expected 404 to be 200 // Object.is equality
+ FAIL  src/delivery/delivery.quote.db.test.ts > delivery quote and checkout > returns a signed per-shop quote with price and period
+AssertionError: expected 404 to be 200 // Object.is equality
+ FAIL  src/delivery/delivery.quote.db.test.ts > delivery quote and checkout > rejects a PVZ outside the requested city
+AssertionError: expected 404 to be 409 // Object.is equality
+ FAIL  src/delivery/delivery.quote.db.test.ts > delivery quote and checkout > rejects products without dimensions or a shop origin
