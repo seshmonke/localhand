@@ -39,6 +39,7 @@ openspec show <change> --diff
 - [ ] SAST: ручной Semgrep / owner-исключение:
 - [ ] SLO-дизайн/логи (обязательно):
 - [ ] Alert/RUM — owner-исключение до активации:
+- [ ] Field RUM — owner-исключение до публичного запуска:
 - [ ] Runbook/rollback:
 
 ## Проверки

@@ -92,8 +92,8 @@ PLANNING → READY → BUILDING ⇄ BLOCKED → REVIEW → RETRO → CLOSED
 
 | Волна | Когда | Что блокирует merge |
 |---|---|---|
-| 1 | сейчас | TDD/ATDD, contract, property, threat model; mutation — nightly; SAST — ручной/исключение; SLO-дизайн/логи обязательны, alert/RUM — исключение |
-| 1 | после merge Q1.0–Q1.6 | все T2-гейты |
+| 1 | сейчас | TDD/ATDD, contract, property, threat model, runbook/rollback; mutation — nightly; SAST — ручной/исключение; SLO-дизайн/логи обязательны, alert/RUM — исключение |
+| 1 | после merge Q1.0–Q1.6 | все T2-гейты; field RUM — исключение до публичного запуска |
 | 2 | Sprint 5–6 | trunk-based + flags, performance/load, полный incident-процесс |
 | 3 | до публичного запуска | IaC + progressive delivery, ASVS/SBOM/DAST, debt-бюджет |
 
@@ -230,8 +230,9 @@ Read-only к коду/скиллу/спекам; единственная зап
 - [ ] Дейлик, review, retro записаны.
 - [ ] Tier T0/T1/T2 записан в PBI/change; T0 не требует TDD/ATDD.
 - [ ] Для T1/T2 есть ATDD happy/error и RED-evidence до кода.
-- [ ] T2: threat model, contract/property; SLO-дизайн/логи обязательны;
-      mutation/SAST/alert/RUM — по волне.
+- [ ] T2: threat model, contract/property, runbook/rollback;
+      SLO-дизайн/логи обязательны; mutation/SAST/alert/RUM — по волне.
+- [ ] Field RUM — owner-исключение до публичного запуска.
 - [ ] Merge без evidence запрещён; «тесты зелёные» без RED не принимаются.
 - [ ] Исключение: owner, причина, срок, артефакт; просрочка → P1-долг.
 - [ ] P3-долг имеет owner/срок; P0/P1 — postmortem.
