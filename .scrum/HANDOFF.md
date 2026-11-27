@@ -10,7 +10,7 @@
 - S1-1 auth: **done**, PR #12; tasks 1.1–1.6.
 - S1-2 shop: **done**, PR #14; tasks 2.1–2.4.
 - S1-3 products: **done**, PR #16; tasks 3.1–3.4.
-- S1-4 admin UI: **ready**, split:
+- S1-4 admin UI: **in_progress**, 4a owner `scrum-worker`; split:
   - 4a auth + admin shell + shop onboarding/settings — tasks 4.1–4.3 +
     применимые loading/empty/error, mobile/desktop и a11y из 4.5;
   - 4b products table/form — task 4.4 + остаток 4.5 (таблица/карточки,
@@ -56,13 +56,11 @@
 
 ## Текущий шаг
 
-1. Создать ветку `task/S1-4a-admin-auth` от main, бриф
-   `docs/tasks/S1-4a-admin-auth.md` (AC — change tasks 4.1–4.3 +
-   применимые 4.5), worktree и lease.
-2. Dispatch `scrum-worker`: API client с cookie, `/login`, guard
-   `/admin`, onboarding/settings магазина, publish; mobile+desktop, a11y.
-3. Orchestrator: verify → independent review → PR → squash-merge.
-4. Затем S1-4b: products table/form (tasks 4.4–4.5).
+1. `scrum-worker` реализует S1-4a в ветке `task/S1-4a-admin-auth`:
+   API client с cookie, `/login`, guard `/admin`, onboarding/settings
+   магазина, publish; применимые states/layout/a11y; web-тесты.
+2. Orchestrator: verify → independent review → PR → squash-merge.
+3. Затем S1-4b: products table/form (task 4.4 + остаток 4.5).
 
 ## Гигиена
 
