@@ -3,6 +3,7 @@ import { Menu, Search, ShoppingBag } from "lucide-react";
 import { buttonVariants } from "@localhand/ui";
 import { AdminGuard } from "./components/admin/AdminGuard.js";
 import { AdminShell } from "./components/admin/AdminShell.js";
+import { AdminProductEditPage, AdminProductNewPage } from "./pages/AdminProductFormPage.js";
 import { AdminProductsPage } from "./pages/AdminProductsPage.js";
 import { AdminShopPage } from "./pages/AdminShopPage.js";
 import { LoginPage } from "./pages/LoginPage.js";
@@ -109,6 +110,8 @@ export function App() {
             <Route index element={<Navigate to="shop" replace />} />
             <Route path="shop" element={<AdminShopPage />} />
             <Route path="products" element={<AdminProductsPage />} />
+            <Route path="products/new" element={<AdminProductNewPage />} />
+            <Route path="products/:id" element={<AdminProductEditPage />} />
             <Route path="*" element={<Navigate to="shop" replace />} />
           </Route>
         </Route>

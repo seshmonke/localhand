@@ -1,5 +1,12 @@
 import { useQuery, type QueryClient } from "@tanstack/react-query";
-import { fetchCatalog, fetchMe, fetchProduct, fetchSellerShop, fetchShop } from "./api.js";
+import {
+  fetchCatalog,
+  fetchMe,
+  fetchProduct,
+  fetchSellerProducts,
+  fetchSellerShop,
+  fetchShop,
+} from "./api.js";
 
 export const authKeys = {
   me: ["auth", "me"] as const,
@@ -8,6 +15,7 @@ export const authKeys = {
 export const sellerKeys = {
   all: ["seller"] as const,
   shop: ["seller", "shop"] as const,
+  products: ["seller", "products"] as const,
 };
 
 export async function clearSellerQueries(queryClient: QueryClient): Promise<void> {
@@ -27,6 +35,14 @@ export function useSellerShopQuery() {
   return useQuery({
     queryKey: sellerKeys.shop,
     queryFn: fetchSellerShop,
+  });
+}
+
+export function useSellerProductsQuery(enabled = true) {
+  return useQuery({
+    queryKey: sellerKeys.products,
+    queryFn: fetchSellerProducts,
+    enabled,
   });
 }
 

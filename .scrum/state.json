@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": 1,
   "cycle": 5,
-  "updated_at": "2026-11-27T01:50:00Z",
+  "updated_at": "2026-11-27T02:02:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Cycle 5: S1-4a admin auth/shop UI merged (PR #18, f991c93), tasks 4.1–4.3 done. S1-4b products UI next (ready; brief/worktree/lease before dispatch). Sprint 2 pre-authorized: buyer-core, OTP at checkout, dev adapters, local preview, merge autonomy; budget not a stop trigger."
+  "notes": "Cycle 5: S1-4b products admin UI claimed by scrum-worker (branch task/S1-4b-admin-products, brief docs/tasks/S1-4b-admin-products.md, lease to 05:30Z). S1-4a merged (PR #18, f991c93). Sprint 2 pre-authorized: buyer-core, OTP at checkout, dev adapters, local preview, merge autonomy; budget not a stop trigger."
 }

@@ -5,15 +5,14 @@
 ## Состояние
 
 - Репозиторий: https://github.com/seshmonke/localhand, public.
-- main: `f991c93` (S1-4a admin UI, PR #18).
+- main: `79a4997` (S1-4a close + docs); S1-4a code — `f991c93`, PR #18.
 - Sprint 1: **BUILDING**, cycle 5.
 - S1-1 auth: **done**, PR #12; tasks 1.1–1.6.
 - S1-2 shop: **done**, PR #14; tasks 2.1–2.4.
 - S1-3 products: **done**, PR #16; tasks 3.1–3.4.
 - S1-4a admin auth/shop UI: **done**, PR #18; tasks 4.1–4.3.
-- S1-4b products UI: **ready**, не claimed. Перед dispatch: brief
-  `docs/tasks/S1-4b-admin-products.md`, ветка `task/S1-4b-admin-products`,
-  lease `.scrum/locks/S1-4b.json`.
+- S1-4b products UI: **in_progress**, owner `scrum-worker`; ветка
+  `task/S1-4b-admin-products`, lease `.scrum/locks/S1-4b.json` до 05:30Z.
 - S1-5 security/evidence/archive — `ready`.
 
 ## Evidence
@@ -58,13 +57,11 @@
 
 ## Текущий шаг
 
-1. Создать ветку `task/S1-4b-admin-products` от main, бриф
-   `docs/tasks/S1-4b-admin-products.md` (task 4.4 + остаток 4.5), worktree
-   и lease.
-2. Dispatch `scrum-worker`: список/таблица/карточки, форма create/edit,
-   publish/hide, responsive/a11y, web-тесты.
-3. Orchestrator: verify → independent review → PR → squash-merge.
-4. Затем S1-5: security/evidence/e2e/archive.
+1. `scrum-worker` реализует S1-4b в ветке
+   `task/S1-4b-admin-products`: список/таблица/карточки, форма
+   create/edit, publish/hide, responsive/a11y, web-тесты.
+2. Orchestrator: verify → independent review → PR → squash-merge.
+3. Затем S1-5: security/evidence/e2e/archive.
 
 ## Гигиена
 

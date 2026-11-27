@@ -1,5 +1,5 @@
 import { isValidShopSlug, type SellerShop, type UpdateShop } from "@localhand/shared";
-import { Button, buttonVariants, cn } from "@localhand/ui";
+import { Button, cn } from "@localhand/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import { useState, type FormEvent } from "react";
@@ -12,6 +12,7 @@ import {
   FormField,
 } from "../components/FormField.js";
 import { ScreenState } from "../components/ScreenState.js";
+import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
 import { ApiError, createShop, updateShop } from "../lib/api.js";
 import { sellerKeys, useSellerShopQuery } from "../lib/queries.js";
 
@@ -133,21 +134,7 @@ export function AdminShopPage() {
 
 function ShopLoadError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
   if (error instanceof ApiError && error.status === 401) {
-    return (
-      <ScreenState
-        kind="error"
-        title="Сессия истекла"
-        description="Войдите снова, чтобы открыть магазин."
-        action={
-          <Link
-            to={`/login?next=${encodeURIComponent("/admin/shop")}`}
-            className={buttonVariants({ variant: "outline" })}
-          >
-            Войти
-          </Link>
-        }
-      />
-    );
+    return <SessionExpiredState next="/admin/shop" />;
   }
 
   return (
