@@ -1,6 +1,7 @@
 export * from "./contracts/auth.js";
 export * from "./contracts/cart.js";
 export * from "./contracts/catalog.js";
+export * from "./contracts/delivery.js";
 export * from "./contracts/health.js";
 export * from "./contracts/order.js";
 export * from "./contracts/payments.js";
