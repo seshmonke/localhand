@@ -30,11 +30,15 @@ openspec validate --all --strict
 Totals: 7 passed, 0 failed (7 items)
 ```
 
+Лог verify снят до добавления evidence; на финальном дереве
+(273 tracked files) check:public — clean.
+
 ## Browser smoke
 
 Playwright + axe-core, light, 320/1440:
 4 карточки, поиск «куртка» → 1, `q` в URL, `sort=price_asc` в URL,
-overflow 0, axe 0 violations. Raw:
+overflow 0, axe 0 violations; console 404 в 320 — служебный
+favicon, на функциональность не влияет. Raw:
 [S2-1-browser.json](S2-1-browser.json).
 
 - [catalog 1440](S2-1-catalog-1440.png)

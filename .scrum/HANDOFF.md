@@ -5,7 +5,7 @@
 ## Состояние
 
 - Репозиторий: https://github.com/seshmonke/localhand, public.
-- main: `f4783c0` (Sprint 1 archive/close, PR #23).
+- main: `7ab658e` (S2-1 catalog, PR #26); close PR #27.
 - Sprint 1: **CLOSED**, review ACCEPT, retro записан.
 - S1-1…S1-5: **done**; change `02-seller-onboarding` →
   `2026-11-27-02-seller-onboarding`; specs `phone-auth`, `seller-shop`,
@@ -51,6 +51,7 @@
 ## Гигиена
 
 - S1 worktrees/ветки удалены; lease S1-5 снят.
+- S2-1 lease снят; worktree/ветка `task/S2-1-catalog` удалены.
 - Время в `.scrum/**` — UTC.
 
 ## Полезное
