@@ -30,6 +30,10 @@ test("seller connects fake payments, buyer pays, seller sees paid", async ({
   browser,
   request,
 }, testInfo) => {
+  test.skip(
+    process.env.PLAYWRIGHT_BASE_URL?.includes(":4173") === true,
+    "fake OAuth/complete pages are dev-only; preview covers payment UI via API-seeded states",
+  );
   test.slow();
 
   const catalog = await createPublishedCatalog(request, ["E2E Оплата"]);

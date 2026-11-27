@@ -1,0 +1,79 @@
+
+ RUN  v5.1.2 apps/web
+
+ ❯ src/pages/OrderPage.test.tsx (18 tests | 1 failed | 17 skipped) 1164ms
+   ❯ OrderPage (18)
+     × refetches the order after a canceled payment and restores retry without reload 1162ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/pages/OrderPage.test.tsx > OrderPage > refetches the order after a canceled payment and restores retry without reload
+TestingLibraryElementError: Unable to find role="button" and name "Оплатить снова"
+
+Ignored nodes: comments, script, style
+[36m<section[39m
+  [33maria-labelledby[39m=[32m"order-payment-title"[39m
+  [33mclass[39m=[32m"border-[3px] border-ink bg-paper text-ink p-4 sm:p-6"[39m
+[36m>[39m
+  [36m<h2[39m
+    [33mclass[39m=[32m"font-mono text-[10px] uppercase tracking-[0.2em]"[39m
+    [33mid[39m=[32m"order-payment-title"[39m
+  [36m>[39m
+    [0mОплата[0m
+  [36m</h2>[39m
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4 text-sm font-semibold leading-relaxed"[39m
+  [36m>[39m
+    [0mОплата отменена[0m
+  [36m</p>[39m
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 text-sm leading-relaxed"[39m
+  [36m>[39m
+    [0mПлатёж не прошёл. Можно попробовать снова или связаться с продавцом.[0m
+  [36m</p>[39m
+[36m</section>[39m
+
+Ignored nodes: comments, script, style
+[36m<section[39m
+  [33maria-labelledby[39m=[32m"order-payment-title"[39m
+  [33mclass[39m=[32m"border-[3px] border-ink bg-paper text-ink p-4 sm:p-6"[39m
+[36m>[39m
+  [36m<h2[39m
+    [33mclass[39m=[32m"font-mono text-[10px] uppercase tracking-[0.2em]"[39m
+    [33mid[39m=[32m"order-payment-title"[39m
+  [36m>[39m
+    [0mОплата[0m
+  [36m</h2>[39m
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-4 text-sm font-semibold leading-relaxed"[39m
+  [36m>[39m
+    [0mОплата отменена[0m
+  [36m</p>[39m
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 text-sm leading-relaxed"[39m
+  [36m>[39m
+    [0mПлатёж не прошёл. Можно попробовать снова или связаться с продавцом.[0m
+  [36m</p>[39m
+[36m</section>[39m
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/pages/OrderPage.test.tsx:226:48
+    224|     const paymentSection = await screen.findByRole("region", { name: "…
+    225|     expect(await within(paymentSection).findByText("Оплата отменена"))…
+    226|     const retry = await within(paymentSection).findByRole("button", {
+       |                                                ^
+    227|       name: "Оплатить снова",
+    228|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 skipped (18)
+   Start at  18:51:00
+   Duration  2.48s (tests 49%, environment 22%, import 17%, transform 7%, setup 4%)
+
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in apps/web
+

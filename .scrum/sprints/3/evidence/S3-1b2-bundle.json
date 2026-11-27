@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-27T18:40:00.000Z",
+  "generated_at": "2026-11-27T15:50:51Z",
   "source": "NODE_ENV=production pnpm --filter @localhand/web build (Vite 8.4.0)",
   "baseline": {
     "ref": "S2-4-bundle: 553.65 kB JS / 157.42 kB gzip; CSS 39.95 / 10.92 gzip",
@@ -14,18 +14,18 @@
     "gzip_kb": 163.53
   },
   "current": {
-    "js_kb": 577.79,
-    "gzip_kb": 163.95,
+    "js_kb": 577.89,
+    "gzip_kb": 164.0,
     "css_kb": 41.81,
     "css_gzip_kb": 11.26,
-    "js_file": "dist/assets/index-DpafirEb.js",
+    "js_file": "dist/assets/index-CzQA0O9l.js",
     "css_file": "dist/assets/index-IXrRiIs-.css"
   },
   "delta": {
-    "js_kb_vs_s2_4": 24.14,
-    "js_percent_vs_s2_4": 4.36,
-    "gzip_kb_vs_s2_4": 6.53,
-    "gzip_percent_vs_s2_4": 4.15,
+    "js_kb_vs_s2_4": 24.24,
+    "js_percent_vs_s2_4": 4.38,
+    "gzip_kb_vs_s2_4": 6.58,
+    "gzip_percent_vs_s2_4": 4.18,
     "js_kb_vs_previous": 2.48,
     "gzip_kb_vs_previous": 0.42,
     "budget": "<= +10% and <= +20 kB gzip",

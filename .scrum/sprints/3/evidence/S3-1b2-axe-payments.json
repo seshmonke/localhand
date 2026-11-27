@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-27T15:29:54.569Z",
+  "generated_at": "2026-11-27T15:50:27.466Z",
   "base": "http://127.0.0.1:4173",
   "tags": [
     "wcag2a",
@@ -9,7 +9,7 @@
     "wcag22a",
     "wcag22aa"
   ],
-  "orderId": 78,
+  "orderId": 110,
   "scans": {
     "admin-shop-320-light": {
       "url": "http://127.0.0.1:4173/admin/shop",
@@ -28,7 +28,7 @@
       "violations": []
     },
     "admin-order-320-light": {
-      "url": "http://127.0.0.1:4173/admin/orders/78",
+      "url": "http://127.0.0.1:4173/admin/orders/110",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -36,7 +36,7 @@
       "violations": []
     },
     "order-320-light": {
-      "url": "http://127.0.0.1:4173/orders/78",
+      "url": "http://127.0.0.1:4173/orders/110",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -60,7 +60,7 @@
       "violations": []
     },
     "admin-order-320-dark": {
-      "url": "http://127.0.0.1:4173/admin/orders/78",
+      "url": "http://127.0.0.1:4173/admin/orders/110",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -68,7 +68,7 @@
       "violations": []
     },
     "order-320-dark": {
-      "url": "http://127.0.0.1:4173/orders/78",
+      "url": "http://127.0.0.1:4173/orders/110",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -92,7 +92,7 @@
       "violations": []
     },
     "admin-order-1440-light": {
-      "url": "http://127.0.0.1:4173/admin/orders/78",
+      "url": "http://127.0.0.1:4173/admin/orders/110",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -100,7 +100,7 @@
       "violations": []
     },
     "order-1440-light": {
-      "url": "http://127.0.0.1:4173/orders/78",
+      "url": "http://127.0.0.1:4173/orders/110",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -124,7 +124,7 @@
       "violations": []
     },
     "admin-order-1440-dark": {
-      "url": "http://127.0.0.1:4173/admin/orders/78",
+      "url": "http://127.0.0.1:4173/admin/orders/110",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -132,7 +132,7 @@
       "violations": []
     },
     "order-1440-dark": {
-      "url": "http://127.0.0.1:4173/orders/78",
+      "url": "http://127.0.0.1:4173/orders/110",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"

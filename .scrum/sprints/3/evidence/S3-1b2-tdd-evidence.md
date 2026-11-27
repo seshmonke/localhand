@@ -233,7 +233,7 @@ pnpm --filter @localhand/api test                                       # 271 pa
 
 ```text
 pnpm verify → exit 0
-shared 139, web 154, api 271, openspec 8/8, public repo 467 files (final, evidence included)
+shared 139, web 154, api 271, openspec 8/8, public repo 469 files (final, evidence included)
 production build: no DevPayments chunks, no /dev/payments route strings
 ```
 
@@ -251,3 +251,11 @@ bundle: 577.79 kB JS / 163.95 gzip (+4.36% / +6.53 kB vs S2-4; within budget)
 устанавливались. Именованное owner-исключение до появления SAST в CI
 зафиксировано в `docs/quality/threat-model.md`. Stryker mutation в B2 не
 добавляется — owner exception до Q1.3 (там же).
+
+## Follow-up P2: canceled payment refetches order
+
+- RED: [S3-1b2-tdd-canceled-red.txt](S3-1b2-tdd-canceled-red.txt) —
+  без order-refetch `GET order` остаётся `payment_pending`, кнопка
+  «Оплатить снова» не появляется; 1 failed / 17 skipped.
+- GREEN: [S3-1b2-tdd-canceled-green.txt](S3-1b2-tdd-canceled-green.txt) —
+  эффект перечитывает заказ, кнопка появляется; 1 passed / 17 skipped.
