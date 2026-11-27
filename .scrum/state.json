@@ -3,9 +3,9 @@
   "phase": "BUILDING",
   "init_closed": true,
   "sprint": 3,
-  "cycle": 1,
-  "updated_at": "2026-11-27T11:50:00Z",
+  "cycle": 3,
+  "updated_at": "2026-11-27T13:22:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 3 money-path approved by owner 27.11.2026: payments (YooKassa sandbox), CDEK test contour, order lifecycle, S2 hardening. Cycle 1: planning + 06-payments OpenSpec change. No real keys/money/address PII. Sprint 3 plan docs/tasks/03-money-path.md."
+  "notes": "Sprint 3 cycle 3: S3-1 PR B1 payments flow in progress (branch task/S3-1b-payments-flow): seller account connect/callback, payment create/read, webhook, reconcile, fake-complete, API tests. UI/ADR/e2e in B2. PR A foundation merged 732d2cb. No real keys; fake path."
 }

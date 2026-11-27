@@ -36,3 +36,39 @@
 - Перепланирование не нужно.
 - Владелец нужен для тестовых ключей ЮKassa/СДЭК и юридического
   контура, но старт не блокируется.
+
+## Cycle 2 — 27.11.2026
+
+### S3-1 Payments foundation (PR A)
+
+- `06-payments` APPROVE после 5 раундов; planning PR #37 merge `b0bd5c4`.
+- Worker: миграция `0004`, контракты, crypto keyring, provider
+  interface/fake, env guard, down SQL/runbook. Без routes/UI.
+- Ветка `task/S3-1-payments`, PR #39.
+- Verify: shared 127, web 114, api 204, OpenSpec 8/8, public 401.
+- Review #1: REQUEST_CHANGES — P1 default `active`, P1 URL schemes;
+  P2 DB-тесты ограничений, reconcile attempts/index, live https,
+  AC brief. Исправлено; `0004` восстановлена, новые поля в
+  идемпотентной `0005`.
+- Review #2/#3: APPROVE; PR A merge `732d2cb` (PR #39).
+- Дальше: PR B flow в cycle 3.
+- Блокеры: нет; тестовые ключи ЮKassa нужны только для live smoke.
+
+### Дизайн-фикс витрины (вне PBI)
+
+- Владелец согласовал плоские карточки: одна рамка 3px, без тени
+  и внутренней рамки изображения, gap 16/24, hover-подчёркивание.
+- PR #40 `fix(web): flatten product cards`; review 3 раунда (focus,
+  CTA 320, skeleton), merge `26e321e`; verify/e2e 6/6, preview LCP
+  612/792, axe shop.
+- App перезапущен на `main`; 5173/3000. Далее — PR B payments flow.
+
+## Cycle 3 — 27.11.2026
+
+### S3-1 Payments flow (PR B1)
+
+- Foundation PR A смержен `732d2cb`; миграции `0004`/`0005` в main.
+- B1: seller connect/callback/account, create/read payment, webhook,
+  reconcile, fake-complete, API/DB tests. UI — B2.
+- Ветка `task/S3-1b-payments-flow`, lease до 20:00Z.
+- Блокеры: реальные ключи ЮKassa не нужны для fake; live smoke позже.
