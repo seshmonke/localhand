@@ -144,7 +144,7 @@ export function MarketplacePage() {
           </div>
 
           <div className="hidden items-center justify-center lg:flex">
-            <div className="w-full max-w-md border-[3px] border-ink bg-ink p-8 text-paper shadow-brutal">
+            <div className="w-full max-w-md border-[3px] border-ink bg-inverse p-8 text-inverse-text shadow-brutal">
               <p className="font-mono text-xs uppercase tracking-[0.24em] text-accent-orange">
                 Local Hand / v1
               </p>
@@ -155,7 +155,7 @@ export function MarketplacePage() {
                 <br />
                 историей
               </p>
-              <div className="mt-10 grid grid-cols-2 gap-3 border-t-[3px] border-paper/40 pt-5 font-mono text-[10px] uppercase tracking-wide">
+              <div className="mt-10 grid grid-cols-2 gap-3 border-t-[3px] border-inverse-text/40 pt-5 font-mono text-[10px] uppercase tracking-wide">
                 <span>Свой магазин</span>
                 <span className="text-right text-accent-orange">Общая витрина</span>
                 <span>Физические</span>
@@ -367,7 +367,7 @@ export function MarketplacePage() {
         </div>
       </section>
 
-      <section id="sellers" className="bg-ink text-paper">
+      <section id="sellers" className="bg-inverse text-inverse-text">
         <div className="mx-auto grid max-w-[1440px] gap-8 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1fr_auto] lg:items-center lg:px-10">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-green">
@@ -376,7 +376,7 @@ export function MarketplacePage() {
             <h2 className="mt-3 max-w-2xl font-display text-3xl uppercase sm:text-5xl">
               Свой магазин. Общая витрина. Без комиссии с продаж.
             </h2>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-paper/80 sm:text-base">
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-inverse-text/80 sm:text-base">
               Подключите ЮKassa, загрузите товары и получите ссылку на магазин. Local Hand приведёт
               покупателей и покажет заказы в одной админке.
             </p>
