@@ -29,3 +29,7 @@
 {"ts":"2026-11-27T03:05:00Z","type":"planning","sprint":2,"goal":"Покупатель находит товар, собирает корзину и оформляет заказ продавцу; продавец видит заказ","change":"03-buyer-core","status":"ready","human_gate":null}
 {"ts":"2026-11-27T03:12:00Z","type":"planning_update","sprint":2,"changes":["03-catalog-discovery","04-cart","05-checkout-orders"],"pbi":4,"cycles":"4-6","status":"ready"}
 {"ts":"2026-11-27T03:22:00Z","type":"claim","sprint":2,"cycle":1,"task":"S2-1","owner":"scrum-worker","branch":"task/S2-1-catalog","change":"03-catalog-discovery","lease":".scrum/locks/S2-1.json"}
+{"ts":"2026-11-27T03:51:00Z","type":"review","sprint":2,"task":"S2-1","pr":26,"verdict":"APPROVE","reviewer":"scrum-reviewer","head":"7b42080","note":"P2 NUL and P3 id/page/focus fixed"}
+{"ts":"2026-11-27T03:51:30Z","type":"merge","sprint":2,"task":"S2-1","pr":26,"merge_commit":"7ab658e","status":"done"}
+{"ts":"2026-11-27T03:52:00Z","type":"archive","sprint":2,"change":"03-catalog-discovery","archive":"2026-11-27-03-catalog-discovery","specs":["catalog-discovery"]}
+{"ts":"2026-11-27T03:52:30Z","type":"phase","sprint":2,"cycle":2,"from":"cycle_1","to":"cycle_2","task":"S2-2"}

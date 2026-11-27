@@ -53,3 +53,6 @@
 - 27.11.2026. Sprint 2 спланирован: buyer-core — каталог/поиск/сортировка,
   корзина, checkout/orders, seller orders; changes `03-catalog-discovery`, `04-cart`, `05-checkout-orders`, 4 PBI,
   4–6 циклов; без реальных платежей/доставки. Sprint 2.
+- 27.11.2026. S2-1 catalog discovery смержен (PR #26, `7ab658e`):
+  поиск/сортировка/пагинация, change `03` заархивирован. Следующий —
+  S2-2 cart. Sprint 2.

@@ -25,9 +25,9 @@ ACCEPT, change `02-seller-onboarding` заархивирован.
 - [Спринт 1: онбординг продавца + auth](01-seller-onboarding.md) —
   CLOSED 27.11.2026; S1-1…S1-5 (PR #12/#14/#16/#18/#20/#22), specs
   phone-auth/seller-shop/product-management.
-- [Спринт 2: buyer-core](02-buyer-core.md) — READY, changes
-  `03-catalog-discovery`, `04-cart`, `05-checkout-orders`: каталог,
-  корзина, checkout/orders, seller orders. Закрыт: —.
+- [Спринт 2: buyer-core](02-buyer-core.md) — BUILDING, cycle 2, changes
+  `03-catalog-discovery` (заархивирован), `04-cart`, `05-checkout-orders`:
+  каталог, корзина, checkout/orders, seller orders. Закрыт: —.
 
 ## Бэклог
 

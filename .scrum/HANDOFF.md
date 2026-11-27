@@ -1,4 +1,4 @@
-# Handoff: Sprint 2, cycle 1 — S2-1 catalog
+# Handoff: Sprint 2, cycle 2 — S2-2 cart
 
 Дата: 2026-11-27. Sprint 1 закрыт и заархивирован.
 
@@ -10,10 +10,11 @@
 - S1-1…S1-5: **done**; change `02-seller-onboarding` →
   `2026-11-27-02-seller-onboarding`; specs `phone-auth`, `seller-shop`,
   `product-management` созданы.
-- Sprint 2: **BUILDING**, cycle 1; changes `03-catalog-discovery`,
-  `04-cart`, `05-checkout-orders`; 4 PBI.
-- S2-1 catalog: **in_progress**, owner `scrum-worker`; ветка
-  `task/S2-1-catalog`, lease до 07:00Z.
+- Sprint 2: **BUILDING**, cycle 2; `03-catalog-discovery` archived;
+  `04-cart`, `05-checkout-orders` active.
+- S2-1 catalog: **done**, PR #26; change `03` archived.
+- S2-2 cart: **ready**, не claimed. Перед dispatch: brief
+  `docs/tasks/S2-2-cart.md`, ветка `task/S2-2-cart`, lease.
 
 ## Evidence S1
 
@@ -42,10 +43,10 @@
 
 ## Следующий шаг
 
-1. `scrum-worker` реализует S2-1: контракты, API search/sort/page,
-   web-контролы, тесты.
-2. Orchestrator: verify → review → PR → merge/archive `03`.
-3. S2-2 cart → S2-3 checkout/orders → S2-4 security/close.
+1. Claim S2-2: brief `docs/tasks/S2-2-cart.md`, ветка
+   `task/S2-2-cart`, worktree/lease; dispatch.
+2. Orchestrator: verify → review → PR → merge/archive `04`.
+3. S2-3 checkout/orders → S2-4 security/close.
 
 ## Гигиена
 
