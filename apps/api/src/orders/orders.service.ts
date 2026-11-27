@@ -1,7 +1,18 @@
-import type { AuthUser, Checkout, OrderItem, OrderStatus, OrderSummary } from "@localhand/shared";
+import {
+  orderTotalKopecks,
+  type AuthUser,
+  type Checkout,
+  type DeliveryQuoteShop,
+  type DeliverySnapshot,
+  type OrderItem,
+  type OrderStatus,
+  type OrderSummary,
+} from "@localhand/shared";
 import { and, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { requireDb } from "../db/client.js";
-import { orderItems, orders, products, sellers, shops } from "../db/schema.js";
+import { orderDeliveries, orderItems, orders, products, sellers, shops } from "../db/schema.js";
+import { deliverySettings } from "../env.js";
+import { hashProductIds, verifyQuoteToken } from "../delivery/quote-token.js";
 
 function matchAll(...conditions: SQL[]): SQL {
   const where = and(...conditions);
@@ -71,7 +82,93 @@ async function loadItemsByOrder(orderIds: number[]): Promise<Map<number, OrderIt
   return itemsByOrder;
 }
 
-function toOrderSummary(row: OrderRow, items: OrderItem[]): OrderSummary {
+type DeliveryRow = {
+  orderId: number;
+  provider: string;
+  status: DeliverySnapshot["status"];
+  cityCode: number;
+  cityName: string;
+  pointCode: string;
+  pointAddress: string;
+  recipientName: string;
+  tariffCode: string | null;
+  tariffName: string | null;
+  priceKopecks: number;
+  periodMin: number | null;
+  periodMax: number | null;
+  providerOrderId: string | null;
+  providerNumber: string | null;
+  carrier: string | null;
+  trackNumber: string | null;
+  lastStatusCode: string | null;
+  lastStatusAt: Date | null;
+};
+
+function toDeliverySnapshot(row: DeliveryRow): DeliverySnapshot {
+  return {
+    provider: row.provider as DeliverySnapshot["provider"],
+    status: row.status,
+    cityCode: row.cityCode,
+    cityName: row.cityName,
+    pointCode: row.pointCode,
+    pointAddress: row.pointAddress,
+    recipientName: row.recipientName,
+    tariffCode: row.tariffCode,
+    tariffName: row.tariffName,
+    priceKopecks: row.priceKopecks,
+    periodMin: row.periodMin,
+    periodMax: row.periodMax,
+    providerOrderId: row.providerOrderId,
+    providerNumber: row.providerNumber,
+    carrier: row.carrier,
+    trackNumber: row.trackNumber,
+    lastStatusCode: row.lastStatusCode,
+    lastStatusAt: row.lastStatusAt?.toISOString() ?? null,
+  };
+}
+
+async function loadDeliveriesByOrder(orderIds: number[]): Promise<Map<number, DeliverySnapshot>> {
+  const deliveriesByOrder = new Map<number, DeliverySnapshot>();
+  if (orderIds.length === 0) {
+    return deliveriesByOrder;
+  }
+
+  const rows: DeliveryRow[] = await requireDb()
+    .select({
+      orderId: orderDeliveries.orderId,
+      provider: orderDeliveries.provider,
+      status: orderDeliveries.status,
+      cityCode: orderDeliveries.cityCode,
+      cityName: orderDeliveries.cityName,
+      pointCode: orderDeliveries.pointCode,
+      pointAddress: orderDeliveries.pointAddress,
+      recipientName: orderDeliveries.recipientName,
+      tariffCode: orderDeliveries.providerTariffCode,
+      tariffName: orderDeliveries.tariffName,
+      priceKopecks: orderDeliveries.priceKopecks,
+      periodMin: orderDeliveries.periodMin,
+      periodMax: orderDeliveries.periodMax,
+      providerOrderId: orderDeliveries.providerOrderId,
+      providerNumber: orderDeliveries.providerNumber,
+      carrier: orderDeliveries.carrier,
+      trackNumber: orderDeliveries.trackNumber,
+      lastStatusCode: orderDeliveries.lastStatusCode,
+      lastStatusAt: orderDeliveries.lastStatusAt,
+    })
+    .from(orderDeliveries)
+    .where(inArray(orderDeliveries.orderId, orderIds));
+
+  for (const row of rows) {
+    deliveriesByOrder.set(row.orderId, toDeliverySnapshot(row));
+  }
+  return deliveriesByOrder;
+}
+
+function toOrderSummary(
+  row: OrderRow,
+  items: OrderItem[],
+  delivery: DeliverySnapshot | null,
+): OrderSummary {
   return {
     id: row.id,
     shop: { slug: row.shopSlug, name: row.shopName },
@@ -80,7 +177,7 @@ function toOrderSummary(row: OrderRow, items: OrderItem[]): OrderSummary {
     buyerPhone: row.buyerPhone,
     comment: row.comment,
     createdAt: row.createdAt.toISOString(),
-    delivery: null,
+    delivery,
     items,
   };
 }
@@ -94,8 +191,12 @@ async function loadOrderSummaries(where: SQL): Promise<OrderSummary[]> {
     .where(where)
     .orderBy(desc(orders.createdAt), desc(orders.id));
 
-  const itemsByOrder = await loadItemsByOrder(rows.map((row) => row.id));
-  return rows.map((row) => toOrderSummary(row, itemsByOrder.get(row.id) ?? []));
+  const orderIds = rows.map((row) => row.id);
+  const itemsByOrder = await loadItemsByOrder(orderIds);
+  const deliveriesByOrder = await loadDeliveriesByOrder(orderIds);
+  return rows.map((row) =>
+    toOrderSummary(row, itemsByOrder.get(row.id) ?? [], deliveriesByOrder.get(row.id) ?? null),
+  );
 }
 
 async function findOrdersByClientCheckoutId(
@@ -108,8 +209,11 @@ async function findOrdersByClientCheckoutId(
   return summaries.sort((left, right) => left.id - right.id);
 }
 
+export type CheckoutError =
+  "product_unavailable" | "delivery_required" | "delivery_unavailable" | "delivery_quote_stale";
+
 export type CheckoutResult =
-  { ok: true; orders: OrderSummary[] } | { ok: false; error: "product_unavailable" };
+  { ok: true; orders: OrderSummary[] } | { ok: false; error: CheckoutError };
 
 type PublishedProductRow = {
   id: number;
@@ -129,7 +233,12 @@ function normalizeComment(comment: string | undefined): string | null {
 }
 
 type CheckoutTransactionResult =
-  { kind: "existing" } | { kind: "unavailable" } | { kind: "created"; orders: OrderSummary[] };
+  | { kind: "existing" }
+  | { kind: "unavailable" }
+  | { kind: "delivery_required" }
+  | { kind: "delivery_unavailable" }
+  | { kind: "delivery_quote_stale" }
+  | { kind: "created"; orders: OrderSummary[] };
 
 /**
  * Creates one order per shop in a single transaction. Any product or shop that
@@ -151,6 +260,8 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
   const clientCheckoutId = input.clientCheckoutId.toLowerCase();
   const lockKey = `${user.id}:${clientCheckoutId}`;
 
+  const delivery = input.delivery ?? null;
+
   try {
     const result = await requireDb().transaction(async (tx): Promise<CheckoutTransactionResult> => {
       await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`);
@@ -161,8 +272,33 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
         .where(and(eq(orders.buyerUserId, user.id), eq(orders.clientCheckoutId, clientCheckoutId)))
         .limit(1);
 
+      // A replay must return the orders created by the first request even if
+      // the quote has expired or the cart changed since then. Delivery is
+      // validated only for a new order.
       if (existingOrder) {
         return { kind: "existing" };
+      }
+
+      if (deliverySettings && !delivery) {
+        return { kind: "delivery_required" };
+      }
+
+      let quoteByShop: Map<number, DeliveryQuoteShop> | null = null;
+      let quotePayload: ReturnType<typeof verifyQuoteToken> = null;
+      if (delivery) {
+        if (!deliverySettings) {
+          return { kind: "delivery_unavailable" };
+        }
+        quotePayload = verifyQuoteToken(delivery.quoteToken, deliverySettings.quoteSecret);
+        if (
+          !quotePayload ||
+          quotePayload.productHash !== hashProductIds(productIds) ||
+          quotePayload.cityCode !== delivery.cityCode ||
+          quotePayload.pointCode !== delivery.pointCode
+        ) {
+          return { kind: "delivery_quote_stale" };
+        }
+        quoteByShop = new Map(quotePayload.shops.map((shop) => [shop.shopId, shop]));
       }
 
       const productRows: PublishedProductRow[] = await tx
@@ -209,9 +345,24 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
         groups.set(row.shopId, group);
       }
 
+      if (quoteByShop && quoteByShop.size !== groups.size) {
+        return { kind: "delivery_quote_stale" };
+      }
+      for (const group of groups.values()) {
+        if (quoteByShop && !quoteByShop.has(group.shopId)) {
+          return { kind: "delivery_quote_stale" };
+        }
+      }
+
       const summaries: OrderSummary[] = [];
       for (const group of [...groups.values()].sort((left, right) => left.shopId - right.shopId)) {
-        const totalKopecks = group.items.reduce((sum, product) => sum + product.priceKopecks, 0);
+        const itemsTotalKopecks = group.items.reduce(
+          (sum, product) => sum + product.priceKopecks,
+          0,
+        );
+        const quote = quoteByShop?.get(group.shopId) ?? null;
+        const deliveryKopecks = quote?.priceKopecks ?? 0;
+        const totalKopecks = orderTotalKopecks(itemsTotalKopecks, deliveryKopecks);
 
         const [order] = await tx
           .insert(orders)
@@ -219,6 +370,7 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
             buyerUserId: user.id,
             shopId: group.shopId,
             totalKopecks,
+            deliveryKopecks,
             buyerPhone,
             comment,
             clientCheckoutId,
@@ -246,6 +398,47 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
           })),
         );
 
+        let deliverySnapshot: DeliverySnapshot | null = null;
+        if (quote && delivery && quotePayload) {
+          deliverySnapshot = {
+            provider: deliverySettings!.provider,
+            status: "quoted",
+            cityCode: quotePayload.cityCode,
+            cityName: quotePayload.cityName,
+            pointCode: quotePayload.pointCode,
+            pointAddress: quotePayload.pointAddress,
+            recipientName: delivery.recipientName,
+            tariffCode: quote.tariffCode,
+            tariffName: quote.tariffName,
+            priceKopecks: quote.priceKopecks,
+            periodMin: quote.periodMin,
+            periodMax: quote.periodMax,
+            providerOrderId: null,
+            providerNumber: null,
+            carrier: null,
+            trackNumber: null,
+            lastStatusCode: null,
+            lastStatusAt: null,
+          };
+
+          await tx.insert(orderDeliveries).values({
+            orderId: order.id,
+            provider: deliverySnapshot.provider,
+            status: "quoted",
+            cityCode: deliverySnapshot.cityCode,
+            cityName: deliverySnapshot.cityName,
+            pointCode: deliverySnapshot.pointCode,
+            pointAddress: deliverySnapshot.pointAddress,
+            recipientName: deliverySnapshot.recipientName,
+            recipientPhone: buyerPhone,
+            providerTariffCode: deliverySnapshot.tariffCode,
+            tariffName: deliverySnapshot.tariffName,
+            priceKopecks: deliverySnapshot.priceKopecks,
+            periodMin: deliverySnapshot.periodMin,
+            periodMax: deliverySnapshot.periodMax,
+          });
+        }
+
         summaries.push(
           toOrderSummary(
             {
@@ -259,6 +452,7 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
               priceKopecks: product.priceKopecks,
               quantity: 1,
             })),
+            deliverySnapshot,
           ),
         );
       }
@@ -275,6 +469,18 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
 
     if (result.kind === "unavailable") {
       return { ok: false, error: "product_unavailable" };
+    }
+    if (result.kind === "delivery_required") {
+      return { ok: false, error: "delivery_required" };
+    }
+    if (result.kind === "delivery_unavailable") {
+      return { ok: false, error: "delivery_unavailable" };
+    }
+    if (result.kind === "delivery_quote_stale") {
+      return { ok: false, error: "delivery_quote_stale" };
+    }
+    if (result.kind !== "created") {
+      throw new Error("unexpected checkout result");
     }
 
     return { ok: true, orders: result.orders };

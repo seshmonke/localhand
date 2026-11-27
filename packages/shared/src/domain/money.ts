@@ -23,3 +23,21 @@ export function formatRubles(value: Kopecks): string {
     minimumFractionDigits: 0,
   }).format(value / KOPECKS_PER_RUBBLE);
 }
+
+/**
+ * Checkout invariant: the order total is exactly the item snapshot plus the
+ * server-signed delivery price. Both inputs are non-negative safe integers.
+ */
+export function orderTotalKopecks(itemsKopecks: number, deliveryKopecks: number): number {
+  if (!Number.isSafeInteger(itemsKopecks) || itemsKopecks < 0) {
+    throw new Error("itemsKopecks must be a non-negative safe integer");
+  }
+  if (!Number.isSafeInteger(deliveryKopecks) || deliveryKopecks < 0) {
+    throw new Error("deliveryKopecks must be a non-negative safe integer");
+  }
+  const total = itemsKopecks + deliveryKopecks;
+  if (!Number.isSafeInteger(total)) {
+    throw new Error("order total exceeds the safe integer range");
+  }
+  return total;
+}
