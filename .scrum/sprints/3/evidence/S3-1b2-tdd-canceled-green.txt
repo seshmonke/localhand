@@ -1,0 +1,9 @@
+
+ RUN  v5.1.2 apps/web
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 17 skipped (18)
+   Start at  18:51:03
+   Duration  1.45s (environment 37%, import 30%, tests 16%, transform 10%, setup 7%, worker 1%)
+

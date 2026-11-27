@@ -1,6 +1,6 @@
-import { formatRubles, kopecks, type OrderSummary } from "@localhand/shared";
+import { formatRubles, kopecks, type OrderPayment, type OrderSummary } from "@localhand/shared";
 import { QueryClient } from "@tanstack/react-query";
-import { cleanup, screen } from "@testing-library/react";
+import { cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { authKeys, orderKeys, sellerKeys } from "../lib/queries.js";
@@ -33,6 +33,19 @@ const order: OrderSummary = {
   ],
 };
 
+function payment(overrides: Partial<OrderPayment> = {}): OrderPayment {
+  return {
+    id: 5,
+    status: "pending",
+    amountKopecks: 420_000,
+    currency: "RUB",
+    confirmationUrl: "https://yookassa.example/confirm/abc",
+    createdAt,
+    paidAt: null,
+    ...overrides,
+  };
+}
+
 function price(value: number): string {
   return formatRubles(kopecks(value)).replace(/\s+/g, " ");
 }
@@ -47,6 +60,7 @@ describe("OrdersPage", () => {
     installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
       "GET /orders/mine": { body: { orders: [order] } },
+      "GET /orders/42/payment": { body: { payment: null } },
     });
 
     renderApp(["/orders"]);
@@ -57,6 +71,7 @@ describe("OrdersPage", () => {
 
     expect(await screen.findByRole("heading", { level: 2, name: "Заказ №42" })).toBeInTheDocument();
     expect(screen.getByText("Новый")).toBeInTheDocument();
+    expect(await screen.findByText("Оплата не подключена")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Винтаж на районе" })).toHaveAttribute(
       "href",
       "/shops/vintage-shop",
@@ -68,6 +83,78 @@ describe("OrdersPage", () => {
     expect(screen.getAllByText(price(420_000)).length).toBeGreaterThan(0);
     expect(screen.getByText(formatOrderDate(createdAt))).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Подробнее" })).toHaveAttribute("href", "/orders/42");
+  });
+
+  it("shows the active payment status on the order card", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /orders/mine": { body: { orders: [order] } },
+      "GET /orders/42/payment": { body: { payment: payment() } },
+    });
+
+    renderApp(["/orders"]);
+
+    const card = await screen.findByRole("article", { name: "Заказ №42" });
+    expect(await within(card).findByText("Ожидает оплаты")).toBeInTheDocument();
+    expect(within(card).queryByText("Оплата не подключена")).not.toBeInTheDocument();
+  });
+
+  it("shows a paid payment status on the order card", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /orders/mine": { body: { orders: [{ ...order, status: "paid" }] } },
+      "GET /orders/42/payment": {
+        body: {
+          payment: payment({
+            status: "succeeded",
+            confirmationUrl: null,
+            paidAt: "2026-11-27T12:00:00.000Z",
+          }),
+        },
+      },
+    });
+
+    renderApp(["/orders"]);
+
+    const card = await screen.findByRole("article", { name: "Заказ №42" });
+    expect(await within(card).findByText("Оплачен")).toBeInTheDocument();
+    expect(within(card).queryByText("Оплата не подключена")).not.toBeInTheDocument();
+  });
+
+  it("does not turn a payment read error into 'payment not connected'", async () => {
+    let fail = true;
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /orders/mine": { body: { orders: [order] } },
+      "GET /orders/42/payment": () =>
+        fail ? { status: 500, body: { error: "internal_error" } } : { body: { payment: null } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/orders"]);
+
+    const card = await screen.findByRole("article", { name: "Заказ №42" });
+    expect(await within(card).findByText("Статус оплаты недоступен")).toBeInTheDocument();
+    expect(within(card).queryByText("Оплата не подключена")).not.toBeInTheDocument();
+
+    fail = false;
+    await browser.click(within(card).getByRole("button", { name: "Повторить" }));
+
+    expect(await within(card).findByText("Оплата не подключена")).toBeInTheDocument();
+  });
+
+  it("falls back to the paid order status when no payment row exists", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /orders/mine": { body: { orders: [{ ...order, status: "paid" }] } },
+      "GET /orders/42/payment": { body: { payment: null } },
+    });
+
+    renderApp(["/orders"]);
+
+    const card = await screen.findByRole("article", { name: "Заказ №42" });
+    expect((await within(card).findAllByText("Оплачен")).length).toBeGreaterThan(0);
+    expect(within(card).queryByText("Оплата не подключена")).not.toBeInTheDocument();
   });
 
   it("shows an empty state with a catalog link", async () => {
@@ -116,6 +203,7 @@ describe("OrdersPage", () => {
           ? { status: 401, body: { error: "unauthorized" } }
           : { body: { user: demoUser } },
       "GET /orders/mine": { status: 401, body: { error: "unauthorized" } },
+      "GET /orders/42/payment": { body: { payment: null } },
     });
 
     const browser = userEvent.setup();

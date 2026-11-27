@@ -1,0 +1,19 @@
+$ pnpm --filter @localhand/web test:e2e
+$ playwright test
+
+Running 10 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/a11y.spec.ts:43:1 › axe has no serious or critical findings on buyer pages in light and dark (27.9s)
+  ✓   2 [chromium] › e2e/buyer-flow.spec.ts:21:1 › buyer and seller see the same order end-to-end (5.1s)
+  ✓   3 [chromium] › e2e/layout.spec.ts:262:1 › layout holds at 320/768/1440 across storefront and admin (17.7s)
+  ✓   4 [chromium] › e2e/layout.spec.ts:417:1 › layout guides overlay renders 12 columns in dev (2.4s)
+  ✓   5 [chromium] › e2e/layout.spec.ts:466:1 › axe has no serious or critical findings on admin pages (16.0s)
+  ✓   6 [chromium] › e2e/payments-a11y.spec.ts:63:1 › axe has no serious or critical findings on payment pages (24.7s)
+  ✓   7 [chromium] › e2e/payments-flow.spec.ts:29:1 › seller connects fake payments, buyer pays, seller sees paid (6.0s)
+  ✓   8 [chromium] › e2e/payments-flow.spec.ts:117:1 › a 409 payment_in_progress refetches the active payment instead of duplicating it (1.3s)
+  ✓   9 [chromium] › e2e/payments-flow.spec.ts:155:1 › manual_review is a payment state, not an order status, for buyer and seller (2.4s)
+[lab-lcp-over-budget] /: lab p75 3280 ms >= 2500 ms
+[lab-lcp-over-budget] /checkout: lab p75 3348 ms >= 2500 ms
+  ✓  10 [chromium] › e2e/perf.spec.ts:113:1 › lab LCP smoke on catalog and checkout (36.5s)
+
+  10 passed (2.3m)

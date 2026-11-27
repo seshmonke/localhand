@@ -2,7 +2,7 @@
   "task": "S3-1",
   "owner": "scrum-worker",
   "change": "06-payments",
-  "branch": "task/S3-1b-payments-flow",
-  "since": "2026-11-27T13:22:00Z",
-  "expires_at": "2026-11-27T20:00:00Z"
+  "branch": "task/S3-1b2-payments-ui",
+  "since": "2026-11-27T14:39:00Z",
+  "expires_at": "2026-11-27T22:00:00Z"
 }

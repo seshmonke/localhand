@@ -127,7 +127,14 @@ export function CheckoutPage() {
     }
 
     void queryClient.invalidateQueries({ queryKey: orderKeys.all });
-    navigate("/orders", { replace: true, state: { checkoutDone: true } });
+    // One order: go straight to the order screen where the buyer can pay.
+    // Multiple shops: the orders list explains that each order is paid
+    // separately.
+    const singleOrder = createdOrders.length === 1 ? createdOrders[0] : undefined;
+    navigate(singleOrder ? `/orders/${singleOrder.id}` : "/orders", {
+      replace: true,
+      state: { checkoutDone: true },
+    });
   }, [createdOrders, hasItem, removeItem, navigate, queryClient]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -190,7 +197,7 @@ export function CheckoutPage() {
         <ScreenState
           kind="loading"
           title="Заказ оформлен"
-          description="Переходим к вашим заказам."
+          description="Переходим к заказу и оплате."
         />
       </PageShell>
     );
@@ -205,7 +212,7 @@ export function CheckoutPage() {
         <PageHeader
           eyebrow="Оформление заказа"
           title="Проверьте заказ"
-          description="Заказ получит продавец каждого магазина. Цену и состав проверит сервер — оплата и доставка появятся в следующих обновлениях."
+          description="Заказ получит продавец каждого магазина. Цену и состав проверит сервер — оплата проходит на странице ЮKassa, деньги получает продавец."
         />
 
         <form noValidate onSubmit={handleSubmit}>
@@ -328,7 +335,8 @@ export function CheckoutPage() {
                   {pending ? "Оформляем…" : "Оформить заказ"}
                 </Button>
                 <p className="mt-2 text-xs leading-relaxed">
-                  Нажимая кнопку, вы отправляете заявку продавцам. Оплата и доставка не подключены.
+                  Нажимая кнопку, вы отправляете заявку продавцам. После оформления вы перейдёте к
+                  оплате. Если продавец не подключил приём платежей, статус заказа покажет это.
                 </p>
               </Card>
             </Sidebar>

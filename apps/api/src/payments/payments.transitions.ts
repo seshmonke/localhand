@@ -12,6 +12,37 @@ export type TransitionOutcome = {
   code?: "payment_amount_mismatch" | "payment_unknown_status";
 };
 
+export type PaymentMatchSubject = Pick<
+  PaymentRow,
+  "providerPaymentId" | "amountKopecks" | "currency" | "orderId"
+>;
+
+/**
+ * The provider response is the only trusted source for a webhook. All four
+ * fields must agree: a mismatch quarantines the payment instead of moving the
+ * order or reopening a terminal attempt.
+ */
+export function providerPaymentMatches(
+  payment: PaymentMatchSubject,
+  providerPayment: ProviderPayment,
+): boolean {
+  return (
+    providerPayment.providerPaymentId === payment.providerPaymentId &&
+    providerPayment.amountKopecks === payment.amountKopecks &&
+    providerPayment.currency === payment.currency &&
+    providerPayment.orderId === payment.orderId
+  );
+}
+
+/**
+ * `pending` is the only status that may be advanced by a provider event.
+ * Everything else is terminal for the webhook/reconcile flow: a repeated event
+ * is an idempotent no-op, never a reopen.
+ */
+export function isPaymentStatusTerminal(status: PaymentStatus): boolean {
+  return status !== "pending";
+}
+
 /**
  * Applies a provider payment status inside the order lock. The provider
  * response is authoritative; the webhook body is never trusted. Any
@@ -27,13 +58,7 @@ export async function applyProviderPayment(
   now: Date,
   log: PaymentsLogger,
 ): Promise<TransitionOutcome> {
-  const matches =
-    providerPayment.providerPaymentId === payment.providerPaymentId &&
-    providerPayment.amountKopecks === payment.amountKopecks &&
-    providerPayment.currency === payment.currency &&
-    providerPayment.orderId === payment.orderId;
-
-  if (!matches) {
+  if (!providerPaymentMatches(payment, providerPayment)) {
     await tx
       .update(payments)
       .set({ status: "manual_review", updatedAt: now })

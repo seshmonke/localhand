@@ -161,6 +161,8 @@ describe("CheckoutPage", () => {
         return { status: 201, body: { orders: [orderFor(jacket), orderFor(vase, 102)] } };
       },
       "GET /orders/mine": { body: { orders: [orderFor(jacket), orderFor(vase, 102)] } },
+      "GET /orders/101/payment": { body: { payment: null } },
+      "GET /orders/102/payment": { body: { payment: null } },
     });
 
     const browser = userEvent.setup();
@@ -169,6 +171,8 @@ describe("CheckoutPage", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Проверьте заказ" }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/Если продавец не подключил приём платежей/)).toBeInTheDocument();
+    expect(screen.getByText(/оплата проходит на странице ЮKassa/)).toBeInTheDocument();
 
     const vintage = screen.getByRole("region", { name: "Винтаж на районе" });
     const city = screen.getByRole("region", { name: "Городской винтаж" });
@@ -207,6 +211,8 @@ describe("CheckoutPage", () => {
       "GET /auth/me": { body: { user: demoUser } },
       "POST /checkout": { status: 201, body: { orders: [orderFor(jacket)] } },
       "GET /orders/mine": { body: { orders: [orderFor(jacket)] } },
+      "GET /orders/101": { body: { order: orderFor(jacket) } },
+      "GET /orders/101/payment": { body: { payment: null } },
     });
 
     const browser = userEvent.setup();
@@ -215,7 +221,10 @@ describe("CheckoutPage", () => {
     await screen.findByRole("heading", { level: 1, name: "Проверьте заказ" });
     await browser.click(screen.getByRole("button", { name: "Оформить заказ" }));
 
-    await screen.findByRole("heading", { level: 1, name: "Мои заказы" });
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Заказ №101" }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("location")).toHaveTextContent("/orders/101");
     expect(readStored().items.map((item) => item.productId)).toEqual([2]);
   });
 
@@ -234,6 +243,8 @@ describe("CheckoutPage", () => {
           : { status: 201, body: { orders: [orderFor(jacket)] } };
       },
       "GET /orders/mine": { body: { orders: [orderFor(jacket)] } },
+      "GET /orders/101": { body: { order: orderFor(jacket) } },
+      "GET /orders/101/payment": { body: { payment: null } },
     });
 
     const browser = userEvent.setup();
@@ -252,7 +263,10 @@ describe("CheckoutPage", () => {
 
     await browser.click(screen.getByRole("button", { name: "Оформить заказ" }));
 
-    await screen.findByRole("heading", { level: 1, name: "Мои заказы" });
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Заказ №101" }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("location")).toHaveTextContent("/orders/101");
     await waitFor(() => expect(readStored().items).toEqual([]));
     expect(checkoutIds).toHaveLength(2);
     expect(checkoutIds[0]).toBe(checkoutIds[1]);
@@ -307,6 +321,8 @@ describe("CheckoutPage", () => {
           finishCheckout = resolve;
         }),
       "GET /orders/mine": { body: { orders: [orderFor(jacket)] } },
+      "GET /orders/101": { body: { order: orderFor(jacket) } },
+      "GET /orders/101/payment": { body: { payment: null } },
     });
 
     const browser = userEvent.setup();
@@ -320,7 +336,7 @@ describe("CheckoutPage", () => {
 
     finishCheckout({ status: 201, body: { orders: [orderFor(jacket)] } });
 
-    await screen.findByRole("heading", { level: 1, name: "Мои заказы" });
+    await screen.findByRole("heading", { level: 1, name: "Заказ №101" });
   });
 
   it("shows the session expired state on a 401 checkout and clears caches before login", async () => {

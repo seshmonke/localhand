@@ -10,7 +10,7 @@ import {
   withProviderTimeout,
   type PaymentsLogger,
 } from "./payments.shared.js";
-import { applyProviderPayment } from "./payments.transitions.js";
+import { applyProviderPayment, isPaymentStatusTerminal } from "./payments.transitions.js";
 
 export type WebhookResult = { status: 200 | 502 | 503 };
 
@@ -96,7 +96,7 @@ export async function handlePaymentWebhook(
     if (!currentPayment || !order) {
       return { status: 502 };
     }
-    if (currentPayment.status !== "pending") {
+    if (isPaymentStatusTerminal(currentPayment.status)) {
       // Idempotent replay: a succeeded/canceled/manual row is never reopened.
       return { status: 200 };
     }

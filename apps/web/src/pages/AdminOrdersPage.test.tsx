@@ -1,4 +1,4 @@
-import { formatRubles, kopecks, type OrderSummary } from "@localhand/shared";
+import { formatRubles, kopecks, type OrderPayment, type OrderSummary } from "@localhand/shared";
 import { cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -57,6 +57,19 @@ const secondOrder: OrderSummary = {
   ],
 };
 
+function payment(overrides: Partial<OrderPayment> = {}): OrderPayment {
+  return {
+    id: 5,
+    status: "pending",
+    amountKopecks: 420_000,
+    currency: "RUB",
+    confirmationUrl: null,
+    createdAt,
+    paidAt: null,
+    ...overrides,
+  };
+}
+
 function price(value: number): string {
   return formatRubles(kopecks(value)).replace(/\s+/g, " ");
 }
@@ -72,6 +85,8 @@ describe("AdminOrdersPage", () => {
       "GET /auth/me": { body: { user: demoUser } },
       "GET /seller/shop": { body: { shop: publishedShop } },
       "GET /seller/orders": { body: { orders: [firstOrder, secondOrder] } },
+      "GET /seller/orders/42/payment": { body: { payment: payment() } },
+      "GET /seller/orders/43/payment": { body: { payment: null } },
     });
 
     renderApp(["/admin/orders"]);
@@ -105,6 +120,44 @@ describe("AdminOrdersPage", () => {
     const mobileLink = screen.getAllByRole("link", { name: "Открыть заказ" })[0];
     expect(mobileLink).toHaveAttribute("href", "/admin/orders/42");
     expect(screen.getAllByText("Новый").length).toBeGreaterThan(0);
+  });
+
+  it("shows an unavailable payment status with retry instead of 'no payment'", async () => {
+    let fail = true;
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "GET /seller/orders": { body: { orders: [firstOrder] } },
+      "GET /seller/orders/42/payment": () =>
+        fail ? { status: 500, body: { error: "internal_error" } } : { body: { payment: null } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/orders"]);
+
+    const table = await screen.findByRole("table", { name: "Заказы вашего магазина" });
+    expect(await within(table).findByText("Статус оплаты недоступен")).toBeInTheDocument();
+    expect(within(table).queryByText("Нет платежа")).not.toBeInTheDocument();
+
+    fail = false;
+    await browser.click(within(table).getByRole("button", { name: "Повторить" }));
+
+    expect(await within(table).findByText("Нет платежа")).toBeInTheDocument();
+  });
+
+  it("falls back to the paid order status when no payment row exists", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "GET /seller/orders": { body: { orders: [{ ...firstOrder, status: "paid" }] } },
+      "GET /seller/orders/42/payment": { body: { payment: null } },
+    });
+
+    renderApp(["/admin/orders"]);
+
+    const table = await screen.findByRole("table", { name: "Заказы вашего магазина" });
+    expect((await within(table).findAllByText("Оплачен")).length).toBeGreaterThan(0);
+    expect(within(table).queryByText("Нет платежа")).not.toBeInTheDocument();
   });
 
   it("shows an onboarding state for a seller without a shop and skips the orders request", async () => {
@@ -189,6 +242,7 @@ describe("AdminOrderPage", () => {
     installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
       "GET /seller/orders/42": { body: { order: firstOrder } },
+      "GET /seller/orders/42/payment": { body: { payment: null } },
     });
 
     renderApp(["/admin/orders/42"]);
@@ -210,6 +264,69 @@ describe("AdminOrderPage", () => {
       "href",
       "/admin/orders",
     );
+    const paymentSection = await screen.findByRole("region", { name: "Оплата" });
+    expect(within(paymentSection).getByText(/Платёж не начат/)).toBeInTheDocument();
+    expect(
+      within(paymentSection).queryByRole("button", { name: /Оплатить/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows manual_review as a payment badge separate from the order status", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/orders/42": {
+        body: { order: { ...firstOrder, status: "payment_pending" } },
+      },
+      "GET /seller/orders/42/payment": {
+        body: { payment: payment({ status: "manual_review" }) },
+      },
+    });
+
+    renderApp(["/admin/orders/42"]);
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Заказ №42" })).toBeInTheDocument();
+    expect(await screen.findByText("Ожидает оплаты")).toBeInTheDocument();
+    const paymentSection = screen.getByRole("region", { name: "Оплата" });
+    expect(await within(paymentSection).findByText("Требует проверки")).toBeInTheDocument();
+    expect(
+      within(paymentSection).getByText(/поддержка разберётся|ручной проверке/i),
+    ).toBeInTheDocument();
+    expect(within(paymentSection).queryByText(/runbook|ops/i)).not.toBeInTheDocument();
+    expect(
+      within(paymentSection).queryByRole("button", { name: /Оплатить/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows the paid order status when no payment row exists", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/orders/42": { body: { order: { ...firstOrder, status: "paid" } } },
+      "GET /seller/orders/42/payment": { body: { payment: null } },
+    });
+
+    renderApp(["/admin/orders/42"]);
+
+    const paymentSection = await screen.findByRole("region", { name: "Оплата" });
+    expect(await within(paymentSection).findByText("Оплачен")).toBeInTheDocument();
+    expect(within(paymentSection).queryByText(/Платёж не начат/)).not.toBeInTheDocument();
+  });
+
+  it("shows the paid payment amount and date on the seller order", async () => {
+    const paidAt = "2026-11-27T12:00:00.000Z";
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/orders/42": { body: { order: { ...firstOrder, status: "paid" } } },
+      "GET /seller/orders/42/payment": {
+        body: { payment: payment({ status: "succeeded", paidAt }) },
+      },
+    });
+
+    renderApp(["/admin/orders/42"]);
+
+    const paymentSection = await screen.findByRole("region", { name: "Оплата" });
+    expect((await within(paymentSection).findAllByText("Оплачен")).length).toBeGreaterThan(0);
+    expect(within(paymentSection).getByText(price(420_000))).toBeInTheDocument();
+    expect(within(paymentSection).getByText(formatOrderDate(paidAt))).toBeInTheDocument();
   });
 
   it("shows a not-found state for a foreign order", async () => {

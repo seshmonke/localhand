@@ -5,6 +5,7 @@ type MockRequest = {
   method: string;
   body: unknown;
   query: Record<string, string>;
+  headers: Record<string, string>;
   url: string;
 };
 
@@ -26,6 +27,12 @@ export function installFetchMock(routes: MockRoutes) {
     const method = (init?.method ?? "GET").toUpperCase();
     const rawBody = init?.body;
     const body = typeof rawBody === "string" ? (JSON.parse(rawBody) as unknown) : undefined;
+    const headers: Record<string, string> = {};
+    if (init?.headers !== undefined && !(init.headers instanceof Headers)) {
+      for (const [name, value] of Object.entries(init.headers as Record<string, string>)) {
+        headers[name.toLowerCase()] = value;
+      }
+    }
 
     const route = routes[`${method} ${path}`];
     if (!route) {
@@ -33,7 +40,9 @@ export function installFetchMock(routes: MockRoutes) {
     }
 
     const result =
-      typeof route === "function" ? await route({ path, method, body, query, url }) : route;
+      typeof route === "function"
+        ? await route({ path, method, body, query, headers, url })
+        : route;
     const status = result.status ?? 200;
 
     return {
