@@ -78,6 +78,16 @@
   paid; 409 retry; manual_review UI.
 - `apps/web/e2e/payments-a11y.spec.ts`: axe light/dark 320/1440.
 
+### Инструментальные ограничения (owner exception)
+
+- **SAST:** `semgrep` и `codeql` в окружении спринта недоступны. Тяжёлые
+  тулзы в PR B2 не добавляются; ручной source-аудит и property-тесты
+  выполнены, SAST/CodeQL — P3 до активации T2-гейтов (Q1.x). Исключение
+  именованное, срок — до появления SAST в CI; не считать гейт пройденным.
+- **Mutation (StrykerJS):** в B2 не добавляется по решению владельца;
+  mutation score T2 ≥ 70% changed — после Q1.3 (nightly до активации).
+  Property-based тесты покрывают инварианты денег/идемпотентности.
+
 ### Остаточные риски и P3
 
 - Нет алертов и field RUM по платежам; SLO-дизайн есть, алерты — после

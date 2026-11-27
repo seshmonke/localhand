@@ -27,7 +27,7 @@ import {
   OrderStatusBadge,
 } from "./OrdersPage.js";
 
-const ATTEMPT_KEY_PREFIX = "localhand.payment.attempt.";
+export const ATTEMPT_KEY_PREFIX = "localhand.payment.attempt.";
 const PAYMENT_POLL_TIMEOUT_MS = 60_000;
 
 function BackToOrders() {
@@ -46,7 +46,7 @@ function BackToOrders() {
  * outcome reuses the stored key; after a terminal attempt (canceled/failed) a
  * new key is generated so the seller can be charged again.
  */
-function attemptKeyFor(
+export function attemptKeyFor(
   orderId: number,
   current: OrderPayment | null,
   fallback: { orderId: number; key: string } | null,
@@ -108,7 +108,8 @@ function isRefetchableConflict(error: unknown): boolean {
     error.status === 409 &&
     (error.code === "payment_in_progress" ||
       error.code === "payment_requires_review" ||
-      error.code === "order_already_paid")
+      error.code === "order_already_paid" ||
+      error.code === "invalid_order_transition")
   );
 }
 
@@ -157,6 +158,25 @@ function PaymentDetails({
   }
 
   if (payment.status === "pending") {
+    if (payment.confirmationUrl === null) {
+      return (
+        <>
+          <p className="mt-4 text-sm font-semibold leading-relaxed">Не удалось создать платёж</p>
+          <p className="mt-2 text-sm leading-relaxed">
+            Платёж не был создан у провайдера. Повторите оплату — попытка сохранит тот же ключ и не
+            создаст второе списание.
+          </p>
+          <dl className="mt-4 flex flex-col gap-2 text-sm">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">Сумма</dt>
+              <dd className="font-mono text-sm font-semibold">
+                {formatRubles(kopecks(payment.amountKopecks))}
+              </dd>
+            </div>
+          </dl>
+        </>
+      );
+    }
     return (
       <>
         <p className="mt-4 text-sm font-semibold leading-relaxed">Ожидает оплаты</p>
@@ -200,8 +220,8 @@ function PaymentDetails({
       <>
         <p className="mt-4 text-sm font-semibold leading-relaxed">Требует проверки</p>
         <p className="mt-2 text-sm leading-relaxed">
-          Платёж проверяет продавец или поддержка. Не оплачивайте заказ повторно — новый платёж
-          заблокирован до решения.
+          Поддержка разберётся с платежом. Не оплачивайте заказ повторно — новый платёж заблокирован
+          до решения.
         </p>
       </>
     );
@@ -368,14 +388,20 @@ export function OrderPage() {
   }
 
   const order = orderQuery.data.order;
+  const showUnavailable = paymentUnavailable && payment === null;
   const canPay =
     order.status === "new" &&
-    !paymentUnavailable &&
-    (payment === null || payment.status === "canceled" || payment.status === "failed");
+    !showUnavailable &&
+    (payment === null ||
+      payment.status === "canceled" ||
+      payment.status === "failed" ||
+      (payment.status === "pending" && payment.confirmationUrl === null));
   const payLabel =
     payment !== null && (payment.status === "canceled" || payment.status === "failed")
       ? "Оплатить снова"
-      : "Оплатить";
+      : payment !== null && payment.status === "pending" && payment.confirmationUrl === null
+        ? "Повторить оплату"
+        : "Оплатить";
 
   return (
     <PageShell className="py-10 sm:py-12">
@@ -450,7 +476,7 @@ export function OrderPage() {
 
                 {paymentQuery.isSuccess ? (
                   <>
-                    {paymentUnavailable ? (
+                    {showUnavailable ? (
                       <>
                         <p className="mt-4 text-sm font-semibold leading-relaxed">
                           Оплата не подключена
@@ -459,6 +485,17 @@ export function OrderPage() {
                           Продавец не подключил приём платежей. Свяжитесь с продавцом или попробуйте
                           позже.
                         </p>
+                        <Button
+                          variant="outline"
+                          className="mt-4 w-full"
+                          onClick={() => {
+                            setPaymentUnavailable(false);
+                            void paymentQuery.refetch();
+                            void orderQuery.refetch();
+                          }}
+                        >
+                          Проверить ещё раз
+                        </Button>
                       </>
                     ) : (
                       <PaymentDetails
@@ -531,8 +568,8 @@ export function OrderPage() {
                   Что дальше
                 </h2>
                 <p className="mt-4 text-sm leading-relaxed text-inverse-text/85">
-                  Продавец увидит заказ и свяжется с вами по телефону. Оплата проходит на сайте
-                  продавца, деньги поступают напрямую ему.
+                  Продавец увидит заказ и свяжется с вами по телефону. Оплата проходит на странице
+                  ЮKassa, деньги поступают напрямую продавцу.
                 </p>
               </Card>
 

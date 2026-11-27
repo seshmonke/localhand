@@ -1,10 +1,10 @@
-import { formatRubles, kopecks, type OrderPayment, type OrderSummary } from "@localhand/shared";
+import { formatRubles, kopecks, type OrderSummary } from "@localhand/shared";
 import { Button, buttonVariants } from "@localhand/ui";
 import { useQueries } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { pluralizeItems } from "../cart/item-count.js";
 import { ScreenState } from "../components/ScreenState.js";
-import { PaymentStatusBadge } from "../components/admin/PaymentStatusBadge.js";
+import { PaymentReadStatus, type PaymentRead } from "../components/admin/payment-read.js";
 import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
 import { PageHeader, PageShell, Stack } from "../components/layout/index.js";
 import { ApiError, fetchSellerOrderPayment } from "../lib/api.js";
@@ -24,7 +24,16 @@ export function AdminOrdersPage() {
       staleTime: 15_000,
     })),
   });
-  const payments = orders.map((_, index) => paymentQueries[index]?.data?.payment ?? null);
+  const paymentReads: PaymentRead[] = orders.map((order, index) => {
+    const query = paymentQueries[index];
+    if (!query || query.isPending) {
+      return { kind: "loading" };
+    }
+    if (query.isError) {
+      return { kind: "error", retry: () => void query.refetch() };
+    }
+    return { kind: "ready", payment: query.data?.payment ?? null };
+  });
 
   return (
     <PageShell size="admin">
@@ -98,8 +107,8 @@ export function AdminOrdersPage() {
 
               {ordersQuery.isSuccess && orders.length > 0 ? (
                 <>
-                  <OrdersTable orders={orders} payments={payments} />
-                  <OrdersCards orders={orders} payments={payments} />
+                  <OrdersTable orders={orders} reads={paymentReads} />
+                  <OrdersCards orders={orders} reads={paymentReads} />
                 </>
               ) : null}
             </>
@@ -114,13 +123,7 @@ function orderItemsLabel(order: OrderSummary): string {
   return order.items.map((item) => item.name).join(", ");
 }
 
-function OrdersTable({
-  orders,
-  payments,
-}: {
-  orders: OrderSummary[];
-  payments: Array<OrderPayment | null>;
-}) {
+function OrdersTable({ orders, reads }: { orders: OrderSummary[]; reads: PaymentRead[] }) {
   return (
     <div className="hidden lg:block">
       <table className="w-full table-fixed border-collapse border-[3px] border-ink bg-paper">
@@ -155,7 +158,7 @@ function OrdersTable({
         </thead>
         <tbody>
           {orders.map((order, index) => {
-            const payment = payments[index] ?? null;
+            const read = reads[index] ?? { kind: "loading" as const };
             return (
               <tr key={order.id} className="border-b-[3px] border-ink align-top last:border-b-0">
                 <th scope="row" className="px-3 py-4 text-left font-mono text-sm font-semibold">
@@ -182,11 +185,11 @@ function OrdersTable({
                   <OrderStatusBadge status={order.status} />
                 </td>
                 <td className="px-3 py-4">
-                  {payment ? (
-                    <PaymentStatusBadge status={payment.status} />
-                  ) : (
-                    <span className="text-xs text-ink/60">Нет платежа</span>
-                  )}
+                  <PaymentReadStatus
+                    orderStatus={order.status}
+                    read={read}
+                    emptyLabel="Нет платежа"
+                  />
                 </td>
                 <td className="px-3 py-4">
                   <Link
@@ -205,17 +208,11 @@ function OrdersTable({
   );
 }
 
-function OrdersCards({
-  orders,
-  payments,
-}: {
-  orders: OrderSummary[];
-  payments: Array<OrderPayment | null>;
-}) {
+function OrdersCards({ orders, reads }: { orders: OrderSummary[]; reads: PaymentRead[] }) {
   return (
     <ul className="grid gap-4 lg:hidden">
       {orders.map((order, index) => {
-        const payment = payments[index] ?? null;
+        const read = reads[index] ?? { kind: "loading" as const };
         return (
           <li key={order.id} className="border-[3px] border-ink bg-paper p-4 shadow-brutal-sm">
             <div className="flex flex-wrap items-start justify-between gap-2">
@@ -232,11 +229,7 @@ function OrdersCards({
               <span className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
                 Оплата
               </span>
-              {payment ? (
-                <PaymentStatusBadge status={payment.status} />
-              ) : (
-                <span className="text-xs text-ink/60">Нет платежа</span>
-              )}
+              <PaymentReadStatus orderStatus={order.status} read={read} emptyLabel="Нет платежа" />
             </div>
 
             <p className="mt-4 font-mono text-xs">{formatOrderPhone(order.buyerPhone)}</p>

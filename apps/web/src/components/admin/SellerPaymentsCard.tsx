@@ -22,7 +22,7 @@ function paymentErrorMessage(error: unknown, action: "connect" | "disconnect"): 
     }
     if (error.status === 409) {
       if (error.code === "payment_requires_review") {
-        return "Нельзя отключить: есть платёж на ручной проверке. Сначала разберите его по runbook.";
+        return "Нельзя отключить: платёж на ручной проверке. Обратитесь в поддержку — она разберётся с платежом.";
       }
       return "Нельзя отключить: есть незавершённые платежи. Дождитесь их завершения и попробуйте снова.";
     }

@@ -1,4 +1,4 @@
-import { formatRubles, kopecks, type OrderPayment } from "@localhand/shared";
+import { formatRubles, kopecks, type OrderPayment, type OrderSummary } from "@localhand/shared";
 import { Button, buttonVariants } from "@localhand/ui";
 import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router";
@@ -169,6 +169,7 @@ export function AdminOrderPage() {
               </Card>
 
               <AdminOrderPaymentCard
+                orderStatus={order.status}
                 payment={paymentQuery.data?.payment ?? null}
                 loading={paymentQuery.isPending}
                 error={paymentQuery.isError}
@@ -203,11 +204,13 @@ export function AdminOrderPage() {
 }
 
 function AdminOrderPaymentCard({
+  orderStatus,
   payment,
   loading,
   error,
   onRetry,
 }: {
+  orderStatus: OrderSummary["status"];
   payment: OrderPayment | null;
   loading: boolean;
   error: boolean;
@@ -230,7 +233,7 @@ function AdminOrderPaymentCard({
 
       {error ? (
         <p className="mt-4 text-sm leading-relaxed">
-          Не удалось загрузить оплату.{" "}
+          Статус оплаты недоступен.{" "}
           <button
             type="button"
             className="underline decoration-[3px] underline-offset-4"
@@ -242,7 +245,18 @@ function AdminOrderPaymentCard({
       ) : null}
 
       {!loading && !error && payment === null ? (
-        <p className="mt-4 text-sm leading-relaxed">Платёж не начат. Покупатель ещё не оплатил.</p>
+        orderStatus === "paid" ? (
+          <>
+            <p className="mt-4 text-sm font-semibold leading-relaxed">Оплачен</p>
+            <p className="mt-2 text-xs leading-relaxed text-ink/60">
+              Платёж не найден; статус взят из заказа.
+            </p>
+          </>
+        ) : (
+          <p className="mt-4 text-sm leading-relaxed">
+            Платёж не начат. Покупатель ещё не оплатил.
+          </p>
+        )
       ) : null}
 
       {payment ? (
@@ -272,8 +286,8 @@ function AdminOrderPaymentCard({
           </dl>
           {payment.status === "manual_review" ? (
             <p className="mt-4 border-l-[3px] border-accent-red pl-2 text-sm font-semibold leading-relaxed">
-              Платёж требует ручной проверки. Разберите его по runbook payments-manual-review: заказ
-              не переводится в «Оплачен» автоматически.
+              Платёж на ручной проверке. Поддержка разберётся с платежом; заказ не переводится в
+              «Оплачен» автоматически.
             </p>
           ) : null}
         </>

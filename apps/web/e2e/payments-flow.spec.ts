@@ -187,7 +187,7 @@ test("manual_review is a payment state, not an order status, for buyer and selle
     await buyerPage.goto(`/orders/${orderId}`);
     const buyerPayment = buyerPage.getByRole("region", { name: "Оплата" });
     await expect(buyerPayment.getByText("Требует проверки").first()).toBeVisible();
-    await expect(buyerPayment.getByText(/Платёж проверяет продавец или поддержка/)).toBeVisible();
+    await expect(buyerPayment.getByText(/Поддержка разберётся/)).toBeVisible();
     await expect(buyerPayment.getByRole("button", { name: /Оплатить/ })).toHaveCount(0);
     await expect(buyerPayment.getByRole("link", { name: "Продолжить оплату" })).toHaveCount(0);
     await screenshot(buyerPage, "payments-order-manual-review-320.png");
@@ -205,7 +205,7 @@ test("manual_review is a payment state, not an order status, for buyer and selle
     await expect(sellerPage.getByText("Ожидает оплаты").first()).toBeVisible();
     const adminPayment = sellerPage.getByRole("region", { name: "Оплата" });
     await expect(adminPayment.getByText("Требует проверки")).toBeVisible();
-    await expect(adminPayment.getByText(/ручной проверки/)).toBeVisible();
+    await expect(adminPayment.getByText(/ручной проверке/)).toBeVisible();
     await expect(adminPayment.getByRole("button", { name: /Оплатить/ })).toHaveCount(0);
     await screenshot(sellerPage, "payments-admin-order-manual-review-320.png");
   } finally {

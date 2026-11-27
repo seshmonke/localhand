@@ -121,6 +121,42 @@ describe("OrdersPage", () => {
     expect(within(card).queryByText("Оплата не подключена")).not.toBeInTheDocument();
   });
 
+  it("does not turn a payment read error into 'payment not connected'", async () => {
+    let fail = true;
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /orders/mine": { body: { orders: [order] } },
+      "GET /orders/42/payment": () =>
+        fail ? { status: 500, body: { error: "internal_error" } } : { body: { payment: null } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/orders"]);
+
+    const card = await screen.findByRole("article", { name: "Заказ №42" });
+    expect(await within(card).findByText("Статус оплаты недоступен")).toBeInTheDocument();
+    expect(within(card).queryByText("Оплата не подключена")).not.toBeInTheDocument();
+
+    fail = false;
+    await browser.click(within(card).getByRole("button", { name: "Повторить" }));
+
+    expect(await within(card).findByText("Оплата не подключена")).toBeInTheDocument();
+  });
+
+  it("falls back to the paid order status when no payment row exists", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /orders/mine": { body: { orders: [{ ...order, status: "paid" }] } },
+      "GET /orders/42/payment": { body: { payment: null } },
+    });
+
+    renderApp(["/orders"]);
+
+    const card = await screen.findByRole("article", { name: "Заказ №42" });
+    expect((await within(card).findAllByText("Оплачен")).length).toBeGreaterThan(0);
+    expect(within(card).queryByText("Оплата не подключена")).not.toBeInTheDocument();
+  });
+
   it("shows an empty state with a catalog link", async () => {
     installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },

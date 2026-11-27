@@ -122,6 +122,44 @@ describe("AdminOrdersPage", () => {
     expect(screen.getAllByText("Новый").length).toBeGreaterThan(0);
   });
 
+  it("shows an unavailable payment status with retry instead of 'no payment'", async () => {
+    let fail = true;
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "GET /seller/orders": { body: { orders: [firstOrder] } },
+      "GET /seller/orders/42/payment": () =>
+        fail ? { status: 500, body: { error: "internal_error" } } : { body: { payment: null } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/orders"]);
+
+    const table = await screen.findByRole("table", { name: "Заказы вашего магазина" });
+    expect(await within(table).findByText("Статус оплаты недоступен")).toBeInTheDocument();
+    expect(within(table).queryByText("Нет платежа")).not.toBeInTheDocument();
+
+    fail = false;
+    await browser.click(within(table).getByRole("button", { name: "Повторить" }));
+
+    expect(await within(table).findByText("Нет платежа")).toBeInTheDocument();
+  });
+
+  it("falls back to the paid order status when no payment row exists", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "GET /seller/orders": { body: { orders: [{ ...firstOrder, status: "paid" }] } },
+      "GET /seller/orders/42/payment": { body: { payment: null } },
+    });
+
+    renderApp(["/admin/orders"]);
+
+    const table = await screen.findByRole("table", { name: "Заказы вашего магазина" });
+    expect((await within(table).findAllByText("Оплачен")).length).toBeGreaterThan(0);
+    expect(within(table).queryByText("Нет платежа")).not.toBeInTheDocument();
+  });
+
   it("shows an onboarding state for a seller without a shop and skips the orders request", async () => {
     const fetchMock = installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
@@ -251,11 +289,26 @@ describe("AdminOrderPage", () => {
     const paymentSection = screen.getByRole("region", { name: "Оплата" });
     expect(await within(paymentSection).findByText("Требует проверки")).toBeInTheDocument();
     expect(
-      within(paymentSection).getByText(/разберите по runbook|ручной проверки/i),
+      within(paymentSection).getByText(/поддержка разберётся|ручной проверке/i),
     ).toBeInTheDocument();
+    expect(within(paymentSection).queryByText(/runbook|ops/i)).not.toBeInTheDocument();
     expect(
       within(paymentSection).queryByRole("button", { name: /Оплатить/ }),
     ).not.toBeInTheDocument();
+  });
+
+  it("shows the paid order status when no payment row exists", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/orders/42": { body: { order: { ...firstOrder, status: "paid" } } },
+      "GET /seller/orders/42/payment": { body: { payment: null } },
+    });
+
+    renderApp(["/admin/orders/42"]);
+
+    const paymentSection = await screen.findByRole("region", { name: "Оплата" });
+    expect(await within(paymentSection).findByText("Оплачен")).toBeInTheDocument();
+    expect(within(paymentSection).queryByText(/Платёж не начат/)).not.toBeInTheDocument();
   });
 
   it("shows the paid payment amount and date on the seller order", async () => {

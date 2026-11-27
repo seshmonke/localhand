@@ -222,6 +222,36 @@ describe("OrderPage", () => {
     expect(idempotencyKey(createPaymentCalls(fetchMock)[0]?.[1])).toBe(ATTEMPT_KEY);
   });
 
+  it("resumes a pending attempt without a confirmation URL with the stored key", async () => {
+    const fetchMock = installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /orders/42": { body: { order } },
+      "GET /orders/42/payment": {
+        body: { payment: payment({ confirmationUrl: null }) },
+      },
+      "POST /orders/42/payments": { status: 201, body: { payment: payment() } },
+    });
+    window.sessionStorage.setItem("localhand.payment.attempt.42", ATTEMPT_KEY);
+
+    const browser = userEvent.setup();
+    renderApp(["/orders/42"]);
+
+    const paymentSection = await screen.findByRole("region", { name: "Оплата" });
+    expect(
+      await within(paymentSection).findByText("Не удалось создать платёж"),
+    ).toBeInTheDocument();
+    expect(within(paymentSection).queryByText(/Проверяем оплату/)).not.toBeInTheDocument();
+
+    await browser.click(
+      await within(paymentSection).findByRole("button", { name: "Повторить оплату" }),
+    );
+
+    await waitFor(() => expect(goToExternal).toHaveBeenCalledWith(confirmationUrl));
+    const calls = createPaymentCalls(fetchMock);
+    expect(calls).toHaveLength(1);
+    expect(idempotencyKey(calls[0]?.[1])).toBe(ATTEMPT_KEY);
+  });
+
   it("prioritizes a pending payment over the order status", async () => {
     installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
@@ -257,9 +287,8 @@ describe("OrderPage", () => {
 
     const paymentSection = await screen.findByRole("region", { name: "Оплата" });
     expect(await within(paymentSection).findByText("Требует проверки")).toBeInTheDocument();
-    expect(
-      within(paymentSection).getByText(/Платёж проверяет продавец или поддержка/),
-    ).toBeInTheDocument();
+    expect(within(paymentSection).getByText(/Поддержка разберётся/)).toBeInTheDocument();
+    expect(within(paymentSection).queryByText(/runbook|ops/i)).not.toBeInTheDocument();
     expect(
       within(paymentSection).queryByRole("button", { name: /Оплатить/ }),
     ).not.toBeInTheDocument();
@@ -313,6 +342,66 @@ describe("OrderPage", () => {
     expect(await within(paymentSection).findByText("Ожидает оплаты")).toBeInTheDocument();
     expect(paymentRequests(fetchMock).length).toBeGreaterThanOrEqual(2);
     expect(screen.queryByText(/payment_in_progress/)).not.toBeInTheDocument();
+  });
+
+  it("refetches the order and payment on a 409 invalid_order_transition", async () => {
+    let paymentReads = 0;
+    const fetchMock = installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /orders/42": { body: { order } },
+      "GET /orders/42/payment": () => {
+        paymentReads += 1;
+        return { body: { payment: paymentReads === 1 ? null : payment() } };
+      },
+      "POST /orders/42/payments": { status: 409, body: { error: "invalid_order_transition" } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/orders/42"]);
+
+    const paymentSection = await screen.findByRole("region", { name: "Оплата" });
+    await browser.click(await within(paymentSection).findByRole("button", { name: "Оплатить" }));
+
+    expect(await within(paymentSection).findByText("Ожидает оплаты")).toBeInTheDocument();
+    expect(paymentReads).toBeGreaterThanOrEqual(2);
+    expect(paymentRequests(fetchMock).length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByText(/invalid_order_transition/)).not.toBeInTheDocument();
+  });
+
+  it("rechecks seller payment availability after a 409 and restores the pay button", async () => {
+    let paymentReads = 0;
+    const fetchMock = installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /orders/42": { body: { order } },
+      "GET /orders/42/payment": () => {
+        paymentReads += 1;
+        return { body: { payment: null } };
+      },
+      "POST /orders/42/payments": {
+        status: 409,
+        body: { error: "seller_payment_unavailable" },
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/orders/42"]);
+
+    const paymentSection = await screen.findByRole("region", { name: "Оплата" });
+    await browser.click(await within(paymentSection).findByRole("button", { name: "Оплатить" }));
+
+    expect(
+      await within(paymentSection).findByText(/Продавец не подключил приём платежей/),
+    ).toBeInTheDocument();
+    expect(paymentRequests(fetchMock).length).toBeGreaterThanOrEqual(1);
+
+    await browser.click(
+      await within(paymentSection).findByRole("button", { name: "Проверить ещё раз" }),
+    );
+
+    await waitFor(() => expect(paymentReads).toBeGreaterThanOrEqual(2));
+    expect(
+      await within(paymentSection).findByRole("button", { name: "Оплатить" }),
+    ).toBeInTheDocument();
   });
 
   it("tells the buyer honestly when the seller has no connected payments", async () => {

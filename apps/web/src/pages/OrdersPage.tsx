@@ -3,7 +3,6 @@ import {
   kopecks,
   ORDER_STATUS_LABELS,
   type OrderItem,
-  type OrderPayment,
   type OrderStatus,
   type OrderSummary,
 } from "@localhand/shared";
@@ -12,7 +11,7 @@ import { useQueries } from "@tanstack/react-query";
 import { Link, useLocation } from "react-router";
 import { Announcer } from "../components/FormField.js";
 import { ScreenState } from "../components/ScreenState.js";
-import { PaymentStatusBadge } from "../components/admin/PaymentStatusBadge.js";
+import { PaymentReadStatus, type PaymentRead } from "../components/admin/payment-read.js";
 import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
 import { PageHeader, PageShell, Stack } from "../components/layout/index.js";
 import { ApiError, fetchOrderPayment } from "../lib/api.js";
@@ -153,18 +152,29 @@ function OrdersList({ orders }: { orders: OrderSummary[] }) {
     })),
   });
 
+  const reads: PaymentRead[] = orders.map((order, index) => {
+    const query = payments[index];
+    if (!query || query.isPending) {
+      return { kind: "loading" };
+    }
+    if (query.isError) {
+      return { kind: "error", retry: () => void query.refetch() };
+    }
+    return { kind: "ready", payment: query.data?.payment ?? null };
+  });
+
   return (
     <ul className="flex flex-col gap-4">
       {orders.map((order, index) => (
         <li key={order.id}>
-          <OrderCard order={order} payment={payments[index]?.data?.payment ?? null} />
+          <OrderCard order={order} read={reads[index] ?? { kind: "loading" }} />
         </li>
       ))}
     </ul>
   );
 }
 
-function OrderCard({ order, payment }: { order: OrderSummary; payment: OrderPayment | null }) {
+function OrderCard({ order, read }: { order: OrderSummary; read: PaymentRead }) {
   const headingId = `order-card-${order.id}`;
 
   return (
@@ -202,11 +212,11 @@ function OrderCard({ order, payment }: { order: OrderSummary; payment: OrderPaym
             <span className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
               Оплата
             </span>
-            {payment ? (
-              <PaymentStatusBadge status={payment.status} />
-            ) : (
-              <span className="text-sm">Оплата не подключена</span>
-            )}
+            <PaymentReadStatus
+              orderStatus={order.status}
+              read={read}
+              emptyLabel="Оплата не подключена"
+            />
           </div>
           <p className="mt-2 font-mono text-[10px] uppercase tracking-wide text-ink/60">
             {pluralizeItems(order.items.length)}

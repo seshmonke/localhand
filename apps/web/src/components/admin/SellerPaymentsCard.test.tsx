@@ -131,6 +131,27 @@ describe("SellerPaymentsCard", () => {
     expect(within(card).queryByText(/payment_in_progress|409/)).not.toBeInTheDocument();
   });
 
+  it("points a manual-review disconnect to support instead of the ops runbook", async () => {
+    installFetchMock({
+      ...baseRoutes,
+      "GET /seller/payments/account": { body: { account: activeAccount } },
+      "DELETE /seller/payments/account": {
+        status: 409,
+        body: { error: "payment_requires_review" },
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/shop"]);
+
+    const card = await screen.findByRole("region", { name: "Приём платежей" });
+    await within(card).findByText("Подключено");
+    await browser.click(within(card).getByRole("button", { name: "Отключить приём платежей" }));
+
+    expect(await within(card).findByText(/Обратитесь в поддержку/)).toBeInTheDocument();
+    expect(within(card).queryByText(/runbook|ops/i)).not.toBeInTheDocument();
+  });
+
   it("retries a failed connection from the error state", async () => {
     const fetchMock = installFetchMock({
       ...baseRoutes,
