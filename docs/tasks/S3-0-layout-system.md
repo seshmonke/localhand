@@ -9,7 +9,7 @@
 
 ## AC
 
-- [ ] `apps/web/src/components/layout/**`:
+- [x] `apps/web/src/components/layout/**`:
       `PageShell` (max 1440, px 16/24/40, full-height),
       `PageHeader` (eyebrow/title/description/actions),
       `Stack` (vertical gap scale),
@@ -17,26 +17,26 @@
       `Grid`/`Sidebar` (page-level 12-col: `lg:grid-cols-12`,
       `gap-x-4 lg:gap-x-6`), `LayoutGuides` (dev overlay 12 колонок при
       `?guides=1`).
-- [ ] Header: все контролы одной высоты 44 px (`h-11`/`size-11`),
+- [x] Header: все контролы одной высоты 44 px (`h-11`/`size-11`),
       `shrink-0`; CTA не ломает 320 (скрыть/сжать по breakpoint);
       badge корзины не выходит за сетку; вертикальные центры совпадают.
-- [ ] Admin product edit: `Announcer` вынести над grid; form и status
+- [x] Admin product edit: `Announcer` вынести над grid; form и status
       aside стартуют на одной линии; `items-start`/`gap` одинаковы.
-- [ ] Admin/Storefront/Checkout/Cart/Orders: один контейнер и padding
+- [x] Admin/Storefront/Checkout/Cart/Orders: один контейнер и padding
       на страницах; никаких локальных `max-w-[1100px]` вразнобой;
       заголовки/линии карточек совпадают по левому краю.
-- [ ] Spacing: только 8pt-шаги для layout (8/16/24/32/40/48), `gap`
+- [x] Spacing: только 8pt-шаги для layout (8/16/24/32/40/48), `gap`
       вместо `mt-*` между блоками; типографика может иметь свои
       line-height.
-- [ ] 320/768/1440: нет горизонтального overflow; сетка складывается
+- [x] 320/768/1440: нет горизонтального overflow; сетка складывается
       4/8/12 колонок; таблицы → карточки; touch ≥44.
-- [ ] Playwright layout smoke: скриншоты 320/768/1440 для `/`, `/cart`,
+- [x] Playwright layout smoke: скриншоты 320/768/1440 для `/`, `/cart`,
       `/checkout`, `/orders`, `/admin/shop`, `/admin/products/:id`,
       `/admin/orders`; проверки: form/aside top equal, header controls
       center equal, no overflow; overlay `?guides=1`.
-- [ ] `docs/design/layout-system.md`: правила, токены, примеры,
+- [x] `docs/design/layout-system.md`: правила, токены, примеры,
       источники (Material 3 grid, NN/g, Tailwind grid, 8pt).
-- [ ] `pnpm verify` + `pnpm test:e2e` зелёные; axe light/dark 0.
+- [x] `pnpm verify` + `pnpm test:e2e` зелёные; axe light/dark 0.
 
 ## Change
 

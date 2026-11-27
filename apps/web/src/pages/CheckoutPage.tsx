@@ -13,6 +13,15 @@ import {
 } from "../components/FormField.js";
 import { ScreenState } from "../components/ScreenState.js";
 import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
+import {
+  Card,
+  Grid,
+  GridColumn,
+  PageHeader,
+  PageShell,
+  Sidebar,
+  Stack,
+} from "../components/layout/index.js";
 import { ApiError, checkout } from "../lib/api.js";
 import { orderKeys, useMeQuery } from "../lib/queries.js";
 
@@ -136,29 +145,29 @@ export function CheckoutPage() {
 
   if (sessionExpired) {
     return (
-      <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-10">
+      <PageShell className="py-10 sm:py-12">
         <h1 className="sr-only">Оформление заказа</h1>
         <SessionExpiredState next="/checkout" />
-      </div>
+      </PageShell>
     );
   }
 
   if (!isHydrated) {
     return (
-      <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-10">
+      <PageShell className="py-10 sm:py-12">
         <h1 className="sr-only">Оформление заказа</h1>
         <ScreenState
           kind="loading"
           title="Проверяем корзину"
           description="Восстанавливаем товары с этого устройства."
         />
-      </div>
+      </PageShell>
     );
   }
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-10">
+      <PageShell className="py-10 sm:py-12">
         <h1 className="sr-only">Оформление заказа</h1>
         <ScreenState
           kind="empty"
@@ -170,20 +179,20 @@ export function CheckoutPage() {
             </Link>
           }
         />
-      </div>
+      </PageShell>
     );
   }
 
   if (createdOrders) {
     return (
-      <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-10">
+      <PageShell className="py-10 sm:py-12">
         <h1 className="sr-only">Оформление заказа</h1>
         <ScreenState
           kind="loading"
           title="Заказ оформлен"
           description="Переходим к вашим заказам."
         />
-      </div>
+      </PageShell>
     );
   }
 
@@ -191,143 +200,141 @@ export function CheckoutPage() {
   const pending = checkoutMutation.isPending;
 
   return (
-    <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
-      <header className="border-b-[3px] border-ink pb-6">
-        <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text">
-          Оформление заказа
-        </p>
-        <h1 className="mt-2 font-display text-4xl uppercase leading-none sm:text-5xl">
-          Проверьте заказ
-        </h1>
-        <p className="mt-3 max-w-2xl text-pretty text-sm leading-relaxed">
-          Заказ получит продавец каждого магазина. Цену и состав проверит сервер — оплата и доставка
-          появятся в следующих обновлениях.
-        </p>
-      </header>
+    <PageShell className="py-10 sm:py-12">
+      <Stack gap={8}>
+        <PageHeader
+          eyebrow="Оформление заказа"
+          title="Проверьте заказ"
+          description="Заказ получит продавец каждого магазина. Цену и состав проверит сервер — оплата и доставка появятся в следующих обновлениях."
+        />
 
-      <form noValidate onSubmit={handleSubmit} className="mt-8">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
-          <div className="min-w-0 space-y-6">
-            {groups.map((group) => {
-              const headingId = `checkout-shop-${group.shopSlug}`;
-              return (
-                <section
-                  key={group.shopSlug}
-                  aria-labelledby={headingId}
-                  className="min-w-0 border-[3px] border-ink bg-paper"
-                >
-                  <header className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-b-[3px] border-ink p-4">
-                    <h2 id={headingId} className="min-w-0 font-display text-xl uppercase">
-                      <Link
-                        to={`/shops/${group.shopSlug}`}
-                        className="break-words underline-offset-4 hover:underline"
-                      >
-                        {group.shopName}
-                      </Link>
-                    </h2>
-                    <p className="font-mono text-xs uppercase tracking-wide">
-                      Итого: {formatRubles(kopecks(group.totalKopecks))}
-                    </p>
-                  </header>
-                  <ul className="divide-y-[3px] divide-ink">
-                    {group.items.map((item) => (
-                      <li
-                        key={item.productId}
-                        className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4"
-                      >
-                        <Link
-                          to={`/products/${item.productId}`}
-                          className="min-w-0 break-words font-display text-sm uppercase leading-tight underline-offset-4 hover:underline sm:text-base"
-                        >
-                          {item.name}
-                        </Link>
-                        <p className="font-mono text-xs sm:text-sm">
-                          {formatRubles(kopecks(item.priceKopecks))}
+        <form noValidate onSubmit={handleSubmit}>
+          <Grid>
+            <GridColumn span={8}>
+              <Stack gap={6}>
+                {groups.map((group) => {
+                  const headingId = `checkout-shop-${group.shopSlug}`;
+                  return (
+                    <Card
+                      key={group.shopSlug}
+                      as="section"
+                      padding="none"
+                      aria-labelledby={headingId}
+                    >
+                      <header className="flex min-w-0 flex-wrap items-center justify-between gap-4 border-b-[3px] border-ink p-4">
+                        <h2 id={headingId} className="min-w-0 font-display text-xl uppercase">
+                          <Link
+                            to={`/shops/${group.shopSlug}`}
+                            className="break-words underline-offset-4 hover:underline"
+                          >
+                            {group.shopName}
+                          </Link>
+                        </h2>
+                        <p className="font-mono text-xs uppercase tracking-wide">
+                          Итого: {formatRubles(kopecks(group.totalKopecks))}
                         </p>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              );
-            })}
+                      </header>
+                      <ul className="divide-y-[3px] divide-ink">
+                        {group.items.map((item) => (
+                          <li
+                            key={item.productId}
+                            className="flex flex-wrap items-center justify-between gap-4 p-4"
+                          >
+                            <Link
+                              to={`/products/${item.productId}`}
+                              className="min-w-0 break-words font-display text-sm uppercase leading-tight underline-offset-4 hover:underline sm:text-base"
+                            >
+                              {item.name}
+                            </Link>
+                            <p className="font-mono text-xs sm:text-sm">
+                              {formatRubles(kopecks(item.priceKopecks))}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    </Card>
+                  );
+                })}
 
-            <section
-              aria-labelledby="checkout-contact-title"
-              className="border-[3px] border-ink bg-paper p-4 sm:p-6"
-            >
-              <h2 id="checkout-contact-title" className="font-display text-2xl uppercase">
-                Контакты
-              </h2>
-              <p className="mt-3 text-sm leading-relaxed">
-                Телефон для связи:{" "}
-                <strong className="whitespace-nowrap font-mono font-semibold">
-                  {phone ? formatPhone(phone) : "—"}
-                </strong>
-                . Заказ привязан к номеру, на который вы вошли.
-              </p>
-
-              <div className="mt-6">
-                <FormField id="checkout-comment" label="Комментарий продавцу" hint={COMMENT_HINT}>
-                  <textarea
-                    id="checkout-comment"
-                    name="comment"
-                    rows={4}
-                    maxLength={COMMENT_MAX_LENGTH}
-                    value={comment}
-                    onChange={(event) => setComment(event.target.value)}
-                    aria-describedby={fieldDescribedBy("checkout-comment", COMMENT_HINT)}
-                    className={`${fieldControlClass} min-h-28 resize-y`}
-                  />
-                </FormField>
-              </div>
-            </section>
-          </div>
-
-          <aside
-            aria-labelledby="checkout-total-title"
-            className="border-[3px] border-ink bg-paper p-5 shadow-brutal-sm lg:sticky lg:top-28"
-          >
-            <h2 id="checkout-total-title" className="font-display text-2xl uppercase">
-              Итог
-            </h2>
-            <dl className="mt-4 space-y-2 font-mono text-xs uppercase tracking-wide">
-              <div className="flex justify-between gap-4">
-                <dt>Товаров</dt>
-                <dd>{pluralizeItems(count)}</dd>
-              </div>
-              <div className="flex justify-between gap-4 border-t-[3px] border-ink pt-2 text-base">
-                <dt>Итого</dt>
-                <dd>{formatRubles(kopecks(totalKopecks))}</dd>
-              </div>
-            </dl>
-
-            <div className="mt-4 space-y-3" aria-live="polite">
-              {unavailable ? (
-                <div role="alert" className="border-[3px] border-ink bg-accent-orange/15 p-3">
-                  <p className="text-sm font-semibold leading-relaxed">
-                    Часть товаров стала недоступна. Корзина не изменилась — проверьте позиции и
-                    попробуйте снова.
+                <Card as="section" aria-labelledby="checkout-contact-title">
+                  <h2 id="checkout-contact-title" className="font-display text-2xl uppercase">
+                    Контакты
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed">
+                    Телефон для связи:{" "}
+                    <strong className="whitespace-nowrap font-mono font-semibold">
+                      {phone ? formatPhone(phone) : "—"}
+                    </strong>
+                    . Заказ привязан к номеру, на который вы вошли.
                   </p>
-                  <Link
-                    to="/cart"
-                    className="mt-2 inline-flex min-h-11 items-center font-mono text-[10px] uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
-                  >
-                    Проверить корзину
-                  </Link>
-                </div>
-              ) : null}
-              <FormError message={formError} />
-            </div>
 
-            <Button type="submit" size="lg" className="mt-5 w-full" disabled={pending}>
-              {pending ? "Оформляем…" : "Оформить заказ"}
-            </Button>
-            <p className="mt-3 text-xs leading-relaxed">
-              Нажимая кнопку, вы отправляете заявку продавцам. Оплата и доставка не подключены.
-            </p>
-          </aside>
-        </div>
-      </form>
-    </div>
+                  <div className="mt-6">
+                    <FormField
+                      id="checkout-comment"
+                      label="Комментарий продавцу"
+                      hint={COMMENT_HINT}
+                    >
+                      <textarea
+                        id="checkout-comment"
+                        name="comment"
+                        rows={4}
+                        maxLength={COMMENT_MAX_LENGTH}
+                        value={comment}
+                        onChange={(event) => setComment(event.target.value)}
+                        aria-describedby={fieldDescribedBy("checkout-comment", COMMENT_HINT)}
+                        className={`${fieldControlClass} min-h-28 resize-y`}
+                      />
+                    </FormField>
+                  </div>
+                </Card>
+              </Stack>
+            </GridColumn>
+
+            <Sidebar sticky aria-labelledby="checkout-total-title">
+              <Card shadow>
+                <h2 id="checkout-total-title" className="font-display text-2xl uppercase">
+                  Итог
+                </h2>
+                <dl className="mt-4 flex flex-col gap-2 font-mono text-xs uppercase tracking-wide">
+                  <div className="flex justify-between gap-4">
+                    <dt>Товаров</dt>
+                    <dd>{pluralizeItems(count)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4 border-t-[3px] border-ink pt-2 text-base">
+                    <dt>Итого</dt>
+                    <dd>{formatRubles(kopecks(totalKopecks))}</dd>
+                  </div>
+                </dl>
+
+                <div className="mt-4 flex flex-col gap-4" aria-live="polite">
+                  {unavailable ? (
+                    <div role="alert" className="border-[3px] border-ink bg-accent-orange/15 p-4">
+                      <p className="text-sm font-semibold leading-relaxed">
+                        Часть товаров стала недоступна. Корзина не изменилась — проверьте позиции и
+                        попробуйте снова.
+                      </p>
+                      <Link
+                        to="/cart"
+                        className="mt-2 inline-flex min-h-11 items-center font-mono text-[10px] uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
+                      >
+                        Проверить корзину
+                      </Link>
+                    </div>
+                  ) : null}
+                  <FormError message={formError} />
+                </div>
+
+                <Button type="submit" size="lg" className="mt-6 w-full" disabled={pending}>
+                  {pending ? "Оформляем…" : "Оформить заказ"}
+                </Button>
+                <p className="mt-2 text-xs leading-relaxed">
+                  Нажимая кнопку, вы отправляете заявку продавцам. Оплата и доставка не подключены.
+                </p>
+              </Card>
+            </Sidebar>
+          </Grid>
+        </form>
+      </Stack>
+    </PageShell>
   );
 }

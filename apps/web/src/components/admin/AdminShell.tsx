@@ -71,18 +71,18 @@ export function AdminShell() {
     <div className="min-h-dvh bg-paper text-ink lg:grid lg:grid-cols-[260px_minmax(0,1fr)]">
       <a
         href="#admin-main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:border-[3px] focus:border-ink focus:bg-paper focus:px-4 focus:py-3 focus:font-mono focus:text-xs focus:uppercase focus:tracking-wide"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:border-[3px] focus:border-ink focus:bg-paper focus:px-4 focus:py-4 focus:font-mono focus:text-xs focus:uppercase focus:tracking-wide"
       >
         К содержимому
       </a>
 
       <aside className="border-b-[3px] border-ink bg-paper lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:border-b-0 lg:border-r-[3px]">
-        <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-5 lg:py-6">
+        <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-6 lg:py-6">
           <Link to="/" className="flex min-h-11 flex-col justify-center">
             <span className="font-display text-lg font-extrabold uppercase leading-none tracking-tight">
               Local Hand
             </span>
-            <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.22em] text-accent-green-text">
+            <span className="mt-2 font-mono text-[9px] uppercase tracking-[0.22em] text-accent-green-text">
               Кабинет продавца
             </span>
           </Link>
@@ -102,7 +102,7 @@ export function AdminShell() {
 
         <nav
           aria-label="Разделы админки"
-          className="flex flex-wrap gap-2 px-4 pb-3 sm:px-6 lg:flex-col lg:flex-nowrap lg:px-5 lg:pb-0"
+          className="flex flex-wrap gap-2 px-4 pb-4 sm:px-6 lg:flex-col lg:flex-nowrap lg:px-6 lg:pb-0"
         >
           <AdminNavLink to="/admin/shop" icon={<Store aria-hidden="true" className="size-4" />}>
             Магазин
@@ -122,16 +122,16 @@ export function AdminShell() {
         </nav>
 
         {logoutFailed ? (
-          <p role="alert" className="px-4 pb-3 text-sm font-semibold sm:px-6 lg:px-5">
+          <p role="alert" className="px-4 pb-4 text-sm font-semibold sm:px-6 lg:px-6">
             Не удалось выйти. Попробуйте снова.
           </p>
         ) : null}
 
-        <div className="mt-auto hidden border-t-[3px] border-ink px-5 py-5 lg:block">
+        <div className="mt-auto hidden border-t-[3px] border-ink px-6 py-6 lg:block">
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/60">
             Вы вошли как
           </p>
-          <p className="mt-1 font-mono text-xs">
+          <p className="mt-2 font-mono text-xs">
             {me.data ? formatPhone(me.data.user.phone) : "—"}
           </p>
         </div>
@@ -141,7 +141,7 @@ export function AdminShell() {
         <main
           id="admin-main"
           tabIndex={-1}
-          className="flex-1 px-4 py-6 focus-visible:outline-none sm:px-6 lg:px-10 lg:py-10"
+          className="flex-1 py-6 focus-visible:outline-none lg:py-10"
         >
           <Outlet />
         </main>

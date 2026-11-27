@@ -13,6 +13,15 @@ import {
 } from "../components/FormField.js";
 import { ScreenState } from "../components/ScreenState.js";
 import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
+import {
+  Card,
+  Grid,
+  GridColumn,
+  PageHeader,
+  PageShell,
+  Sidebar,
+  Stack,
+} from "../components/layout/index.js";
 import { ApiError, createShop, updateShop } from "../lib/api.js";
 import { sellerKeys, useSellerShopQuery } from "../lib/queries.js";
 
@@ -87,48 +96,45 @@ export function AdminShopPage() {
   const shop = shopQuery.data?.shop ?? null;
 
   return (
-    <div className="mx-auto w-full max-w-[1100px]">
-      <header className="border-b-[3px] border-ink pb-6">
-        <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text">
-          Кабинет продавца
-        </p>
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-          <h1 className="font-display text-3xl uppercase leading-none sm:text-4xl">Ваш магазин</h1>
-          {shop ? <ShopStatusBadge status={shop.status} /> : null}
-        </div>
-        <p className="mt-3 max-w-2xl text-pretty text-sm leading-relaxed">
-          {shop
-            ? "Обновите данные, опубликуйте магазин и проверьте, как он выглядит на витрине."
-            : "Один магазин на продавца. Заполните три поля, чтобы открыть витрину."}
-        </p>
-      </header>
+    <PageShell size="admin">
+      <Stack gap={6}>
+        <PageHeader
+          size="admin"
+          eyebrow="Кабинет продавца"
+          title="Ваш магазин"
+          description={
+            shop
+              ? "Обновите данные, опубликуйте магазин и проверьте, как он выглядит на витрине."
+              : "Один магазин на продавца. Заполните три поля, чтобы открыть витрину."
+          }
+          actions={shop ? <ShopStatusBadge status={shop.status} /> : undefined}
+        />
 
-      <div className="mt-4">
         <Announcer message={announcement} />
-      </div>
 
-      <div className="mt-6">
-        {shopQuery.isPending ? (
-          <ScreenState
-            kind="loading"
-            title="Загружаем магазин"
-            description="Секунду — проверяем данные кабинета."
-          />
-        ) : null}
+        <div>
+          {shopQuery.isPending ? (
+            <ScreenState
+              kind="loading"
+              title="Загружаем магазин"
+              description="Секунду — проверяем данные кабинета."
+            />
+          ) : null}
 
-        {shopQuery.isError ? (
-          <ShopLoadError error={shopQuery.error} onRetry={() => void shopQuery.refetch()} />
-        ) : null}
+          {shopQuery.isError ? (
+            <ShopLoadError error={shopQuery.error} onRetry={() => void shopQuery.refetch()} />
+          ) : null}
 
-        {shopQuery.isSuccess ? (
-          shop ? (
-            <ShopSettings key={shop.id} shop={shop} onAnnounce={setAnnouncement} />
-          ) : (
-            <ShopOnboarding onAnnounce={setAnnouncement} />
-          )
-        ) : null}
-      </div>
-    </div>
+          {shopQuery.isSuccess ? (
+            shop ? (
+              <ShopSettings key={shop.id} shop={shop} onAnnounce={setAnnouncement} />
+            ) : (
+              <ShopOnboarding onAnnounce={setAnnouncement} />
+            )
+          ) : null}
+        </div>
+      </Stack>
+    </PageShell>
   );
 }
 
@@ -205,151 +211,150 @@ function ShopOnboarding({ onAnnounce }: ShopFormProps) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-      <form
-        noValidate
-        onSubmit={handleSubmit}
-        aria-labelledby="onboarding-title"
-        className="border-[3px] border-ink bg-paper p-4 sm:p-6"
-      >
-        <h2 id="onboarding-title" className="font-display text-2xl uppercase">
-          Создать магазин
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink/70">
-          Название и адрес витрины можно изменить позже.
-        </p>
+    <Grid>
+      <GridColumn span={8}>
+        <Card as="form" noValidate onSubmit={handleSubmit} aria-labelledby="onboarding-title">
+          <h2 id="onboarding-title" className="font-display text-2xl uppercase">
+            Создать магазин
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink/70">
+            Название и адрес витрины можно изменить позже.
+          </p>
 
-        <div className="mt-6 space-y-6">
-          <FormField
-            id="shop-name"
-            label="Название"
-            hint="Так магазин увидят покупатели. До 80 символов."
-            error={errors.name}
-          >
-            <input
+          <Stack gap={6} className="mt-6">
+            <FormField
               id="shop-name"
-              name="name"
-              type="text"
-              autoComplete="organization"
-              maxLength={80}
-              value={name}
-              onChange={(event) => {
-                setName(event.target.value);
-                if (errors.name) {
-                  setErrors((current) => ({ ...current, name: undefined }));
-                }
-              }}
-              aria-invalid={errors.name ? true : undefined}
-              aria-describedby={fieldDescribedBy(
-                "shop-name",
-                "Так магазин увидят покупатели. До 80 символов.",
-                errors.name,
-              )}
-              className={fieldControlClass}
-            />
-          </FormField>
+              label="Название"
+              hint="Так магазин увидят покупатели. До 80 символов."
+              error={errors.name}
+            >
+              <input
+                id="shop-name"
+                name="name"
+                type="text"
+                autoComplete="organization"
+                maxLength={80}
+                value={name}
+                onChange={(event) => {
+                  setName(event.target.value);
+                  if (errors.name) {
+                    setErrors((current) => ({ ...current, name: undefined }));
+                  }
+                }}
+                aria-invalid={errors.name ? true : undefined}
+                aria-describedby={fieldDescribedBy(
+                  "shop-name",
+                  "Так магазин увидят покупатели. До 80 символов.",
+                  errors.name,
+                )}
+                className={fieldControlClass}
+              />
+            </FormField>
 
-          <FormField
-            id="shop-slug"
-            label="Slug"
-            hint={`Адрес витрины: /shops/your-shop. ${SLUG_RULES}`}
-            error={errors.slug}
-          >
-            <input
+            <FormField
               id="shop-slug"
-              name="slug"
-              type="text"
-              autoCapitalize="none"
-              autoComplete="off"
-              spellCheck={false}
-              maxLength={40}
-              value={slug}
-              onChange={(event) => {
-                setSlug(event.target.value.toLowerCase());
-                if (errors.slug) {
-                  setErrors((current) => ({ ...current, slug: undefined }));
-                }
-              }}
-              aria-invalid={errors.slug ? true : undefined}
-              aria-describedby={fieldDescribedBy(
-                "shop-slug",
-                `Адрес витрины: /shops/your-shop. ${SLUG_RULES}`,
-                errors.slug,
-              )}
-              className={cn(fieldControlClass, "font-mono")}
-            />
-          </FormField>
+              label="Slug"
+              hint={`Адрес витрины: /shops/your-shop. ${SLUG_RULES}`}
+              error={errors.slug}
+            >
+              <input
+                id="shop-slug"
+                name="slug"
+                type="text"
+                autoCapitalize="none"
+                autoComplete="off"
+                spellCheck={false}
+                maxLength={40}
+                value={slug}
+                onChange={(event) => {
+                  setSlug(event.target.value.toLowerCase());
+                  if (errors.slug) {
+                    setErrors((current) => ({ ...current, slug: undefined }));
+                  }
+                }}
+                aria-invalid={errors.slug ? true : undefined}
+                aria-describedby={fieldDescribedBy(
+                  "shop-slug",
+                  `Адрес витрины: /shops/your-shop. ${SLUG_RULES}`,
+                  errors.slug,
+                )}
+                className={cn(fieldControlClass, "font-mono")}
+              />
+            </FormField>
 
-          <FormField
-            id="shop-description"
-            label="Описание"
-            hint="Необязательно. До 2000 символов."
-            error={errors.description}
-          >
-            <textarea
+            <FormField
               id="shop-description"
-              name="description"
-              rows={4}
-              maxLength={2000}
-              value={description}
-              onChange={(event) => {
-                setDescription(event.target.value);
-                if (errors.description) {
-                  setErrors((current) => ({ ...current, description: undefined }));
-                }
-              }}
-              aria-invalid={errors.description ? true : undefined}
-              aria-describedby={fieldDescribedBy(
-                "shop-description",
-                "Необязательно. До 2000 символов.",
-                errors.description,
-              )}
-              className={cn(fieldControlClass, "min-h-32 resize-y")}
-            />
-          </FormField>
+              label="Описание"
+              hint="Необязательно. До 2000 символов."
+              error={errors.description}
+            >
+              <textarea
+                id="shop-description"
+                name="description"
+                rows={4}
+                maxLength={2000}
+                value={description}
+                onChange={(event) => {
+                  setDescription(event.target.value);
+                  if (errors.description) {
+                    setErrors((current) => ({ ...current, description: undefined }));
+                  }
+                }}
+                aria-invalid={errors.description ? true : undefined}
+                aria-describedby={fieldDescribedBy(
+                  "shop-description",
+                  "Необязательно. До 2000 символов.",
+                  errors.description,
+                )}
+                className={cn(fieldControlClass, "min-h-32 resize-y")}
+              />
+            </FormField>
 
-          <FormError message={formError} />
+            <FormError message={formError} />
 
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full sm:w-auto"
-            disabled={createMutation.isPending}
-          >
-            {createMutation.isPending ? "Создаём…" : "Создать магазин"}
-          </Button>
-        </div>
-      </form>
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full sm:w-auto"
+              disabled={createMutation.isPending}
+            >
+              {createMutation.isPending ? "Создаём…" : "Создать магазин"}
+            </Button>
+          </Stack>
+        </Card>
+      </GridColumn>
 
-      <aside className="border-[3px] border-ink bg-inverse p-5 text-inverse-text sm:p-6">
-        <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-orange">
-          Как это работает
-        </p>
-        <ol className="mt-4 space-y-4 text-sm leading-relaxed text-inverse-text/85">
-          <li className="flex gap-3">
-            <span aria-hidden="true" className="font-mono text-accent-green">
-              01
-            </span>
-            Заполните название и slug — это адрес витрины.
-          </li>
-          <li className="flex gap-3">
-            <span aria-hidden="true" className="font-mono text-accent-green">
-              02
-            </span>
-            Добавьте описание: что продаёте и чем отличаетесь.
-          </li>
-          <li className="flex gap-3">
-            <span aria-hidden="true" className="font-mono text-accent-green">
-              03
-            </span>
-            Опубликуйте магазин — и он появится на витрине.
-          </li>
-        </ol>
-        <p className="mt-6 border-t-[3px] border-inverse-text/30 pt-4 font-mono text-[10px] uppercase leading-relaxed tracking-wide text-inverse-text/60">
-          Slug закрепляется за магазином в публичной ссылке
-        </p>
-      </aside>
-    </div>
+      <Sidebar>
+        <Card tone="inverse">
+          <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-orange">
+            Как это работает
+          </p>
+          <ol className="mt-4 flex flex-col gap-4 text-sm leading-relaxed text-inverse-text/85">
+            <li className="flex gap-4">
+              <span aria-hidden="true" className="font-mono text-accent-green">
+                01
+              </span>
+              Заполните название и slug — это адрес витрины.
+            </li>
+            <li className="flex gap-4">
+              <span aria-hidden="true" className="font-mono text-accent-green">
+                02
+              </span>
+              Добавьте описание: что продаёте и чем отличаетесь.
+            </li>
+            <li className="flex gap-4">
+              <span aria-hidden="true" className="font-mono text-accent-green">
+                03
+              </span>
+              Опубликуйте магазин — и он появится на витрине.
+            </li>
+          </ol>
+          <p className="mt-6 border-t-[3px] border-inverse-text/30 pt-4 font-mono text-[10px] uppercase leading-relaxed tracking-wide text-inverse-text/60">
+            Slug закрепляется за магазином в публичной ссылке
+          </p>
+        </Card>
+      </Sidebar>
+    </Grid>
   );
 }
 
@@ -440,212 +445,210 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
   const unpublishPending = statusMutation.isPending && statusMutation.variables === "draft";
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-      <form
-        noValidate
-        onSubmit={handleSave}
-        aria-labelledby="shop-settings-title"
-        className="border-[3px] border-ink bg-paper p-4 sm:p-6"
-      >
-        <h2 id="shop-settings-title" className="font-display text-2xl uppercase">
-          Настройки магазина
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink/70">
-          Смена slug ломает старые ссылки на витрину.
-        </p>
-
-        {blocked ? (
-          <p
-            id="shop-blocked-note"
-            className="mt-3 border-l-[3px] border-accent-orange pl-2 text-sm font-semibold leading-relaxed"
-          >
-            Платформа заблокировала магазин: изменения недоступны.
-          </p>
-        ) : null}
-
-        <fieldset
-          disabled={blocked}
-          aria-describedby={blocked ? "shop-blocked-note" : undefined}
-          className="mt-6"
-        >
-          <legend className="sr-only">Настройки магазина</legend>
-
-          <div className="space-y-6">
-            <FormField
-              id="shop-name"
-              label="Название"
-              hint="Так магазин увидят покупатели. До 80 символов."
-              error={errors.name}
-            >
-              <input
-                id="shop-name"
-                name="name"
-                type="text"
-                autoComplete="organization"
-                maxLength={80}
-                value={name}
-                onChange={(event) => {
-                  setName(event.target.value);
-                  if (errors.name) {
-                    setErrors((current) => ({ ...current, name: undefined }));
-                  }
-                }}
-                aria-invalid={errors.name ? true : undefined}
-                aria-describedby={fieldDescribedBy(
-                  "shop-name",
-                  "Так магазин увидят покупатели. До 80 символов.",
-                  errors.name,
-                )}
-                className={fieldControlClass}
-              />
-            </FormField>
-
-            <FormField
-              id="shop-slug"
-              label="Slug"
-              hint={`Адрес витрины: /shops/${shop.slug}. ${SLUG_RULES}`}
-              error={errors.slug}
-            >
-              <input
-                id="shop-slug"
-                name="slug"
-                type="text"
-                autoCapitalize="none"
-                autoComplete="off"
-                spellCheck={false}
-                maxLength={40}
-                value={slug}
-                onChange={(event) => {
-                  setSlug(event.target.value.toLowerCase());
-                  if (errors.slug) {
-                    setErrors((current) => ({ ...current, slug: undefined }));
-                  }
-                }}
-                aria-invalid={errors.slug ? true : undefined}
-                aria-describedby={fieldDescribedBy(
-                  "shop-slug",
-                  `Адрес витрины: /shops/${shop.slug}. ${SLUG_RULES}`,
-                  errors.slug,
-                )}
-                className={cn(fieldControlClass, "font-mono")}
-              />
-            </FormField>
-
-            <FormField
-              id="shop-description"
-              label="Описание"
-              hint="Необязательно. До 2000 символов."
-              error={errors.description}
-            >
-              <textarea
-                id="shop-description"
-                name="description"
-                rows={5}
-                maxLength={2000}
-                value={description}
-                onChange={(event) => {
-                  setDescription(event.target.value);
-                  if (errors.description) {
-                    setErrors((current) => ({ ...current, description: undefined }));
-                  }
-                }}
-                aria-invalid={errors.description ? true : undefined}
-                aria-describedby={fieldDescribedBy(
-                  "shop-description",
-                  "Необязательно. До 2000 символов.",
-                  errors.description,
-                )}
-                className={cn(fieldControlClass, "min-h-36 resize-y")}
-              />
-            </FormField>
-
-            <FormError message={formError} />
-
-            <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={busy || blocked}>
-              {saveMutation.isPending ? "Сохраняем…" : "Сохранить изменения"}
-            </Button>
-          </div>
-        </fieldset>
-      </form>
-
-      <aside className="space-y-4">
-        <section
-          aria-labelledby="shop-status-title"
-          className="border-[3px] border-ink bg-paper p-4 sm:p-5"
-        >
-          <h2 id="shop-status-title" className="font-mono text-[10px] uppercase tracking-[0.2em]">
-            Статус
+    <Grid>
+      <GridColumn span={8}>
+        <Card as="form" noValidate onSubmit={handleSave} aria-labelledby="shop-settings-title">
+          <h2 id="shop-settings-title" className="font-display text-2xl uppercase">
+            Настройки магазина
           </h2>
-          <div className="mt-3">
-            <ShopStatusBadge status={shop.status} />
-          </div>
-          <p className="mt-3 text-sm leading-relaxed">{meta.description}</p>
+          <p className="mt-2 text-sm leading-relaxed text-ink/70">
+            Смена slug ломает старые ссылки на витрину.
+          </p>
 
-          <FormError message={statusError} />
-
-          {isDirty && !blocked ? (
-            <output className="mt-3 block text-sm font-semibold">
-              Сначала сохраните изменения.
-            </output>
+          {blocked ? (
+            <p
+              id="shop-blocked-note"
+              className="mt-4 border-l-[3px] border-accent-orange pl-2 text-sm font-semibold leading-relaxed"
+            >
+              Платформа заблокировала магазин: изменения недоступны.
+            </p>
           ) : null}
 
-          <div className="mt-4 flex flex-col gap-3">
-            {shop.status === "draft" ? (
-              <Button
-                type="button"
-                size="md"
-                className="w-full"
-                onClick={() => {
-                  setStatusError(null);
-                  statusMutation.mutate("published");
-                }}
-                disabled={statusLocked}
+          <fieldset
+            disabled={blocked}
+            aria-describedby={blocked ? "shop-blocked-note" : undefined}
+            className="mt-6"
+          >
+            <legend className="sr-only">Настройки магазина</legend>
+
+            <Stack gap={6}>
+              <FormField
+                id="shop-name"
+                label="Название"
+                hint="Так магазин увидят покупатели. До 80 символов."
+                error={errors.name}
               >
-                {publishPending ? "Публикуем…" : "Опубликовать"}
+                <input
+                  id="shop-name"
+                  name="name"
+                  type="text"
+                  autoComplete="organization"
+                  maxLength={80}
+                  value={name}
+                  onChange={(event) => {
+                    setName(event.target.value);
+                    if (errors.name) {
+                      setErrors((current) => ({ ...current, name: undefined }));
+                    }
+                  }}
+                  aria-invalid={errors.name ? true : undefined}
+                  aria-describedby={fieldDescribedBy(
+                    "shop-name",
+                    "Так магазин увидят покупатели. До 80 символов.",
+                    errors.name,
+                  )}
+                  className={fieldControlClass}
+                />
+              </FormField>
+
+              <FormField
+                id="shop-slug"
+                label="Slug"
+                hint={`Адрес витрины: /shops/${shop.slug}. ${SLUG_RULES}`}
+                error={errors.slug}
+              >
+                <input
+                  id="shop-slug"
+                  name="slug"
+                  type="text"
+                  autoCapitalize="none"
+                  autoComplete="off"
+                  spellCheck={false}
+                  maxLength={40}
+                  value={slug}
+                  onChange={(event) => {
+                    setSlug(event.target.value.toLowerCase());
+                    if (errors.slug) {
+                      setErrors((current) => ({ ...current, slug: undefined }));
+                    }
+                  }}
+                  aria-invalid={errors.slug ? true : undefined}
+                  aria-describedby={fieldDescribedBy(
+                    "shop-slug",
+                    `Адрес витрины: /shops/${shop.slug}. ${SLUG_RULES}`,
+                    errors.slug,
+                  )}
+                  className={cn(fieldControlClass, "font-mono")}
+                />
+              </FormField>
+
+              <FormField
+                id="shop-description"
+                label="Описание"
+                hint="Необязательно. До 2000 символов."
+                error={errors.description}
+              >
+                <textarea
+                  id="shop-description"
+                  name="description"
+                  rows={5}
+                  maxLength={2000}
+                  value={description}
+                  onChange={(event) => {
+                    setDescription(event.target.value);
+                    if (errors.description) {
+                      setErrors((current) => ({ ...current, description: undefined }));
+                    }
+                  }}
+                  aria-invalid={errors.description ? true : undefined}
+                  aria-describedby={fieldDescribedBy(
+                    "shop-description",
+                    "Необязательно. До 2000 символов.",
+                    errors.description,
+                  )}
+                  className={cn(fieldControlClass, "min-h-36 resize-y")}
+                />
+              </FormField>
+
+              <FormError message={formError} />
+
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full sm:w-auto"
+                disabled={busy || blocked}
+              >
+                {saveMutation.isPending ? "Сохраняем…" : "Сохранить изменения"}
               </Button>
+            </Stack>
+          </fieldset>
+        </Card>
+      </GridColumn>
+
+      <Sidebar>
+        <Stack gap={4}>
+          <Card as="section" aria-labelledby="shop-status-title">
+            <h2 id="shop-status-title" className="font-mono text-[10px] uppercase tracking-[0.2em]">
+              Статус
+            </h2>
+            <div className="mt-4">
+              <ShopStatusBadge status={shop.status} />
+            </div>
+            <p className="mt-4 text-sm leading-relaxed">{meta.description}</p>
+
+            <FormError message={statusError} />
+
+            {isDirty && !blocked ? (
+              <output className="mt-4 block text-sm font-semibold">
+                Сначала сохраните изменения.
+              </output>
             ) : null}
 
+            <div className="mt-6 flex flex-col gap-4">
+              {shop.status === "draft" ? (
+                <Button
+                  type="button"
+                  size="md"
+                  className="w-full"
+                  onClick={() => {
+                    setStatusError(null);
+                    statusMutation.mutate("published");
+                  }}
+                  disabled={statusLocked}
+                >
+                  {publishPending ? "Публикуем…" : "Опубликовать"}
+                </Button>
+              ) : null}
+
+              {shop.status === "published" ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="md"
+                  className="w-full"
+                  onClick={() => {
+                    setStatusError(null);
+                    statusMutation.mutate("draft");
+                  }}
+                  disabled={statusLocked}
+                >
+                  {unpublishPending ? "Снимаем…" : "Снять с публикации"}
+                </Button>
+              ) : null}
+            </div>
+          </Card>
+
+          <Card as="section" aria-labelledby="shop-public-title">
+            <h2 id="shop-public-title" className="font-mono text-[10px] uppercase tracking-[0.2em]">
+              Публичная ссылка
+            </h2>
+            <p className="mt-4 break-all font-mono text-xs">/shops/{shop.slug}</p>
             {shop.status === "published" ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="md"
-                className="w-full"
-                onClick={() => {
-                  setStatusError(null);
-                  statusMutation.mutate("draft");
-                }}
-                disabled={statusLocked}
+              <Link
+                to={`/shops/${shop.slug}`}
+                className="mt-4 inline-flex min-h-11 items-center gap-2 font-mono text-[10px] uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
               >
-                {unpublishPending ? "Снимаем…" : "Снять с публикации"}
-              </Button>
-            ) : null}
-          </div>
-        </section>
-
-        <section
-          aria-labelledby="shop-public-title"
-          className="border-[3px] border-ink bg-paper p-4 sm:p-5"
-        >
-          <h2 id="shop-public-title" className="font-mono text-[10px] uppercase tracking-[0.2em]">
-            Публичная ссылка
-          </h2>
-          <p className="mt-3 break-all font-mono text-xs">/shops/{shop.slug}</p>
-          {shop.status === "published" ? (
-            <Link
-              to={`/shops/${shop.slug}`}
-              className="mt-4 inline-flex min-h-11 items-center gap-2 font-mono text-[10px] uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
-            >
-              Открыть витрину
-              <ExternalLink aria-hidden="true" className="size-4" />
-            </Link>
-          ) : (
-            <p className="mt-3 text-sm leading-relaxed text-ink/70">
-              Ссылка станет публичной после публикации магазина.
-            </p>
-          )}
-        </section>
-      </aside>
-    </div>
+                Открыть витрину
+                <ExternalLink aria-hidden="true" className="size-4" />
+              </Link>
+            ) : (
+              <p className="mt-4 text-sm leading-relaxed text-ink/70">
+                Ссылка станет публичной после публикации магазина.
+              </p>
+            )}
+          </Card>
+        </Stack>
+      </Sidebar>
+    </Grid>
   );
 }

@@ -10,6 +10,7 @@ import { Link, useLocation } from "react-router";
 import { Announcer } from "../components/FormField.js";
 import { ScreenState } from "../components/ScreenState.js";
 import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
+import { PageHeader, PageShell, Stack } from "../components/layout/index.js";
 import { ApiError } from "../lib/api.js";
 import { useMyOrdersQuery } from "../lib/queries.js";
 import { pluralizeItems } from "../cart/item-count.js";
@@ -55,11 +56,11 @@ export function OrderItemsList({
   label?: string;
 }) {
   return (
-    <ul aria-label={label} className="mt-2 space-y-2">
+    <ul aria-label={label} className="mt-2 flex flex-col gap-2">
       {items.map((item, index) => (
         <li
           key={`${item.productId ?? "deleted"}-${index}`}
-          className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t-[3px] border-ink/15 pt-2 first:border-t-0 first:pt-0"
+          className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-t-[3px] border-ink/15 pt-2 first:border-t-0 first:pt-0"
         >
           {links && item.productId !== null ? (
             <Link
@@ -92,60 +93,54 @@ export function OrdersPage() {
   const orders = ordersQuery.data?.orders ?? [];
 
   return (
-    <div className="mx-auto max-w-[1100px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
-      <header className="border-b-[3px] border-ink pb-6">
-        <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text">
-          Local Hand
-        </p>
-        <h1 className="mt-2 font-display text-4xl uppercase leading-none sm:text-5xl">
-          Мои заказы
-        </h1>
-        <p className="mt-3 max-w-2xl text-pretty text-sm leading-relaxed">
-          Заказы, оформленные с вашего номера. Продавец свяжется по указанному телефону.
-        </p>
-      </header>
+    <PageShell className="py-10 sm:py-12">
+      <Stack gap={6}>
+        <PageHeader
+          eyebrow="Local Hand"
+          title="Мои заказы"
+          description="Заказы, оформленные с вашего номера. Продавец свяжется по указанному телефону."
+        />
 
-      <div className="mt-4">
         <Announcer message={checkoutDone ? "Заказ оформлен и передан продавцу." : ""} />
-      </div>
 
-      <div className="mt-6">
-        {ordersQuery.isPending ? (
-          <ScreenState
-            kind="loading"
-            title="Загружаем заказы"
-            description="Секунду — собираем ваши заявки."
-          />
-        ) : null}
+        <div>
+          {ordersQuery.isPending ? (
+            <ScreenState
+              kind="loading"
+              title="Загружаем заказы"
+              description="Секунду — собираем ваши заявки."
+            />
+          ) : null}
 
-        {ordersQuery.isError ? (
-          <OrdersLoadError error={ordersQuery.error} onRetry={() => void ordersQuery.refetch()} />
-        ) : null}
+          {ordersQuery.isError ? (
+            <OrdersLoadError error={ordersQuery.error} onRetry={() => void ordersQuery.refetch()} />
+          ) : null}
 
-        {ordersQuery.isSuccess && orders.length === 0 ? (
-          <ScreenState
-            kind="empty"
-            title="Заказов пока нет"
-            description="Добавьте товары в корзину и оформите первый заказ — он появится здесь."
-            action={
-              <Link to="/" className={buttonVariants({ variant: "outline" })}>
-                Перейти в каталог
-              </Link>
-            }
-          />
-        ) : null}
+          {ordersQuery.isSuccess && orders.length === 0 ? (
+            <ScreenState
+              kind="empty"
+              title="Заказов пока нет"
+              description="Добавьте товары в корзину и оформите первый заказ — он появится здесь."
+              action={
+                <Link to="/" className={buttonVariants({ variant: "outline" })}>
+                  Перейти в каталог
+                </Link>
+              }
+            />
+          ) : null}
 
-        {ordersQuery.isSuccess && orders.length > 0 ? (
-          <ul className="space-y-4">
-            {orders.map((order) => (
-              <li key={order.id}>
-                <OrderCard order={order} />
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </div>
-    </div>
+          {ordersQuery.isSuccess && orders.length > 0 ? (
+            <ul className="flex flex-col gap-4">
+              {orders.map((order) => (
+                <li key={order.id}>
+                  <OrderCard order={order} />
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      </Stack>
+    </PageShell>
   );
 }
 
@@ -157,14 +152,14 @@ function OrderCard({ order }: { order: OrderSummary }) {
       aria-labelledby={headingId}
       className="border-[3px] border-ink bg-paper shadow-brutal-sm"
     >
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b-[3px] border-ink p-4">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b-[3px] border-ink p-4">
         <div className="min-w-0">
           <h2 id={headingId} className="font-display text-xl uppercase">
             Заказ №{order.id}
           </h2>
           <time
             dateTime={order.createdAt}
-            className="mt-1 block font-mono text-[10px] uppercase tracking-wide text-ink/60"
+            className="mt-2 block font-mono text-[10px] uppercase tracking-wide text-ink/60"
           >
             {formatOrderDate(order.createdAt)}
           </time>
@@ -183,13 +178,13 @@ function OrderCard({ order }: { order: OrderSummary }) {
               {order.shop.name}
             </Link>
           </p>
-          <p className="mt-1 font-mono text-[10px] uppercase tracking-wide text-ink/60">
+          <p className="mt-2 font-mono text-[10px] uppercase tracking-wide text-ink/60">
             {pluralizeItems(order.items.length)}
           </p>
           <OrderItemsList items={order.items} label={`Состав заказа №${order.id}`} />
         </div>
 
-        <div className="flex flex-col items-start gap-3 sm:items-end">
+        <div className="flex flex-col items-start gap-4 sm:items-end">
           <p className="font-mono text-base font-semibold tabular-nums">
             {formatRubles(kopecks(order.totalKopecks))}
           </p>

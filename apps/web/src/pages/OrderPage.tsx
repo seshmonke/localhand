@@ -4,6 +4,15 @@ import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router";
 import { ScreenState } from "../components/ScreenState.js";
 import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
+import {
+  Card,
+  Grid,
+  GridColumn,
+  PageHeader,
+  PageShell,
+  Sidebar,
+  Stack,
+} from "../components/layout/index.js";
 import { ApiError } from "../lib/api.js";
 import { useOrderQuery } from "../lib/queries.js";
 import {
@@ -32,23 +41,23 @@ export function OrderPage() {
 
   if (!isValidId) {
     return (
-      <div className="mx-auto max-w-[1100px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
+      <PageShell className="py-10 sm:py-12">
         <h1 className="sr-only">Заказ</h1>
         <OrderNotFound />
-      </div>
+      </PageShell>
     );
   }
 
   if (orderQuery.isPending) {
     return (
-      <div className="mx-auto max-w-[1100px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
+      <PageShell className="py-10 sm:py-12">
         <h1 className="sr-only">Заказ №{orderId}</h1>
         <ScreenState
           kind="loading"
           title="Загружаем заказ"
           description="Секунду — проверяем детали."
         />
-      </div>
+      </PageShell>
     );
   }
 
@@ -56,23 +65,23 @@ export function OrderPage() {
     const error = orderQuery.error;
     if (error instanceof ApiError && error.status === 401) {
       return (
-        <div className="mx-auto max-w-[1100px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
+        <PageShell className="py-10 sm:py-12">
           <h1 className="sr-only">Заказ №{orderId}</h1>
           <SessionExpiredState next={`/orders/${orderId}`} />
-        </div>
+        </PageShell>
       );
     }
     if (error instanceof ApiError && error.status === 404) {
       return (
-        <div className="mx-auto max-w-[1100px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
+        <PageShell className="py-10 sm:py-12">
           <h1 className="sr-only">Заказ №{orderId}</h1>
           <OrderNotFound />
-        </div>
+        </PageShell>
       );
     }
 
     return (
-      <div className="mx-auto max-w-[1100px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
+      <PageShell className="py-10 sm:py-12">
         <h1 className="sr-only">Заказ №{orderId}</h1>
         <ScreenState
           kind="error"
@@ -80,118 +89,110 @@ export function OrderPage() {
           description="Проверьте соединение и попробуйте снова."
           action={<Button onClick={() => void orderQuery.refetch()}>Повторить</Button>}
         />
-      </div>
+      </PageShell>
     );
   }
 
   const order = orderQuery.data.order;
 
   return (
-    <div className="mx-auto max-w-[1100px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
-      <BackToOrders />
+    <PageShell className="py-10 sm:py-12">
+      <Stack gap={8}>
+        <Stack gap={4}>
+          <BackToOrders />
 
-      <header className="mt-4 border-b-[3px] border-ink pb-6">
-        <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text">
-          Заказ
-        </p>
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-          <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">
-            Заказ №{order.id}
-          </h1>
-          <OrderStatusBadge status={order.status} />
-        </div>
-        <time
-          dateTime={order.createdAt}
-          className="mt-3 block font-mono text-[10px] uppercase tracking-wide text-ink/60"
-        >
-          Создан {formatOrderDate(order.createdAt)}
-        </time>
-      </header>
+          <PageHeader
+            eyebrow="Заказ"
+            title={`Заказ №${order.id}`}
+            actions={<OrderStatusBadge status={order.status} />}
+            description={`Создан ${formatOrderDate(order.createdAt)}`}
+            descriptionClassName="font-mono text-[10px] uppercase tracking-wide text-ink/60"
+          />
+        </Stack>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
-        <section
-          aria-labelledby="order-items-title"
-          className="min-w-0 border-[3px] border-ink bg-paper p-4 sm:p-6"
-        >
-          <h2 id="order-items-title" className="font-display text-2xl uppercase">
-            Состав
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed">
-            Магазин:{" "}
-            <Link
-              to={`/shops/${order.shop.slug}`}
-              className="break-words font-semibold underline-offset-4 hover:underline"
-            >
-              {order.shop.name}
-            </Link>
-          </p>
-          <OrderItemsList items={order.items} label={`Состав заказа №${order.id}`} />
-          <div className="mt-5 flex justify-between gap-4 border-t-[3px] border-ink pt-4 font-mono text-base">
-            <span className="uppercase">Итого</span>
-            <span className="font-semibold tabular-nums">
-              {formatRubles(kopecks(order.totalKopecks))}
-            </span>
-          </div>
-        </section>
-
-        <aside className="space-y-4">
-          <section
-            aria-labelledby="order-contact-title"
-            className="border-[3px] border-ink bg-paper p-4 sm:p-5"
-          >
-            <h2
-              id="order-contact-title"
-              className="font-mono text-[10px] uppercase tracking-[0.2em]"
-            >
-              Контакты
-            </h2>
-            <dl className="mt-3 space-y-3 text-sm">
-              <div>
-                <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
-                  Телефон
-                </dt>
-                <dd className="mt-1 font-mono text-sm font-semibold">
-                  <a
-                    href={`tel:${order.buyerPhone}`}
-                    className="underline-offset-4 hover:underline"
-                  >
-                    {formatOrderPhone(order.buyerPhone)}
-                  </a>
-                </dd>
+        <Grid className="gap-y-6 lg:items-start">
+          <GridColumn span={8}>
+            <Card as="section" aria-labelledby="order-items-title">
+              <h2 id="order-items-title" className="font-display text-2xl uppercase">
+                Состав
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed">
+                Магазин:{" "}
+                <Link
+                  to={`/shops/${order.shop.slug}`}
+                  className="break-words font-semibold underline-offset-4 hover:underline"
+                >
+                  {order.shop.name}
+                </Link>
+              </p>
+              <OrderItemsList items={order.items} label={`Состав заказа №${order.id}`} />
+              <div className="mt-6 flex justify-between gap-4 border-t-[3px] border-ink pt-4 font-mono text-base">
+                <span className="uppercase">Итого</span>
+                <span className="font-semibold tabular-nums">
+                  {formatRubles(kopecks(order.totalKopecks))}
+                </span>
               </div>
-              <div>
-                <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
-                  Комментарий
-                </dt>
-                <dd className="mt-1 break-words leading-relaxed">
-                  {order.comment ?? "Без комментария"}
-                </dd>
-              </div>
-            </dl>
-          </section>
+            </Card>
+          </GridColumn>
 
-          <section
-            aria-labelledby="order-help-title"
-            className="border-[3px] border-ink bg-inverse p-4 text-inverse-text sm:p-5"
-          >
-            <h2 id="order-help-title" className="font-mono text-[10px] uppercase tracking-[0.2em]">
-              Что дальше
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-inverse-text/85">
-              Продавец увидит заказ и свяжется с вами по телефону. Оплата и доставка появятся в
-              следующих обновлениях.
-            </p>
-          </section>
+          <Sidebar>
+            <Stack gap={4}>
+              <Card as="section" aria-labelledby="order-contact-title">
+                <h2
+                  id="order-contact-title"
+                  className="font-mono text-[10px] uppercase tracking-[0.2em]"
+                >
+                  Контакты
+                </h2>
+                <dl className="mt-4 flex flex-col gap-4 text-sm">
+                  <div>
+                    <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
+                      Телефон
+                    </dt>
+                    <dd className="mt-2 font-mono text-sm font-semibold">
+                      <a
+                        href={`tel:${order.buyerPhone}`}
+                        className="underline-offset-4 hover:underline"
+                      >
+                        {formatOrderPhone(order.buyerPhone)}
+                      </a>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
+                      Комментарий
+                    </dt>
+                    <dd className="mt-2 break-words leading-relaxed">
+                      {order.comment ?? "Без комментария"}
+                    </dd>
+                  </div>
+                </dl>
+              </Card>
 
-          <Link
-            to="/orders"
-            className={buttonVariants({ variant: "outline", className: "w-full" })}
-          >
-            Все заказы
-          </Link>
-        </aside>
-      </div>
-    </div>
+              <Card as="section" tone="inverse" aria-labelledby="order-help-title">
+                <h2
+                  id="order-help-title"
+                  className="font-mono text-[10px] uppercase tracking-[0.2em]"
+                >
+                  Что дальше
+                </h2>
+                <p className="mt-4 text-sm leading-relaxed text-inverse-text/85">
+                  Продавец увидит заказ и свяжется с вами по телефону. Оплата и доставка появятся в
+                  следующих обновлениях.
+                </p>
+              </Card>
+
+              <Link
+                to="/orders"
+                className={buttonVariants({ variant: "outline", className: "w-full" })}
+              >
+                Все заказы
+              </Link>
+            </Stack>
+          </Sidebar>
+        </Grid>
+      </Stack>
+    </PageShell>
   );
 }
 
