@@ -1,8 +1,9 @@
-import { formatRubles, kopecks } from "@localhand/shared";
+import { formatRubles, kopecks, type OrderPayment } from "@localhand/shared";
 import { Button, buttonVariants } from "@localhand/ui";
 import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router";
 import { ScreenState } from "../components/ScreenState.js";
+import { PaymentStatusBadge } from "../components/admin/PaymentStatusBadge.js";
 import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
 import {
   Card,
@@ -14,7 +15,7 @@ import {
   Stack,
 } from "../components/layout/index.js";
 import { ApiError } from "../lib/api.js";
-import { useSellerOrderQuery } from "../lib/queries.js";
+import { useSellerOrderPaymentQuery, useSellerOrderQuery } from "../lib/queries.js";
 import {
   formatOrderDate,
   formatOrderPhone,
@@ -27,6 +28,7 @@ export function AdminOrderPage() {
   const orderId = Number(id);
   const isValidId = Number.isInteger(orderId) && orderId > 0;
   const orderQuery = useSellerOrderQuery(isValidId ? orderId : 0);
+  const paymentQuery = useSellerOrderPaymentQuery(isValidId ? orderId : 0, orderQuery.isSuccess);
 
   if (!isValidId) {
     return (
@@ -166,6 +168,13 @@ export function AdminOrderPage() {
                 </dl>
               </Card>
 
+              <AdminOrderPaymentCard
+                payment={paymentQuery.data?.payment ?? null}
+                loading={paymentQuery.isPending}
+                error={paymentQuery.isError}
+                onRetry={() => void paymentQuery.refetch()}
+              />
+
               <Card as="section" tone="inverse" aria-labelledby="admin-order-help-title">
                 <h2
                   id="admin-order-help-title"
@@ -174,8 +183,8 @@ export function AdminOrderPage() {
                   Что дальше
                 </h2>
                 <p className="mt-4 text-sm leading-relaxed text-inverse-text/85">
-                  Свяжитесь с покупателем по телефону и согласуйте передачу вещи. Статусы и оплата
-                  появятся в следующих обновлениях.
+                  Свяжитесь с покупателем по телефону и согласуйте передачу вещи. Статус оплаты
+                  показывается отдельно от статуса заказа.
                 </p>
               </Card>
 
@@ -190,6 +199,86 @@ export function AdminOrderPage() {
         </Grid>
       </Stack>
     </PageShell>
+  );
+}
+
+function AdminOrderPaymentCard({
+  payment,
+  loading,
+  error,
+  onRetry,
+}: {
+  payment: OrderPayment | null;
+  loading: boolean;
+  error: boolean;
+  onRetry: () => void;
+}) {
+  return (
+    <Card as="section" aria-labelledby="admin-order-payment-title">
+      <h2
+        id="admin-order-payment-title"
+        className="font-mono text-[10px] uppercase tracking-[0.2em]"
+      >
+        Оплата
+      </h2>
+
+      {loading ? (
+        <output aria-live="polite" className="mt-4 block text-sm">
+          Загружаем оплату…
+        </output>
+      ) : null}
+
+      {error ? (
+        <p className="mt-4 text-sm leading-relaxed">
+          Не удалось загрузить оплату.{" "}
+          <button
+            type="button"
+            className="underline decoration-[3px] underline-offset-4"
+            onClick={onRetry}
+          >
+            Повторить
+          </button>
+        </p>
+      ) : null}
+
+      {!loading && !error && payment === null ? (
+        <p className="mt-4 text-sm leading-relaxed">Платёж не начат. Покупатель ещё не оплатил.</p>
+      ) : null}
+
+      {payment ? (
+        <>
+          <div className="mt-4">
+            <PaymentStatusBadge status={payment.status} />
+          </div>
+          <dl className="mt-4 flex flex-col gap-2 text-sm">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">Сумма</dt>
+              <dd className="font-mono text-sm font-semibold">
+                {formatRubles(kopecks(payment.amountKopecks))}
+              </dd>
+            </div>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">Создан</dt>
+              <dd className="font-mono text-xs">{formatOrderDate(payment.createdAt)}</dd>
+            </div>
+            {payment.paidAt ? (
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
+                  Оплачен
+                </dt>
+                <dd className="font-mono text-xs">{formatOrderDate(payment.paidAt)}</dd>
+              </div>
+            ) : null}
+          </dl>
+          {payment.status === "manual_review" ? (
+            <p className="mt-4 border-l-[3px] border-accent-red pl-2 text-sm font-semibold leading-relaxed">
+              Платёж требует ручной проверки. Разберите его по runbook payments-manual-review: заказ
+              не переводится в «Оплачен» автоматически.
+            </p>
+          ) : null}
+        </>
+      ) : null}
+    </Card>
   );
 }
 

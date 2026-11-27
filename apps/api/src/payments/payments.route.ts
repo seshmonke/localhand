@@ -419,7 +419,13 @@ export const paymentsRoutes: FastifyPluginAsyncZod = async (app) => {
         schema: {
           params: z.object({ id: OrderIdSchema }),
           response: {
-            200: z.object({ ok: z.literal(true) }),
+            // Dev-only response: the fake page calls the real webhook with
+            // `providerPaymentId` and returns the buyer to `orderId`.
+            200: z.object({
+              ok: z.literal(true),
+              orderId: OrderIdSchema,
+              providerPaymentId: z.string().min(1).max(255),
+            }),
             400: PaymentErrorSchema,
             401: PaymentErrorSchema,
             404: PaymentErrorSchema,
@@ -437,6 +443,7 @@ export const paymentsRoutes: FastifyPluginAsyncZod = async (app) => {
         const [row] = await db()
           .select({
             id: payments.id,
+            orderId: payments.orderId,
             status: payments.status,
             providerPaymentId: payments.providerPaymentId,
             buyerUserId: orders.buyerUserId,
@@ -454,7 +461,11 @@ export const paymentsRoutes: FastifyPluginAsyncZod = async (app) => {
         }
 
         runtime.provider.completePayment(row.providerPaymentId);
-        return { ok: true as const };
+        return {
+          ok: true as const,
+          orderId: row.orderId,
+          providerPaymentId: row.providerPaymentId,
+        };
       },
     );
   }

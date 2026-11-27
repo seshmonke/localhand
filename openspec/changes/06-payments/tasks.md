@@ -23,7 +23,7 @@ PBI делится на два PR/цикла: **A. foundation** (схема, к�
 - [x] 2.1 `POST /seller/payments/connect`: HMAC-state (TTL 10 мин, seller_id), `consentUrl`, `YOOKASSA_REDIRECT_URI`.
 - [x] 2.2 `GET /seller/payments/callback`: сессия продавца, state/TTL/sellerId, exchange code, `getAccountInfo`, `subscribeWebhooks`, encrypt token, новая версия аккаунта, старая `superseded`; ошибка подписки → `error` только для новой версии, текущий active не трогать; `isTest` в `live` отклоняется.
 - [x] 2.3 `GET /seller/payments/account`: текущая версия `active|error|disabled` или `null` (маска, `isTest`, `expiresAt`); `DELETE` (`disabled`, 409 при активных платежах, токен для поздних вебхуков); `unsubscribeWebhooks`, best-effort `revoke`, идемпотентная повторная подписка.
-- [ ] 2.4 UI `/admin/shop`: карточка «Приём платежей», статусы active/error/disabled, тестовый бейдж, подключить/отключить/повторить.
+- [x] 2.4 UI `/admin/shop`: карточка «Приём платежей», статусы active/error/disabled, тестовый бейдж, подключить/отключить/повторить.
 - [x] 2.5 Тесты: 401, чужой seller, state, повторное подключение/версии, ошибка подписки, disconnect с платежом, истёкший токен → error.
 
 ## 3. Платёж и вебхук (PR B)
@@ -37,7 +37,7 @@ PBI делится на два PR/цикла: **A. foundation** (схема, к�
 > PR B1: rate-limit, no-store и логи без PII/токена/тела сделаны;
 > runbook `payments-manual-review.md` — PR B2.
 
-- [ ] 3.7 Логи/метрики: коды без PII/токена/тела, rate-limit вебхука 60/мин, no-store на всех ответах; runbook `payments-manual-review.md` с тремя исходами: платежа нет → canceled/new, возврат в ЮKassa → canceled/new, оплата подтверждена → succeeded/paid + provider id/paid_at.
+- [x] 3.7 Логи/метрики: коды без PII/токена/тела, rate-limit вебхука 60/мин, no-store на всех ответах; runbook `payments-manual-review.md` с тремя исходами: платежа нет → canceled/new, возврат в ЮKassa → canceled/new, оплата подтверждена → succeeded/paid + provider id/paid_at.
 
 > PR B1 review #2: stale `failed`-ключ проходит повторный гейт под
 > order-lock, retry берёт active-аккаунт продавца и свежий `createdAt`;
@@ -47,15 +47,15 @@ PBI делится на два PR/цикла: **A. foundation** (схема, к�
 
 ## 4. UI оплаты (PR B)
 
-- [ ] 4.1 `/orders/:id`: приоритет статуса платежа над заказом (`manual_review` → «Требует проверки», `pending` → «Ожидает оплаты» даже при `new`), «Оплатить» для `new`, `paid`; `Idempotency-Key` хранится на попытку (sessionStorage/ref), при 409 — перечитать `GET /orders/:id/payment`; return URL, polling 3 с до 60 с, «Проверить ещё раз».
-- [ ] 4.2 `/checkout` → заказ: переход к оплате или честный статус «оплата не подключена».
-- [ ] 4.3 `/admin/orders/:id` и список: статус/сумма оплаты, отдельный бейдж `manual_review`, `statusLabels` для новых статусов; без кнопки оплаты.
-- [ ] 4.4 Ошибки 409/429/502 и manual_review: тексты без техники, disabled/double-submit, focus/labels, axe light/dark.
+- [x] 4.1 `/orders/:id`: приоритет статуса платежа над заказом (`manual_review` → «Требует проверки», `pending` → «Ожидает оплаты» даже при `new`), «Оплатить» для `new`, `paid`; `Idempotency-Key` хранится на попытку (sessionStorage/ref), при 409 — перечитать `GET /orders/:id/payment`; return URL, polling 3 с до 60 с, «Проверить ещё раз».
+- [x] 4.2 `/checkout` → заказ: переход к оплате или честный статус «оплата не подключена».
+- [x] 4.3 `/admin/orders/:id` и список: статус/сумма оплаты, отдельный бейдж `manual_review`, `statusLabels` для новых статусов; без кнопки оплаты.
+- [x] 4.4 Ошибки 409/429/502 и manual_review: тексты без техники, disabled/double-submit, focus/labels, axe light/dark.
 
 ## 5. Проверка и evidence
 
 - [x] 5.1 Unit: crypto roundtrip/tamper/rotation, fake-провайдер, state HMAC, amount match.
 - [x] 5.2 API e2e: buyer → payment → fake complete → webhook → order paid; seller sees paid; replay no-op; unknown 503 → retry; 5xx same-key retry, 4xx new-key retry.
-- [ ] 5.3 Browser e2e: оплата из заказа, возврат, статус, manual_review; axe; preview LCP <2500.
-- [ ] 5.4 `pnpm verify`, `openspec validate 06-payments --strict`, bundle delta; evidence в `.scrum/sprints/3/evidence/S3-1-*`.
+- [x] 5.3 Browser e2e: оплата из заказа, возврат, статус, manual_review; axe; preview LCP <2500.
+- [x] 5.4 `pnpm verify`, `openspec validate 06-payments --strict`, bundle delta; evidence в `.scrum/sprints/3/evidence/S3-1b2-*`.
 - [ ] 5.5 Live sandbox smoke после тестовых ключей владельца; без ключей — P3, не блокирует merge.

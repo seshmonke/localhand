@@ -5,9 +5,12 @@ import {
   fetchMe,
   fetchMyOrders,
   fetchOrder,
+  fetchOrderPayment,
   fetchProduct,
   fetchSellerOrder,
+  fetchSellerOrderPayment,
   fetchSellerOrders,
+  fetchSellerPaymentAccount,
   fetchSellerProducts,
   fetchSellerShop,
   fetchShop,
@@ -23,12 +26,15 @@ export const sellerKeys = {
   products: ["seller", "products"] as const,
   orders: ["seller", "orders"] as const,
   order: (id: number) => ["seller", "orders", id] as const,
+  orderPayment: (id: number) => ["seller", "orders", id, "payment"] as const,
+  paymentsAccount: ["seller", "payments", "account"] as const,
 };
 
 export const orderKeys = {
   all: ["orders"] as const,
   mine: ["orders", "mine"] as const,
   detail: (id: number) => ["orders", "detail", id] as const,
+  payment: (id: number) => ["orders", "detail", id, "payment"] as const,
 };
 
 export async function clearSellerQueries(queryClient: QueryClient): Promise<void> {
@@ -95,6 +101,44 @@ export function useSellerOrderQuery(id: number) {
     queryKey: sellerKeys.order(id),
     queryFn: () => fetchSellerOrder(id),
     enabled: Number.isInteger(id) && id > 0,
+    retry: false,
+  });
+}
+
+export function useSellerPaymentAccountQuery() {
+  return useQuery({
+    queryKey: sellerKeys.paymentsAccount,
+    queryFn: fetchSellerPaymentAccount,
+    retry: false,
+  });
+}
+
+export type OrderPaymentQueryOptions = {
+  enabled?: boolean;
+  /** Poll every 3s while a return-from-provider flow is waiting for a result. */
+  poll?: boolean;
+};
+
+export function useOrderPaymentQuery(id: number, options: OrderPaymentQueryOptions = {}) {
+  return useQuery({
+    queryKey: orderKeys.payment(id),
+    queryFn: () => fetchOrderPayment(id),
+    enabled: (options.enabled ?? true) && Number.isInteger(id) && id > 0,
+    retry: false,
+    refetchInterval: options.poll
+      ? (query) => {
+          const status = query.state.data?.payment?.status;
+          return status === undefined || status === "pending" ? 3_000 : false;
+        }
+      : false,
+  });
+}
+
+export function useSellerOrderPaymentQuery(id: number, enabled = true) {
+  return useQuery({
+    queryKey: sellerKeys.orderPayment(id),
+    queryFn: () => fetchSellerOrderPayment(id),
+    enabled: enabled && Number.isInteger(id) && id > 0,
     retry: false,
   });
 }

@@ -5,6 +5,24 @@ checkout → заказ → `/orders`, затем вход продавца и �
 `/admin/orders`. Плюс axe light/dark на 320/1440 и lab-замер LCP на `/`
 и `/checkout`.
 
+Спринт 3 добавил оплату (`payments-flow.spec.ts`, `payments-a11y.spec.ts`):
+продавец подключает fake-провайдера через `/dev/payments/connect`,
+покупатель платит через `/dev/payments/:id/complete`, вебхук переводит
+заказ в `paid`, продавец видит оплату; отдельно проверяются 409-retry и
+UI `manual_review`. Для этих спеков API обязан работать с fake-провайдером:
+
+```bash
+PAYMENTS_PROVIDER=fake PAYMENTS_ENV=test PAYMENTS_FAKE_ENABLED=true \
+PAYMENTS_STATE_SECRET=... PAYMENTS_TOKEN_KEYS='{"1":"..."}' \
+PAYMENTS_TOKEN_KEY_VERSION=1 \
+PAYMENTS_WEBHOOK_URL=http://localhost:3000/payments/yookassa/webhook
+```
+
+Dev-страницы `/dev/payments/*` собираются только в dev-сборке web; в
+production-бандле их нет. На preview проверяются обычные страницы оплаты
+(карточка продавца, заказ, списки) — `payments-a11y.spec.ts`; сам fake-флоу
+запускается против dev 5173.
+
 ## CI и границы гейта
 
 **Browser e2e не входит в CI и не запускается из `pnpm verify`.** В CI

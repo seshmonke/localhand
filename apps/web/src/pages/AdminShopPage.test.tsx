@@ -68,6 +68,7 @@ describe("AdminShopPage", () => {
     installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
       "GET /seller/shop": { body: { shop: draftShop } },
+      "GET /seller/payments/account": { body: { account: null } },
       "PATCH /seller/shop": ({ body }) => {
         patchBody = body;
         return { body: { shop: { ...draftShop, status: "published" } } };
@@ -92,6 +93,7 @@ describe("AdminShopPage", () => {
     installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
       "GET /seller/shop": { body: { shop: draftShop } },
+      "GET /seller/payments/account": { body: { account: null } },
       "PATCH /seller/shop": ({ body }) => {
         const patch = body as Partial<typeof draftShop>;
         return { body: { shop: { ...draftShop, ...patch } } };
@@ -122,6 +124,7 @@ describe("AdminShopPage", () => {
     installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
       "GET /seller/shop": { body: { shop: blockedShop } },
+      "GET /seller/payments/account": { body: { account: null } },
     });
 
     renderApp(["/admin/shop"]);
@@ -145,6 +148,7 @@ describe("AdminShopPage", () => {
       "GET /auth/me": () =>
         loggedIn ? { body: { user: demoUser } } : { status: 401, body: { error: "unauthorized" } },
       "GET /seller/shop": { body: { shop: draftShop } },
+      "GET /seller/payments/account": { body: { account: null } },
       "POST /auth/logout": () => {
         loggedIn = false;
         return { status: 204 };

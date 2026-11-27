@@ -3,17 +3,20 @@ import {
   kopecks,
   ORDER_STATUS_LABELS,
   type OrderItem,
+  type OrderPayment,
   type OrderStatus,
   type OrderSummary,
 } from "@localhand/shared";
 import { Button, buttonVariants } from "@localhand/ui";
+import { useQueries } from "@tanstack/react-query";
 import { Link, useLocation } from "react-router";
 import { Announcer } from "../components/FormField.js";
 import { ScreenState } from "../components/ScreenState.js";
+import { PaymentStatusBadge } from "../components/admin/PaymentStatusBadge.js";
 import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
 import { PageHeader, PageShell, Stack } from "../components/layout/index.js";
-import { ApiError } from "../lib/api.js";
-import { useMyOrdersQuery } from "../lib/queries.js";
+import { ApiError, fetchOrderPayment } from "../lib/api.js";
+import { orderKeys, useMyOrdersQuery } from "../lib/queries.js";
 import { pluralizeItems } from "../cart/item-count.js";
 
 const statusLabels: Record<OrderStatus, string> = ORDER_STATUS_LABELS;
@@ -128,22 +131,40 @@ export function OrdersPage() {
             />
           ) : null}
 
-          {ordersQuery.isSuccess && orders.length > 0 ? (
-            <ul className="flex flex-col gap-4">
-              {orders.map((order) => (
-                <li key={order.id}>
-                  <OrderCard order={order} />
-                </li>
-              ))}
-            </ul>
-          ) : null}
+          {ordersQuery.isSuccess && orders.length > 0 ? <OrdersList orders={orders} /> : null}
         </div>
       </Stack>
     </PageShell>
   );
 }
 
-function OrderCard({ order }: { order: OrderSummary }) {
+/**
+ * Loads the payment status for each visible order. There is no pagination yet,
+ * so one read per order is bounded by the list size; the keys match the order
+ * detail page, so opening an order reuses the cached read.
+ */
+function OrdersList({ orders }: { orders: OrderSummary[] }) {
+  const payments = useQueries({
+    queries: orders.map((order) => ({
+      queryKey: orderKeys.payment(order.id),
+      queryFn: () => fetchOrderPayment(order.id),
+      retry: false,
+      staleTime: 15_000,
+    })),
+  });
+
+  return (
+    <ul className="flex flex-col gap-4">
+      {orders.map((order, index) => (
+        <li key={order.id}>
+          <OrderCard order={order} payment={payments[index]?.data?.payment ?? null} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function OrderCard({ order, payment }: { order: OrderSummary; payment: OrderPayment | null }) {
   const headingId = `order-card-${order.id}`;
 
   return (
@@ -177,6 +198,16 @@ function OrderCard({ order }: { order: OrderSummary }) {
               {order.shop.name}
             </Link>
           </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="Статус оплаты">
+            <span className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
+              Оплата
+            </span>
+            {payment ? (
+              <PaymentStatusBadge status={payment.status} />
+            ) : (
+              <span className="text-sm">Оплата не подключена</span>
+            )}
+          </div>
           <p className="mt-2 font-mono text-[10px] uppercase tracking-wide text-ink/60">
             {pluralizeItems(order.items.length)}
           </p>

@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Button, buttonVariants } from "@localhand/ui";
 import { Menu, Search, ShoppingBag, TriangleAlert } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { Link, Navigate, Outlet, Route, Routes, useLocation } from "react-router";
 import { CartProvider, useCart } from "./cart/CartContext.js";
 import { pluralizeItems } from "./cart/item-count.js";
@@ -24,6 +24,35 @@ import { OrderPage } from "./pages/OrderPage.js";
 import { OrdersPage } from "./pages/OrdersPage.js";
 import { ProductPage } from "./pages/ProductPage.js";
 import { ShopPage } from "./pages/ShopPage.js";
+
+/**
+ * Fake-provider pages exist only in the dev server. The dynamic imports sit
+ * behind `import.meta.env.DEV`, so a production build contains neither the
+ * routes nor their chunks.
+ */
+const DevPaymentsConnectPage = import.meta.env.DEV
+  ? lazy(() =>
+      import("./pages/DevPaymentsConnectPage.js").then((module) => ({
+        default: module.DevPaymentsConnectPage,
+      })),
+    )
+  : null;
+const DevPaymentCompletePage = import.meta.env.DEV
+  ? lazy(() =>
+      import("./pages/DevPaymentCompletePage.js").then((module) => ({
+        default: module.DevPaymentCompletePage,
+      })),
+    )
+  : null;
+
+function DevPaymentPage({ page }: { page: NonNullable<typeof DevPaymentsConnectPage> }) {
+  const Page = page;
+  return (
+    <Suspense fallback={null}>
+      <Page />
+    </Suspense>
+  );
+}
 
 function Header() {
   const { count } = useCart();
@@ -249,6 +278,19 @@ export function App() {
           </Route>
 
           <Route path="/login" element={<LoginPage />} />
+
+          {DevPaymentsConnectPage ? (
+            <Route
+              path="/dev/payments/connect"
+              element={<DevPaymentPage page={DevPaymentsConnectPage} />}
+            />
+          ) : null}
+          {DevPaymentCompletePage ? (
+            <Route
+              path="/dev/payments/:id/complete"
+              element={<DevPaymentPage page={DevPaymentCompletePage} />}
+            />
+          ) : null}
 
           <Route path="/admin" element={<AdminGuard />}>
             <Route element={<AdminShell />}>

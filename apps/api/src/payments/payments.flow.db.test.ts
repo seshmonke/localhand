@@ -638,6 +638,13 @@ describeWithDb("payments flow API", () => {
 
     const complete = await request(app, buyer, "POST", `/dev/payments/${payment.id}/complete`);
     expect(complete.statusCode).toBe(200);
+    // The dev-only fake page needs the provider id to call the real webhook and
+    // the order id to return the buyer to the order screen.
+    expect(complete.json()).toMatchObject({
+      ok: true,
+      orderId,
+      providerPaymentId: expect.any(String),
+    });
 
     const row = await paymentRow(payment.id);
     expect(row.provider_payment_id).toBeTruthy();

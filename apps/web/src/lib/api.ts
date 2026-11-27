@@ -4,13 +4,18 @@ import {
   type Checkout,
   CheckoutResponseSchema,
   type CreateProduct,
+  CreatePaymentResponseSchema,
   type CreateShop,
+  IDEMPOTENCY_KEY_HEADER,
   MeResponseSchema,
   OrderListResponseSchema,
+  OrderPaymentResponseSchema,
   OrderResponseSchema,
+  PaymentConnectResponseSchema,
   ProductDetailSchema,
   type RequestCodeRequest,
   RequestCodeResponseSchema,
+  SellerPaymentAccountResponseSchema,
   SellerProductListResponseSchema,
   SellerProductResponseSchema,
   SellerShopResponseSchema,
@@ -26,8 +31,9 @@ type Parser<T> = {
 };
 
 type RequestOptions = {
-  method?: "GET" | "POST" | "PATCH";
+  method?: "GET" | "POST" | "PATCH" | "DELETE";
   body?: unknown;
+  headers?: Record<string, string>;
 };
 
 export class ApiNotFoundError extends Error {
@@ -72,7 +78,10 @@ export async function requestJson<T>(
   options: RequestOptions = {},
   schema?: Parser<T>,
 ): Promise<T> {
-  const headers: Record<string, string> = { Accept: "application/json" };
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    ...options.headers,
+  };
   if (options.body !== undefined) {
     headers["Content-Type"] = "application/json";
   }
@@ -207,4 +216,76 @@ export function fetchSellerOrders() {
 
 export function fetchSellerOrder(id: number) {
   return requestJson(`/seller/orders/${encodeURIComponent(String(id))}`, {}, OrderResponseSchema);
+}
+
+export function fetchSellerPaymentAccount() {
+  return requestJson("/seller/payments/account", {}, SellerPaymentAccountResponseSchema);
+}
+
+export function connectSellerPayments() {
+  return requestJson("/seller/payments/connect", { method: "POST" }, PaymentConnectResponseSchema);
+}
+
+export function completeSellerPaymentConnection(code: string, state: string) {
+  const params = new URLSearchParams({ code, state });
+  return requestJson(
+    `/seller/payments/callback?${params.toString()}`,
+    {},
+    SellerPaymentAccountResponseSchema,
+  );
+}
+
+export function disconnectSellerPayments() {
+  return requestJson(
+    "/seller/payments/account",
+    { method: "DELETE" },
+    SellerPaymentAccountResponseSchema,
+  );
+}
+
+export function fetchOrderPayment(orderId: number) {
+  return requestJson(
+    `/orders/${encodeURIComponent(String(orderId))}/payment`,
+    {},
+    OrderPaymentResponseSchema,
+  );
+}
+
+export function createOrderPayment(orderId: number, idempotencyKey: string) {
+  return requestJson(
+    `/orders/${encodeURIComponent(String(orderId))}/payments`,
+    {
+      method: "POST",
+      headers: { [IDEMPOTENCY_KEY_HEADER]: idempotencyKey },
+    },
+    CreatePaymentResponseSchema,
+  );
+}
+
+export function fetchSellerOrderPayment(orderId: number) {
+  return requestJson(
+    `/seller/orders/${encodeURIComponent(String(orderId))}/payment`,
+    {},
+    OrderPaymentResponseSchema,
+  );
+}
+
+/** Dev-only fake payment hook. The route exists only with the fake provider. */
+export function completeDevPayment(paymentId: number) {
+  return requestJson<{ ok: true; orderId: number; providerPaymentId: string }>(
+    `/dev/payments/${encodeURIComponent(String(paymentId))}/complete`,
+    { method: "POST" },
+  );
+}
+
+/** Dev-only helper: drive the real webhook after a fake completion. */
+export function sendPaymentWebhook(providerPaymentId: string) {
+  return requestJson<{ ok: true }>("/payments/yookassa/webhook", {
+    method: "POST",
+    body: {
+      type: "payment.succeeded",
+      event: "payment.succeeded",
+      object: { id: providerPaymentId, status: "succeeded" },
+    },
+  });
 }

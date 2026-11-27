@@ -12,6 +12,7 @@ import {
   FormField,
 } from "../components/FormField.js";
 import { ScreenState } from "../components/ScreenState.js";
+import { SellerPaymentsCard } from "../components/admin/SellerPaymentsCard.js";
 import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
 import {
   Card,
@@ -627,6 +628,8 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
               ) : null}
             </div>
           </Card>
+
+          <SellerPaymentsCard />
 
           <Card as="section" aria-labelledby="shop-public-title">
             <h2 id="shop-public-title" className="font-mono text-[10px] uppercase tracking-[0.2em]">
