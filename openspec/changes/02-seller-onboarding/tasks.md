@@ -2,12 +2,12 @@
 
 ## 1. Auth
 
-- [ ] 1.1 Добавить `users`, `otp_codes`, `sellers.user_id` и миграцию.
-- [ ] 1.2 Добавить Zod-контракты auth в `packages/shared`.
-- [ ] 1.3 Реализовать `POST /auth/request-code` с rate-limit и dev/SMS-адаптером.
-- [ ] 1.4 Реализовать `POST /auth/verify-code`, JWT httpOnly-cookie и создание user.
-- [ ] 1.5 Реализовать `GET /auth/me` и `POST /auth/logout`.
-- [ ] 1.6 Покрыть auth-тестами: валидный/неверный/просроченный код, лимит, нет cookie, dev в prod.
+- [x] 1.1 Добавить `users`, `otp_codes`, `sellers.user_id` и миграцию.
+- [x] 1.2 Добавить Zod-контракты auth в `packages/shared`.
+- [x] 1.3 Реализовать `POST /auth/request-code` с rate-limit и dev/SMS-адаптером.
+- [x] 1.4 Реализовать `POST /auth/verify-code`, JWT httpOnly-cookie и создание user.
+- [x] 1.5 Реализовать `GET /auth/me` и `POST /auth/logout`.
+- [x] 1.6 Покрыть auth-тестами: валидный/неверный/просроченный код, лимит, нет cookie, dev в prod.
 
 ## 2. Shop
 
