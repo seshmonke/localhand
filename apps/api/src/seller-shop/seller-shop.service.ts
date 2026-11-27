@@ -89,13 +89,14 @@ export async function createShop(userId: number, input: CreateShop): Promise<Cre
 }
 
 export type UpdateShopResult =
-  { ok: true; shop: SellerShop } | { ok: false; error: "not_found" | "slug_taken" };
+  | { ok: true; shop: SellerShop }
+  | { ok: false; error: "not_found" | "slug_taken" | "shop_blocked" };
 
 export async function updateShop(userId: number, input: UpdateShop): Promise<UpdateShopResult> {
   const db = requireDb();
 
   const [existing] = await db
-    .select({ id: shops.id })
+    .select({ id: shops.id, status: shops.status })
     .from(shops)
     .innerJoin(sellers, eq(shops.sellerId, sellers.id))
     .where(eq(sellers.userId, userId))
@@ -103,6 +104,10 @@ export async function updateShop(userId: number, input: UpdateShop): Promise<Upd
 
   if (!existing) {
     return { ok: false, error: "not_found" };
+  }
+
+  if (existing.status === "blocked") {
+    return { ok: false, error: "shop_blocked" };
   }
 
   const changes: Partial<typeof shops.$inferInsert> = { updatedAt: new Date() };

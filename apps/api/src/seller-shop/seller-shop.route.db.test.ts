@@ -281,6 +281,67 @@ describeWithDb("seller shop routes with a real database", () => {
     expect(stored.json()).toEqual({ shop: expect.objectContaining({ status: "draft" }) });
   });
 
+  it("does not let a seller edit a platform-blocked shop", async () => {
+    const user = await createUser(14);
+    await request(user, "POST", "/seller/shop", {
+      name: "Заблокированный магазин",
+      slug: "blocked-shop",
+    });
+    await dbClient
+      .requirePool()
+      .query("UPDATE shops SET status = 'blocked' WHERE slug = $1", ["blocked-shop"]);
+
+    const rename = await request(user, "PATCH", "/seller/shop", { name: "Обход блокировки" });
+    expect(rename.statusCode).toBe(409);
+    expect(rename.json()).toEqual({ error: "shop_blocked" });
+
+    const publish = await request(user, "PATCH", "/seller/shop", { status: "published" });
+    expect(publish.statusCode).toBe(409);
+    expect(publish.json()).toEqual({ error: "shop_blocked" });
+
+    const stored = await request(user, "GET", "/seller/shop");
+    expect(stored.json()).toEqual({
+      shop: expect.objectContaining({
+        name: "Заблокированный магазин",
+        slug: "blocked-shop",
+        status: "blocked",
+      }),
+    });
+
+    const storefront = await app.inject({ method: "GET", url: "/shops/blocked-shop" });
+    expect(storefront.statusCode).toBe(404);
+  });
+
+  it("changes the public slug and serves a published shop under the new slug", async () => {
+    const user = await createUser(15);
+    await request(user, "POST", "/seller/shop", { name: "Магазин со сменой", slug: "old-slug" });
+    await request(user, "PATCH", "/seller/shop", { status: "published" });
+
+    const oldPublished = await app.inject({ method: "GET", url: "/shops/old-slug" });
+    expect(oldPublished.statusCode).toBe(200);
+
+    const response = await request(user, "PATCH", "/seller/shop", { slug: "new-slug" });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({
+      shop: expect.objectContaining({ slug: "new-slug", status: "published" }),
+    });
+
+    const stored = await request(user, "GET", "/seller/shop");
+    expect(stored.json()).toEqual({ shop: expect.objectContaining({ slug: "new-slug" }) });
+
+    const oldUrl = await app.inject({ method: "GET", url: "/shops/old-slug" });
+    expect(oldUrl.statusCode).toBe(404);
+
+    const newUrl = await app.inject({ method: "GET", url: "/shops/new-slug" });
+    expect(newUrl.statusCode).toBe(200);
+    expect(newUrl.json()).toEqual({
+      slug: "new-slug",
+      name: "Магазин со сменой",
+      description: null,
+      products: [],
+    });
+  });
+
   it("returns 404 on PATCH when the seller has no shop", async () => {
     const user = await createUser(9);
 

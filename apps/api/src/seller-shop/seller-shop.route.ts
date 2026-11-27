@@ -98,6 +98,9 @@ export const sellerShopRoutes: FastifyPluginAsyncZod = async (app) => {
         if (result.error === "not_found") {
           return reply.code(404).send({ error: "not_found" });
         }
+        if (result.error === "shop_blocked") {
+          return reply.code(409).send({ error: "shop_blocked" });
+        }
         return reply.code(409).send({ error: "slug_taken" });
       }
 
