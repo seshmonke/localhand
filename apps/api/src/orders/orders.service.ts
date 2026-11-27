@@ -139,12 +139,16 @@ type CheckoutTransactionResult =
  * transaction-scoped advisory lock that is taken before anything else, so a
  * replay always returns the orders committed by the first request. The unique
  * constraint and the post-conflict read stay as a safety net.
+ *
+ * `clientCheckoutId` is lowercased here as well as in the request schema: the
+ * lock key and the stored column must not depend on the UUID case a caller used.
  */
 export async function checkout(user: AuthUser, input: Checkout): Promise<CheckoutResult> {
   const productIds = input.items.map((item) => item.productId);
   const buyerPhone = user.phone;
   const comment = normalizeComment(input.comment);
-  const lockKey = `${user.id}:${input.clientCheckoutId}`;
+  const clientCheckoutId = input.clientCheckoutId.toLowerCase();
+  const lockKey = `${user.id}:${clientCheckoutId}`;
 
   try {
     const result = await requireDb().transaction(async (tx): Promise<CheckoutTransactionResult> => {
@@ -153,9 +157,7 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
       const [existingOrder] = await tx
         .select({ id: orders.id })
         .from(orders)
-        .where(
-          and(eq(orders.buyerUserId, user.id), eq(orders.clientCheckoutId, input.clientCheckoutId)),
-        )
+        .where(and(eq(orders.buyerUserId, user.id), eq(orders.clientCheckoutId, clientCheckoutId)))
         .limit(1);
 
       if (existingOrder) {
@@ -218,7 +220,7 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
             totalKopecks,
             buyerPhone,
             comment,
-            clientCheckoutId: input.clientCheckoutId,
+            clientCheckoutId,
           })
           .returning({
             id: orders.id,
@@ -266,7 +268,7 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
     if (result.kind === "existing") {
       return {
         ok: true,
-        orders: await findOrdersByClientCheckoutId(user.id, input.clientCheckoutId),
+        orders: await findOrdersByClientCheckoutId(user.id, clientCheckoutId),
       };
     }
 
@@ -277,7 +279,7 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
     return { ok: true, orders: result.orders };
   } catch (error) {
     if (isCheckoutIdempotencyConflict(error)) {
-      const existingAfterRace = await findOrdersByClientCheckoutId(user.id, input.clientCheckoutId);
+      const existingAfterRace = await findOrdersByClientCheckoutId(user.id, clientCheckoutId);
       if (existingAfterRace.length > 0) {
         return { ok: true, orders: existingAfterRace };
       }

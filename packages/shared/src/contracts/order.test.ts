@@ -80,6 +80,15 @@ describe("CheckoutSchema", () => {
   it("requires clientCheckoutId", () => {
     expect(CheckoutSchema.safeParse({ items: [{ productId: 1 }] }).success).toBe(false);
   });
+
+  it("canonicalizes an upper-case clientCheckoutId to lowercase", () => {
+    expect(
+      CheckoutSchema.parse({
+        ...checkoutWith(1),
+        clientCheckoutId: clientCheckoutId.toUpperCase(),
+      }).clientCheckoutId,
+    ).toBe(clientCheckoutId);
+  });
 });
 
 describe("OrderSummarySchema", () => {

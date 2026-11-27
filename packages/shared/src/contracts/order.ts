@@ -36,7 +36,10 @@ export const CheckoutSchema = z.object({
       message: "duplicate_product",
     }),
   comment: OrderCommentSchema.optional(),
-  clientCheckoutId: z.uuid(),
+  // UUIDs are case-insensitive by spec, but the replay query, the unique key and
+  // the advisory lock compare strings byte-wise. Canonical lowercase makes the
+  // same id produce the same row lookup and the same lock in every case.
+  clientCheckoutId: z.uuid().transform((value) => value.toLowerCase()),
 });
 
 export const OrderStatusSchema = z.enum(["new"]);

@@ -139,40 +139,76 @@ async function countOrders(): Promise<{ orders: number; items: number }> {
   return result.rows[0] ?? { orders: 0, items: 0 };
 }
 
-async function countLockWaiters(condition: string): Promise<number> {
-  const result = await dbClient
-    .requirePool()
-    .query<{ count: number }>(
-      `SELECT count(*)::int AS count FROM pg_locks WHERE NOT granted AND ${condition}`,
-    );
+// Lock waiters are matched exactly: a foreign session in the same database
+// must not satisfy these checks. Transaction waiters are joined to the exact
+// blocker pid (transactionid locks have no database in pg_locks), advisory
+// waiters are pinned to this database and to the canonical `buyer:id` key.
+async function countTransactionWaiters(holderPid: number): Promise<number> {
+  const result = await dbClient.requirePool().query<{ count: number }>(
+    `SELECT count(*)::int AS count
+         FROM pg_locks waiter
+         JOIN pg_locks holder
+           ON holder.locktype = 'transactionid'
+          AND holder.transactionid = waiter.transactionid
+          AND holder.granted
+          AND holder.pid = $1
+        WHERE NOT waiter.granted
+          AND waiter.locktype = 'transactionid'
+          AND waiter.pid <> pg_backend_pid()`,
+    [holderPid],
+  );
   return result.rows[0]?.count ?? 0;
 }
 
-async function waitForLockWaiter(condition: string): Promise<void> {
+async function countAdvisoryWaiters(lockKey: string): Promise<number> {
+  const result = await dbClient.requirePool().query<{ count: number }>(
+    `SELECT count(*)::int AS count
+         FROM pg_locks
+        WHERE NOT granted
+          AND locktype = 'advisory'
+          AND database = (SELECT oid FROM pg_database WHERE datname = current_database())
+          AND pid <> pg_backend_pid()
+          AND ((classid::bigint << 32) | objid::bigint) = hashtextextended($1, 0)`,
+    [lockKey],
+  );
+  return result.rows[0]?.count ?? 0;
+}
+
+async function waitForLockCount(
+  count: () => Promise<number>,
+  timeoutMessage: string,
+): Promise<void> {
   const deadline = Date.now() + 2_000;
   while (Date.now() < deadline) {
-    if ((await countLockWaiters(condition)) > 0) {
+    if ((await count()) > 0) {
       return;
     }
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
-  throw new Error(`timed out waiting for a lock waiter: ${condition}`);
+  throw new Error(timeoutMessage);
+}
+
+function waitForTransactionWaiter(holderPid: number): Promise<void> {
+  return waitForLockCount(
+    () => countTransactionWaiters(holderPid),
+    `timed out waiting for a transaction waiter of pid ${holderPid}`,
+  );
 }
 
 // The racing checkout either commits its own order (no advisory lock) or waits
 // on the advisory lock held by the blocked checkout (advisory lock works).
-async function waitForRacingCheckout(): Promise<void> {
+async function waitForRacingCheckout(lockKey: string): Promise<void> {
   const deadline = Date.now() + 2_000;
   while (Date.now() < deadline) {
     if ((await countOrders()).orders > 0) {
       return;
     }
-    if ((await countLockWaiters("locktype = 'advisory'")) > 0) {
+    if ((await countAdvisoryWaiters(lockKey)) > 0) {
       return;
     }
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
-  throw new Error("timed out waiting for the racing checkout");
+  throw new Error(`timed out waiting for the racing checkout of ${lockKey}`);
 }
 
 function sortById<T extends { id: number }>(values: T[]): T[] {
@@ -447,17 +483,27 @@ describeWithDb("checkout and orders routes with a real database", () => {
     // existing orders" before either commits — the race the advisory lock must
     // serialize. Without the lock the two requests create one order each.
     const blocker = await dbClient.requirePool().connect();
+    let transactionOpen = false;
     try {
       await blocker.query("BEGIN");
+      transactionOpen = true;
       await blocker.query("SELECT id FROM products WHERE id = $1 FOR UPDATE", [secondProduct.id]);
+      const blockerPidResult = await blocker.query<{ pid: number }>(
+        "SELECT pg_backend_pid() AS pid",
+      );
+      const blockerPid = blockerPidResult.rows[0]?.pid;
+      if (blockerPid === undefined) {
+        throw new Error("failed to read the blocker backend pid");
+      }
 
       const blockedCheckout = checkout(buyer, [secondProduct.id], { clientCheckoutId });
-      await waitForLockWaiter("locktype = 'transactionid'");
+      await waitForTransactionWaiter(blockerPid);
 
       const racingCheckout = checkout(buyer, [firstProduct.id], { clientCheckoutId });
-      await waitForRacingCheckout();
+      await waitForRacingCheckout(`${buyer.id}:${clientCheckoutId}`);
 
       await blocker.query("COMMIT");
+      transactionOpen = false;
 
       const blocked = await blockedCheckout;
       const racing = await racingCheckout;
@@ -477,7 +523,90 @@ describeWithDb("checkout and orders routes with a real database", () => {
       expect(order.items[0]?.productId).toBe(secondProduct.id);
       expect(await countOrders()).toEqual({ orders: 1, items: 1 });
     } finally {
-      blocker.release();
+      try {
+        if (transactionOpen) {
+          await blocker.query("ROLLBACK");
+        }
+      } catch {
+        // release(true) discards the broken connection anyway
+      } finally {
+        blocker.release(true);
+      }
+    }
+  }, 15_000);
+
+  it("treats clientCheckoutId case-insensitively for replay and the advisory lock", async () => {
+    const firstSeller = await createUser(1);
+    const secondSeller = await createUser(2);
+    const buyer = await createUser(3);
+    await createShop(firstSeller, "first-shop");
+    await createShop(secondSeller, "second-shop");
+    const firstProduct = await createPublishedProduct(firstSeller, {
+      name: "Куртка",
+      priceKopecks: 100_000,
+    });
+    const secondProduct = await createPublishedProduct(secondSeller, {
+      name: "Шарф",
+      priceKopecks: 50_000,
+    });
+    const clientCheckoutId = "6f9619ff-8b86-4d01-b42d-00cf4fc964ff";
+    const upperCaseId = clientCheckoutId.toUpperCase();
+    expect(upperCaseId).not.toBe(clientCheckoutId);
+
+    // Same race as above, but the two requests spell one UUID differently.
+    // Without lowercase canonicalization the advisory keys differ and each
+    // request creates its own shop's order instead of replaying the first.
+    const blocker = await dbClient.requirePool().connect();
+    let transactionOpen = false;
+    try {
+      await blocker.query("BEGIN");
+      transactionOpen = true;
+      await blocker.query("SELECT id FROM products WHERE id = $1 FOR UPDATE", [secondProduct.id]);
+      const blockerPidResult = await blocker.query<{ pid: number }>(
+        "SELECT pg_backend_pid() AS pid",
+      );
+      const blockerPid = blockerPidResult.rows[0]?.pid;
+      if (blockerPid === undefined) {
+        throw new Error("failed to read the blocker backend pid");
+      }
+
+      const blockedCheckout = checkout(buyer, [secondProduct.id], { clientCheckoutId });
+      await waitForTransactionWaiter(blockerPid);
+
+      const racingCheckout = checkout(buyer, [firstProduct.id], {
+        clientCheckoutId: upperCaseId,
+      });
+      await waitForRacingCheckout(`${buyer.id}:${clientCheckoutId}`);
+
+      await blocker.query("COMMIT");
+      transactionOpen = false;
+
+      const blocked = await blockedCheckout;
+      const racing = await racingCheckout;
+      expect(blocked.statusCode).toBe(201);
+      expect(racing.statusCode).toBe(201);
+
+      const blockedOrders = blocked.json().orders as OrderBody[];
+      const racingOrders = racing.json().orders as OrderBody[];
+      expect(blockedOrders).toHaveLength(1);
+      expect(racingOrders).toEqual(blockedOrders);
+      expect(blockedOrders[0]?.shop.slug).toBe("second-shop");
+      expect(await countOrders()).toEqual({ orders: 1, items: 1 });
+
+      const stored = await dbClient
+        .requirePool()
+        .query<{ client_checkout_id: string }>("SELECT client_checkout_id FROM orders ORDER BY id");
+      expect(stored.rows).toEqual([{ client_checkout_id: clientCheckoutId }]);
+    } finally {
+      try {
+        if (transactionOpen) {
+          await blocker.query("ROLLBACK");
+        }
+      } catch {
+        // release(true) discards the broken connection anyway
+      } finally {
+        blocker.release(true);
+      }
     }
   }, 15_000);
 
