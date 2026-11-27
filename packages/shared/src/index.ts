@@ -3,6 +3,7 @@ export * from "./contracts/cart.js";
 export * from "./contracts/catalog.js";
 export * from "./contracts/health.js";
 export * from "./contracts/order.js";
+export * from "./contracts/payments.js";
 export * from "./contracts/product-admin.js";
 export * from "./contracts/seller.js";
 export * from "./contracts/storefront.js";

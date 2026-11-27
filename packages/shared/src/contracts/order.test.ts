@@ -5,10 +5,12 @@ import {
   ORDER_COMMENT_MAX_LENGTH,
   ORDER_ID_MAX,
   ORDER_MAX_ITEMS,
+  ORDER_STATUS_LABELS,
   ORDER_TOTAL_MAX_KOPECKS,
   OrderItemSchema,
   OrderListResponseSchema,
   OrderResponseSchema,
+  OrderStatusSchema,
   OrderSummarySchema,
 } from "./order.js";
 
@@ -42,6 +44,25 @@ const summary = {
     },
   ],
 };
+
+describe("OrderStatusSchema", () => {
+  it("accepts the payment-aware order statuses", () => {
+    expect(OrderStatusSchema.options).toEqual(["new", "payment_pending", "paid"]);
+    for (const status of OrderStatusSchema.options) {
+      expect(OrderStatusSchema.parse(status)).toBe(status);
+      expect(ORDER_STATUS_LABELS[status]).toBeTruthy();
+    }
+  });
+
+  it("keeps manual_review as a payment status, not an order status", () => {
+    expect(OrderStatusSchema.safeParse("manual_review").success).toBe(false);
+  });
+
+  it("rejects unknown order statuses", () => {
+    expect(OrderStatusSchema.safeParse("confirmed").success).toBe(false);
+    expect(OrderStatusSchema.safeParse("").success).toBe(false);
+  });
+});
 
 describe("CheckoutSchema", () => {
   it("parses the minimal checkout and trims a comment", () => {
@@ -126,8 +147,13 @@ describe("OrderSummarySchema", () => {
     ).toBe(false);
   });
 
+  it("accepts an order in every payment-aware status", () => {
+    for (const status of ["new", "payment_pending", "paid"] as const) {
+      expect(OrderSummarySchema.parse({ ...summary, status }).status).toBe(status);
+    }
+  });
+
   it.each([
-    { ...summary, status: "paid" },
     { ...summary, totalKopecks: -1 },
     { ...summary, buyerPhone: testPhone("8") },
     { ...summary, createdAt: "2026-11-27" },

@@ -29,6 +29,13 @@
       "when": 1795755049402,
       "tag": "0003_purple_colleen_wing",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795781734219,
+      "tag": "0004_strong_sasquatch",
+      "breakpoints": true
     }
   ]
 }
