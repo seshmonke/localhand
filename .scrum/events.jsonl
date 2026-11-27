@@ -26,3 +26,4 @@
 {"ts":"2026-11-27T02:57:30Z","type":"merge","sprint":1,"task":"S1-5","pr":22,"merge_commit":"64a2b30","status":"done"}
 {"ts":"2026-11-27T02:58:00Z","type":"archive","sprint":1,"change":"02-seller-onboarding","archive":"2026-11-27-02-seller-onboarding","specs":["phone-auth","seller-shop","product-management"]}
 {"ts":"2026-11-27T02:58:30Z","type":"sprint_closed","sprint":1,"status":"accepted","goal_achieved":true,"review":"ACCEPT","retro":".scrum/sprints/1/retro.md"}
+{"ts":"2026-11-27T03:05:00Z","type":"planning","sprint":2,"goal":"Покупатель находит товар, собирает корзину и оформляет заказ продавцу; продавец видит заказ","change":"03-buyer-core","status":"ready","human_gate":null}

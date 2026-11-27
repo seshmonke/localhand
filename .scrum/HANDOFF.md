@@ -5,12 +5,13 @@
 ## Состояние
 
 - Репозиторий: https://github.com/seshmonke/localhand, public.
-- main: `64a2b30` (S1-5 security/e2e/docs) + archive PR #23.
+- main: `f4783c0` (Sprint 1 archive/close, PR #23).
 - Sprint 1: **CLOSED**, review ACCEPT, retro записан.
 - S1-1…S1-5: **done**; change `02-seller-onboarding` →
   `2026-11-27-02-seller-onboarding`; specs `phone-auth`, `seller-shop`,
   `product-management` созданы.
-- Sprint 2: planning (buyer-core), standing authorization владельца.
+- Sprint 2: **READY**, change `03-buyer-core` (valid strict), 5 PBI,
+  4–6 циклов; standing authorization владельца.
 
 ## Evidence S1
 
@@ -39,12 +40,12 @@
 
 ## Следующий шаг
 
-1. PR #23: archive/close Sprint 1 (проверить, что specs/retro/state
-   merged).
-2. Написать `docs/tasks/02-buyer-core.md` и OpenSpec change
-   `03-buyer-core`: каталог, корзина, checkout/orders, seller orders,
-   security/evidence.
-3. Утвердить план (standing authorization) и claim S2-1.
+1. Merge PR плана Sprint 2: `docs/tasks/02-buyer-core.md`,
+   `openspec/changes/03-buyer-core`, board/state READY.
+2. Claim S2-1: brief `docs/tasks/S2-1-catalog.md`, ветка
+   `task/S2-1-catalog`, worktree и lease; затем dispatch.
+3. S2-2 cart → S2-3 checkout API → S2-4 orders UI → S2-5 security/
+   evidence/archive. Claim каждого — после merge предыдущего.
 
 ## Гигиена
 

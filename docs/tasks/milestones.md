@@ -50,3 +50,6 @@
   #20/#22), change `02-seller-onboarding` заархивирован как
   `2026-11-27-02-seller-onboarding`, specs phone-auth/seller-shop/
   product-management созданы; review ACCEPT, retro записан. Sprint 1.
+- 27.11.2026. Sprint 2 спланирован: buyer-core — каталог/поиск/сортировка,
+  корзина, checkout/orders, seller orders; change `03-buyer-core`, 5 PBI,
+  4–6 циклов; без реальных платежей/доставки. Sprint 2.

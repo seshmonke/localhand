@@ -1,46 +1,46 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-27T02:58:00Z",
+  "updated_at": "2026-11-27T03:05:00Z",
   "tasks": [
     {
-      "id": "S1-1",
-      "title": "Phone auth: OTP, session, rate-limit",
-      "status": "done",
-      "owner": "scrum-worker",
-      "change": "02-seller-onboarding",
-      "pr": 12
+      "id": "S2-1",
+      "title": "Catalog discovery: search, sort, pagination",
+      "status": "ready",
+      "owner": null,
+      "change": "03-buyer-core",
+      "pr": null
     },
     {
-      "id": "S1-2",
-      "title": "Seller shop: create, edit, publish",
-      "status": "done",
-      "owner": "scrum-worker",
-      "change": "02-seller-onboarding",
-      "pr": 14
+      "id": "S2-2",
+      "title": "Cart: localStorage, groups, badge",
+      "status": "ready",
+      "owner": null,
+      "change": "03-buyer-core",
+      "pr": null
     },
     {
-      "id": "S1-3",
-      "title": "Products: CRUD, publish/hide, authz",
-      "status": "done",
-      "owner": "scrum-worker",
-      "change": "02-seller-onboarding",
-      "pr": 16
+      "id": "S2-3",
+      "title": "Checkout and orders API",
+      "status": "ready",
+      "owner": null,
+      "change": "03-buyer-core",
+      "pr": null
     },
     {
-      "id": "S1-4",
-      "title": "Seller admin UI: login, onboarding, products",
-      "status": "done",
-      "owner": "scrum-worker",
-      "change": "02-seller-onboarding",
-      "pr": 20
+      "id": "S2-4",
+      "title": "Buyer/seller orders UI",
+      "status": "ready",
+      "owner": null,
+      "change": "03-buyer-core",
+      "pr": null
     },
     {
-      "id": "S1-5",
-      "title": "Security, evidence, docs, archive",
-      "status": "done",
-      "owner": "scrum-worker",
-      "change": "02-seller-onboarding",
-      "pr": 22
+      "id": "S2-5",
+      "title": "Security, e2e, evidence, archive",
+      "status": "ready",
+      "owner": null,
+      "change": "03-buyer-core",
+      "pr": null
     }
   ]
 }

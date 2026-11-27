@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "phase": "CLOSED",
+  "phase": "READY",
   "init_closed": true,
-  "sprint": 1,
-  "cycle": 6,
-  "updated_at": "2026-11-27T02:58:00Z",
+  "sprint": 2,
+  "cycle": 1,
+  "updated_at": "2026-11-27T03:05:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 1 CLOSED 27.11.2026: S1-1…S1-5 merged, change 02 archived, specs updated, review ACCEPT, retro written. Sprint 2 (buyer-core) is next under standing authorization."
+  "notes": "Sprint 2 (buyer-core) planned: change 03-buyer-core valid strict, 5 PBI, 4–6 cycles. Plan PR pending; after merge claim S2-1 per standing authorization. Budget not a blocker."
 }
