@@ -41,8 +41,7 @@
 
 ### S2-3 Checkout & orders
 
-- Статус: `in_progress` (API 3a), owner `scrum-worker`; ветка
-  `task/S2-3a-checkout-api`, lease до 08:30Z.
-- Дальше: `0003` orders/order_items, checkout/orders/seller API, тесты;
-  затем UI 3b.
+- API 3a: **done**, PR #30 merge `b909f30`.
+- UI 3b: `in_progress`, ветка `task/S2-3b-orders-ui`, lease до 09:30Z.
+- Дальше: checkout, buyer/seller orders, safeNext, a11y, тесты.
 - Блокеры: нет.

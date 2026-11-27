@@ -14,8 +14,8 @@
   `05-checkout-orders` active.
 - S2-1 catalog: **done**, PR #26; `03` archived.
 - S2-2 cart: **done**, PR #28; `04` archived.
-- S2-3 checkout/orders: **in_progress** (API 3a), owner `scrum-worker`;
-  ветка `task/S2-3a-checkout-api`, lease до 08:30Z; UI 3b — после merge.
+- S2-3 checkout/orders: **in_progress** (UI 3b), owner `scrum-worker`;
+  ветка `task/S2-3b-orders-ui`, lease до 09:30Z. API 3a merged `b909f30`.
 
 ## Evidence S1
 
@@ -44,10 +44,9 @@
 
 ## Следующий шаг
 
-1. `scrum-worker` реализует 3a API: миграция, contracts, checkout/
-   orders/seller API, DB-тесты, down SQL.
-2. Orchestrator: verify → review → PR/merge; затем UI 3b; archive `05`
-   после обоих.
+1. `scrum-worker` реализует 3b UI: checkout, buyer/seller orders,
+   safeNext/login, a11y, web-тесты.
+2. Orchestrator: verify → review → PR/merge, archive `05`.
 3. S2-4 security/close.
 
 ## Гигиена
