@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": 1,
   "cycle": 2,
-  "updated_at": "2026-11-27T00:16:00Z",
+  "updated_at": "2026-11-27T00:33:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Cycle 2: S1-2 seller shop claimed by scrum-worker (branch task/S1-2-shop, brief docs/tasks/S1-2-seller-shop.md, lease expires 03:30Z). S1-1 merged (PR #12, d3e42b7)."
+  "notes": "Cycle 2: S1-2 seller shop in review (blocked-readonly fix a5f67f1). Sprint 2 pre-authorized by owner: auto-start after Sprint 1 closure, buyer-core scope, buyer OTP auth at checkout, dev adapters only, local preview, merge autonomy; budget is not a stop trigger. See HANDOFF."
 }

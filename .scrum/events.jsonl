@@ -5,3 +5,4 @@
 {"ts":"2026-11-27T00:07:00Z","type":"phase","sprint":1,"cycle":2,"from":"cycle_1","to":"cycle_2","task":"S1-2"}
 {"ts":"2026-11-27T00:13:00Z","type":"correction","sprint":1,"note":"scrum timestamps normalized to UTC; earlier entries used MSK clock with Z suffix"}
 {"ts":"2026-11-27T00:16:00Z","type":"claim","sprint":1,"cycle":2,"task":"S1-2","owner":"scrum-worker","branch":"task/S1-2-shop","lease":".scrum/locks/S1-2.json"}
+{"ts":"2026-11-27T00:33:00Z","type":"decision","scope":"sprint_2_autonomy","sprint":2,"status":"approved","budget_blocker":false,"auto_start_after_s1_close":true,"scope":"buyer_core","buyer_auth":"otp_at_checkout","integrations":"dev_adapters_only","preview":"local","merge":"after_independent_review","stop_triggers":["scope_change","real_pii_money_prod","security_incident","red_main","three_rejects","spec_gap"]}
