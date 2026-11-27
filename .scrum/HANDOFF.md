@@ -1,4 +1,4 @@
-# Handoff: Sprint 2, cycle 3 — S2-3 checkout/orders
+# Handoff: Sprint 2, cycle 4 — S2-4 security/e2e/close
 
 Дата: 2026-11-27. Sprint 1 закрыт и заархивирован.
 
@@ -44,16 +44,17 @@
 
 ## Следующий шаг
 
-1. `scrum-worker` реализует 3b UI: checkout, buyer/seller orders,
-   safeNext/login, a11y, web-тесты.
-2. Orchestrator: verify → review → PR/merge, archive `05`.
-3. S2-4 security/close.
+1. Claim S2-4: brief `docs/tasks/S2-4-security.md`, ветка
+   `task/S2-4-security`, worktree/lease; dispatch.
+2. Playwright/API e2e, authz/PII/logs, ADR/legal, axe/LCP/бандл.
+3. Sprint 2 review/retro/close; Sprint 3 — только по плану/команде.
 
 ## Гигиена
 
 - S1 worktrees/ветки удалены; lease S1-5 снят.
 - S2-1 lease снят; worktree/ветка `task/S2-1-catalog` удалены.
 - S2-2 lease снят; worktree/ветка `task/S2-2-cart` удалены.
+- S2-3a/3b leases сняты; worktrees/ветки удалены.
 - Время в `.scrum/**` — UTC.
 
 ## Полезное

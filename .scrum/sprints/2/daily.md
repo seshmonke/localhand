@@ -45,3 +45,20 @@
 - UI 3b: `in_progress`, ветка `task/S2-3b-orders-ui`, lease до 09:30Z.
 - Дальше: checkout, buyer/seller orders, safeNext, a11y, тесты.
 - Блокеры: нет.
+
+### Финал цикла
+
+- S2-3 API+UI: миграция orders, checkout, buyer/seller orders,
+  checkout/orders UI; PR #30/#31 merge `b909f30`/`2849d8c`; change `05`
+  заархивирован.
+- `pnpm verify`: API 148/148, shared 100/100, web 114/114, OpenSpec 7/7.
+- S2-3 закрыт; tasks 3.1–3.7/4.1–4.5 отмечены. Блокеров нет.
+
+## Cycle 4 — 27.11.2026
+
+### S2-4 Security, e2e, evidence, close
+
+- Статус: `ready`; бриф `docs/tasks/S2-4-security.md`.
+- Дальше: Playwright e2e + API buyer flow, authz/PII/logs, ADR/legal,
+  axe/LCP/бандл, Sprint 2 review/retro/close.
+- Блокеры: нет.

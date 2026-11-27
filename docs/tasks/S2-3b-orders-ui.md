@@ -8,23 +8,23 @@ loading/empty/error/a11y.
 
 ## AC
 
-- [ ] 4.1 `/checkout`: guard `/auth/me`; 401 → `/login?next=/checkout`;
+- [x] 4.1 `/checkout`: guard `/auth/me`; 401 → `/login?next=/checkout`;
       сводка по магазинам из корзины, comment, submit, double-submit
       disabled; success → `/orders`, очистить заказанные позиции; 409
       `product_unavailable` — сообщение и обновление.
-- [ ] 4.2 `/orders` и `/orders/:id`: buyer list/detail, статус `new`,
+- [x] 4.2 `/orders` и `/orders/:id`: buyer list/detail, статус `new`,
       loading/empty/error, ссылка на товар/магазин, цена.
-- [ ] 4.3 `/admin/orders` и `/admin/orders/:id`: seller таблица desktop/
+- [x] 4.3 `/admin/orders` и `/admin/orders/:id`: seller таблица desktop/
       карточки mobile, детали, ссылка из sidebar; no shop — empty +
       onboarding.
-- [ ] 4.4 Cart CTA enable → `/checkout`; login buyer-neutral; safeNext
+- [x] 4.4 Cart CTA enable → `/checkout`; login buyer-neutral; safeNext
       allowlist `/checkout`, `/orders`, `/orders/:id` + `/admin`; header
       badge без ссылки «Мои заказы» (заказы — после checkout и прямым
       URL); mobile/desktop, labels/focus, axe light/dark; LCP/бандл
       запишет S2-4.
-- [ ] 4.5 Web-тесты: checkout guard/submit/clear/409, buyer orders,
+- [x] 4.5 Web-тесты: checkout guard/submit/clear/409, buyer orders,
       seller orders, safeNext open-redirect/loop, empty/error.
-- [ ] `pnpm verify` зелёный.
+- [x] `pnpm verify` зелёный.
 
 ## Change
 
