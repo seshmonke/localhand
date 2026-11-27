@@ -10,6 +10,8 @@ export const DELIVERY_TARIFF_NAME_MAX_LENGTH = 120;
 export const DELIVERY_RECIPIENT_NAME_MAX_LENGTH = 100;
 export const DELIVERY_CARRIER_MAX_LENGTH = 80;
 export const DELIVERY_TRACK_NUMBER_MAX_LENGTH = 64;
+export const DELIVERY_QUOTE_TOKEN_MAX_LENGTH = 16_384;
+export const DELIVERY_QUOTE_TTL_SECONDS = 600;
 
 function hasNoNulByte(value: string): boolean {
   return !value.includes("\u0000");
@@ -67,7 +69,7 @@ export const DeliveryQuoteShopSchema = z.object({
 });
 
 export const DeliveryQuoteResponseSchema = z.object({
-  quoteToken: z.string().min(1),
+  quoteToken: z.string().min(1).max(DELIVERY_QUOTE_TOKEN_MAX_LENGTH),
   expiresAt: z.iso.datetime({ offset: true }),
   shops: z.array(DeliveryQuoteShopSchema).min(1),
 });
@@ -78,14 +80,20 @@ export const DeliveryQuoteTokenPayloadSchema = z.object({
   cityCode: DeliveryCityCodeSchema,
   pointCode: DeliveryPointCodeSchema,
   exp: z.number().int().positive(),
-  shops: z.array(DeliveryQuoteShopSchema).min(1),
+  shops: z
+    .array(DeliveryQuoteShopSchema)
+    .min(1)
+    .max(ORDER_MAX_ITEMS)
+    .refine((shops) => new Set(shops.map((shop) => shop.shopId)).size === shops.length, {
+      message: "duplicate_shop",
+    }),
 });
 
 export const DeliveryCheckoutSchema = z.object({
   cityCode: DeliveryCityCodeSchema,
   pointCode: DeliveryPointCodeSchema,
   recipientName: BoundedText(DELIVERY_RECIPIENT_NAME_MAX_LENGTH),
-  quoteToken: z.string().min(1),
+  quoteToken: z.string().min(1).max(DELIVERY_QUOTE_TOKEN_MAX_LENGTH),
 });
 
 export const DeliveryStatusSchema = z.enum([
@@ -98,7 +106,7 @@ export const DeliveryStatusSchema = z.enum([
   "failed",
 ]);
 
-export const DeliveryProviderSchema = z.enum(["cdek", "manual"]);
+export const DeliveryProviderSchema = z.enum(["cdek", "manual", "fake"]);
 
 export const DeliverySnapshotSchema = z.object({
   provider: DeliveryProviderSchema,

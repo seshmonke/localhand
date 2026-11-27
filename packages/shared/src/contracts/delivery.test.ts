@@ -95,6 +95,10 @@ describe("DeliveryQuoteResponseSchema", () => {
     expect(DeliveryQuoteResponseSchema.safeParse({ ...response, quoteToken: "" }).success).toBe(
       false,
     );
+    expect(
+      DeliveryQuoteResponseSchema.safeParse({ ...response, quoteToken: "a".repeat(16_385) })
+        .success,
+    ).toBe(false);
   });
 });
 
