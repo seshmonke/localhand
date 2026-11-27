@@ -1,7 +1,8 @@
 # Quality wave 1: TDD + gates
 
-Статус: **программа**, Q1.0 in review (docs-PR, done после merge),
-Q1.1–Q1.6 — backlog, каждый пункт отдельный PBI. Кандидат Sprint 4.
+Статус: **программа**. Q1.0 in review (docs-PR, done после merge);
+Q1.1/Q1.2 — Sprint 4, Q1.3/Q1.4 — Sprint 5, Q1.5/Q1.6 — Sprint 6.
+Каждый пункт — отдельный PBI.
 Дата: 27.11.2026.
 Источник: решение владельца «TDD внедрить обязательно» + quality-план
 `docs/quality/methodologies.md`.

@@ -46,7 +46,7 @@ PBI Done, только если:
 - [ ] Typecheck, lint, build зелёные.
 - [ ] Нет новых high/critical уязвимостей; secret scan чист; authz-тесты
       для новых ручек; для T2 threat model обновлён, SAST/Semgrep чист
-      (до Q1.4 — ручной прогон или owner-исключение).
+      (до merge Q1.0–Q1.6 — ручной прогон или owner-исключение).
 - [ ] A11y: клавиатура, фокус, labels, контраст; axe чист на изменённых
       страницах.
 - [ ] Perf-бюджет: preview lab LCP < 2500 ms (owner-approved DoD-прокси

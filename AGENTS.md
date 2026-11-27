@@ -77,9 +77,9 @@ Tailwind 4.3, Fastify 5.12 + Drizzle + PostgreSQL 18, Selectel VM + S3
 - TDD обязателен: для T1/T2 сначала падающий тест на AC/дефект, затем
   минимальный код, затем refactor. Код до теста удаляется/переписывается.
 - Tier: T0 docs/copy, T1 обычная фича, T2 деньги/authz/PII/адреса/
-  критические переходы заказов/миграции/платёжные провайдеры. T2
-  дополнительно требует threat model и contract/property-тесты; mutation
-  и SLO — по матрице активации (`docs/quality/methodologies.md`).
+  критические переходы заказов/миграции/платёжные/внешние провайдеры. T2
+  дополнительно требует threat model и contract/property-тесты; SAST,
+  mutation и SLO — по матрице активации (`docs/quality/methodologies.md`).
 - Обязательные методологии, 10 практик и волны внедрения —
   `docs/quality/methodologies.md`; гейты — `docs/quality/dod.md`.
 - Инженерный цикл Superpowers: для T1/T2 с новым поведением —
