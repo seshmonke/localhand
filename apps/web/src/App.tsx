@@ -1,17 +1,26 @@
-import { Link, Navigate, Outlet, Route, Routes } from "react-router";
-import { Menu, Search, ShoppingBag } from "lucide-react";
-import { buttonVariants } from "@localhand/ui";
+import { useQueryClient } from "@tanstack/react-query";
+import { Button, buttonVariants } from "@localhand/ui";
+import { Menu, Search, ShoppingBag, TriangleAlert } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Link, Navigate, Outlet, Route, Routes, useLocation } from "react-router";
 import { CartProvider, useCart } from "./cart/CartContext.js";
 import { pluralizeItems } from "./cart/item-count.js";
 import { AdminGuard } from "./components/admin/AdminGuard.js";
 import { AdminShell } from "./components/admin/AdminShell.js";
+import { ApiError } from "./lib/api.js";
+import { clearBuyerQueries, clearSellerQueries, useMeQuery } from "./lib/queries.js";
+import { AdminOrderPage } from "./pages/AdminOrderPage.js";
+import { AdminOrdersPage } from "./pages/AdminOrdersPage.js";
 import { AdminProductEditPage, AdminProductNewPage } from "./pages/AdminProductFormPage.js";
 import { AdminProductsPage } from "./pages/AdminProductsPage.js";
 import { AdminShopPage } from "./pages/AdminShopPage.js";
 import { CartPage } from "./pages/CartPage.js";
+import { CheckoutPage } from "./pages/CheckoutPage.js";
 import { LoginPage } from "./pages/LoginPage.js";
 import { MarketplacePage } from "./pages/MarketplacePage.js";
 import { NotFoundPage } from "./pages/NotFoundPage.js";
+import { OrderPage } from "./pages/OrderPage.js";
+import { OrdersPage } from "./pages/OrdersPage.js";
 import { ProductPage } from "./pages/ProductPage.js";
 import { ShopPage } from "./pages/ShopPage.js";
 
@@ -105,6 +114,94 @@ function StorefrontLayout() {
   );
 }
 
+function BuyerGuardFrame({ children }: { children: ReactNode }) {
+  return (
+    <div className="mx-auto flex min-h-[60vh] w-full max-w-md items-center px-4 py-16">
+      <div className="w-full border-[3px] border-ink bg-paper p-6 shadow-brutal-sm sm:p-8">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ExpiredSessionRedirect({ next }: { next: string }) {
+  const queryClient = useQueryClient();
+  const [cleared, setCleared] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void Promise.all([clearSellerQueries(queryClient), clearBuyerQueries(queryClient)]).finally(
+      () => {
+        if (active) {
+          setCleared(true);
+        }
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [queryClient]);
+
+  if (!cleared) {
+    return (
+      <BuyerGuardFrame>
+        <output aria-live="polite" className="block font-mono text-xs uppercase tracking-[0.2em]">
+          Проверяем сессию…
+        </output>
+      </BuyerGuardFrame>
+    );
+  }
+
+  return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
+}
+
+/**
+ * Auth gate for buyer screens. A 401 sends the visitor to login with the
+ * current internal path as `next`; the cached seller and buyer data is dropped
+ * first so neither PII nor a stale session can leak into the next login.
+ */
+function BuyerGuard() {
+  const me = useMeQuery();
+  const location = useLocation();
+
+  if (me.isPending) {
+    return (
+      <BuyerGuardFrame>
+        <output aria-live="polite" className="block font-mono text-xs uppercase tracking-[0.2em]">
+          Проверяем сессию…
+        </output>
+      </BuyerGuardFrame>
+    );
+  }
+
+  if (me.isError) {
+    if (me.error instanceof ApiError && me.error.status === 401) {
+      const next = `${location.pathname}${location.search}${location.hash}`;
+      return <ExpiredSessionRedirect next={next} />;
+    }
+
+    return (
+      <BuyerGuardFrame>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent-red-text">
+          Ошибка
+        </p>
+        <h1 className="mt-3 font-display text-2xl uppercase leading-tight">
+          Не удалось проверить сессию
+        </h1>
+        <p className="mt-3 flex items-start gap-2 text-sm leading-relaxed">
+          <TriangleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent-red" />
+          Проверьте соединение и попробуйте снова.
+        </p>
+        <Button className="mt-6" onClick={() => void me.refetch()}>
+          Повторить
+        </Button>
+      </BuyerGuardFrame>
+    );
+  }
+
+  return <Outlet />;
+}
+
 export function App() {
   return (
     <CartProvider>
@@ -115,6 +212,11 @@ export function App() {
             <Route path="/shops/:slug" element={<ShopPage />} />
             <Route path="/products/:id" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route element={<BuyerGuard />}>
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/orders/:id" element={<OrderPage />} />
+            </Route>
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 
@@ -127,6 +229,8 @@ export function App() {
               <Route path="products" element={<AdminProductsPage />} />
               <Route path="products/new" element={<AdminProductNewPage />} />
               <Route path="products/:id" element={<AdminProductEditPage />} />
+              <Route path="orders" element={<AdminOrdersPage />} />
+              <Route path="orders/:id" element={<AdminOrderPage />} />
               <Route path="*" element={<Navigate to="shop" replace />} />
             </Route>
           </Route>

@@ -155,16 +155,15 @@ describe("CartPage", () => {
     expect(remove).toHaveClass("h-11", "w-11", "px-0", "sm:h-12", "sm:w-auto", "sm:px-5");
   });
 
-  it("keeps checkout disabled with a visible hint until S2-3 ships it", async () => {
+  it("enables checkout as a link to /checkout", async () => {
     seed([jacket]);
     renderApp(["/cart"]);
 
     await screen.findByRole("heading", { name: "Винтаж на районе" });
-    const checkout = screen.getByRole("button", { name: "Оформить" });
+    const checkout = screen.getByRole("link", { name: "Оформить" });
 
-    expect(checkout).toBeDisabled();
-    expect(checkout).toHaveAttribute("aria-describedby", "checkout-hint");
-    expect(screen.getByText(/Оформление заказа станет доступно/)).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Оформить" })).not.toBeInTheDocument();
+    expect(checkout).toHaveAttribute("href", "/checkout");
+    expect(screen.queryByRole("button", { name: "Оформить" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/станет доступно/)).not.toBeInTheDocument();
   });
 });

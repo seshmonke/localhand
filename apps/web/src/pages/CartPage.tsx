@@ -156,12 +156,11 @@ export function CartPage() {
               <dd>{formatRubles(kopecks(totalKopecks))}</dd>
             </div>
           </dl>
-          <Button size="lg" className="mt-5 w-full" disabled aria-describedby="checkout-hint">
+          <Link to="/checkout" className={buttonVariants({ size: "lg", className: "mt-5 w-full" })}>
             Оформить
-          </Button>
-          <p id="checkout-hint" className="mt-3 text-xs leading-relaxed">
-            Оформление заказа станет доступно в следующем обновлении. Цену и наличие проверим перед
-            оплатой.
+          </Link>
+          <p className="mt-3 text-xs leading-relaxed">
+            Войдите по телефону и проверьте состав — цену и наличие подтвердит продавец.
           </p>
         </aside>
       </div>

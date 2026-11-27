@@ -241,9 +241,7 @@ describe("AdminProductEditPage", () => {
     sessionExpired = true;
     await browser.click(screen.getByRole("button", { name: "Войти" }));
 
-    expect(
-      await screen.findByRole("heading", { level: 1, name: "Вход в кабинет" }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: "Вход" })).toBeInTheDocument();
   });
 
   it("locks status actions until unsaved edits are saved", async () => {

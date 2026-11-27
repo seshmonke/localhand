@@ -1,0 +1,231 @@
+import { formatRubles, kopecks, type OrderSummary } from "@localhand/shared";
+import { cleanup, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { installFetchMock } from "../test/mock-api.js";
+import { renderApp } from "../test/render-app.js";
+import { formatOrderDate, formatOrderPhone } from "./OrdersPage.js";
+
+function phone(...parts: string[]): string {
+  return parts.join("");
+}
+
+const demoUser = { id: 7, phone: phone("+7", "999", "000", "00", "07") };
+const firstBuyerPhone = phone("+7", "999", "111", "22", "33");
+const secondBuyerPhone = phone("+7", "999", "444", "55", "66");
+const createdAt = "2026-11-27T10:00:00.000Z";
+
+const publishedShop = {
+  id: 1,
+  slug: "demo-shop",
+  name: "Демо-магазин",
+  description: null,
+  status: "published" as const,
+};
+
+const firstOrder: OrderSummary = {
+  id: 42,
+  shop: { slug: "demo-shop", name: "Демо-магазин" },
+  status: "new",
+  totalKopecks: 420_000,
+  buyerPhone: firstBuyerPhone,
+  comment: "Позвоните после 18:00",
+  createdAt,
+  items: [
+    {
+      productId: 1,
+      name: "Куртка 90-х",
+      priceKopecks: 420_000,
+      quantity: 1,
+    },
+  ],
+};
+
+const secondOrder: OrderSummary = {
+  ...firstOrder,
+  id: 43,
+  totalKopecks: 89_900,
+  buyerPhone: secondBuyerPhone,
+  comment: null,
+  items: [
+    {
+      productId: 2,
+      name: "Ваза из стекла",
+      priceKopecks: 89_900,
+      quantity: 1,
+    },
+  ],
+};
+
+function price(value: number): string {
+  return formatRubles(kopecks(value)).replace(/\s+/g, " ");
+}
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
+
+describe("AdminOrdersPage", () => {
+  it("lists shop orders in a desktop table and mobile cards", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "GET /seller/orders": { body: { orders: [firstOrder, secondOrder] } },
+    });
+
+    renderApp(["/admin/orders"]);
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Заказы" })).toBeInTheDocument();
+
+    const nav = screen.getByRole("navigation", { name: "Разделы админки" });
+    expect(within(nav).getByRole("link", { name: "Заказы" })).toHaveAttribute(
+      "href",
+      "/admin/orders",
+    );
+
+    const table = await screen.findByRole("table", { name: "Заказы вашего магазина" });
+    expect(within(table).getByRole("columnheader", { name: "Покупатель" })).toBeInTheDocument();
+    expect(within(table).getByRole("rowheader", { name: "42" })).toBeInTheDocument();
+    expect(within(table).getByRole("rowheader", { name: "43" })).toBeInTheDocument();
+    expect(within(table).getAllByText(formatOrderPhone(firstBuyerPhone)).length).toBeGreaterThan(0);
+    expect(within(table).getAllByText(formatOrderPhone(secondBuyerPhone)).length).toBeGreaterThan(
+      0,
+    );
+    expect(within(table).getAllByText(formatOrderDate(createdAt)).length).toBe(2);
+    expect(within(table).getByText("Куртка 90-х")).toBeInTheDocument();
+    expect(within(table).getByText("Ваза из стекла")).toBeInTheDocument();
+    expect(within(table).getByText(`Комментарий: Позвоните после 18:00`)).toBeInTheDocument();
+    expect(within(table).getAllByText(price(420_000)).length).toBeGreaterThan(0);
+
+    const desktopLink = within(table).getAllByRole("link", { name: "Открыть" })[0];
+    expect(desktopLink).toHaveAttribute("href", "/admin/orders/42");
+
+    expect(screen.getAllByRole("heading", { level: 2, name: "Заказ №42" }).length).toBe(1);
+    const mobileLink = screen.getAllByRole("link", { name: "Открыть заказ" })[0];
+    expect(mobileLink).toHaveAttribute("href", "/admin/orders/42");
+    expect(screen.getAllByText("Новый").length).toBeGreaterThan(0);
+  });
+
+  it("shows an onboarding state for a seller without a shop and skips the orders request", async () => {
+    const fetchMock = installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: null } },
+    });
+
+    renderApp(["/admin/orders"]);
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Сначала создайте магазин" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Настроить магазин" })).toHaveAttribute(
+      "href",
+      "/admin/shop",
+    );
+    expect(fetchMock.mock.calls.some(([url]) => String(url).includes("/seller/orders"))).toBe(
+      false,
+    );
+  });
+
+  it("shows an empty state when the shop has no orders", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "GET /seller/orders": { body: { orders: [] } },
+    });
+
+    renderApp(["/admin/orders"]);
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Заказов пока нет" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it("shows a retryable error state", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "GET /seller/orders": { status: 500, body: { error: "internal_error" } },
+    });
+
+    renderApp(["/admin/orders"]);
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Заказы не загрузились" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Повторить" })).toBeInTheDocument();
+  });
+
+  it("redirects to login when the seller orders request returns 401", async () => {
+    let sessionExpired = false;
+    installFetchMock({
+      "GET /auth/me": () =>
+        sessionExpired
+          ? { status: 401, body: { error: "unauthorized" } }
+          : { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "GET /seller/orders": { status: 401, body: { error: "unauthorized" } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/orders"]);
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Сессия истекла" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Войдите снова, чтобы продолжить.")).toBeInTheDocument();
+
+    sessionExpired = true;
+    await browser.click(screen.getByRole("button", { name: "Войти" }));
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Вход" })).toBeInTheDocument();
+    expect(screen.getByTestId("location")).toHaveTextContent("/login?next=%2Fadmin%2Forders");
+  });
+});
+
+describe("AdminOrderPage", () => {
+  it("shows the seller order details", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/orders/42": { body: { order: firstOrder } },
+    });
+
+    renderApp(["/admin/orders/42"]);
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Заказ №42" })).toBeInTheDocument();
+    expect(await screen.findByText("Новый")).toBeInTheDocument();
+    expect(screen.getByText(`Создан ${formatOrderDate(createdAt)}`)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: formatOrderPhone(firstBuyerPhone) })).toHaveAttribute(
+      "href",
+      `tel:${firstBuyerPhone}`,
+    );
+    expect(screen.getByText("Позвоните после 18:00")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Куртка 90-х" })).toHaveAttribute(
+      "href",
+      "/products/1",
+    );
+    expect(screen.getAllByText(price(420_000)).length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: "К заказам" })).toHaveAttribute(
+      "href",
+      "/admin/orders",
+    );
+  });
+
+  it("shows a not-found state for a foreign order", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/orders/999": { status: 404, body: { error: "not_found" } },
+    });
+
+    renderApp(["/admin/orders/999"]);
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Заказ не найден" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "К списку заказов" })).toHaveAttribute(
+      "href",
+      "/admin/orders",
+    );
+  });
+});

@@ -2,13 +2,13 @@ import { Button } from "@localhand/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { authKeys, clearSellerQueries } from "../../lib/queries.js";
+import { authKeys, clearBuyerQueries, clearSellerQueries } from "../../lib/queries.js";
 import { ScreenState } from "../ScreenState.js";
 
 /**
- * 401 state for seller screens. Clears the cached session and seller data
- * before navigating so the login page does not redirect back using a stale
- * `me` query.
+ * 401 state for buyer and seller screens. Clears the cached session, seller
+ * data and buyer orders before navigating so neither stale PII nor a stale
+ * session can leak into the next login.
  */
 export function SessionExpiredState({ next }: { next: string }) {
   const queryClient = useQueryClient();
@@ -18,7 +18,7 @@ export function SessionExpiredState({ next }: { next: string }) {
   async function openLogin() {
     setPending(true);
     try {
-      await clearSellerQueries(queryClient);
+      await Promise.all([clearSellerQueries(queryClient), clearBuyerQueries(queryClient)]);
       queryClient.removeQueries({ queryKey: authKeys.me });
       navigate(`/login?next=${encodeURIComponent(next)}`);
     } finally {
@@ -30,7 +30,7 @@ export function SessionExpiredState({ next }: { next: string }) {
     <ScreenState
       kind="error"
       title="Сессия истекла"
-      description="Войдите снова, чтобы открыть кабинет."
+      description="Войдите снова, чтобы продолжить."
       action={
         <Button type="button" onClick={() => void openLogin()} disabled={pending}>
           {pending ? "Переходим…" : "Войти"}

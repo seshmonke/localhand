@@ -1,9 +1,13 @@
 import {
   type CatalogQuery,
   CatalogResponseSchema,
+  type Checkout,
+  CheckoutResponseSchema,
   type CreateProduct,
   type CreateShop,
   MeResponseSchema,
+  OrderListResponseSchema,
+  OrderResponseSchema,
   ProductDetailSchema,
   type RequestCodeRequest,
   RequestCodeResponseSchema,
@@ -183,4 +187,24 @@ export function updateProduct(id: number, input: UpdateProduct) {
     { method: "PATCH", body: input },
     SellerProductResponseSchema,
   );
+}
+
+export function checkout(input: Checkout) {
+  return requestJson("/checkout", { method: "POST", body: input }, CheckoutResponseSchema);
+}
+
+export function fetchMyOrders() {
+  return requestJson("/orders/mine", {}, OrderListResponseSchema);
+}
+
+export function fetchOrder(id: number) {
+  return requestJson(`/orders/${encodeURIComponent(String(id))}`, {}, OrderResponseSchema);
+}
+
+export function fetchSellerOrders() {
+  return requestJson("/seller/orders", {}, OrderListResponseSchema);
+}
+
+export function fetchSellerOrder(id: number) {
+  return requestJson(`/seller/orders/${encodeURIComponent(String(id))}`, {}, OrderResponseSchema);
 }

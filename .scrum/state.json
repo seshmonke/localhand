@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": 2,
   "cycle": 3,
-  "updated_at": "2026-11-27T04:33:00Z",
+  "updated_at": "2026-11-27T05:12:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 2 cycle 3: S2-3 checkout/orders claimed (API sub-PR 3a, branch task/S2-3a-checkout-api, lease to 08:30Z). UI 3b after API merge. Budget not a blocker."
+  "notes": "Sprint 2 cycle 3: S2-3a checkout/orders API merged (PR #30, b909f30); S2-3b orders UI claimed (branch task/S2-3b-orders-ui, lease to 09:30Z). Change 05 archive after UI. Budget not a blocker."
 }

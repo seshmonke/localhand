@@ -3,7 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
-import { authKeys, sellerKeys } from "../../lib/queries.js";
+import { authKeys, orderKeys, sellerKeys } from "../../lib/queries.js";
 import { SessionExpiredState } from "./SessionExpiredState.js";
 
 const demoUser = { id: 7, phone: ["+7", "999", "000", "00", "07"].join("") };
@@ -28,6 +28,8 @@ describe("SessionExpiredState", () => {
     client.setQueryData(authKeys.me, { user: demoUser });
     client.setQueryData(sellerKeys.shop, { shop: null });
     client.setQueryData(sellerKeys.products, { products: [] });
+    client.setQueryData(orderKeys.mine, { orders: [] });
+    client.setQueryData(orderKeys.detail(1), { order: null });
 
     const browser = userEvent.setup();
 
@@ -52,5 +54,21 @@ describe("SessionExpiredState", () => {
     ).toBeInTheDocument();
     expect(client.getQueryData(authKeys.me)).toBeUndefined();
     expect(client.getQueryCache().findAll({ queryKey: sellerKeys.all })).toHaveLength(0);
+    expect(client.getQueryCache().findAll({ queryKey: orderKeys.all })).toHaveLength(0);
+  });
+
+  it("uses neutral copy that fits both buyer and seller screens", () => {
+    const client = new QueryClient();
+
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter>
+          <SessionExpiredState next="/orders" />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    expect(screen.getByText("Войдите снова, чтобы продолжить.")).toBeInTheDocument();
+    expect(screen.queryByText("Войдите снова, чтобы открыть кабинет.")).not.toBeInTheDocument();
   });
 });
