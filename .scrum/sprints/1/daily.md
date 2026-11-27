@@ -96,7 +96,8 @@
   responsive/a11y.
 - Ревью: **APPROVE**; P2 session-login fixed `5789450`.
 - `pnpm verify`: exit 0; API 97/97, shared 33/33, web 34/34, OpenSpec 2/2.
-- Browser smoke: create 1234,50 → publish → виден на витрине; 320 без
+- Browser smoke: create 1234,50 → publish → виден в storefront API;
+  320 без
   overflow. Axe light/dark 10 сканов, 0 violations.
 - PR #20 squash-merge `3753a1b`; evidence:
   [evidence/S1-4b-verify.md](evidence/S1-4b-verify.md).

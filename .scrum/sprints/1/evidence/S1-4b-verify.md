@@ -35,17 +35,22 @@ openspec validate --all --strict
 Totals: 2 passed, 0 failed (2 items)
 ```
 
+Лог снят до добавления evidence; на финальном дереве (226 tracked
+files) `node scripts/check-public-repo.mjs` — clean.
+
 Web suite дополнительно прогнан 3 раза подряд — 34/34 стабильно.
 
 ## Browser smoke (local preview)
 
 Сценарий: login dev-OTP → `/admin/products` → create `1234,50` →
-draft → publish → товар виден в `/api/shops/:slug`.
+draft → publish → товар виден в ответе storefront API
+`/api/shops/:slug` (UI-smoke витрины — S1-5).
 
 - 320: список карточками, форма в одну колонку, overflow=false.
-- 1440: таблица, форма + статус-панель.
+- 1440: таблица после create, форма + статус-панель.
 - Скриншоты:
-  - [products 1440](S1-4b-products-1440.png)
+  - [products 1440: таблица](S1-4b-products-1440.png)
+  - [products 1440: empty](S1-4b-products-empty-1440.png)
   - [products 320](S1-4b-products-320.png)
   - [new 1440](S1-4b-new-1440.png)
   - [new 320](S1-4b-new-320.png)
