@@ -91,7 +91,8 @@
 
 ### S1-4b Products admin UI
 
-- Статус: `ready`; brief, worktree и lease создаются перед dispatch.
+- Статус: `in_progress`, owner `scrum-worker`; ветка
+  `task/S1-4b-admin-products`, lease до 05:30Z.
 - Дальше: список/таблица/карточки, форма create/edit, publish/hide,
   остаток 4.5 (responsive/a11y), web-тесты.
 - Блокеры: нет.
