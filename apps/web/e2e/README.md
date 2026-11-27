@@ -55,13 +55,19 @@ PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173 pnpm --filter @localhand/web test:e2e
 ## LCP: lab smoke, не field p75
 
 `perf.spec.ts` измеряет LCP через PerformanceObserver на loopback
-(`localhost`/`127.0.0.1`) в headless Chromium **без CPU/network
-throttling** и **без реальных изображений** (placeholder-блоки).
-Пять прогонов дают lab-число для регрессии бандла/рендера. Это **не**
-field p75 и **не** DoD-метрика «средний мобильный»; field p75 требует
-RUM или Lighthouse с CPU/network throttling на реальном стенде —
-отдельный P3 в `docs/tasks/backlog.md`. Бюджет 2,5 с здесь — lab smoke,
-а не замена DoD.
+(`localhost`/`127.0.0.1`) в headless Chromium с **CDP Slow 4G**
+(150 ms RTT, 1.6 Mbps down, 750 kbps up) и **CPU 4x**
+(`Emulation.setCPUThrottlingRate`), **без реальных изображений**
+(placeholder-блоки). Пять прогонов дают lab-число для регрессии
+бандла/рендера. Это **не** field p75 и **не** DoD-метрика «средний
+мобильный»; field p75 требует RUM или реального устройства/Lighthouse
+field data — отдельный P3 в `docs/tasks/backlog.md`.
+
+Бюджет 2,5 с — **lab smoke, не гейт**: JSON содержит `budget_met`,
+превышение фиксируется аннотацией `lab-lcp-over-budget` и не
+«подгоняется» конфигурацией. Референс для бюджета — собранный бандл на
+preview (4173); unbundled dev-сервер (5173) даёт информационное число и
+может быть выше.
 
 ## Артефакты
 

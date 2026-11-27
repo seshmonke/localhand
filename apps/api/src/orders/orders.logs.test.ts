@@ -263,6 +263,17 @@ async function createPublishedProduct(session: Session, name: string): Promise<n
 
 const LOG_METHODS = ["trace", "debug", "info", "warn", "error", "fatal"] as const;
 
+/**
+ * Fail before any request-code if the API would use a real SMS adapter. The
+ * vitest config forces SMS_PROVIDER=dev, but this preflight also protects a
+ * manually started API or a future config regression.
+ */
+async function expectDevSmsProvider(): Promise<void> {
+  const response = await app.inject({ method: "GET", url: "/health" });
+  expect(response.statusCode).toBe(200);
+  expect(response.json()).toMatchObject({ smsProvider: "dev" });
+}
+
 describeWithDb("orders logging with a real database", () => {
   beforeAll(async () => {
     if (!testDatabaseUrl) {
@@ -277,6 +288,7 @@ describeWithDb("orders logging with a real database", () => {
     appModule = await import("../app.js");
     app = appModule.buildApp();
     await app.ready();
+    await expectDevSmsProvider();
   });
 
   afterAll(async () => {

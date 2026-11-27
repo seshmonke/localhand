@@ -9,7 +9,7 @@ import { defineConfig, devices } from "@playwright/test";
  *
  * For a lab smoke on the built bundle, run `pnpm preview` and set
  * PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173. LCP numbers from this harness are
- * lab-only: loopback, no CPU/network throttling, no real images. They are not
+ * lab-only: loopback, CDP Slow 4G + 4x CPU, no real images. They are not
  * field p75 and do not replace the DoD average-mobile measurement.
  */
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5173";

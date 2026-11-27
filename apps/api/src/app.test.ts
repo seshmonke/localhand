@@ -1,5 +1,6 @@
 import { afterAll, describe, expect, it } from "vitest";
 import { buildApp } from "./app.js";
+import { env } from "./env.js";
 
 const app = buildApp();
 
@@ -16,7 +17,12 @@ describe("health", () => {
       status: "ok",
       service: "localhand-api",
       version: "0.0.0",
-      smsProvider: "dev",
+      smsProvider: env.SMS_PROVIDER,
     });
+  });
+
+  it("forces the dev SMS provider for tests even if the shell sets another one", () => {
+    expect(process.env.SMS_PROVIDER).toBe("dev");
+    expect(env.SMS_PROVIDER).toBe("dev");
   });
 });

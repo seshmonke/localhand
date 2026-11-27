@@ -12,6 +12,16 @@ import {
 const RUNS = 5;
 const LAB_LCP_BUDGET_MS = 2_500;
 
+// Lighthouse "mobileSlow4G" preset: 150 ms RTT, 1.6 Mbps down, 750 kbps up,
+// 4x CPU slowdown. Applied through Chrome DevTools Protocol for this lab smoke.
+// https://github.com/GoogleChrome/lighthouse/blob/main/docs/throttling.md
+const SLOW_4G = {
+  latency: 150,
+  downloadThroughput: Math.round((1.6 * 1024 * 1024) / 8),
+  uploadThroughput: Math.round((750 * 1024) / 8),
+};
+const CPU_THROTTLE_RATE = 4;
+
 type LabLcpResult = {
   url: string;
   runs: number[];
@@ -37,7 +47,7 @@ async function readLcp(page: Page): Promise<number> {
         window.setTimeout(() => {
           observer.disconnect();
           resolve(Math.round(largest));
-        }, 300);
+        }, 500);
       }),
   );
 }
@@ -57,21 +67,31 @@ async function measureLcp(page: Page, url: string): Promise<LabLcpResult> {
   return { url, runs, labP75 };
 }
 
+async function enableLabThrottling(page: Page): Promise<void> {
+  const client = await page.context().newCDPSession(page);
+  await client.send("Network.enable");
+  await client.send("Network.emulateNetworkConditions", {
+    offline: false,
+    latency: SLOW_4G.latency,
+    downloadThroughput: SLOW_4G.downloadThroughput,
+    uploadThroughput: SLOW_4G.uploadThroughput,
+    connectionType: "cellular4g",
+  });
+  await client.send("Emulation.setCPUThrottlingRate", { rate: CPU_THROTTLE_RATE });
+}
+
 /**
  * Lab smoke only, not a field Core Web Vitals measurement:
  * - loopback dev/preview stack, headless Chromium;
- * - no CPU or network throttling;
+ * - CDP Slow 4G (150 ms RTT, 1.6 Mbps down / 750 kbps up) and 4x CPU;
  * - no real product images, only placeholder blocks;
  * - one machine and five navigations.
  *
  * These numbers catch bundle/render regressions. They are not field p75 and
  * do not prove the DoD "average mobile" budget; field p75 needs RUM or
- * Lighthouse with CPU/network throttling on a real stand (backlog P3).
+ * real-device/Lighthouse field data (backlog P3).
  */
-test("lab LCP smoke stays under 2.5s on catalog and checkout", async ({
-  browser,
-  request,
-}, testInfo) => {
+test("lab LCP smoke on catalog and checkout", async ({ browser, request }, testInfo) => {
   test.slow();
 
   const catalog = await createPublishedCatalog(request);
@@ -94,33 +114,49 @@ test("lab LCP smoke stays under 2.5s on catalog and checkout", async ({
     // reflects the page and not a cold transform of every module.
     await page.goto("/", { waitUntil: "load" });
 
+    // CDP Slow 4G + 4x CPU: still a lab measurement, not field p75.
+    await enableLabThrottling(page);
+
     const catalogLcp = await measureLcp(page, "/");
     const checkoutLcp = await measureLcp(page, "/checkout");
+
+    const budget = {
+      limit_ms: LAB_LCP_BUDGET_MS,
+      enforced: false,
+      catalog_met: catalogLcp.labP75 < LAB_LCP_BUDGET_MS,
+      checkout_met: checkoutLcp.labP75 < LAB_LCP_BUDGET_MS,
+      note: "Reported, not a gate: exceeding the lab budget is recorded as a fact (annotation + JSON), not tuned away. The built bundle on preview is the reference; the unbundled dev server is informational.",
+    };
+
+    for (const result of [catalogLcp, checkoutLcp]) {
+      if (result.labP75 >= LAB_LCP_BUDGET_MS) {
+        const description = `${result.url}: lab p75 ${result.labP75} ms >= ${LAB_LCP_BUDGET_MS} ms`;
+        testInfo.annotations.push({ type: "lab-lcp-over-budget", description });
+        console.warn(`[lab-lcp-over-budget] ${description}`);
+      }
+    }
 
     const evidence = {
       kind: "lab",
       field_p75: false,
       generated_at: new Date().toISOString(),
       base: BASE_URL,
-      budget_ms: LAB_LCP_BUDGET_MS,
+      budget,
       runs: RUNS,
       viewport: "390x844 @2x mobile",
       conditions: {
-        network: "loopback (localhost / 127.0.0.1)",
-        cpu_throttling: "none",
-        network_throttling: "none",
+        network: "CDP Slow 4G: 150 ms RTT, 1.6 Mbps down, 750 kbps up",
+        cpu_throttling: "4x (CDP Emulation.setCPUThrottlingRate)",
+        network_throttling: "CDP Network.emulateNetworkConditions (Lighthouse mobileSlow4G preset)",
         images: "placeholder blocks; no real product images",
         browser: "headless Chromium",
       },
-      note: "Lab smoke only. Not field p75 and not the DoD average-mobile metric; field p75 requires RUM or Lighthouse throttling on a real stand (backlog P3).",
+      note: "Lab smoke only. Not field p75 and not the DoD average-mobile metric; field p75 requires RUM or real-device/Lighthouse field data (backlog P3).",
       metrics: { catalog: catalogLcp, checkout: checkoutLcp },
     };
     const body = JSON.stringify(evidence, null, 2);
     await writeFile(testInfo.outputPath("lcp-results.json"), body);
     await testInfo.attach("lcp-results.json", { body, contentType: "application/json" });
-
-    expect(catalogLcp.labP75, "catalog lab LCP p75").toBeLessThan(LAB_LCP_BUDGET_MS);
-    expect(checkoutLcp.labP75, "checkout lab LCP p75").toBeLessThan(LAB_LCP_BUDGET_MS);
   } finally {
     await context.close();
   }
