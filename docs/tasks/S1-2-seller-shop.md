@@ -55,7 +55,7 @@ tasks 2.1–2.4. Спека — `specs/seller-shop/spec.md`; дизайн — `d
 - `UpdateShop`: partial от Create + `{ description?: string | null,
   status?: "draft" | "published" }`, минимум одно поле.
 - Ошибки: `{ error: string }`; 400 invalid_request, 401 unauthorized,
-  404 not_found, 409 slug_taken/shop_exists.
+  404 not_found, 409 slug_taken/shop_exists/shop_blocked.
 - Cookie/сессия — как в S1-1 (`lh_session`, JWT `sub` = users.id).
 
 ## Решения
