@@ -208,8 +208,8 @@
 
 `delivery_dimensions_missing`, `shop_city_missing`,
 `shop_shipment_point_missing`, `delivery_point_invalid`,
-`delivery_quote_stale`, `delivery_unavailable`, `delivery_not_paid`,
-`delivery_snapshot_missing`, `delivery_tariff_mismatch`,
+`delivery_quote_stale`, `delivery_required`, `delivery_unavailable`,
+`delivery_not_paid`, `delivery_snapshot_missing`, `delivery_tariff_mismatch`,
 `delivery_already_created`, `delivery_provider_error`,
 `delivery_already_exists`.
 

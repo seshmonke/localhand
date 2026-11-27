@@ -1,6 +1,6 @@
 import { formatRubles, kopecks, type OrderSummary } from "@localhand/shared";
 import { Button, buttonVariants } from "@localhand/ui";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { useCart } from "../cart/CartContext.js";
@@ -22,7 +22,13 @@ import {
   Sidebar,
   Stack,
 } from "../components/layout/index.js";
-import { ApiError, checkout } from "../lib/api.js";
+import {
+  ApiError,
+  checkout,
+  fetchDeliveryCities,
+  fetchDeliveryPoints,
+  fetchDeliveryQuote,
+} from "../lib/api.js";
 import { orderKeys, useMeQuery } from "../lib/queries.js";
 
 const COMMENT_MAX_LENGTH = 500;
@@ -38,6 +44,9 @@ function formatPhone(phone: string): string {
 
 function checkoutErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
+    if (error.code === "delivery_required") {
+      return "Выберите город, пункт выдачи и имя получателя — доставка обязательна.";
+    }
     switch (error.status) {
       case 400:
         return "Проверьте состав корзины: в заказе от 1 до 50 уникальных товаров.";
@@ -55,6 +64,25 @@ function checkoutErrorMessage(error: unknown): string {
   return "Не удалось оформить заказ. Проверьте соединение и попробуйте снова.";
 }
 
+function deliveryQuoteErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    switch (error.code) {
+      case "delivery_dimensions_missing":
+        return "У одного из товаров не указаны вес и габариты. Напишите продавцу.";
+      case "shop_city_missing":
+      case "shop_shipment_point_missing":
+        return "Продавец ещё не настроил отправку из своего города.";
+      case "delivery_point_invalid":
+        return "Этот пункт выдачи не подходит для выбранного города.";
+      case "delivery_unavailable":
+        return "Доставка временно недоступна. Попробуйте позже.";
+      default:
+        break;
+    }
+  }
+  return "Не удалось рассчитать доставку. Попробуйте другой пункт выдачи.";
+}
+
 export function CheckoutPage() {
   const { items, count, groups, totalKopecks, isHydrated, hasItem, removeItem } = useCart();
   const me = useMeQuery();
@@ -66,8 +94,44 @@ export function CheckoutPage() {
   const [unavailable, setUnavailable] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
   const [createdOrders, setCreatedOrders] = useState<OrderSummary[] | null>(null);
+  const [cityCode, setCityCode] = useState<number | null>(null);
+  const [pointCode, setPointCode] = useState("");
+  const [recipientName, setRecipientName] = useState("");
 
   const itemSignature = items.map((item) => item.productId).join(",");
+
+  const citiesQuery = useQuery({
+    queryKey: ["delivery", "cities"],
+    queryFn: () => fetchDeliveryCities(""),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+  const pointsQuery = useQuery({
+    queryKey: ["delivery", "points", cityCode],
+    queryFn: () => fetchDeliveryPoints(cityCode as number),
+    enabled: cityCode !== null,
+    retry: false,
+  });
+  const quoteQuery = useQuery({
+    queryKey: ["delivery", "quote", itemSignature, cityCode, pointCode],
+    queryFn: () =>
+      fetchDeliveryQuote({
+        items: items.map((item) => ({ productId: item.productId })),
+        cityCode: cityCode as number,
+        pointCode,
+      }),
+    enabled: cityCode !== null && pointCode.length > 0,
+    retry: false,
+  });
+
+  const deliveryKopecks =
+    quoteQuery.data?.shops.reduce((sum, shop) => sum + shop.priceKopecks, 0) ?? 0;
+  const deliveryPeriodMax = quoteQuery.data?.shops.reduce(
+    (max, shop) => Math.max(max, shop.periodMax),
+    0,
+  );
+  const deliveryReady = quoteQuery.data !== undefined && recipientName.trim().length > 0;
+  const deliveryStarted = cityCode !== null || pointCode.length > 0 || recipientName.length > 0;
   const checkoutIdRef = useRef<string>(crypto.randomUUID());
   const signatureRef = useRef(itemSignature);
 
@@ -95,6 +159,19 @@ export function CheckoutPage() {
         if (error.status === 409 && error.code === "product_unavailable") {
           setUnavailable(true);
           setFormError(null);
+          return;
+        }
+        if (error.status === 409 && error.code === "delivery_quote_stale") {
+          setFormError("Цена доставки изменилась. Выберите ПВЗ заново.");
+          void quoteQuery.refetch();
+          return;
+        }
+        if (error.status === 409 && error.code === "delivery_required") {
+          setFormError("Выберите город, пункт выдачи и имя получателя — доставка обязательна.");
+          return;
+        }
+        if (error.status === 502 && error.code === "delivery_unavailable") {
+          setFormError("Доставка временно недоступна. Попробуйте позже.");
           return;
         }
       }
@@ -142,10 +219,25 @@ export function CheckoutPage() {
     setFormError(null);
     setUnavailable(false);
 
+    if (deliveryStarted && !deliveryReady) {
+      setFormError("Выберите город, пункт выдачи и укажите имя получателя.");
+      return;
+    }
+
     const trimmedComment = comment.trim();
     checkoutMutation.mutate({
       items: items.map((item) => ({ productId: item.productId })),
       ...(trimmedComment.length > 0 ? { comment: trimmedComment } : {}),
+      ...(deliveryReady && cityCode !== null && quoteQuery.data
+        ? {
+            delivery: {
+              cityCode,
+              pointCode,
+              recipientName: recipientName.trim(),
+              quoteToken: quoteQuery.data.quoteToken,
+            },
+          }
+        : {}),
       clientCheckoutId: checkoutIdRef.current,
     });
   }
@@ -263,6 +355,137 @@ export function CheckoutPage() {
                   );
                 })}
 
+                <Card as="section" aria-labelledby="checkout-delivery-title">
+                  <h2 id="checkout-delivery-title" className="font-display text-2xl uppercase">
+                    Доставка
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed">
+                    Выберите город и пункт выдачи СДЭК. Стоимость и срок рассчитает сервер.
+                  </p>
+
+                  <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                    <FormField id="checkout-city" label="Город доставки">
+                      <select
+                        id="checkout-city"
+                        name="cityCode"
+                        value={cityCode ?? ""}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          setCityCode(value ? Number(value) : null);
+                          setPointCode("");
+                        }}
+                        className={fieldControlClass}
+                      >
+                        <option value="">
+                          {citiesQuery.isLoading ? "Загружаем города…" : "Выберите город"}
+                        </option>
+                        {citiesQuery.data?.cities.map((city) => (
+                          <option key={city.code} value={city.code}>
+                            {city.name}
+                          </option>
+                        ))}
+                      </select>
+                    </FormField>
+
+                    <FormField
+                      id="checkout-point"
+                      label="Пункт выдачи"
+                      hint="Список ПВЗ выбранного города."
+                    >
+                      <select
+                        id="checkout-point"
+                        name="pointCode"
+                        value={pointCode}
+                        disabled={cityCode === null || pointsQuery.isLoading}
+                        onChange={(event) => setPointCode(event.target.value)}
+                        aria-describedby={fieldDescribedBy(
+                          "checkout-point",
+                          "Список ПВЗ выбранного города.",
+                        )}
+                        className={fieldControlClass}
+                      >
+                        <option value="">
+                          {pointsQuery.isLoading ? "Загружаем ПВЗ…" : "Выберите ПВЗ"}
+                        </option>
+                        {pointsQuery.data?.points.map((point) => (
+                          <option key={point.code} value={point.code}>
+                            {point.name} — {point.address}
+                          </option>
+                        ))}
+                      </select>
+                    </FormField>
+
+                    <FormField
+                      id="checkout-recipient"
+                      label="Имя получателя"
+                      hint="Имя, на которое оформлена посылка."
+                    >
+                      <input
+                        id="checkout-recipient"
+                        name="recipientName"
+                        type="text"
+                        autoComplete="name"
+                        maxLength={100}
+                        value={recipientName}
+                        onChange={(event) => setRecipientName(event.target.value)}
+                        aria-invalid={deliveryStarted && recipientName.trim().length === 0}
+                        aria-describedby={fieldDescribedBy(
+                          "checkout-recipient",
+                          "Имя, на которое оформлена посылка.",
+                        )}
+                        className={fieldControlClass}
+                      />
+                    </FormField>
+                  </div>
+
+                  {citiesQuery.isError ? (
+                    <div role="alert" className="mt-4 border-[3px] border-ink p-4">
+                      <p className="text-sm font-semibold">Не удалось загрузить города.</p>
+                      <button
+                        type="button"
+                        onClick={() => void citiesQuery.refetch()}
+                        className="mt-2 font-mono text-[10px] uppercase underline decoration-[3px] underline-offset-4"
+                      >
+                        Повторить
+                      </button>
+                    </div>
+                  ) : null}
+
+                  {pointsQuery.isError ? (
+                    <div role="alert" className="mt-4 border-[3px] border-ink p-4">
+                      <p className="text-sm font-semibold">Не удалось загрузить пункты выдачи.</p>
+                      <button
+                        type="button"
+                        onClick={() => void pointsQuery.refetch()}
+                        className="mt-2 font-mono text-[10px] uppercase underline decoration-[3px] underline-offset-4"
+                      >
+                        Повторить
+                      </button>
+                    </div>
+                  ) : null}
+
+                  {quoteQuery.isError ? (
+                    <div role="alert" className="mt-4 border-[3px] border-ink p-4">
+                      <p className="text-sm font-semibold">
+                        {deliveryQuoteErrorMessage(quoteQuery.error)}
+                      </p>
+                    </div>
+                  ) : null}
+
+                  {quoteQuery.data ? (
+                    <dl className="mt-4 flex flex-col gap-2 font-mono text-xs uppercase tracking-wide">
+                      <div className="flex justify-between gap-4">
+                        <dt>Доставка</dt>
+                        <dd>{formatRubles(kopecks(deliveryKopecks))}</dd>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <dt>Срок</dt>
+                        <dd>{deliveryPeriodMax} дн.</dd>
+                      </div>
+                    </dl>
+                  ) : null}
+                </Card>
+
                 <Card as="section" aria-labelledby="checkout-contact-title">
                   <h2 id="checkout-contact-title" className="font-display text-2xl uppercase">
                     Контакты
@@ -307,9 +530,15 @@ export function CheckoutPage() {
                     <dt>Товаров</dt>
                     <dd>{pluralizeItems(count)}</dd>
                   </div>
+                  {quoteQuery.data ? (
+                    <div className="flex justify-between gap-4">
+                      <dt>Доставка</dt>
+                      <dd>{formatRubles(kopecks(deliveryKopecks))}</dd>
+                    </div>
+                  ) : null}
                   <div className="flex justify-between gap-4 border-t-[3px] border-ink pt-2 text-base">
                     <dt>Итого</dt>
-                    <dd>{formatRubles(kopecks(totalKopecks))}</dd>
+                    <dd>{formatRubles(kopecks(totalKopecks + deliveryKopecks))}</dd>
                   </div>
                 </dl>
 
