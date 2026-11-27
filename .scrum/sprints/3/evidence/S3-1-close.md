@@ -16,7 +16,7 @@
 ## Проверки
 
 - `pnpm verify` — exit 0: shared 139, web 154, api 271, OpenSpec 8/8,
-  check:public 469; production build без dev-чанков.
+  check:public 471; production build без dev-чанков.
 - Browser e2e dev 10/10; preview 8 passed + 2 skipped (dev-only fake
   flow + guides).
 - axe payments 16 сканов 0 serious/critical; buyer light/dark 0.
