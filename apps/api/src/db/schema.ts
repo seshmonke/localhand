@@ -1,25 +1,49 @@
 import { sql } from "drizzle-orm";
 import {
   bigint,
+  boolean,
+  char,
   check,
+  customType,
   index,
   integer,
   pgEnum,
   pgTable,
   serial,
+  smallint,
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType() {
+    return "bytea";
+  },
+});
+
 export const shopStatuses = ["draft", "published", "blocked"] as const;
 export const productStatuses = ["draft", "published", "hidden"] as const;
-export const orderStatuses = ["new"] as const;
+export const orderStatuses = ["new", "payment_pending", "paid"] as const;
+export const sellerPaymentAccountStatuses = ["active", "superseded", "disabled", "error"] as const;
+export const paymentStatuses = [
+  "pending",
+  "succeeded",
+  "canceled",
+  "failed",
+  "manual_review",
+] as const;
 
 export const shopStatusEnum = pgEnum("shop_status", shopStatuses);
 export const productStatusEnum = pgEnum("product_status", productStatuses);
 export const orderStatusEnum = pgEnum("order_status", orderStatuses);
+export const sellerPaymentAccountStatusEnum = pgEnum(
+  "seller_payment_account_status",
+  sellerPaymentAccountStatuses,
+);
+export const paymentStatusEnum = pgEnum("payment_status", paymentStatuses);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -132,6 +156,81 @@ export const orderItems = pgTable(
     check("order_items_price_kopecks_check", sql`${table.priceKopecks} >= 0`),
     check("order_items_quantity_check", sql`${table.quantity} = 1`),
     index("order_items_order_id_idx").on(table.orderId),
+  ],
+);
+
+export const sellerPaymentAccounts = pgTable(
+  "seller_payment_accounts",
+  {
+    id: serial("id").primaryKey(),
+    sellerId: integer("seller_id")
+      .notNull()
+      .references(() => sellers.id, { onDelete: "restrict" }),
+    provider: text("provider").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
+    isTest: boolean("is_test").notNull().default(false),
+    tokenCiphertext: bytea("token_ciphertext").notNull(),
+    tokenKeyVersion: smallint("token_key_version").notNull(),
+    status: sellerPaymentAccountStatusEnum("status").notNull().default("error"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    connectedAt: timestamp("connected_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("seller_payment_accounts_seller_id_active_unique")
+      .on(table.sellerId)
+      .where(sql`${table.status} = 'active'`),
+    index("seller_payment_accounts_seller_id_connected_at_idx").on(
+      table.sellerId,
+      table.connectedAt.desc(),
+    ),
+    index("seller_payment_accounts_provider_account_idx").on(
+      table.provider,
+      table.providerAccountId,
+    ),
+    check("seller_payment_accounts_token_key_version_check", sql`${table.tokenKeyVersion} > 0`),
+  ],
+);
+
+export const payments = pgTable(
+  "payments",
+  {
+    id: serial("id").primaryKey(),
+    orderId: integer("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "restrict" }),
+    sellerAccountId: integer("seller_account_id")
+      .notNull()
+      .references(() => sellerPaymentAccounts.id, { onDelete: "restrict" }),
+    provider: text("provider").notNull(),
+    providerPaymentId: text("provider_payment_id"),
+    status: paymentStatusEnum("status").notNull().default("pending"),
+    amountKopecks: bigint("amount_kopecks", { mode: "number" }).notNull(),
+    currency: char("currency", { length: 3 }).notNull().default("RUB"),
+    confirmationUrl: text("confirmation_url"),
+    idempotencyKey: uuid("idempotency_key").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    reconcileAttempts: smallint("reconcile_attempts").notNull().default(0),
+    lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
+  },
+  (table) => [
+    unique("payments_order_id_idempotency_key_unique").on(table.orderId, table.idempotencyKey),
+    uniqueIndex("payments_order_id_active_unique")
+      .on(table.orderId)
+      .where(sql`${table.status} IN ('pending', 'manual_review')`),
+    uniqueIndex("payments_provider_payment_id_unique")
+      .on(table.providerPaymentId)
+      .where(sql`${table.providerPaymentId} IS NOT NULL`),
+    index("payments_order_id_created_at_idx").on(table.orderId, table.createdAt.desc()),
+    index("payments_seller_account_id_idx").on(table.sellerAccountId),
+    index("payments_pending_reconcile_idx")
+      .on(table.createdAt)
+      .where(sql`${table.status} = 'pending'`),
+    check("payments_amount_kopecks_check", sql`${table.amountKopecks} >= 0`),
+    check("payments_currency_check", sql`${table.currency} = 'RUB'`),
+    check("payments_reconcile_attempts_check", sql`${table.reconcileAttempts} >= 0`),
   ],
 );
 

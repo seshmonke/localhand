@@ -42,7 +42,20 @@ export const CheckoutSchema = z.object({
   clientCheckoutId: z.uuid().transform((value) => value.toLowerCase()),
 });
 
-export const OrderStatusSchema = z.enum(["new"]);
+export const ORDER_STATUSES = ["new", "payment_pending", "paid"] as const;
+
+export const OrderStatusSchema = z.enum(ORDER_STATUSES);
+
+/**
+ * Checkout always creates `new`. `payment_pending` appears while a payment is
+ * waiting for provider confirmation; `paid` is terminal. The payment status
+ * `manual_review` is a badge on the payment, never an order status.
+ */
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  new: "Новый",
+  payment_pending: "Ожидает оплаты",
+  paid: "Оплачен",
+};
 
 export const OrderItemSchema = z.object({
   productId: z.number().int().positive().max(ORDER_ID_MAX).nullable(),

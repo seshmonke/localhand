@@ -1,4 +1,4 @@
-import type { AuthUser, Checkout, OrderItem, OrderSummary } from "@localhand/shared";
+import type { AuthUser, Checkout, OrderItem, OrderStatus, OrderSummary } from "@localhand/shared";
 import { and, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { requireDb } from "../db/client.js";
 import { orderItems, orders, products, sellers, shops } from "../db/schema.js";
@@ -24,7 +24,7 @@ const orderColumns = {
 
 type OrderRow = {
   id: number;
-  status: "new";
+  status: OrderStatus;
   totalKopecks: number;
   buyerPhone: string;
   comment: string | null;
