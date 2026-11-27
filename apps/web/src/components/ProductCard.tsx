@@ -10,11 +10,14 @@ export function ProductCard({ product }: { product: ProductCardData }) {
 
   return (
     <article className="flex h-full flex-col overflow-hidden border-[3px] border-ink bg-paper">
-      <Link to={`/products/${product.id}`} className="group/link flex grow flex-col">
+      <Link
+        to={`/products/${product.id}`}
+        className="group/link flex grow flex-col focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-accent-orange"
+      >
         {product.imageUrl ? (
           <img
             src={product.imageUrl}
-            alt={product.name}
+            alt=""
             className="aspect-[4/5] w-full object-cover"
             loading="lazy"
             decoding="async"
@@ -22,7 +25,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         ) : (
           <div className={`aspect-[4/5] w-full ${tone}`} aria-hidden="true" />
         )}
-        <div className="flex flex-col gap-1.5 px-3 pt-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:px-4 sm:pt-4">
+        <div className="flex flex-col gap-1.5 px-4 pt-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
           <div className="min-w-0">
             <h3 className="break-words font-display text-xs uppercase leading-tight group-hover/link:underline group-hover/link:decoration-[3px] group-hover/link:underline-offset-2 sm:text-sm">
               {product.name}
@@ -36,7 +39,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           </p>
         </div>
       </Link>
-      <div className="px-3 pb-3 pt-3 sm:px-4 sm:pb-4">
+      <div className="px-4 pb-4 pt-4">
         <AddToCartButton item={cartItemFromProduct(product)} size="sm" className="h-11 w-full" />
       </div>
     </article>

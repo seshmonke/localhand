@@ -2,7 +2,7 @@
 
 Решение 2026-11-27. Единая сетка, контейнер и ритм для витрины и
 кабинета продавца. Визуальный язык не меняется: ч/б брутализм, 3 px
-border, display/mono, резкие тени.
+border, display/mono, резкие тени у форм и статусов.
 
 ## Контейнер
 
@@ -86,11 +86,17 @@ Page-level — CSS Grid: 4 колонки на mobile, 8 на планшете, 
 | `PageShell` | контейнер, ширина, padding, full-height |
 | `PageHeader` | eyebrow, title, description, actions, нижняя линия 3 px |
 | `Stack` | вертикальный gap по шкале 8pt |
-| `Card` | border 3 px, padding 16/24/32, tone paper/inverse, shadow |
+| `Card` | border 3 px, padding 16/24/32, tone paper/inverse, shadow опционален |
 | `Grid` | page-level 4/8/12 колонок |
 | `GridColumn` | span контента на `lg` |
 | `Sidebar` | правая колонка 4/12, sticky на `lg` |
 | `LayoutGuides` | dev-overlay 12 колонок |
+
+`ProductCard` — согласованное исключение (27.11.2026): одна внешняя
+рамка 3 px, без тени и внутренней рамки изображения, изображение
+full-bleed, padding 16, кнопка — единственный залитый блок, hover —
+подчёркивание заголовка. Gap сетки товаров — 16/24 px. Тень остаётся
+у форм, статусов и одиночных `Card`, но не у повторяющейся сетки.
 
 `Card` политиморфен: `as="form" | "section" | "article" | "aside"`.
 Это позволяет форме и status-aside стартовать на одной линии без

@@ -289,6 +289,25 @@ test("layout holds at 320/768/1440 across storefront and admin", async ({
         screenshots.push(path);
       }
     }
+
+    const shopPage: LayoutPage = {
+      key: "shop",
+      path: `/shops/${catalog.shop.slug}`,
+      heading: catalog.shop.name,
+      group: "storefront",
+      ready: async (page, productName) => {
+        await expect(page.getByText(productName).first()).toBeVisible();
+      },
+    };
+
+    for (const viewport of viewports) {
+      await openAndCheckLayout(page, shopPage, viewport, product.name);
+      recordLeftEdge(`storefront-${viewport.key}`, await firstHeadingLeft(page));
+
+      const path = testInfo.outputPath(`layout-shop-${viewport.key}.png`);
+      await page.screenshot({ path, fullPage: true, animations: "disabled" });
+      screenshots.push(path);
+    }
   } finally {
     await buyerContext.close();
   }
