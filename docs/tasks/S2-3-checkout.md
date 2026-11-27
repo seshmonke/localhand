@@ -11,43 +11,43 @@ change `05-checkout-orders` архивируется после merge обоих
 
 ## AC — API (3a)
 
-- [ ] 3.1 Миграция `0003`: enum `order_status` (`new`), `orders`
+- [x] 3.1 Миграция `0003`: enum `order_status` (`new`), `orders`
       (buyer_user_id, shop_id, status, total_kopecks ≥0, buyer_phone,
       comment ≤500, client_checkout_id uuid, timestamps; unique
       `(buyer_user_id, client_checkout_id, shop_id)`; индексы buyer/shop),
       `order_items` (order_id cascade, product_id nullable set null, name,
       price_kopecks ≥0, quantity=1; индекс order_id).
-- [ ] 3.2 Zod-контракты `order.ts`: Checkout (items 1–50 unique
+- [x] 3.2 Zod-контракты `order.ts`: Checkout (items 1–50 unique
       productId, comment?, clientCheckoutId uuid), OrderSummary/Item,
       checkout/list responses; экспорт.
-- [ ] 3.3 `POST /checkout`: sessionGuard → 401; rate-limit 10/мин;
+- [x] 3.3 `POST /checkout`: sessionGuard → 401; rate-limit 10/мин;
       валидация; в транзакции загрузить published products+shops,
       недоступный → 409 `product_unavailable` без частичного заказа;
       group by shop; snapshot; total; buyer_phone из сессии; идемпотентный
       повтор по clientCheckoutId; 201 `{orders}`.
-- [ ] 3.4 `GET /orders/mine`, `GET /orders/:id`: только свои, иначе 404;
+- [x] 3.4 `GET /orders/mine`, `GET /orders/:id`: только свои, иначе 404;
       401 без сессии; items/createdAt.
-- [ ] 3.5 `GET /seller/orders`, `GET /seller/orders/:id`: только магазин
+- [x] 3.5 `GET /seller/orders`, `GET /seller/orders/:id`: только магазин
       продавца; без магазина — пустой список; чужой 404; 401.
-- [ ] 3.6 DB-тесты: успех multi-shop (2 заказа), snapshot цены, повтор
+- [x] 3.6 DB-тесты: успех multi-shop (2 заказа), snapshot цены, повтор
       без дублей, 401/400/409, buyer/seller 404, seller scope, rate-limit,
       пустой/дубли/>50.
-- [ ] 3.7 Down SQL/runbook `docs/stack/runbooks/orders-rollback.md`;
+- [x] 3.7 Down SQL/runbook `docs/stack/runbooks/orders-rollback.md`;
       проверить откат на тестовой БД.
 
 ## AC — UI (3b)
 
-- [ ] 4.1 `/checkout`: guard `/auth/me`, 401 → `/login?next=/checkout`;
+- [x] 4.1 `/checkout`: guard `/auth/me`, 401 → `/login?next=/checkout`;
       сводка по магазинам, comment, submit, double-submit disabled;
       success → `/orders`, очистить заказанные позиции.
-- [ ] 4.2 `/orders`, `/orders/:id`: buyer list/detail, статус `new`,
+- [x] 4.2 `/orders`, `/orders/:id`: buyer list/detail, статус `new`,
       loading/empty/error.
-- [ ] 4.3 `/admin/orders`, `/admin/orders/:id`: seller таблица/cards,
+- [x] 4.3 `/admin/orders`, `/admin/orders/:id`: seller таблица/cards,
       детали, ссылка в sidebar.
-- [ ] 4.4 Cart CTA enable → `/checkout`; header badge без orders link
+- [x] 4.4 Cart CTA enable → `/checkout`; header badge без orders link
       (заказы доступны после checkout и прямым URL); mobile 320/
       desktop 1440; a11y labels/focus/axe light/dark; LCP/бандл-evidence.
-- [ ] 4.5 safeNext allowlist `/checkout|/orders|/orders/:id` + тесты
+- [x] 4.5 safeNext allowlist `/checkout|/orders|/orders/:id` + тесты
       open redirect/loop; login buyer-neutral; web-тесты checkout/orders/
       seller/errors.
 

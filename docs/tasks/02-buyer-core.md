@@ -1,9 +1,9 @@
 # Спринт 2: buyer-core
 
-Статус: **BUILDING**, cycle 3. S2-1 catalog (PR #26, `03`) и S2-2 cart (PR #28, `04`) закрыты; следующий — S2-3 checkout/orders, затем S2-4.
+Статус: **BUILDING**, cycle 4. S2-1 (PR #26), S2-2 (PR #28), S2-3 (PR #30/#31) закрыты; changes `03`/`04`/`05` в архиве; следующий — S2-4 security/close.
 Дата планирования: 27.11.2026.
-Changes: `03-catalog-discovery`, `04-cart` (оба заархивированы),
-`05-checkout-orders`.
+Changes: `03-catalog-discovery`, `04-cart`, `05-checkout-orders`
+(все заархивированы).
 Направление: buyer-first ядро — покупатель находит товар, открывает
 магазин/карточку, оформляет заказ. Оплата и доставка — следующие
 спринты.

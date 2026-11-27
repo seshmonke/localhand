@@ -40,3 +40,7 @@
 {"ts":"2026-11-27T04:26:30Z","type":"phase","sprint":2,"cycle":3,"from":"cycle_2","to":"cycle_3","task":"S2-3"}
 {"ts":"2026-11-27T04:33:00Z","type":"claim","sprint":2,"cycle":3,"task":"S2-3a","owner":"scrum-worker","branch":"task/S2-3a-checkout-api","change":"05-checkout-orders","lease":".scrum/locks/S2-3a.json"}
 {"ts":"2026-11-27T05:12:00Z","type":"claim","sprint":2,"cycle":3,"task":"S2-3b","owner":"scrum-worker","branch":"task/S2-3b-orders-ui","change":"05-checkout-orders","lease":".scrum/locks/S2-3b.json"}
+{"ts":"2026-11-27T05:35:00Z","type":"review","sprint":2,"task":"S2-3b","pr":31,"verdict":"APPROVE","reviewer":"scrum-reviewer","head":"966a39f"}
+{"ts":"2026-11-27T05:35:30Z","type":"merge","sprint":2,"task":"S2-3b","pr":31,"merge_commit":"2849d8c","status":"done"}
+{"ts":"2026-11-27T05:36:00Z","type":"archive","sprint":2,"change":"05-checkout-orders","archive":"2026-11-27-05-checkout-orders","specs":["checkout-orders"]}
+{"ts":"2026-11-27T05:36:30Z","type":"phase","sprint":2,"cycle":4,"from":"cycle_3","to":"cycle_4","task":"S2-4"}

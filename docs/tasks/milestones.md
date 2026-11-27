@@ -59,3 +59,6 @@
 - 27.11.2026. S2-2 cart смержен (PR #28, `92b4b9d`): localStorage,
   группы/итоги, badge, `/cart`; change `04` заархивирован. Следующий —
   S2-3 checkout/orders. Sprint 2.
+- 27.11.2026. S2-3 checkout/orders смержен (PR #30/#31, `b909f30`/
+  `2849d8c`): orders API, checkout, buyer/seller orders UI; change `05`
+  заархивирован. Следующий — S2-4 security/close. Sprint 2.

@@ -1,21 +1,21 @@
-# Handoff: Sprint 2, cycle 3 — S2-3 checkout/orders
+# Handoff: Sprint 2, cycle 4 — S2-4 security/e2e/close
 
 Дата: 2026-11-27. Sprint 1 закрыт и заархивирован.
 
 ## Состояние
 
 - Репозиторий: https://github.com/seshmonke/localhand, public.
-- main: `92b4b9d` (S2-2 cart, PR #28); close PR #29.
+- main: `2849d8c` (S2-3b orders UI, PR #31); close PR #32.
 - Sprint 1: **CLOSED**, review ACCEPT, retro записан.
 - S1-1…S1-5: **done**; change `02-seller-onboarding` →
   `2026-11-27-02-seller-onboarding`; specs `phone-auth`, `seller-shop`,
   `product-management` созданы.
-- Sprint 2: **BUILDING**, cycle 3; `03`, `04` archived;
-  `05-checkout-orders` active.
-- S2-1 catalog: **done**, PR #26; `03` archived.
-- S2-2 cart: **done**, PR #28; `04` archived.
-- S2-3 checkout/orders: **in_progress** (UI 3b), owner `scrum-worker`;
-  ветка `task/S2-3b-orders-ui`, lease до 09:30Z. API 3a merged `b909f30`.
+- Sprint 2: **BUILDING**, cycle 4; changes `03`, `04`, `05` archived.
+- S2-1 catalog: **done**, PR #26.
+- S2-2 cart: **done**, PR #28.
+- S2-3 checkout/orders: **done**, PR #30/#31.
+- S2-4 security/e2e/close: **ready**, не claimed. Перед dispatch: бриф
+  `docs/tasks/S2-4-security.md`, ветка `task/S2-4-security`, lease.
 
 ## Evidence S1
 
@@ -44,16 +44,17 @@
 
 ## Следующий шаг
 
-1. `scrum-worker` реализует 3b UI: checkout, buyer/seller orders,
-   safeNext/login, a11y, web-тесты.
-2. Orchestrator: verify → review → PR/merge, archive `05`.
-3. S2-4 security/close.
+1. Claim S2-4: brief `docs/tasks/S2-4-security.md`, ветка
+   `task/S2-4-security`, worktree/lease; dispatch.
+2. Playwright/API e2e, authz/PII/logs, ADR/legal, axe/LCP/бандл.
+3. Sprint 2 review/retro/close; Sprint 3 — только по плану/команде.
 
 ## Гигиена
 
 - S1 worktrees/ветки удалены; lease S1-5 снят.
 - S2-1 lease снят; worktree/ветка `task/S2-1-catalog` удалены.
 - S2-2 lease снят; worktree/ветка `task/S2-2-cart` удалены.
+- S2-3a/3b leases сняты; worktrees/ветки удалены.
 - Время в `.scrum/**` — UTC.
 
 ## Полезное
