@@ -1,6 +1,6 @@
 # S3-2 PR A — schema/contracts/provider
 
-Дата: 27.11.2026. Ветка `task/S3-2-delivery`. Tier T2.
+Дата: 27.11.2026. Стек `task/S3-2-contracts` → `-env` → `-provider` → `-db2`. Tier T2.
 
 ## RED
 
@@ -18,8 +18,8 @@
 ## GREEN
 
 - `packages/shared`: 154 passed (delivery/product/shop/order contracts).
-- `pnpm verify`: exit 0; shared 154, web 154, api 314, OpenSpec 9/9,
-  public 498 files. В API входят property-тесты упаковки/токена,
+- `pnpm verify`: exit 0; shared 154, web 154, api 313, OpenSpec 9/9,
+  public 499 files. В API входят property-тесты упаковки/токена,
   event idempotency/cascade DB-тесты, seller dimensions/city.
 - RED/GREEN: `S3-2-tdd-a-red.log`, `S3-2-tdd-a-green.log`;
   mutation-check TTL — `S3-2-property-red.log`.
@@ -43,7 +43,7 @@
 - `packages/shared/src/contracts/delivery.ts|test.ts`, `limits.ts`,
   `product-admin.ts`, `seller.ts`, `order.ts`.
 - `apps/api/src/delivery/{packaging,quote-token,fake-provider,provider,rate-limiter}.ts`.
-- `apps/api/src/db/schema.ts`, `drizzle/0006_certain_ma_gnuci.sql`,
+- `apps/api/src/db/schema.ts`, `drizzle/0006_silent_blink.sql`,
   `src/db/schema.delivery.db.test.ts`.
 - `apps/api/src/env.ts|test.ts`.
 - `docs/stack/runbooks/delivery-rollback.md`.

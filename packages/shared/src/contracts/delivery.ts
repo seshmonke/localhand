@@ -10,7 +10,7 @@ export const DELIVERY_TARIFF_NAME_MAX_LENGTH = 120;
 export const DELIVERY_RECIPIENT_NAME_MAX_LENGTH = 100;
 export const DELIVERY_CARRIER_MAX_LENGTH = 80;
 export const DELIVERY_TRACK_NUMBER_MAX_LENGTH = 64;
-export const DELIVERY_QUOTE_TOKEN_MAX_LENGTH = 16_384;
+export const DELIVERY_QUOTE_TOKEN_MAX_LENGTH = 32_768;
 export const DELIVERY_QUOTE_TTL_SECONDS = 600;
 
 function hasNoNulByte(value: string): boolean {

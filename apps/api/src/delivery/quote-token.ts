@@ -42,9 +42,11 @@ function nowSeconds(now: Date): number {
   return Math.floor(now.getTime() / 1000);
 }
 
-function hasValidLifetime(exp: number, now: Date): boolean {
+const CLOCK_SKEW_SECONDS = 30;
+
+function hasValidLifetime(exp: number, now: Date, skewSeconds = 0): boolean {
   const current = nowSeconds(now);
-  return exp > current && exp <= current + DELIVERY_QUOTE_TTL_SECONDS;
+  return exp > current - skewSeconds && exp <= current + DELIVERY_QUOTE_TTL_SECONDS + skewSeconds;
 }
 
 export function createQuoteToken(
@@ -92,7 +94,7 @@ export function verifyQuoteToken(
   if (!parsed.success) {
     return null;
   }
-  if (!hasValidLifetime(parsed.data.exp, now)) {
+  if (!hasValidLifetime(parsed.data.exp, now, CLOCK_SKEW_SECONDS)) {
     return null;
   }
 

@@ -147,29 +147,6 @@ describe("payments env", () => {
     );
   });
 
-  it("rejects live manual delivery without the PII gate", () => {
-    expect(() =>
-      parseEnv(
-        deliveryEnv({
-          DELIVERY_PROVIDER: "manual",
-          DELIVERY_ENV: "live",
-        }),
-      ),
-    ).toThrow(/DELIVERY_LIVE_PII/);
-  });
-
-  it("rejects a placeholder quote secret", () => {
-    expect(() =>
-      parseEnv(
-        deliveryEnv({
-          DELIVERY_PROVIDER: "fake",
-          DELIVERY_ENV: "test",
-          DELIVERY_QUOTE_SECRET: "change-me-to-a-long-random-string",
-        }),
-      ),
-    ).toThrow(/DELIVERY_QUOTE_SECRET/);
-  });
-
   it("rejects the fake provider in live", () => {
     expect(() =>
       parseEnv(

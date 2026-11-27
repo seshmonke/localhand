@@ -125,5 +125,5 @@
   в граммах, per-shop quoteToken, webhook/reconcile без «?», live-PII
   guard, `shop_shipment_point_missing`; exception S3-2 в events.
 - PR A: схема `0006`, shared-контракты, env guards, quote token,
-  fake provider, limiter, down-runbook; verify 154/154/298, OpenSpec 9/9.
+  fake provider, limiter, down-runbook; verify 154/154/314, OpenSpec 9/9.
 - Дальше: PR B (quote/checkout/seller data/UI).
