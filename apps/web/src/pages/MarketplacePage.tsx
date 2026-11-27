@@ -383,11 +383,17 @@ export function MarketplacePage() {
               Продавцам
             </p>
             <h2 className="mt-4 max-w-2xl font-display text-3xl uppercase sm:text-5xl">
-              Свой магазин. Общая витрина. Без комиссии с продаж.
+              <span className="block">Свой магазин.</span>
+              <span className="block">Общая витрина.</span>
+              <span className="block">Без комиссии с продаж.</span>
             </h2>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-inverse-text/80 sm:text-base">
-              Подключите ЮKassa, загрузите товары и получите ссылку на магазин. Local Hand приведёт
-              покупателей и покажет заказы в одной админке.
+              <span className="block">
+                Подключите ЮKassa, загрузите товары и получите ссылку на магазин.
+              </span>
+              <span className="block">
+                Local Hand приведёт покупателей и покажет заказы в одной админке.
+              </span>
             </p>
           </div>
           <div className="col-span-4 md:col-span-8 lg:col-span-4 lg:justify-self-end">
