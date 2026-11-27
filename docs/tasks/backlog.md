@@ -140,3 +140,10 @@
 - [ ] Добавить role=status/aria-live каталожному skeleton и ShopPage loading. Критерий: скринридер озвучивает загрузку; тест getByRole("status"). Источник: P3 ревью S2-1. Спринт: — (S2-4).
 - [ ] Пометить `ProductListResponse` deprecated или удалить после окна совместимости. Критерий: нет неиспользуемых контрактов. Источник: P3 ревью S2-1. Спринт: — (S2-4).
 - [ ] Добавить rate-limit на публичный каталог и политику логов q/500 error id. Критерий: 429 на burst, q не в логах. Источник: P3 ревью S2-1. Спринт: — (S2-4).
+- [ ] Убрать stale closure/hydration race в CartContext: functional
+  setCart/reducer и isHydrated-gate. Критерий: два add в одной задаче не
+  теряют товар; add до hydrate не перезаписывает storage. Источник: P3
+  ревью S2-2. Спринт: — (S2-4).
+- [ ] Довести мобильные тач-зоны шапки до 44×44 (cart/menu), focus после
+  remove и перенос длинного h1 ProductPage. Критерий: 44×44 и no
+  overflow на 320. Источник: P3 ревью S2-2. Спринт: — (S2-4).

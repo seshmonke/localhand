@@ -3,9 +3,9 @@
   "phase": "BUILDING",
   "init_closed": true,
   "sprint": 2,
-  "cycle": 2,
-  "updated_at": "2026-11-27T03:55:00Z",
+  "cycle": 3,
+  "updated_at": "2026-11-27T04:26:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 2 cycle 2: S2-2 cart claimed by scrum-worker (branch task/S2-2-cart, brief docs/tasks/S2-2-cart.md, lease to 07:30Z). S2-1 merged/archived. Budget not a blocker."
+  "notes": "Sprint 2 cycle 3: S2-2 cart merged (PR #28, 92b4b9d), change 04 archived; S2-3 checkout/orders next (ready). Budget not a blocker."
 }

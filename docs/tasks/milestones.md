@@ -56,3 +56,6 @@
 - 27.11.2026. S2-1 catalog discovery смержен (PR #26, `7ab658e`):
   поиск/сортировка/пагинация, change `03` заархивирован. Следующий —
   S2-2 cart. Sprint 2.
+- 27.11.2026. S2-2 cart смержен (PR #28, `92b4b9d`): localStorage,
+  группы/итоги, badge, `/cart`; change `04` заархивирован. Следующий —
+  S2-3 checkout/orders. Sprint 2.

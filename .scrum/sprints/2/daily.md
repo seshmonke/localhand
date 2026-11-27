@@ -29,3 +29,19 @@
 - Дальше: localStorage-корзина, группы по магазинам, badge, `/cart`,
   тесты, mobile/a11y.
 - Блокеры: нет.
+
+### Финал цикла
+
+- S2-2 cart: localStorage, группы/итоги, badge, `/cart`, a11y/overflow
+  fix; PR #28 merge `92b4b9d`; change `04` заархивирован.
+- `pnpm verify`: API 134/134, shared 70/70, web 87/87, OpenSpec 7/7.
+- S2-2 закрыт; tasks 2.1–2.4 отмечены. Блокеров нет.
+
+## Cycle 3 — 27.11.2026
+
+### S2-3 Checkout & orders
+
+- Статус: `ready`; brief, worktree и lease создаются перед dispatch.
+- Дальше: `0003` orders/order_items, checkout API + buyer/seller orders
+  API+UI, auth/next, PII, тесты.
+- Блокеры: нет.
