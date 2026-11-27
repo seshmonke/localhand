@@ -91,8 +91,29 @@
 
 ### S1-4b Products admin UI
 
-- Статус: `in_progress`, owner `scrum-worker`; ветка
-  `task/S1-4b-admin-products`, lease до 05:30Z.
-- Дальше: список/таблица/карточки, форма create/edit, publish/hide,
-  остаток 4.5 (responsive/a11y), web-тесты.
+- Сделано: список/таблица/карточки, create/edit, publish/hide/draft,
+  цена рубли↔копейки, PATCH diff, session-expired cache clear,
+  responsive/a11y.
+- Ревью: **APPROVE**; P2 session-login fixed `5789450`.
+- `pnpm verify`: exit 0; API 97/97, shared 33/33, web 34/34, OpenSpec 2/2.
+- Browser smoke: create 1234,50 → publish → виден на витрине; 320 без
+  overflow. Axe light/dark 10 сканов, 0 violations.
+- PR #20 squash-merge `3753a1b`; evidence:
+  [evidence/S1-4b-verify.md](evidence/S1-4b-verify.md).
+- S1-4 закрыт; tasks 4.4–4.5 отмечены. Блокеров нет.
+
+### Итог синка
+
+- Продолжаем: S1-4 закрыт → S1-5 security/evidence/archive.
+- Перепланирование не нужно.
+- Эскалаций нет; владелец не требуется.
+
+## Cycle 6 — 27.11.2026
+
+### S1-5 Security, evidence, docs, archive
+
+- Статус: `ready`; brief, worktree и lease создаются перед dispatch.
+- Дальше: API e2e dev OTP → shop → product → storefront; authz/
+  rate-limit/log-тесты; legal/ADR SMS; verify/preview evidence;
+  archive change.
 - Блокеры: нет.

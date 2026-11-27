@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-27T02:02:00Z",
+  "updated_at": "2026-11-27T02:29:00Z",
   "tasks": [
     {
       "id": "S1-1",
@@ -29,10 +29,10 @@
     {
       "id": "S1-4",
       "title": "Seller admin UI: login, onboarding, products",
-      "status": "in_progress",
+      "status": "done",
       "owner": "scrum-worker",
       "change": "02-seller-onboarding",
-      "pr": null
+      "pr": 20
     },
     {
       "id": "S1-5",

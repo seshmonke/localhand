@@ -1,0 +1,94 @@
+{
+  "generated_at": "2026-11-27T02:13:43.937Z",
+  "base": "http://localhost:5173",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa",
+    "wcag22a",
+    "wcag22aa"
+  ],
+  "scans": {
+    "products-light-1440": {
+      "url": "http://localhost:5173/admin/products",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "products-light-320": {
+      "url": "http://localhost:5173/admin/products",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "product-new-light-1440": {
+      "url": "http://localhost:5173/admin/products/new",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "product-new-light-320": {
+      "url": "http://localhost:5173/admin/products/new",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "product-edit-light-1440": {
+      "url": "http://localhost:5173/admin/products/5",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "product-edit-light-320": {
+      "url": "http://localhost:5173/admin/products/5",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "products-dark-1440": {
+      "url": "http://localhost:5173/admin/products",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "products-dark-320": {
+      "url": "http://localhost:5173/admin/products",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "product-new-dark-1440": {
+      "url": "http://localhost:5173/admin/products/new",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "product-new-dark-320": {
+      "url": "http://localhost:5173/admin/products/new",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    }
+  }
+}
