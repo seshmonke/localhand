@@ -12,8 +12,8 @@ Tier T2. Fake-провайдер, вымышленные данные.
 
 ## Verify
 
-- [S3-1b2-verify.txt](S3-1b2-verify.txt): exit 0, shared 139, web 153,
-  API 271, OpenSpec 8/8, check:public 441.
+- [S3-1b2-verify.txt](S3-1b2-verify.txt): exit 0, shared 139, web 154,
+  API 271, OpenSpec 8/8, check:public 467.
 - Production build: dev-маршруты и чанки отсутствуют.
 
 ## E2E / a11y / perf
@@ -26,8 +26,8 @@ Tier T2. Fake-провайдер, вымышленные данные.
   light/dark.
 - [S3-1b2-lcp-preview.json](S3-1b2-lcp-preview.json): catalog 524 ms,
   checkout 708 ms, enforced <2500.
-- [S3-1b2-bundle.json](S3-1b2-bundle.json): 577.79 kB / 163.95 gzip
-  (+4.36% / +6.53 kB; within budget).
+- [S3-1b2-bundle.json](S3-1b2-bundle.json): 577.89 kB / 164.00 gzip
+  (+4.38% / +6.58 kB; within budget).
 
 ## Скриншоты
 

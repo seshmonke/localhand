@@ -172,6 +172,7 @@ describe("CheckoutPage", () => {
       await screen.findByRole("heading", { level: 1, name: "Проверьте заказ" }),
     ).toBeInTheDocument();
     expect(screen.getByText(/Если продавец не подключил приём платежей/)).toBeInTheDocument();
+    expect(screen.getByText(/оплата проходит на странице ЮKassa/)).toBeInTheDocument();
 
     const vintage = screen.getByRole("region", { name: "Винтаж на районе" });
     const city = screen.getByRole("region", { name: "Городской винтаж" });

@@ -203,6 +203,35 @@ describe("OrderPage", () => {
     expect(key).not.toBe(ATTEMPT_KEY);
   });
 
+  it("refetches the order after a canceled payment and restores retry without reload", async () => {
+    let orderReads = 0;
+    const fetchMock = installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /orders/42": () => ({
+        body: {
+          order: orderReads++ === 0 ? { ...order, status: "payment_pending" } : order,
+        },
+      }),
+      "GET /orders/42/payment": {
+        body: { payment: payment({ status: "canceled", confirmationUrl: null }) },
+      },
+      "POST /orders/42/payments": { status: 201, body: { payment: payment() } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/orders/42"]);
+
+    const paymentSection = await screen.findByRole("region", { name: "Оплата" });
+    expect(await within(paymentSection).findByText("Оплата отменена")).toBeInTheDocument();
+    const retry = await within(paymentSection).findByRole("button", {
+      name: "Оплатить снова",
+    });
+    await browser.click(retry);
+
+    await waitFor(() => expect(createPaymentCalls(fetchMock)).toHaveLength(1));
+    expect(orderReads).toBeGreaterThanOrEqual(2);
+  });
+
   it("reuses a stored attempt key while no payment exists", async () => {
     const fetchMock = installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },

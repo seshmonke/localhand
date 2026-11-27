@@ -299,6 +299,22 @@ export function OrderPage() {
   const [payError, setPayError] = useState<string | null>(null);
 
   const payment = paymentQuery.data?.payment ?? null;
+  const paymentStatus = payment?.status;
+  const refetchOrder = orderQuery.refetch;
+
+  // A terminal payment can change the order status (canceled → new,
+  // succeeded → paid) without the order query knowing. Refresh it so the
+  // retry/paid UI is correct without a page reload.
+  useEffect(() => {
+    if (
+      paymentStatus === "canceled" ||
+      paymentStatus === "failed" ||
+      paymentStatus === "succeeded" ||
+      paymentStatus === "manual_review"
+    ) {
+      void refetchOrder();
+    }
+  }, [paymentStatus, refetchOrder]);
 
   const payMutation = useMutation({
     mutationFn: () => {
