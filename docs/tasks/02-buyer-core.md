@@ -1,8 +1,9 @@
 # Спринт 2: buyer-core
 
-Статус: **PLANNING / READY**.
+Статус: **BUILDING**, cycle 2. S2-1 catalog смержен (PR #26), `03` заархивирован; следующие — S2-2 cart, S2-3 checkout/orders, S2-4 security/close.
 Дата планирования: 27.11.2026.
-Changes: `03-catalog-discovery`, `04-cart`, `05-checkout-orders`.
+Changes: `03-catalog-discovery` (заархивирован), `04-cart`,
+`05-checkout-orders`.
 Направление: buyer-first ядро — покупатель находит товар, открывает
 магазин/карточку, оформляет заказ. Оплата и доставка — следующие
 спринты.

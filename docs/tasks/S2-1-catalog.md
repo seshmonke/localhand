@@ -7,24 +7,24 @@
 
 ## AC
 
-- [ ] `packages/shared/src/contracts/catalog.ts`: `CatalogQuery`
+- [x] `packages/shared/src/contracts/catalog.ts`: `CatalogQuery`
       (`q?`, `sort?`, `page?`, `pageSize?` с defaults 1/100),
       `CatalogResponse` (`products`, `page`, `pageSize`, `total`,
       `hasMore`); Zod coercion, q trim 1–100, sort
       `newest|price_asc|price_desc`, page ≥1, pageSize 1–100.
-- [ ] `GET /catalog/products`: ILIKE по `products.name`/`shops.name` с
+- [x] `GET /catalog/products`: ILIKE по `products.name`/`shops.name` с
       escape `%_`; только published product/shop; сортировки с tie-break
       id; total/hasMore; невалидные query → 400.
-- [ ] Ответ без query сохраняет текущую выдачу (page=1, pageSize=100),
+- [x] Ответ без query сохраняет текущую выдачу (page=1, pageSize=100),
       но добавляет meta; UI запрашивает pageSize=12.
-- [ ] Обновить exact-ожидания существующих storefront/e2e тестов под
+- [x] Обновить exact-ожидания существующих storefront/e2e тестов под
       новый ответ, не ослаблять до `toMatchObject`.
-- [ ] Web MarketplacePage: поиск, сортировка, пагинация/«Показать ещё»,
+- [x] Web MarketplacePage: поиск, сортировка, пагинация/«Показать ещё»,
       URL `q/sort/page`, сброс page при смене q/sort; loading/empty/
       error; 320/1440; labels/focus.
-- [ ] Тесты: API DB (поиск товар/магазин, сортировки, page/pageSize,
+- [x] Тесты: API DB (поиск товар/магазин, сортировки, page/pageSize,
       total/hasMore, скрытые, 400), web (controls/URL/empty/error).
-- [ ] `pnpm verify` зелёный; axe/manual витрины (light) 0 critical.
+- [x] `pnpm verify` зелёный; axe/manual витрины (light) 0 critical.
 
 ## Change
 

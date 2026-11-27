@@ -1,0 +1,38 @@
+{
+  "320": {
+    "overflow": 0,
+    "cardCount": 4,
+    "violations": [],
+    "criticalViolations": [],
+    "searchState": {
+      "url": "http://127.0.0.1:4173/?q=%D0%BA%D1%83%D1%80%D1%82%D0%BA%D0%B0",
+      "count": 1,
+      "status": "Найдено товаров: 1",
+      "overflow": 0
+    },
+    "sortState": {
+      "url": "http://127.0.0.1:4173/?q=%D0%BA%D1%83%D1%80%D1%82%D0%BA%D0%B0&sort=price_asc",
+      "value": "price_asc"
+    },
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  "1440": {
+    "overflow": 0,
+    "cardCount": 4,
+    "violations": [],
+    "criticalViolations": [],
+    "searchState": {
+      "url": "http://127.0.0.1:4173/?q=%D0%BA%D1%83%D1%80%D1%82%D0%BA%D0%B0",
+      "count": 1,
+      "status": "Найдено товаров: 1",
+      "overflow": 0
+    },
+    "sortState": {
+      "url": "http://127.0.0.1:4173/?q=%D0%BA%D1%83%D1%80%D1%82%D0%BA%D0%B0&sort=price_asc",
+      "value": "price_asc"
+    },
+    "consoleErrors": []
+  }
+}
