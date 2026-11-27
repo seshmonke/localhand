@@ -132,6 +132,37 @@ describe("CDEK delivery provider", () => {
     });
   });
 
+  it("returns no tariffs when modes exist but there is no PVZ tariff", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(json({ access_token: "token-1", expires_in: 3599 }))
+      .mockResolvedValueOnce(
+        json({
+          tariff_codes: [
+            {
+              tariff_code: 137,
+              tariff_name: "Дверной",
+              delivery_sum: 100,
+              period_min: 1,
+              period_max: 2,
+              tariff_mode: 1,
+            },
+          ],
+        }),
+      );
+
+    const provider = createCdekDeliveryProvider(CONFIG, { fetch: fetchMock });
+    expect(
+      await provider.listTariffs({
+        fromCityCode: 44,
+        fromPointCode: "MSK001",
+        toCityCode: 137,
+        toPointCode: "SPB001",
+        packages,
+      }),
+    ).toEqual([]);
+  });
+
   it("creates an async order, polls until the entity appears and maps the status", async () => {
     const fetchMock = vi
       .fn()
@@ -215,6 +246,31 @@ describe("CDEK delivery provider", () => {
       trackNumber: "1234567890",
       statusDateTime: "2026-11-28T16:00:00+0000",
     });
+  });
+
+  it("finds a shipment by im_number and returns null on not found", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(json({ access_token: "token-1", expires_in: 3599 }))
+      .mockResolvedValueOnce(
+        json([
+          {
+            uuid: "uuid-1",
+            cdek_number: "1234567890",
+            number: "order-42",
+            statuses: [{ code: "CREATED", name: "Создан", date_time: "2026-11-27T16:00:00+0000" }],
+          },
+        ]),
+      )
+      .mockResolvedValueOnce(json({ errors: [{ code: "v2_entity_not_found_im_number" }] }, 400));
+
+    const provider = createCdekDeliveryProvider(CONFIG, { fetch: fetchMock });
+    expect(await provider.findShipmentByNumber("order-42")).toMatchObject({
+      providerOrderId: "uuid-1",
+      statusCode: "CREATED",
+      trackNumber: "1234567890",
+    });
+    expect(await provider.findShipmentByNumber("missing")).toBeNull();
   });
 
   it("does not create a third webhook when two already exist", async () => {

@@ -127,7 +127,7 @@ export function createFakeDeliveryProvider(): FakeDeliveryProvider {
         created,
         statusCode: created.statusCode,
         statusName: created.statusName,
-        statusDateTime: new Date().toISOString(),
+        statusDateTime: created.statusDateTime as string,
       });
       return created;
     },
