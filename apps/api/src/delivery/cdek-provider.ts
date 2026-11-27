@@ -231,8 +231,12 @@ export function createCdekDeliveryProvider(
       );
     // CDEK marks tariff_mode=2 for PVZ. If the response carries modes, never
     // fall back to a cheaper door tariff for a PVZ checkout.
+    const hasModes = all.some((entry) => typeof entry.raw.tariff_mode === "number");
     const pvz = all.filter((entry) => entry.raw.tariff_mode === 2);
-    return (pvz.length > 0 ? pvz : all)
+    // If the provider exposes modes, a door-only response is not a valid PVZ
+    // quote: return an empty list instead of silently using a door tariff.
+    const selected = hasModes ? pvz : all;
+    return selected
       .map((entry) => entry.mapped)
       .sort((left, right) => left.priceKopecks - right.priceKopecks);
   }
