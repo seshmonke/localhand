@@ -1,3 +1,6 @@
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./auth.service.js", () => ({
@@ -21,6 +24,69 @@ const TEST_USER = { id: 42, phone: TEST_PHONE };
 
 function uniquePhone(index: number): string {
   return phone("+7", "901", "000", String(index).padStart(4, "0"));
+}
+
+const authSourceDir = fileURLToPath(new URL(".", import.meta.url));
+const LOG_CALL_PATTERN = /\b(?:request|reply|app|log)\.(?:trace|debug|info|warn|error|fatal)\s*\(/g;
+
+async function listAuthSourceFiles(directory: string): Promise<string[]> {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files: string[] = [];
+
+  for (const entry of entries) {
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await listAuthSourceFiles(fullPath)));
+    } else if (entry.name.endsWith(".ts") && !entry.name.endsWith(".test.ts")) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
+/** Returns the raw argument text of every `log.<level>(...)` call in a file. */
+function extractLogArguments(source: string): string[] {
+  const calls: string[] = [];
+
+  for (const match of source.matchAll(LOG_CALL_PATTERN)) {
+    const start = (match.index ?? 0) + match[0].length;
+    let depth = 1;
+    let quote: string | null = null;
+    let escaped = false;
+    let end = source.length;
+
+    for (let index = start; index < source.length; index += 1) {
+      const character = source[index] ?? "";
+
+      if (quote !== null) {
+        if (escaped) {
+          escaped = false;
+        } else if (character === "\\") {
+          escaped = true;
+        } else if (character === quote) {
+          quote = null;
+        }
+        continue;
+      }
+
+      if (character === '"' || character === "'" || character === "`") {
+        quote = character;
+      } else if (character === "(") {
+        depth += 1;
+      } else if (character === ")") {
+        depth -= 1;
+        if (depth === 0) {
+          end = index;
+          break;
+        }
+      }
+    }
+
+    calls.push(source.slice(start, end));
+  }
+
+  return calls;
 }
 
 const app = buildApp();
@@ -374,5 +440,63 @@ describe("trustProxy", () => {
     } finally {
       await caddyOnlyApp.close();
     }
+  });
+});
+
+describe("auth error logging", () => {
+  it("logs only the error code, never the phone or the OTP code, on a 500", async () => {
+    const logged: unknown[][] = [];
+    const errorSpy = vi.spyOn(app.log, "error").mockImplementation((...args: unknown[]) => {
+      logged.push(args);
+    });
+    const failingPhone = phone("+7", "903", "000", "00", "07");
+    const otpCode = "314159";
+    const failure = Object.assign(
+      new Error(`request-code failed for ${failingPhone} with code ${otpCode}`),
+      { statusCode: 500, code: "db_unavailable" },
+    );
+    vi.mocked(authService.requestCode).mockRejectedValue(failure);
+
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/auth/request-code",
+        payload: { phone: failingPhone },
+      });
+
+      expect(response.statusCode).toBe(500);
+      expect(response.json()).toEqual({ error: "internal_error" });
+      expect(logged).toEqual([[{ code: "db_unavailable" }, "auth request failed"]]);
+
+      const serialized = JSON.stringify(logged);
+      expect(serialized).not.toContain(failingPhone);
+      expect(serialized).not.toContain(otpCode);
+      expect(serialized).not.toContain(failure.message);
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  it("does not log phone numbers or OTP codes from the auth sources", async () => {
+    const files = await listAuthSourceFiles(authSourceDir);
+    expect(files.length).toBeGreaterThan(0);
+
+    let foundCalls = 0;
+    for (const file of files) {
+      const source = await readFile(file, "utf8");
+      for (const argumentsText of extractLogArguments(source)) {
+        foundCalls += 1;
+        // `error.code` is a diagnostic code, not the OTP code. Strip it and
+        // the `code:` object key, then reject any remaining PII identifier.
+        const withoutErrorCodes = argumentsText
+          .replace(/\b(?:error|err|cause)\.code\b/g, "")
+          .replace(/\bcode\s*:/g, "");
+        expect(withoutErrorCodes, `${path.basename(file)}: ${argumentsText}`).not.toMatch(
+          /\b(?:phone|devCode|code)\b/,
+        );
+      }
+    }
+
+    expect(foundCalls).toBeGreaterThan(0);
   });
 });
