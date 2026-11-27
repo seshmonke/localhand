@@ -105,6 +105,43 @@ async function expectHeaderCta(page: Page, label: string, visible: boolean): Pro
   expect(box?.height ?? 0, `${label}: header CTA height`).toBeCloseTo(44, 0);
 }
 
+async function expectCardFocusRing(page: Page, label: string): Promise<void> {
+  const link = page.locator('article a[href^="/products/"]').first();
+  await link.focus();
+
+  const geometry = await link.evaluate((element) => {
+    const card = element.closest("article");
+    if (!card) {
+      throw new Error("product card article is missing");
+    }
+    const style = getComputedStyle(card);
+    return {
+      outlineStyle: style.outlineStyle,
+      outlineWidth: Number.parseFloat(style.outlineWidth),
+      overflow: style.overflow,
+    };
+  });
+
+  expect(geometry.outlineStyle, `${label}: card focus outline style`).not.toBe("none");
+  expect(geometry.outlineWidth, `${label}: card focus outline width`).toBeGreaterThanOrEqual(4);
+  expect(geometry.overflow, `${label}: card focus not clipped`).toBe("visible");
+}
+
+async function expectAddToCartSingleLine(page: Page, label: string): Promise<void> {
+  const button = page.getByRole("button", { name: /^В корзину:/ }).first();
+  const geometry = await button.evaluate((element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    return {
+      height: element.getBoundingClientRect().height,
+      lines: range.getClientRects().length,
+    };
+  });
+
+  expect(geometry.height, `${label}: cart button height`).toBeCloseTo(44, 0);
+  expect(geometry.lines, `${label}: cart button single line`).toBe(1);
+}
+
 async function expectCartBadgeInsideHeader(page: Page): Promise<void> {
   const header = await page.locator("header").first().boundingBox();
   const shell = await page.locator("header [data-page-shell]").first().boundingBox();
@@ -281,6 +318,11 @@ test("layout holds at 320/768/1440 across storefront and admin", async ({
             await expectHeaderNav(page, `catalog ${viewport.key}`);
           }
 
+          if (viewport.width === 320) {
+            await expectAddToCartSingleLine(page, `catalog ${viewport.key}`);
+            await expectCardFocusRing(page, `catalog ${viewport.key}`);
+          }
+
           controlChecks.push(`${target.key}-${viewport.key}`);
         }
 
@@ -288,6 +330,25 @@ test("layout holds at 320/768/1440 across storefront and admin", async ({
         await page.screenshot({ path, fullPage: true, animations: "disabled" });
         screenshots.push(path);
       }
+    }
+
+    const shopPage: LayoutPage = {
+      key: "shop",
+      path: `/shops/${catalog.shop.slug}`,
+      heading: catalog.shop.name,
+      group: "storefront",
+      ready: async (page, productName) => {
+        await expect(page.getByText(productName).first()).toBeVisible();
+      },
+    };
+
+    for (const viewport of viewports) {
+      await openAndCheckLayout(page, shopPage, viewport, product.name);
+      recordLeftEdge(`storefront-${viewport.key}`, await firstHeadingLeft(page));
+
+      const path = testInfo.outputPath(`layout-shop-${viewport.key}.png`);
+      await page.screenshot({ path, fullPage: true, animations: "disabled" });
+      screenshots.push(path);
     }
   } finally {
     await buyerContext.close();

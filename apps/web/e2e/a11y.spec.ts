@@ -60,6 +60,11 @@ test("axe has no serious or critical findings on buyer pages in light and dark",
   const orderId = ((await checkoutResponse.json()) as { orders: Array<{ id: number }> }).orders[0]
     ?.id;
 
+  const targets = [
+    ...pages,
+    { key: "shop", path: `/shops/${catalog.shop.slug}`, heading: catalog.shop.name },
+  ];
+
   const scans: Record<string, ScanResult> = {};
 
   for (const viewport of viewports) {
@@ -74,7 +79,7 @@ test("axe has no serious or critical findings on buyer pages in light and dark",
         await seedBrowserSession(context, buyer, cartStateFor(catalog));
         const page = await context.newPage();
 
-        for (const target of pages) {
+        for (const target of targets) {
           await page.goto(target.path);
           await expect(page.getByRole("heading", { name: target.heading }).first()).toBeVisible();
           await setTheme(page, theme);
