@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DeliverySnapshotSchema } from "./delivery.js";
+import { DeliveryCheckoutSchema, DeliverySnapshotSchema } from "./delivery.js";
 import { ORDER_ID_MAX, ORDER_MAX_ITEMS, ORDER_TOTAL_MAX_KOPECKS } from "./limits.js";
 import { ShopSummarySchema } from "./storefront.js";
 
@@ -39,6 +39,7 @@ export const CheckoutSchema = z.object({
   // the advisory lock compare strings byte-wise. Canonical lowercase makes the
   // same id produce the same row lookup and the same lock in every case.
   clientCheckoutId: z.uuid().transform((value) => value.toLowerCase()),
+  delivery: DeliveryCheckoutSchema.optional(),
 });
 
 export const ORDER_STATUSES = ["new", "payment_pending", "paid"] as const;

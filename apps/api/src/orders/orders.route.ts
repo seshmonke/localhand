@@ -73,6 +73,7 @@ export const ordersRoutes: FastifyPluginAsyncZod = async (app) => {
           401: ApiErrorSchema,
           409: ApiErrorSchema,
           429: ApiErrorSchema,
+          502: ApiErrorSchema,
         },
       },
     },
@@ -81,7 +82,9 @@ export const ordersRoutes: FastifyPluginAsyncZod = async (app) => {
 
       const result = await checkout(user, request.body);
       if (!result.ok) {
-        return reply.code(409).send({ error: "product_unavailable" });
+        return reply
+          .code(result.error === "delivery_unavailable" ? 502 : 409)
+          .send({ error: result.error });
       }
 
       return reply.code(201).send({ orders: result.orders });
