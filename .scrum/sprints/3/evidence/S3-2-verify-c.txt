@@ -2,8 +2,8 @@
 $ pnpm typecheck && pnpm lint && pnpm format:check && pnpm check:public && pnpm test && pnpm build && pnpm openspec:validate
 $ pnpm --filter @localhand/shared build && pnpm -r typecheck
 $ tsc -p tsconfig.build.json
-packages/ui typecheck$ tsc --noEmit
 packages/shared typecheck$ tsc --noEmit
+packages/ui typecheck$ tsc --noEmit
 packages/ui typecheck: Done
 packages/shared typecheck: Done
 apps/api typecheck$ tsc --noEmit
@@ -15,7 +15,7 @@ $ prettier --check .
 Checking formatting...
 All matched files use Prettier code style!
 $ node scripts/check-public-repo.mjs
-Public repo check: 515 tracked files, no secrets/PII patterns found
+Public repo check: 517 tracked files, no secrets/PII patterns found
 $ pnpm --filter @localhand/shared build && pnpm -r test
 $ tsc -p tsconfig.build.json
 Scope: 4 of 5 workspace projects
@@ -36,8 +36,8 @@ packages/ui test: Done
 packages/shared test: 
 packages/shared test:  Test Files  12 passed (12)
 packages/shared test:       Tests  156 passed (156)
-packages/shared test:    Start at  22:32:27
-packages/shared test:    Duration  916ms (import 59%, transform 18%, tests 18%, worker 4%)
+packages/shared test:    Start at  22:35:18
+packages/shared test:    Duration  792ms (import 67%, tests 20%, transform 7%, worker 4%)
 packages/shared test: 
 packages/shared test: Done
 apps/api test$ vitest run
@@ -51,10 +51,10 @@ apps/web test:
 apps/web test: 
 apps/web test:  Test Files  22 passed (22)
 apps/web test:       Tests  157 passed (157)
-apps/web test:    Start at  22:32:29
-apps/web test:    Duration  14.43s (tests 37%, environment 32%, import 22%, setup 6%, transform 3%)
+apps/web test:    Start at  22:35:19
+apps/web test:    Duration  13.57s (tests 36%, environment 32%, import 22%, setup 7%, transform 3%)
 apps/web test: 
-apps/web test: Environment  jsdom was created 22 times · 28.30s total, 32% of tracked time
+apps/web test: Environment  jsdom was created 22 times · 26.91s total, 32% of tracked time
 apps/web test:              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
 apps/web test:              learn more: https://vitest.dev/guide/improving-performance#test-environments
 apps/web test: 
@@ -62,16 +62,16 @@ apps/web test: Done
 apps/api test: 
 apps/api test:  Test Files  37 passed (37)
 apps/api test:       Tests  347 passed (347)
-apps/api test:    Start at  22:32:29
-apps/api test:    Duration  44.97s (tests 83%, import 16%, transform 1%)
+apps/api test:    Start at  22:35:19
+apps/api test:    Duration  42.93s (tests 82%, import 17%)
 apps/api test: 
 apps/api test:     Isolate  37 workers spawned · ~117ms startup each (spawn + environment, per file)
-apps/api test:              at least ~4.22s faster with isolate: false — reuses workers across files instead of one per file
+apps/api test:              at least ~4.21s faster with isolate: false — reuses workers across files instead of one per file
 apps/api test: 
 apps/api test: Done
 $ pnpm -r build
-packages/ui build$ tsc --noEmit
 packages/shared build$ tsc -p tsconfig.build.json
+packages/ui build$ tsc --noEmit
 packages/shared build: Done
 apps/api build$ tsc -p tsconfig.build.json
 packages/ui build: Done
@@ -97,7 +97,7 @@ apps/web build: (!) Some chunks are larger than 500 kB after minification. Consi
 apps/web build: - Using dynamic import() to code-split the application
 apps/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 apps/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-apps/web build: ✓ built in 751ms
+apps/web build: ✓ built in 690ms
 apps/web build: Done
 apps/api build: Done
 $ openspec validate --all --strict
