@@ -33,8 +33,8 @@
 
 ## 5. Security, evidence, docs
 
-- [ ] 5.1 Добавить e2e/smoke: dev OTP → магазин → товар → публикация → витрина.
-- [ ] 5.2 Проверить authz-тесты, rate-limit, отсутствие телефона/кода в логах.
-- [ ] 5.3 Обновить ADR/`docs/legal/context.md` по auth и ПДн; зафиксировать SMS-провайдера.
-- [ ] 5.4 Прогнать `pnpm verify`, `openspec validate --all --strict`, preview; записать evidence.
-- [ ] 5.5 Заархивировать change после merge и обновить `specs/`.
+- [x] 5.1 Добавить e2e/smoke: dev OTP → магазин → товар → публикация → витрина.
+- [x] 5.2 Проверить authz-тесты, rate-limit, отсутствие телефона/кода в логах.
+- [x] 5.3 Обновить ADR/`docs/legal/context.md` по auth и ПДн; зафиксировать SMS-провайдера.
+- [x] 5.4 Прогнать `pnpm verify`, `openspec validate --all --strict`, preview; записать evidence.
+- [x] 5.5 Заархивировать change после merge и обновить `specs/`.

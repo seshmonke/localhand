@@ -22,3 +22,7 @@
 {"ts":"2026-11-27T02:28:30Z","type":"merge","sprint":1,"task":"S1-4b","pr":20,"merge_commit":"3753a1b","status":"done"}
 {"ts":"2026-11-27T02:29:00Z","type":"phase","sprint":1,"cycle":6,"from":"cycle_5","to":"cycle_6","task":"S1-5"}
 {"ts":"2026-11-27T02:35:00Z","type":"claim","sprint":1,"cycle":6,"task":"S1-5","owner":"scrum-worker","branch":"task/S1-5-security-archive","lease":".scrum/locks/S1-5.json"}
+{"ts":"2026-11-27T02:57:00Z","type":"review","sprint":1,"task":"S1-5","pr":22,"verdict":"APPROVE","reviewer":"scrum-reviewer","head":"460c8ed","note":"P1 card overlap fixed; P3 ADR/e2e guards closed"}
+{"ts":"2026-11-27T02:57:30Z","type":"merge","sprint":1,"task":"S1-5","pr":22,"merge_commit":"64a2b30","status":"done"}
+{"ts":"2026-11-27T02:58:00Z","type":"archive","sprint":1,"change":"02-seller-onboarding","archive":"2026-11-27-02-seller-onboarding","specs":["phone-auth","seller-shop","product-management"]}
+{"ts":"2026-11-27T02:58:30Z","type":"sprint_closed","sprint":1,"status":"accepted","goal_achieved":true,"review":"ACCEPT","retro":".scrum/sprints/1/retro.md"}

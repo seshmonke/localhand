@@ -113,9 +113,23 @@
 
 ### S1-5 Security, evidence, docs, archive
 
-- Статус: `in_progress`, owner `scrum-worker`; ветка
-  `task/S1-5-security-archive`, lease до 06:30Z.
-- Дальше: API e2e dev OTP → shop → product → storefront; authz/
-  rate-limit/log-тесты; legal/ADR SMS; verify/preview evidence;
-  archive change.
-- Блокеры: нет.
+- Сделано: real-DB e2e seller flow, authz/401, log privacy test,
+  ADR 0002 phone auth/SMS, legal-раздел, evidence + browser-smoke;
+  P1 card-overlap на 320 исправлен.
+- Ревью: **APPROVE**; P3 ADR/e2e guards закрыты; повторное — **APPROVE**.
+- `pnpm verify`: exit 0; API 102/102, shared 33/33, web 35/35,
+  OpenSpec 4/4 strict.
+- PR #22 squash-merge `64a2b30`; evidence:
+  [evidence/S1-5-verify.md](evidence/S1-5-verify.md).
+- Change `02-seller-onboarding` заархивирован
+  (`2026-11-27-02-seller-onboarding`); specs phone-auth/seller-shop/
+  product-management созданы.
+- S1-5 закрыт; tasks 5.1–5.5 отмечены. Блокеров нет.
+
+### Итог синка
+
+- Sprint 1 **закрыт**: Sprint Goal достигнут, ACCEPT.
+- Ретро и действия записаны в `retro.md`.
+- Следующий — планирование Sprint 2 (buyer-core) по standing
+  authorization.
+- Эскалаций нет; владелец не требуется.

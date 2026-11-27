@@ -1,10 +1,10 @@
 # Спринт 1: онбординг продавца + auth
 
-Статус: **BUILDING**, cycle 6. S1-1 auth, S1-2 shop, S1-3 products,
-S1-4a auth/shop UI и S1-4b products UI смержены 27.11.2026
-(PR #12/#14/#16/#18/#20); следующий — S1-5 security/evidence/archive.
+Статус: **CLOSED** 27.11.2026. Sprint Goal достигнут, review ACCEPT.
+S1-1…S1-5 смержены (PR #12/#14/#16/#18/#20/#22), change
+`02-seller-onboarding` заархивирован.
 Дата планирования: 27.11.2026.
-Change: `02-seller-onboarding` (валиден strict).
+Change: `2026-11-27-02-seller-onboarding` (архив; specs обновлены).
 Бюджет: 4–6 циклов по 60–90 минут; церемонии ≤ 20–25%.
 
 ## Sprint Goal
@@ -28,18 +28,18 @@ Change: `02-seller-onboarding` (валиден strict).
 
 ## Критерии приёмки спринта
 
-- [ ] Продавец входит по dev-OTP на preview; неверный/просроченный код —
+- [x] Продавец входит по dev-OTP на preview; неверный/просроченный код —
       отказ; телефон/код не в логах.
-- [ ] Продавец без магазина создаёт магазин; slug уникален; чужой
+- [x] Продавец без магазина создаёт магазин; slug уникален; чужой
       магазин недоступен (404).
-- [ ] Продавец создаёт товар, публикует его; товар виден на витрине;
+- [x] Продавец создаёт товар, публикует его; товар виден на витрине;
       скрытый товар исчезает.
-- [ ] Seller admin работает на 320 и 1440; loading/empty/error; фокус и
+- [x] Seller admin работает на 320 и 1440; loading/empty/error; фокус и
       клавиатура.
-- [ ] Authz-тесты: без сессии 401, чужой ресурс 404; rate-limit 429.
-- [ ] `pnpm verify`, `openspec validate --all --strict`, preview smoke —
+- [x] Authz-тесты: без сессии 401, чужой ресурс 404; rate-limit 429.
+- [x] `pnpm verify`, `openspec validate --all --strict`, preview smoke —
       зелёные, evidence записан.
-- [ ] Change заархивирован, `specs/` обновлены.
+- [x] Change заархивирован, `specs/` обновлены.
 
 ## Вне скоупа
 
@@ -75,12 +75,11 @@ Change: `02-seller-onboarding` (валиден strict).
 
 ## Старт
 
-Сборка начата 27.11.2026 после явной команды владельца. Cycle 1–5
-закрыты (S1-1 auth, S1-2 shop, S1-3 products, S1-4a admin auth/shop,
-S1-4b products UI); далее S1-5 security/evidence/archive по плану
-циклов.
+Сборка завершена 27.11.2026. Cycle 1–6 закрыты; Sprint 1 принят.
+Следующий спринт — buyer-core, отдельный план `02-buyer-core.md`.
 
 ## Evidence
 
-Заполняется при сборке: команда, exit code, хвост вывода, commit SHA,
-preview URL/шаги.
+Evidence: `.scrum/sprints/1/evidence/S1-1-verify.md` … `S1-5-verify.md`,
+скриншоты 320/1440, axe raw. PR #12/#14/#16/#18/#20/#22; review —
+`.scrum/sprints/1/review.md`, retro — `retro.md`.

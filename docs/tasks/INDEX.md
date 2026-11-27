@@ -19,14 +19,13 @@
 <!-- - [Спринт 1: …](01-….md) — …. Закрыт ДД.ММ.ГГГГ. -->
 
 Init закрыт 27.11.2026: product, stack, GitHub, walking skeleton
-(`2026-11-27-01-walking-skeleton`). Sprint 1 идёт: **BUILDING**,
-cycle 6.
+(`2026-11-27-01-walking-skeleton`). Sprint 1 **закрыт** 27.11.2026:
+ACCEPT, change `02-seller-onboarding` заархивирован.
 
 - [Спринт 1: онбординг продавца + auth](01-seller-onboarding.md) —
-  BUILDING, change `02-seller-onboarding`; S1-1 auth (PR #12), S1-2 shop
-  (PR #14), S1-3 products (PR #16), S1-4a admin auth/shop UI (PR #18) и
-  S1-4b products UI (PR #20) смержены; следующий — S1-5
-  security/evidence/archive. Закрыт: —.
+  CLOSED 27.11.2026; S1-1…S1-5 (PR #12/#14/#16/#18/#20/#22), specs
+  phone-auth/seller-shop/product-management. Sprint 2 планируется
+  отдельно.
 
 ## Бэклог
 

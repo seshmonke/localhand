@@ -46,3 +46,7 @@
 - 27.11.2026. S1-4b products admin UI смержен (PR #20, `3753a1b`):
   таблица/карточки, create/edit, publish/hide, session-expired cache
   clear. Следующий — S1-5 security/evidence/archive. Sprint 1.
+- 27.11.2026. Sprint 1 закрыт: S1-1…S1-5 смержены (PR #12/#14/#16/#18/
+  #20/#22), change `02-seller-onboarding` заархивирован как
+  `2026-11-27-02-seller-onboarding`, specs phone-auth/seller-shop/
+  product-management созданы; review ACCEPT, retro записан. Sprint 1.
