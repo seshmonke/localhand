@@ -21,16 +21,16 @@ export function ProductCard({ product }: { product: ProductCardData }) {
       ) : (
         <div className={`aspect-[4/5] border-[3px] border-ink ${tone}`} aria-hidden="true" />
       )}
-      <div className="mt-3 flex items-start justify-between gap-2">
+      <div className="mt-3 flex flex-col sm:flex-row sm:items-start sm:justify-between sm:gap-2">
         <div className="min-w-0">
-          <h3 className="font-display text-xs uppercase leading-tight sm:text-sm">
+          <h3 className="break-words font-display text-xs uppercase leading-tight sm:text-sm">
             {product.name}
           </h3>
           <p className="mt-1 truncate font-mono text-[9px] uppercase tracking-wide sm:text-[10px]">
             {product.shop.name}
           </p>
         </div>
-        <p className="shrink-0 font-mono text-xs sm:text-sm">
+        <p className="mt-1 font-mono text-xs sm:mt-0 sm:shrink-0 sm:text-sm">
           {formatRubles(kopecks(product.priceKopecks))}
         </p>
       </div>
