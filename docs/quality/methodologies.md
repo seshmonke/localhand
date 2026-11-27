@@ -93,9 +93,9 @@ Property-based (fast-check) генерирует краевые случаи; mu
 
 - Артефакт: инварианты (идемпотентность, суммы, переходы статусов),
   mutation-отчёт changed-модуля.
-- Гейт: после завершения quality-wave-1 — mutation score T2 ≥ 70% на
-  изменённых критических модулях pre-merge; до этого mutation идёт
-  nightly-отчётом и не блокирует merge без owner-исключения.
+- Гейт: после merge Q1.0–Q1.6 — mutation score T2 ≥ 70% changed
+  pre-merge; до активации mutation идёт nightly-отчётом и не блокирует
+  merge, исключение фиксируется owner.
 
 ### 5. Shift-left security
 
@@ -115,7 +115,8 @@ error budget; field RUM для фронта. Нельзя улучшать то,
 - SLO v1 (проверить в wave 1): API p95 < 500 ms без сети провайдера,
   error rate < 1%, availability 99,5% в месяц; LCP — preview-прокси
   < 2500 ms, field RUM — до публичного запуска или owner-исключение.
-- Гейт: новый критический путь без логов/метрик не Done.
+- Гейт до активации: логи/метрики и SLO-дизайн обязательны, alert/RUM —
+  owner-исключение; после Q1.5 — alert/RUM входят в T2-гейт.
 
 ### 7. Performance budgets + load testing
 
@@ -154,8 +155,11 @@ canary/blue-green и быстрый rollback. Ручные изменения VM
 **Волна 1 — Sprint 3–4:**
 TDD, ATDD, contract tests, property/mutation для T2, threat model,
 SLO/RUM на checkout/payments, Semgrep important-only.
-T2-гейты становятся блокирующими после Done `quality-wave-1` (Q1.1–Q1.6);
-до этого артефакты обязательны, mutation — nightly, исключение — owner.
+**Активация T2-гейтов:** после merge всей программы `quality-wave-1`
+(Q1.0–Q1.6). До активации блокируют TDD/ATDD, contract, property и
+threat model; mutation идёт nightly-отчётом, SLO/alert — проектированием
+и логами, field RUM — owner-исключением до публичного запуска. После
+активации все гейты T2 блокируют merge.
 
 **Волна 2 — Sprint 5–6:**
 trunk-based + feature flags, performance/load budgets, postmortems.

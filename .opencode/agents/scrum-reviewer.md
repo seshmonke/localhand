@@ -28,7 +28,8 @@ permissions:
 Проверь:
 1. Tier T0/T1/T2 и каждый AC/сценарий — есть доказательство.
 2. Для T1/T2 — RED/GREEN/REFACTOR evidence: тест падал без кода; для T2 —
-   contract/property/mutation/threat model/SLO.
+   contract/property/threat model блокируют; mutation/SLO/RUM — по
+   матрице активации (до Q1.0–Q1.6 nightly/исключение, после — блок).
 3. Нет ослабления тестов/CI и test-after вместо TDD.
 4. Authz, секреты, PII, ошибки, откат.
 5. A11y, состояния, perf-бюджет; field RUM/owner-исключение.

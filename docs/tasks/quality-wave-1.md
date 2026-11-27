@@ -1,7 +1,7 @@
 # Quality wave 1: TDD + gates
 
-Статус: **программа**, Q1.0 done (docs-PR), Q1.1–Q1.6 — backlog,
-каждый пункт отдельный PBI. Кандидат Sprint 4.
+Статус: **программа**, Q1.0 in review (docs-PR, done после merge),
+Q1.1–Q1.6 — backlog, каждый пункт отдельный PBI. Кандидат Sprint 4.
 Дата: 27.11.2026.
 Источник: решение владельца «TDD внедрить обязательно» + quality-план
 `docs/quality/methodologies.md`.
@@ -14,15 +14,16 @@ SLO/RUM обязательными для критических путей. Н�
 
 ## AC программы
 
-- [x] Q1.0: TDD-evidence в PR-шаблоне; DoD/DoR содержат Tier T0/T1/T2;
-      `AGENTS.md` и `roles.md` ссылаются на методологию.
+- [ ] Q1.0 (in review): TDD-evidence в PR-шаблоне; DoD/DoR содержат
+      Tier T0/T1/T2; `AGENTS.md` и `roles.md` ссылаются на методологию.
+      Done после merge docs-PR.
 - [ ] Q1.1–Q1.6: каждый PBI имеет свой AC, evidence и owner; T2-гейты
-      становятся блокирующими после Q1.3+Q1.4 Done.
+      становятся блокирующими после merge Q1.0–Q1.6.
 - [ ] Contract-тесты web↔API на shared-схемах: изменение контракта без
       теста валит CI.
 - [ ] Property-based тесты для денег/идемпотентности/статусов.
-- [ ] Q1.3: mutation T2 ≥ 70% changed pre-merge после Done Q1.3;
-      до этого — nightly-отчёт и owner-исключение.
+- [ ] Q1.3: после merge Q1.3 mutation T2 ≥ 70% changed становится
+      pre-merge гейтом; до этого — nightly-отчёт и owner-исключение.
 - [ ] Threat model для payments/address PII записан в
       `docs/quality/threat-model.md`; abuse cases в change.
 - [ ] Semgrep important-only в PR-гейте; CodeQL/SBOM — nightly.
@@ -35,18 +36,19 @@ SLO/RUM обязательными для критических путей. Н�
 
 ## Пункты программы (отдельные PBI)
 
-| PBI | Что | AC/гейт |
-|---|---|---|
-| **Q1.0** | TDD/DoD/roles/PR-шаблон | done в docs-PR |
-| **Q1.1** | TDD/ATDD enforcement | QA-аудит RED/GREEN, 3 PR подряд без test-after |
-| **Q1.2** | Contract tests web↔API | shared-схемы, negative/edge, CI gate |
-| **Q1.3** | Property/mutation | fast-check payments/authz, Stryker 70% changed |
-| **Q1.4** | Security | threat model payments/address, Semgrep PR, CodeQL/SBOM nightly |
-| **Q1.5** | Observability | SLO 99,5%/p95<500ms/error<1%, logs/metrics/alert/RUM |
-| **Q1.6** | Performance | API p95 бюджеты, k6/autocannon checkout/payments |
+| PBI | Что | Owner | Evidence / гейт |
+|---|---|---|---|
+| **Q1.0** | TDD/DoD/roles/PR-шаблон | orchestrator | docs-PR, in review |
+| **Q1.1** | TDD/ATDD enforcement | QA + orchestrator | QA-аудит RED/GREEN, 3 PR без test-after |
+| **Q1.2** | Contract tests web↔API | Backend + Frontend | shared-схемы, negative/edge, CI gate |
+| **Q1.3** | Property/mutation | Backend + QA | fast-check payments/authz, Stryker 70% changed |
+| **Q1.4** | Security | DevSecOps + Architect | threat model, Semgrep PR, CodeQL/SBOM nightly |
+| **Q1.5** | Observability | DevSecOps + Backend | SLO 99,5%/p95<500ms/error<1%, logs/metrics/alert/RUM |
+| **Q1.6** | Performance | Backend + QA | API p95 бюджеты, k6/autocannon checkout/payments |
 
 Порядок: Q1.1 → Q1.2 → Q1.3/Q1.4 → Q1.5/Q1.6. T2-гейты блокирующие
-после Q1.3+Q1.4; mutation до этого — nightly.
+после merge Q1.0–Q1.6; до этого блокируют TDD/contract/property/threat
+model, mutation — nightly, SLO/alert/RUM — исключение.
 
 ## Роли
 
@@ -72,7 +74,7 @@ SLO/RUM обязательными для критических путей. Н�
 
 ## Evidence
 
-- PR-шаблон и DoD diff.
+- PR-шаблон, DoD и roles diff.
 - Contract/property/mutation отчёты.
 - Threat model, Semgrep/CodeQL/SBOM.
 - SLO/RUM/load отчёты.

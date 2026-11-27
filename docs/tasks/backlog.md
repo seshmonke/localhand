@@ -35,14 +35,24 @@
 
 ## P1
 
-- [ ] P1. Quality wave 1 (программа Q1.1–Q1.6): TDD/ATDD, contract,
-  property/mutation, threat model, SLO/RUM, Semgrep important-only.
-  Каждый пункт — отдельный PBI; Q1.0 (docs/DoD/PR-шаблон) сделан.
-  Критерий: TDD-evidence, contract-тесты web↔API, mutation T2 ≥ 70%
-  changed, threat model payments/address, SLO p95<500ms/error<1%.
-  Источник: решение владельца 27.11.2026, `docs/quality/methodologies.md`.
-  Спринт: — (кандидат Sprint 4). Бриф:
-  [quality-wave-1.md](quality-wave-1.md).
+- [ ] P1. Q1.1 TDD/ATDD enforcement: RED/GREEN evidence, QA-аудит,
+  3 PR без test-after. Критерий: PR-шаблон и аудит. Источник:
+  quality-wave-1. Спринт: — (Sprint 4).
+- [ ] P1. Q1.2 Contract tests web↔API: shared-схемы, negative/edge,
+  CI gate. Критерий: изменение контракта без теста валит CI. Источник:
+  quality-wave-1. Спринт: — (Sprint 4).
+- [ ] P1. Q1.3 Property/mutation: fast-check payments/authz, StrykerJS
+  T2 ≥ 70% changed. Критерий: nightly, затем pre-merge gate. Источник:
+  quality-wave-1. Спринт: — (Sprint 4).
+- [ ] P1. Q1.4 Security: threat model payments/address, Semgrep PR,
+  CodeQL/SBOM nightly, ASVS T2. Критерий: high/critical = 0. Источник:
+  quality-wave-1. Спринт: — (Sprint 4).
+- [ ] P1. Q1.5 Observability: SLO p95<500ms/error<1%/availability 99,5%,
+  logs/metrics/alert/RUM. Критерий: SLO в бюджете. Источник:
+  quality-wave-1. Спринт: — (Sprint 4).
+- [ ] P1. Q1.6 Performance: API p95 бюджеты, k6/autocannon
+  checkout/payments. Критерий: бюджеты в CI. Источник: quality-wave-1.
+  Спринт: — (Sprint 4).
 
 - [ ] Онбординг продавца: статус, ЮKassa, магазин. Критерий: продавец
   проходит путь до публикации товара. Источник: product.md. Спринт: —.

@@ -5,8 +5,10 @@ Tier определяется на Planning: T0 — docs/copy без измен�
 T1 — обычная фича, T2 — деньги, authz, PII/адреса, критические переходы
 заказов, миграции, платёжные/внешние провайдеры.
 
-**T0:** DoR — ссылки/факты проверяемы, `No spec change`; DoD — `verify`,
-prettier/check:public, ревью. TDD, e2e и OpenSpec archive не требуются.
+**T0:** DoR — ссылки/факты проверяемы, `No spec change`; DoD —
+`verify`, prettier/check:public, ревью; a11y обязателен, если UI. TDD,
+e2e, proposal/spec, preview, smoke, rollback и OpenSpec archive не
+требуются. Для T0 общий чеклист ниже не применяется.
 
 ## Definition of Ready (PBI)
 
@@ -38,9 +40,9 @@ PBI Done, только если:
       для T1/T2 тест написан до кода, а не после; REFACTOR — тесты зелёные.
 - [ ] Unit/integration на изменённую логику; покрытие изменённых строк
       T1 ≥ 80%.
-- [ ] Для T2: property-based инварианты, contract-тесты; mutation
-      ≥ 70% changed — после Done `quality-wave-1`, до этого nightly-отчёт
-      и owner-исключение.
+- [ ] Для T2: property-based инварианты и contract-тесты блокируют
+      всегда; mutation ≥ 70% changed — после merge Q1.0–Q1.6, до этого
+      nightly-отчёт и owner-исключение.
 - [ ] Typecheck, lint, build зелёные.
 - [ ] Нет новых high/critical уязвимостей; secret scan чист; authz-тесты
       для новых ручек; для T2 threat model обновлён, SAST/Semgrep чист.
@@ -49,9 +51,9 @@ PBI Done, только если:
 - [ ] Perf-бюджет: preview lab LCP < 2500 ms (owner-approved DoD-прокси
       v1) и дельта бандла в бюджете; field p75 — до публичного запуска.
 - [ ] Наблюдаемость: логи/метрики/трейсы для нового пути; для T2 —
-      SLO/алерт (API p95 < 500 ms, error rate < 1%) и field RUM, если
-      затронут фронт; field RUM может быть owner-исключением до
-      публичного запуска.
+      SLO/алерт (API p95 < 500 ms, error rate < 1%, availability 99,5%)
+      и field RUM, если затронут фронт. До Q1.5 alert/RUM могут быть
+      owner-исключением; после — входят в T2-гейт.
 - [ ] Документация: ADR при решении, runbook при операции, changelog,
       postmortem для P0/P1.
 - [ ] OpenSpec: при изменении поведения — `verify-change` пройден,
