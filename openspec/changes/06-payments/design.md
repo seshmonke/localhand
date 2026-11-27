@@ -51,7 +51,7 @@ e2e вызывает его напрямую после complete. Fake вклю�
 idempotent GET; токены/ключи не логируются. Без `YOOKASSA_*` адаптер не
 включается. Contract-тесты — на fixtures.
 
-### Схема и миграция `0004`
+### Схема и миграции `0004`–`0005`
 
 - `seller_payment_accounts` — версии аккаунта, не одна мутируемая
   строка:
@@ -84,8 +84,13 @@ idempotent GET; токены/ключи не логируются. Без `YOOKA
     скана.
 - `order_status` расширяется `payment_pending`, `paid`. `capture: true`,
   поэтому `waiting_for_capture` не используется.
-- Миграция аддитивная. Down SQL: остановить трафик, выгрузить платежи,
-  `UPDATE orders SET status='new' WHERE status IN
+- Схема меняется двумя аддитивными миграциями: `0004` (enum и
+  таблицы) и `0005` (fail-closed default `error`, reconcile-поля и
+  partial index). Опубликованную `0004` не меняем: инстансы со старой
+  версией падают на несовпадении journal `when`/hash.
+- Down SQL: остановить трафик, выгрузить платежи, сначала откатить
+  `0005` (drop index/constraint/columns, вернуть default `active`),
+  затем `UPDATE orders SET status='new' WHERE status IN
   ('payment_pending','paid')`, удалить `payments`/
   `seller_payment_accounts`, оставить значения enum (PostgreSQL не умеет
   `DROP VALUE`); старый код читает только `new`. При повторном деплое

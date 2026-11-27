@@ -24,12 +24,9 @@ CREATE TABLE "payments" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"paid_at" timestamp with time zone,
-	"reconcile_attempts" smallint DEFAULT 0 NOT NULL,
-	"last_checked_at" timestamp with time zone,
 	CONSTRAINT "payments_order_id_idempotency_key_unique" UNIQUE("order_id","idempotency_key"),
 	CONSTRAINT "payments_amount_kopecks_check" CHECK ("payments"."amount_kopecks" >= 0),
-	CONSTRAINT "payments_currency_check" CHECK ("payments"."currency" = 'RUB'),
-	CONSTRAINT "payments_reconcile_attempts_check" CHECK ("payments"."reconcile_attempts" >= 0)
+	CONSTRAINT "payments_currency_check" CHECK ("payments"."currency" = 'RUB')
 );
 --> statement-breakpoint
 CREATE TABLE "seller_payment_accounts" (
@@ -40,7 +37,7 @@ CREATE TABLE "seller_payment_accounts" (
 	"is_test" boolean DEFAULT false NOT NULL,
 	"token_ciphertext" "bytea" NOT NULL,
 	"token_key_version" smallint NOT NULL,
-	"status" "seller_payment_account_status" DEFAULT 'error' NOT NULL,
+	"status" "seller_payment_account_status" DEFAULT 'active' NOT NULL,
 	"expires_at" timestamp with time zone,
 	"connected_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -54,7 +51,6 @@ CREATE UNIQUE INDEX "payments_order_id_active_unique" ON "payments" USING btree 
 CREATE UNIQUE INDEX "payments_provider_payment_id_unique" ON "payments" USING btree ("provider_payment_id") WHERE "payments"."provider_payment_id" IS NOT NULL;--> statement-breakpoint
 CREATE INDEX "payments_order_id_created_at_idx" ON "payments" USING btree ("order_id","created_at" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX "payments_seller_account_id_idx" ON "payments" USING btree ("seller_account_id");--> statement-breakpoint
-CREATE INDEX "payments_pending_reconcile_idx" ON "payments" USING btree ("created_at") WHERE "payments"."status" = 'pending';--> statement-breakpoint
 CREATE UNIQUE INDEX "seller_payment_accounts_seller_id_active_unique" ON "seller_payment_accounts" USING btree ("seller_id") WHERE "seller_payment_accounts"."status" = 'active';--> statement-breakpoint
 CREATE INDEX "seller_payment_accounts_seller_id_connected_at_idx" ON "seller_payment_accounts" USING btree ("seller_id","connected_at" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX "seller_payment_accounts_provider_account_idx" ON "seller_payment_accounts" USING btree ("provider","provider_account_id");

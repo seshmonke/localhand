@@ -1,5 +1,5 @@
 {
-  "id": "d3135028-08e1-4b7a-b934-b63060c70ab8",
+  "id": "aa24b6ef-4d57-41f7-a829-6433bbb80cdc",
   "prevId": "5caa58f9-ba1b-4bb7-afd5-a7f641ed4c28",
   "version": "7",
   "dialect": "postgresql",
@@ -469,19 +469,6 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "reconcile_attempts": {
-          "name": "reconcile_attempts",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "last_checked_at": {
-          "name": "last_checked_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -552,22 +539,6 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "payments_pending_reconcile_idx": {
-          "name": "payments_pending_reconcile_idx",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "\"payments\".\"status\" = 'pending'",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
@@ -618,10 +589,6 @@
         "payments_currency_check": {
           "name": "payments_currency_check",
           "value": "\"payments\".\"currency\" = 'RUB'"
-        },
-        "payments_reconcile_attempts_check": {
-          "name": "payments_reconcile_attempts_check",
-          "value": "\"payments\".\"reconcile_attempts\" >= 0"
         }
       },
       "isRLSEnabled": false
@@ -780,7 +747,7 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'error'"
+          "default": "'active'"
         },
         "expires_at": {
           "name": "expires_at",

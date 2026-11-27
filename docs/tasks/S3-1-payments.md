@@ -16,11 +16,13 @@ Change: `openspec/changes/06-payments/` (spec/design/tasks).
       (`pending|succeeded|canceled|failed|manual_review`),
       `order_status += payment_pending|paid`; таблицы
       `seller_payment_accounts` (версии, `is_test`, шифротекст токена,
-      `expires_at`, `status` default `error` fail-closed, partial unique
-      active) и `payments` (unique `order_id+idempotency_key`, partial
-      unique active/manual, partial unique `provider_payment_id`,
-      `reconcile_attempts`/`last_checked_at`, partial index pending);
-      индексы.
+      `expires_at`, partial unique active) и `payments` (unique
+      `order_id+idempotency_key`, partial unique active/manual,
+      partial unique `provider_payment_id`); индексы.
+- [ ] Миграция `0005`: fail-closed `seller_payment_accounts.status`
+      default `error`; `payments.reconcile_attempts` (default 0, check
+      >= 0), `payments.last_checked_at`, partial index
+      `payments_pending_reconcile_idx`.
 - [ ] `OrderStatusSchema`/`statusLabels`/тесты: `new|payment_pending|
       paid`; checkout по-прежнему создаёт `new`; бейдж
       `manual_review` — отдельно от статуса заказа.
@@ -88,7 +90,9 @@ Change: `openspec/changes/06-payments/` (spec/design/tasks).
 - `packages/shared/src/contracts/{order,payments}.ts` (+ тесты).
 - `apps/web/src/**` — только PR B: `pages/{Order,Checkout,AdminShop,
   AdminOrder,AdminOrders}Page.tsx`, `components/admin/**`,
-  `lib/api.ts`, `lib/queries.ts` при необходимости.
+  `lib/api.ts`, `lib/queries.ts` при необходимости. Исключение PR A:
+  только `pages/OrdersPage.tsx` — labels новых `OrderStatus`, без UI
+  оплаты.
 - `docs/stack/runbooks/payments-{rollback,manual-review}.md`,
   `docs/stack/adr/0004-payments.md` (PR B).
 - `openspec/changes/06-payments/tasks.md` — отметить выполненные пункты.

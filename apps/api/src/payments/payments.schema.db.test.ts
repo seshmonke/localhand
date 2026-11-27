@@ -299,10 +299,23 @@ describeWithDb("payments schema with a real database", () => {
     );
   });
 
-  it("defaults reconcile fields and creates the pending reconcile index", async () => {
+  it("defaults reconcile fields without an explicit value and creates the pending index", async () => {
     const fixture = await createFixture();
     const accountId = await createAccount(fixture.sellerId, "active");
-    const paymentId = await insertPayment(fixture, accountId);
+
+    // Deliberately omit reconcile_attempts/last_checked_at: this asserts the
+    // database defaults, not a value supplied by the application.
+    const inserted = await pool().query<{ id: number }>(
+      `INSERT INTO payments
+         (order_id, seller_account_id, provider, status, amount_kopecks, currency, idempotency_key)
+       VALUES ($1, $2, 'fake', 'pending', 420000, 'RUB', $3)
+       RETURNING id`,
+      [fixture.orderId, accountId, randomUUID()],
+    );
+    const paymentId = inserted.rows[0]?.id;
+    if (!paymentId) {
+      throw new Error("failed to insert a test payment without reconcile fields");
+    }
 
     const row = await pool().query<{
       reconcile_attempts: number;
@@ -311,10 +324,13 @@ describeWithDb("payments schema with a real database", () => {
     expect(row.rows[0]?.reconcile_attempts).toBe(0);
     expect(row.rows[0]?.last_checked_at).toBeNull();
 
-    const index = await pool().query<{ name: string | null }>(
-      "SELECT to_regclass('public.payments_pending_reconcile_idx')::text AS name",
+    const index = await pool().query<{ indexdef: string }>(
+      `SELECT indexdef FROM pg_indexes
+       WHERE schemaname = 'public'
+         AND tablename = 'payments'
+         AND indexname = 'payments_pending_reconcile_idx'`,
     );
-    expect(index.rows[0]?.name).toBe("payments_pending_reconcile_idx");
+    expect(index.rows[0]?.indexdef).toContain("WHERE (status = 'pending'::payment_status)");
   });
 
   it("enforces restrict deletes for order, payment account and seller", async () => {
