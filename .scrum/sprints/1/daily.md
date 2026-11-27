@@ -52,7 +52,8 @@
 
 ### S1-3 Products
 
-- Статус: `ready`; brief, worktree и lease создаются перед dispatch.
+- Статус: `in_progress`, owner `scrum-worker`; ветка `task/S1-3-products`,
+  lease до 04:30Z.
 - Дальше: контракты product-admin, `GET/POST/PATCH /seller/products`,
   publish/hide, authz только своего магазина, тесты.
 - Блокеры: нет.
