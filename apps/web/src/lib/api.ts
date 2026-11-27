@@ -1,12 +1,16 @@
 import {
+  type CreateProduct,
   type CreateShop,
   MeResponseSchema,
   ProductDetailSchema,
   ProductListResponseSchema,
   type RequestCodeRequest,
   RequestCodeResponseSchema,
+  SellerProductListResponseSchema,
+  SellerProductResponseSchema,
   SellerShopResponseSchema,
   ShopPageSchema,
+  type UpdateProduct,
   type UpdateShop,
   type VerifyCodeRequest,
   VerifyCodeResponseSchema,
@@ -149,4 +153,24 @@ export function createShop(input: CreateShop) {
 
 export function updateShop(input: UpdateShop) {
   return requestJson("/seller/shop", { method: "PATCH", body: input }, SellerShopResponseSchema);
+}
+
+export function fetchSellerProducts() {
+  return requestJson("/seller/products", {}, SellerProductListResponseSchema);
+}
+
+export function createProduct(input: CreateProduct) {
+  return requestJson(
+    "/seller/products",
+    { method: "POST", body: input },
+    SellerProductResponseSchema,
+  );
+}
+
+export function updateProduct(id: number, input: UpdateProduct) {
+  return requestJson(
+    `/seller/products/${encodeURIComponent(String(id))}`,
+    { method: "PATCH", body: input },
+    SellerProductResponseSchema,
+  );
 }
