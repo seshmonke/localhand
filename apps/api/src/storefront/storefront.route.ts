@@ -15,7 +15,9 @@ import {
 } from "./storefront.service.js";
 
 const ShopParamsSchema = z.object({ slug: z.string().min(1) });
-const ProductParamsSchema = z.object({ id: z.coerce.number().int().positive() });
+const ProductParamsSchema = z.object({
+  id: z.coerce.number().int().positive().max(2_147_483_647),
+});
 
 export const storefrontRoutes: FastifyPluginAsyncZod = async (app) => {
   app.setErrorHandler<FastifyError>((error, request, reply) => {

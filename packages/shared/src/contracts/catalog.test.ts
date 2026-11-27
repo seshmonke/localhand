@@ -45,6 +45,8 @@ describe("CatalogQuerySchema", () => {
   it.each([
     { q: "a".repeat(101) },
     { q: 42 },
+    { q: "a\u0000b" },
+    { q: "\u0000" },
     { sort: "oldest" },
     { page: "0" },
     { page: "-1" },

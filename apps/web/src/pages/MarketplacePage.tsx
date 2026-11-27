@@ -1,7 +1,7 @@
 import { type CatalogQuery, CatalogSortSchema, type CatalogSort } from "@localhand/shared";
 import { Button, buttonVariants } from "@localhand/ui";
 import { ArrowRight } from "lucide-react";
-import type { FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router";
 import { ProductCard } from "../components/ProductCard.js";
 import { ProductGridSkeleton, ScreenState } from "../components/ScreenState.js";
@@ -45,7 +45,7 @@ function readCatalogState(params: URLSearchParams): CatalogState {
   const rawQuery = params.get("q")?.trim() ?? "";
   const q = rawQuery.slice(0, 100);
   const rawPage = Number(params.get("page") ?? "1");
-  const page = Number.isInteger(rawPage) && rawPage >= 1 ? rawPage : 1;
+  const page = Number.isSafeInteger(rawPage) && rawPage >= 1 ? rawPage : 1;
   const parsedSort = CatalogSortSchema.safeParse(params.get("sort"));
 
   return {
@@ -58,6 +58,13 @@ function readCatalogState(params: URLSearchParams): CatalogState {
 export function MarketplacePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { q, sort, page } = readCatalogState(searchParams);
+  const [searchText, setSearchText] = useState(q);
+  const [syncedQuery, setSyncedQuery] = useState(q);
+
+  if (q !== syncedQuery) {
+    setSyncedQuery(q);
+    setSearchText(q);
+  }
 
   const query: CatalogQuery = {
     q: q || undefined,
@@ -93,9 +100,7 @@ export function MarketplacePage() {
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const value = new FormData(event.currentTarget).get("q");
-    const nextQuery = typeof value === "string" ? value.trim().slice(0, 100) : "";
-    applyState({ q: nextQuery, sort, page: 1 });
+    applyState({ q: searchText.trim().slice(0, 100), sort, page: 1 });
   }
 
   return (
@@ -191,12 +196,13 @@ export function MarketplacePage() {
                 Вещи, которые стоит найти
               </h2>
             </div>
-            <a
-              href="#catalog"
-              className="font-mono text-xs uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red"
+            <button
+              type="button"
+              onClick={() => applyState({ q: "", sort: "newest", page: 1 })}
+              className="font-mono text-xs uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
             >
               Все товары
-            </a>
+            </button>
           </div>
 
           <div className="mt-8 grid gap-4 border-[3px] border-ink bg-paper p-4 sm:p-5 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -210,11 +216,11 @@ export function MarketplacePage() {
                 </label>
                 <div className="mt-2 flex gap-2">
                   <input
-                    key={q}
                     id="catalog-search"
                     type="search"
                     name="q"
-                    defaultValue={q}
+                    value={searchText}
+                    onChange={(event) => setSearchText(event.target.value)}
                     maxLength={100}
                     placeholder="Название товара или магазина"
                     className="h-12 min-w-0 flex-1 border-[3px] border-ink bg-paper px-3 font-body text-base"
@@ -314,7 +320,7 @@ export function MarketplacePage() {
               ) : null}
             </div>
 
-            {catalog.isSuccess && total > CATALOG_PAGE_SIZE ? (
+            {catalog.isSuccess && total > CATALOG_PAGE_SIZE && !pageOutOfRange ? (
               <nav
                 aria-label="Страницы каталога"
                 className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t-[3px] border-ink pt-5"
@@ -384,7 +390,7 @@ export function MarketplacePage() {
       <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-6 lg:px-10">
         <Link
           to="/shops/local-hand-demo"
-          className="font-mono text-xs uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red"
+          className="font-mono text-xs uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
         >
           Открыть демо-магазин
         </Link>

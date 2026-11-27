@@ -540,6 +540,7 @@ describeWithDb("catalog discovery with a real database", () => {
     "?sort=popular",
     "?sort=",
     `?q=${"a".repeat(101)}`,
+    "?q=%00",
   ])("returns 400 for invalid query %s", async (query) => {
     const shop = await insertShop({ slug: "vintage-shop" });
     await insertProduct({ shopId: shop.id, name: "Куртка 90-х", priceKopecks: 420_000 });
@@ -548,5 +549,15 @@ describeWithDb("catalog discovery with a real database", () => {
 
     expect(response.statusCode).toBe(400);
     expect(response.json()).toEqual({ error: "invalid_request" });
+  });
+
+  it("rejects product ids outside the int4 range with 400 and returns 404 for the int4 max", async () => {
+    const outOfRange = await app.inject({ method: "GET", url: "/products/2147483648" });
+    expect(outOfRange.statusCode).toBe(400);
+    expect(outOfRange.json()).toEqual({ error: "invalid_request" });
+
+    const maxId = await app.inject({ method: "GET", url: "/products/2147483647" });
+    expect(maxId.statusCode).toBe(404);
+    expect(maxId.json()).toEqual({ error: "not_found" });
   });
 });

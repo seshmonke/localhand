@@ -5,7 +5,15 @@ export const CatalogSortSchema = z.enum(["newest", "price_asc", "price_desc"]);
 
 const CatalogSearchSchema = z.preprocess(
   (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
-  z.string().trim().min(1).max(100).optional(),
+  z
+    .string()
+    .trim()
+    .min(1)
+    .max(100)
+    .refine((value) => !value.includes("\u0000"), {
+      message: "search query must not contain NUL",
+    })
+    .optional(),
 );
 
 export const CatalogQuerySchema = z.object({

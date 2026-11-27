@@ -96,6 +96,7 @@ describe("storefront routes", () => {
 
   it.each([
     "/catalog/products?q=" + "a".repeat(101),
+    "/catalog/products?q=%00",
     "/catalog/products?sort=oldest",
     "/catalog/products?page=0",
     "/catalog/products?page=1.5",
@@ -143,5 +144,21 @@ describe("storefront routes", () => {
 
     expect(response.statusCode).toBe(404);
     expect(response.json()).toEqual({ error: "not_found" });
+  });
+
+  it("rejects product ids outside the int4 range with 400 and accepts the int4 max", async () => {
+    const outOfRange = await app.inject({ method: "GET", url: "/products/2147483648" });
+
+    expect(outOfRange.statusCode).toBe(400);
+    expect(outOfRange.json()).toEqual({ error: "invalid_request" });
+    expect(storefrontService.getPublishedProduct).not.toHaveBeenCalled();
+
+    vi.mocked(storefrontService.getPublishedProduct).mockResolvedValue(null);
+
+    const maxId = await app.inject({ method: "GET", url: "/products/2147483647" });
+
+    expect(maxId.statusCode).toBe(404);
+    expect(maxId.json()).toEqual({ error: "not_found" });
+    expect(storefrontService.getPublishedProduct).toHaveBeenCalledWith(2_147_483_647);
   });
 });
