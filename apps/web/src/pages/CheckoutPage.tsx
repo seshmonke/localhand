@@ -44,6 +44,9 @@ function formatPhone(phone: string): string {
 
 function checkoutErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
+    if (error.code === "delivery_required") {
+      return "Выберите город, пункт выдачи и имя получателя — доставка обязательна.";
+    }
     switch (error.status) {
       case 400:
         return "Проверьте состав корзины: в заказе от 1 до 50 уникальных товаров.";
@@ -127,7 +130,7 @@ export function CheckoutPage() {
     (max, shop) => Math.max(max, shop.periodMax),
     0,
   );
-  const deliveryReady = quoteQuery.data !== undefined;
+  const deliveryReady = quoteQuery.data !== undefined && recipientName.trim().length > 0;
   const deliveryStarted = cityCode !== null || pointCode.length > 0 || recipientName.length > 0;
   const checkoutIdRef = useRef<string>(crypto.randomUUID());
   const signatureRef = useRef(itemSignature);
@@ -161,6 +164,10 @@ export function CheckoutPage() {
         if (error.status === 409 && error.code === "delivery_quote_stale") {
           setFormError("Цена доставки изменилась. Выберите ПВЗ заново.");
           void quoteQuery.refetch();
+          return;
+        }
+        if (error.status === 409 && error.code === "delivery_required") {
+          setFormError("Выберите город, пункт выдачи и имя получателя — доставка обязательна.");
           return;
         }
         if (error.status === 502 && error.code === "delivery_unavailable") {
@@ -421,6 +428,7 @@ export function CheckoutPage() {
                         maxLength={100}
                         value={recipientName}
                         onChange={(event) => setRecipientName(event.target.value)}
+                        aria-invalid={deliveryStarted && recipientName.trim().length === 0}
                         aria-describedby={fieldDescribedBy(
                           "checkout-recipient",
                           "Имя, на которое оформлена посылка.",

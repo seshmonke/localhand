@@ -300,6 +300,50 @@ describe("CheckoutPage", () => {
     });
   });
 
+  it("requires the recipient name before submitting the delivery", async () => {
+    seed([jacket]);
+    const fetchMock = installCheckoutFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/checkout"]);
+    await screen.findByRole("heading", { level: 1, name: "Проверьте заказ" });
+
+    await screen.findByRole("option", { name: "Санкт-Петербург" });
+    await browser.selectOptions(screen.getByLabelText("Город доставки"), "137");
+    await screen.findByRole("option", { name: /ПВЗ Невский/ });
+    await browser.selectOptions(screen.getByLabelText("Пункт выдачи"), "SPB001");
+
+    await browser.click(screen.getByRole("button", { name: "Оформить заказ" }));
+
+    expect(
+      await screen.findByText("Выберите город, пункт выдачи и укажите имя получателя."),
+    ).toBeInTheDocument();
+    expect(checkoutCalls(fetchMock)).toHaveLength(0);
+  });
+
+  it("explains delivery_required when the API rejects a legacy checkout", async () => {
+    seed([jacket]);
+
+    installCheckoutFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "POST /checkout": { status: 409, body: { error: "delivery_required" } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/checkout"]);
+    await screen.findByRole("heading", { level: 1, name: "Проверьте заказ" });
+
+    await browser.click(screen.getByRole("button", { name: "Оформить заказ" }));
+
+    expect(
+      await screen.findByText(
+        "Выберите город, пункт выдачи и имя получателя — доставка обязательна.",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("clears only the products returned by the checkout replay", async () => {
     seed([jacket, vase]);
 

@@ -11,7 +11,7 @@
 
 ## GREEN
 
-- `pnpm verify` на #60: shared 156, web 155, api 327, OpenSpec 9/9,
+- `pnpm verify` на #60: shared 156, web 157, api 327, OpenSpec 9/9,
   public 504; см. `S3-2-verify-b.txt`.
 - Quote: города/ПВЗ, per-shop цена, point-city, габариты/город/ПВЗ
   сдачи, 429, no-store, signed token.
@@ -19,7 +19,7 @@
   replay до проверки токена, per-shop разные цены + `delivery_kopecks`
   в БД, tampered token, multi-shop.
 - UI: выбор города/ПВЗ/имени, цена и срок в итоге, отправка token;
-  e2e/a11y/perf — PR C.
+  `delivery_required` и пустое имя обрабатываются; e2e/a11y/perf — PR C.
 
 ## Ограничения
 
