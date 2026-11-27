@@ -12,6 +12,23 @@ import {
 const RUNS = 5;
 const LAB_LCP_BUDGET_MS = 2_500;
 
+/**
+ * The budget is a gate only for the built preview bundle (port 4173) or when
+ * PERF_ENFORCE=1 is set explicitly. The unbundled dev server is informational:
+ * it is slower by nature and must not hide a preview regression.
+ */
+function isPreviewOrForced(): boolean {
+  if (process.env.PERF_ENFORCE === "1") {
+    return true;
+  }
+
+  try {
+    return new URL(BASE_URL).port === "4173";
+  } catch {
+    return false;
+  }
+}
+
 // Lighthouse "mobileSlow4G" preset: 150 ms RTT, 1.6 Mbps down, 750 kbps up,
 // 4x CPU slowdown. Applied through Chrome DevTools Protocol for this lab smoke.
 // https://github.com/GoogleChrome/lighthouse/blob/main/docs/throttling.md
@@ -87,9 +104,11 @@ async function enableLabThrottling(page: Page): Promise<void> {
  * - no real product images, only placeholder blocks;
  * - one machine and five navigations.
  *
- * These numbers catch bundle/render regressions. They are not field p75 and
- * do not prove the DoD "average mobile" budget; field p75 needs RUM or
- * real-device/Lighthouse field data (backlog P3).
+ * The 2.5 s budget is enforced on preview (port 4173) or with PERF_ENFORCE=1;
+ * the unbundled dev server is informational. These numbers are not field p75
+ * and do not prove the DoD "average mobile" budget; field p75 needs RUM or
+ * real-device/Lighthouse field data (backlog P3, owner exception required to
+ * close without it).
  */
 test("lab LCP smoke on catalog and checkout", async ({ browser, request }, testInfo) => {
   test.slow();
@@ -120,12 +139,17 @@ test("lab LCP smoke on catalog and checkout", async ({ browser, request }, testI
     const catalogLcp = await measureLcp(page, "/");
     const checkoutLcp = await measureLcp(page, "/checkout");
 
+    const enforceBudget = isPreviewOrForced();
+
     const budget = {
       limit_ms: LAB_LCP_BUDGET_MS,
-      enforced: false,
+      enforced: enforceBudget,
+      target: enforceBudget ? "preview-or-forced" : "dev-info",
       catalog_met: catalogLcp.labP75 < LAB_LCP_BUDGET_MS,
       checkout_met: checkoutLcp.labP75 < LAB_LCP_BUDGET_MS,
-      note: "Reported, not a gate: exceeding the lab budget is recorded as a fact (annotation + JSON), not tuned away. The built bundle on preview is the reference; the unbundled dev server is informational.",
+      note: enforceBudget
+        ? "Enforced on the built preview bundle (or PERF_ENFORCE=1): both pages must stay under the lab budget; a regression fails the run."
+        : "Information only on the unbundled dev server: exceedance is recorded as an annotation and JSON fact, not a failure. The preview gate is the reference.",
     };
 
     for (const result of [catalogLcp, checkoutLcp]) {
@@ -157,6 +181,15 @@ test("lab LCP smoke on catalog and checkout", async ({ browser, request }, testI
     const body = JSON.stringify(evidence, null, 2);
     await writeFile(testInfo.outputPath("lcp-results.json"), body);
     await testInfo.attach("lcp-results.json", { body, contentType: "application/json" });
+
+    if (enforceBudget) {
+      expect(catalogLcp.labP75, "catalog lab LCP p75 (preview gate)").toBeLessThan(
+        LAB_LCP_BUDGET_MS,
+      );
+      expect(checkoutLcp.labP75, "checkout lab LCP p75 (preview gate)").toBeLessThan(
+        LAB_LCP_BUDGET_MS,
+      );
+    }
   } finally {
     await context.close();
   }

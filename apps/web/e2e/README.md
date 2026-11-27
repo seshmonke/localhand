@@ -63,11 +63,18 @@ PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173 pnpm --filter @localhand/web test:e2e
 мобильный»; field p75 требует RUM или реального устройства/Lighthouse
 field data — отдельный P3 в `docs/tasks/backlog.md`.
 
-Бюджет 2,5 с — **lab smoke, не гейт**: JSON содержит `budget_met`,
-превышение фиксируется аннотацией `lab-lcp-over-budget` и не
-«подгоняется» конфигурацией. Референс для бюджета — собранный бандл на
-preview (4173); unbundled dev-сервер (5173) даёт информационное число и
-может быть выше.
+Бюджет 2,5 с — **gate для preview**: на собранном бандле (порт 4173)
+`perf.spec.ts` проверяет `expect(labP75).toBeLessThan(2500)` для `/` и
+`/checkout`, а evidence содержит `budget.enforced: true`. Для
+unbundled dev 5173 (и любого другого baseURL) бюджет — **info**:
+превышение фиксируется аннотацией `lab-lcp-over-budget` и
+`budget.enforced: false`, прогон не падает. `PERF_ENFORCE=1` включает
+gate принудительно на выбранном baseURL. Числа не «подгоняются»:
+preview-регрессия валит прогон, dev-факт сохраняется как есть.
+
+Field p75 по-прежнему требует RUM или реального
+устройства/Lighthouse field data — backlog P3; закрыть DoD без field
+p75 можно только исключением владельца.
 
 ## Артефакты
 

@@ -8,9 +8,11 @@ import { defineConfig, devices } from "@playwright/test";
  * video/trace/screenshots are retained on failure.
  *
  * For a lab smoke on the built bundle, run `pnpm preview` and set
- * PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173. LCP numbers from this harness are
- * lab-only: loopback, CDP Slow 4G + 4x CPU, no real images. They are not
- * field p75 and do not replace the DoD average-mobile measurement.
+ * PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173. On preview the 2.5 s LCP lab
+ * budget is enforced; on the unbundled dev server it is informational (or set
+ * PERF_ENFORCE=1 to enforce it there too). LCP numbers are lab-only: loopback,
+ * CDP Slow 4G + 4x CPU, no real images. They are not field p75 and do not
+ * replace the DoD average-mobile measurement.
  */
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5173";
 // Escape hatch for machines where Playwright browsers are not installable:
