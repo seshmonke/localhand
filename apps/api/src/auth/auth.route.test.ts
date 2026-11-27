@@ -478,6 +478,8 @@ describe("auth error logging", () => {
   });
 
   it("does not log phone numbers or OTP codes from the auth sources", async () => {
+    // Scope limit: only auth source files and literal `log.*` calls are
+    // checked here. Full-repo log/PII linting stays in the backlog.
     const files = await listAuthSourceFiles(authSourceDir);
     expect(files.length).toBeGreaterThan(0);
 

@@ -37,12 +37,17 @@ log-проверки, зафиксировать auth/ПДн и SMS-провай
 - `apps/api/src/auth/auth.route.test.ts` (log-тест)
 - `docs/stack/adr/0002-phone-auth.md` (новый)
 - `docs/legal/context.md` (раздел реализации)
+- `docs/stack/README.md` (ссылка на ADR 0002)
+- `apps/web/src/components/ProductCard.tsx` — P1 gate fix из
+  browser-smoke S1-5: на 320 имя и цена перекрывались.
+- `apps/web/src/components/ProductCard.test.tsx` — smoke-тест карточки
+  с длинным именем (P1 gate fix).
 - `docs/stack/hosting.md` / `.env.example` — только если нужно
   синхронизировать SMS/TRUST_PROXY
 
-Не трогать: `apps/web/**`, `packages/shared/**`, `packages/ui/**`,
-`openspec/**` (archive — orchestrator), `.scrum/**`, `docs/tasks/01-*`.
-Новых зависимостей нет.
+Не трогать: остальной `apps/web/**` (кроме ProductCard и её теста),
+`packages/shared/**`, `packages/ui/**`, `openspec/**` (archive —
+orchestrator), `.scrum/**`, `docs/tasks/01-*`. Новых зависимостей нет.
 
 ## Контракты e2e
 

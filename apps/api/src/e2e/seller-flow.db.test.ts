@@ -9,6 +9,33 @@ import { SESSION_COOKIE_NAME } from "../auth/session.js";
  * change the first seller's shop or product.
  */
 const testDatabaseUrl = process.env.DATABASE_URL_TEST;
+
+// A skipped real-DB e2e is a silent coverage hole in CI, so fail loudly.
+if (process.env.CI && !testDatabaseUrl) {
+  throw new Error("DATABASE_URL_TEST is required to run the seller flow e2e in CI");
+}
+
+function assertTestDatabase(connectionString: string): void {
+  let databaseName: string;
+
+  try {
+    databaseName = decodeURIComponent(new URL(connectionString).pathname);
+  } catch {
+    throw new Error("DATABASE_URL_TEST must be a valid PostgreSQL URL");
+  }
+
+  if (!databaseName.includes("_test")) {
+    throw new Error(
+      'DATABASE_URL_TEST must point to a database whose name contains "_test"; refusing to migrate and truncate it',
+    );
+  }
+}
+
+// The suite truncates tables in beforeEach: never run it against a non-test DB.
+if (testDatabaseUrl) {
+  assertTestDatabase(testDatabaseUrl);
+}
+
 const describeWithDb = testDatabaseUrl ? describe : describe.skip;
 const migrationsFolder = fileURLToPath(new URL("../../drizzle", import.meta.url));
 
