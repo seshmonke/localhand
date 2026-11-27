@@ -7,7 +7,6 @@ import {
   decryptAccountToken,
   loadProviderAccount,
   markAccountError,
-  PAYMENT_PROVIDER_TIMEOUT_MS,
   withProviderTimeout,
   type PaymentsLogger,
 } from "./payments.shared.js";
@@ -64,7 +63,7 @@ export async function handlePaymentWebhook(
   try {
     providerPayment = await withProviderTimeout(
       runtime.provider.getPayment(token, providerPaymentId),
-      PAYMENT_PROVIDER_TIMEOUT_MS,
+      runtime.providerTimeoutMs,
     );
   } catch (error) {
     const code = error instanceof PaymentProviderError ? error.code : "provider_error";

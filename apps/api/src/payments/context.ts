@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { PaymentsSettings } from "../env.js";
 import { createPaymentProvider, type PaymentProvider } from "./provider.js";
+import { PAYMENT_PROVIDER_TIMEOUT_MS } from "./payments.shared.js";
 import { createTokenCipher, type TokenCipher } from "./token-crypto.js";
 
 export type PaymentsRuntime = {
@@ -9,6 +10,8 @@ export type PaymentsRuntime = {
   settings: PaymentsSettings;
   webhookUrl: string;
   webOrigin: string;
+  /** Timeout for every provider network call (create/get/exchange/subscribe/revoke). */
+  providerTimeoutMs: number;
   /**
    * One-time OAuth state values already accepted by a callback. The TTL is
    * short (10 minutes); expired entries are pruned lazily.
@@ -21,6 +24,8 @@ export type PaymentsRuntimeOptions = {
   webOrigin: string;
   /** Test seam: one provider instance per app, never constructed in a route. */
   provider?: PaymentProvider;
+  /** Test seam: shorten the 10s provider timeout. */
+  providerTimeoutMs?: number;
 };
 
 /**
@@ -53,6 +58,7 @@ export function createPaymentsRuntime(options: PaymentsRuntimeOptions): Payments
     settings,
     webhookUrl: settings.webhookUrl,
     webOrigin: options.webOrigin,
+    providerTimeoutMs: options.providerTimeoutMs ?? PAYMENT_PROVIDER_TIMEOUT_MS,
     consumedStates: new Map(),
   };
 }

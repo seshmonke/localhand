@@ -1,5 +1,5 @@
 import type { OrderPayment, PaymentErrorCode } from "@localhand/shared";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, ne, sql } from "drizzle-orm";
 import { requireDb } from "../db/client.js";
 import { orders, payments, sellerPaymentAccounts, sellers, shops } from "../db/schema.js";
 import type { PaymentsRuntime } from "./context.js";
@@ -9,13 +9,13 @@ import {
   isUniqueViolation,
   loadProviderAccount,
   markAccountError,
-  PAYMENT_PROVIDER_TIMEOUT_MS,
   toOrderPayment,
   toSellerOrderPayment,
   withProviderTimeout,
   type PaymentRow,
   type PaymentsLogger,
   type SellerAccountRow,
+  type Transaction,
 } from "./payments.shared.js";
 
 export type PaymentServiceResult<T> =
@@ -59,9 +59,59 @@ function replayPlan(row: PaymentRow): CreatePlan {
     return { kind: "retry", row };
   }
   if (row.status === "failed" && !row.providerPaymentId) {
-    return { kind: "retry", row };
+    return conflict(409, "payment_in_progress");
   }
   return { kind: "replay", row };
+}
+
+/**
+ * Re-arms a failed 4xx attempt only after re-checking the order and the
+ * active-payment uniqueness under the order lock. The row moves to `pending`
+ * in this transaction, so a concurrent new key cannot slip in between the
+ * check and the provider call.
+ */
+async function retryFailedPlan(
+  tx: Transaction,
+  orderId: number,
+  row: PaymentRow,
+): Promise<CreatePlan> {
+  const [lockedOrder] = await tx
+    .select({ status: orders.status })
+    .from(orders)
+    .where(eq(orders.id, orderId))
+    .for("update");
+  if (!lockedOrder) {
+    return conflict(404, "not_found");
+  }
+  if (lockedOrder.status === "paid") {
+    return conflict(409, "order_already_paid");
+  }
+
+  const [active] = await tx
+    .select({ status: payments.status })
+    .from(payments)
+    .where(
+      and(eq(payments.orderId, orderId), inArray(payments.status, ["pending", "manual_review"])),
+    )
+    .limit(1);
+  if (active) {
+    return conflict(
+      409,
+      active.status === "manual_review" ? "payment_requires_review" : "payment_in_progress",
+    );
+  }
+
+  if (lockedOrder.status !== "new") {
+    return conflict(409, "invalid_order_transition");
+  }
+
+  const [updated] = await tx
+    .update(payments)
+    .set({ status: "pending", updatedAt: new Date() })
+    .where(and(eq(payments.id, row.id), eq(payments.status, "failed")))
+    .returning();
+
+  return updated ? { kind: "retry", row: updated } : replayPlan(row);
 }
 
 export async function createOrderPayment(
@@ -100,6 +150,11 @@ export async function createOrderPayment(
         .where(and(eq(payments.orderId, orderId), eq(payments.idempotencyKey, idempotencyKey)))
         .limit(1);
       if (existing) {
+        if (existing.status === "failed" && !existing.providerPaymentId) {
+          // A failed 4xx row is not a free pass: re-apply the order/payment
+          // gate under the order lock and only then re-arm the attempt.
+          return retryFailedPlan(tx, orderId, existing);
+        }
         return replayPlan(existing);
       }
 
@@ -133,7 +188,7 @@ export async function createOrderPayment(
         );
       }
 
-      if (lockedOrder.status === "payment_pending") {
+      if (lockedOrder.status !== "new") {
         return conflict(409, "invalid_order_transition");
       }
 
@@ -151,6 +206,7 @@ export async function createOrderPayment(
             eq(sellerPaymentAccounts.provider, runtime.provider.name),
           ),
         )
+        .for("share")
         .limit(1);
       if (!account) {
         return conflict(409, "seller_payment_unavailable");
@@ -208,7 +264,14 @@ export async function createOrderPayment(
     return providerResult;
   }
 
-  const saved = await saveProviderResult(plan.row.id, orderId, providerResult.value, log);
+  const saved = await saveProviderResult(
+    plan.row.id,
+    orderId,
+    providerResult.value,
+    runtime,
+    account,
+    log,
+  );
   if (!saved.ok) {
     return saved;
   }
@@ -230,7 +293,13 @@ async function resolveInsertRace(
       .from(payments)
       .where(and(eq(payments.orderId, orderId), eq(payments.idempotencyKey, idempotencyKey)))
       .limit(1);
-    return row ? replayPlan(row) : null;
+    if (!row) {
+      return null;
+    }
+    if (row.status === "failed" && !row.providerPaymentId) {
+      return requireDb().transaction((tx) => retryFailedPlan(tx, orderId, row));
+    }
+    return replayPlan(row);
   }
 
   if (isUniqueViolation(error, "payments_order_id_active_unique")) {
@@ -284,7 +353,7 @@ async function callProviderCreate(
         returnUrl: `${runtime.webOrigin}/orders/${payment.orderId}?payment=return`,
         capture: true,
       }),
-      PAYMENT_PROVIDER_TIMEOUT_MS,
+      runtime.providerTimeoutMs,
     );
     return { ok: true, value: result };
   } catch (error) {
@@ -344,18 +413,25 @@ async function markPaymentPending(paymentId: number): Promise<void> {
 }
 
 /**
- * Saves the provider id and URL only after re-reading the row under the order
- * lock. The order moves `new -> payment_pending` conditionally, so a webhook
- * or another writer that already changed it is never overwritten.
+ * Saves the provider id and URL only after re-reading the payment and order
+ * under the order lock. A paid order, a foreign status or another active
+ * attempt means the URL must not reach the buyer: the attempt is failed and
+ * the provider payment is cancelled best effort.
  */
 async function saveProviderResult(
   paymentId: number,
   orderId: number,
   result: CreateProviderPaymentResult,
+  runtime: PaymentsRuntime,
+  account: SellerAccountRow,
   log: PaymentsLogger,
 ): Promise<PaymentServiceResult<PaymentRow>> {
+  type SaveOutcome =
+    { kind: "saved"; row: PaymentRow } | { kind: "rejected"; error: PaymentErrorCode };
+
+  let outcome: SaveOutcome;
   try {
-    return await requireDb().transaction(async (tx) => {
+    outcome = await requireDb().transaction(async (tx): Promise<SaveOutcome> => {
       await tx.execute(
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${`order:${orderId}`}, 0))`,
       );
@@ -368,6 +444,7 @@ async function saveProviderResult(
       if (!row) {
         throw new Error("payment row disappeared before the provider result was saved");
       }
+
       const retryingFailed = row.status === "failed" && row.providerPaymentId === null;
       if (row.status !== "pending" && !retryingFailed) {
         log.warn(
@@ -380,10 +457,42 @@ async function saveProviderResult(
           "payment row changed while the provider was creating it",
         );
         return {
-          ok: false as const,
-          status: 409,
+          kind: "rejected",
           error:
             row.status === "manual_review" ? "payment_requires_review" : "invalid_order_transition",
+        };
+      }
+
+      const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).for("update");
+      if (!order) {
+        throw new Error("order disappeared before the provider result was saved");
+      }
+
+      if (order.status !== "new" && order.status !== "payment_pending") {
+        await failAttemptRow(tx, row, new Date());
+        return {
+          kind: "rejected",
+          error: order.status === "paid" ? "order_already_paid" : "invalid_order_transition",
+        };
+      }
+
+      const [other] = await tx
+        .select({ status: payments.status })
+        .from(payments)
+        .where(
+          and(
+            eq(payments.orderId, orderId),
+            ne(payments.id, paymentId),
+            inArray(payments.status, ["pending", "manual_review"]),
+          ),
+        )
+        .limit(1);
+      if (other) {
+        await failAttemptRow(tx, row, new Date());
+        return {
+          kind: "rejected",
+          error:
+            other.status === "manual_review" ? "payment_requires_review" : "payment_in_progress",
         };
       }
 
@@ -407,17 +516,78 @@ async function saveProviderResult(
         .set({ status: "payment_pending", updatedAt: now })
         .where(and(eq(orders.id, orderId), eq(orders.status, "new")));
 
-      return { ok: true as const, value: updated };
+      return { kind: "saved", row: updated };
     });
   } catch (error) {
-    if (isUniqueViolation(error, "payments_provider_payment_id_unique")) {
-      log.error(
-        { code: "payment_provider_id_conflict", payment_id: paymentId },
-        "duplicate provider id",
+    if (
+      isUniqueViolation(error, "payments_order_id_active_unique") ||
+      isUniqueViolation(error, "payments_provider_payment_id_unique")
+    ) {
+      await markPaymentFailedAndClear(paymentId);
+      await cancelCreatedProviderPayment(runtime, account, result.providerPaymentId, log);
+      log.warn(
+        { code: "payment_create_race", payment_id: paymentId, order_id: orderId },
+        "payment unique constraint rejected the provider result",
       );
-      return { ok: false, status: 502, error: "provider_unavailable" };
+      return { ok: false, status: 409, error: "payment_in_progress" };
     }
     throw error;
+  }
+
+  if (outcome.kind === "rejected") {
+    await cancelCreatedProviderPayment(runtime, account, result.providerPaymentId, log);
+    return { ok: false, status: 409, error: outcome.error };
+  }
+
+  return { ok: true, value: outcome.row };
+}
+
+async function failAttemptRow(tx: Transaction, row: PaymentRow, now: Date): Promise<void> {
+  if (row.status !== "pending" && row.status !== "failed") {
+    return;
+  }
+  await tx
+    .update(payments)
+    .set({ status: "failed", confirmationUrl: null, updatedAt: now })
+    .where(and(eq(payments.id, row.id), inArray(payments.status, ["pending", "failed"])));
+}
+
+async function markPaymentFailedAndClear(paymentId: number): Promise<void> {
+  await requireDb()
+    .update(payments)
+    .set({
+      status: "failed",
+      confirmationUrl: null,
+      providerPaymentId: null,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(payments.id, paymentId), inArray(payments.status, ["pending", "failed"])));
+}
+
+async function cancelCreatedProviderPayment(
+  runtime: PaymentsRuntime,
+  account: SellerAccountRow,
+  providerPaymentId: string,
+  log: PaymentsLogger,
+): Promise<void> {
+  let token: string;
+  try {
+    token = decryptAccountToken(runtime, account);
+  } catch {
+    log.warn({ code: "payment_token_unavailable" }, "provider payment could not be cancelled");
+    return;
+  }
+
+  try {
+    await withProviderTimeout(
+      runtime.provider.cancelPayment(token, providerPaymentId),
+      runtime.providerTimeoutMs,
+    );
+  } catch (error) {
+    log.warn(
+      { code: error instanceof PaymentProviderError ? error.code : "payment_cancel_failed" },
+      "provider payment cancellation failed",
+    );
   }
 }
 

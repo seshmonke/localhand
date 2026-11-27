@@ -15,6 +15,7 @@ import { env, jwtSecret, paymentsSettings, trustProxy, type TrustProxyConfig } f
 import { healthRoutes } from "./health/health.route.js";
 import { ordersRoutes } from "./orders/orders.route.js";
 import { createPaymentsRuntime } from "./payments/context.js";
+import { resolveFastifyLogger } from "./payments/log-redaction.js";
 import type { PaymentProvider } from "./payments/provider.js";
 import { startPaymentsReconcile } from "./payments/payments.reconcile.scheduler.js";
 import { paymentsRoutes } from "./payments/payments.route.js";
@@ -30,11 +31,13 @@ export type BuildAppOptions = {
   paymentProvider?: PaymentProvider;
   /** Test hook: disable the 60s reconcile scheduler (it runs on every startup otherwise). */
   reconcile?: boolean;
+  /** Test hook: shorten the 10s provider timeout. */
+  paymentProviderTimeoutMs?: number;
 };
 
 export function buildApp(options: BuildAppOptions = {}) {
   const app = Fastify({
-    logger: options.logger ?? env.NODE_ENV !== "test",
+    logger: resolveFastifyLogger(env.NODE_ENV, options.logger),
     trustProxy: options.trustProxy ?? trustProxy,
   }).withTypeProvider<ZodTypeProvider>();
 
@@ -65,6 +68,9 @@ export function buildApp(options: BuildAppOptions = {}) {
     settings: paymentsSettings,
     webOrigin: env.WEB_ORIGIN,
     ...(options.paymentProvider === undefined ? {} : { provider: options.paymentProvider }),
+    ...(options.paymentProviderTimeoutMs === undefined
+      ? {}
+      : { providerTimeoutMs: options.paymentProviderTimeoutMs }),
   });
   app.decorate("payments", payments);
 

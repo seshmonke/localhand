@@ -1,5 +1,5 @@
 import type { PaymentErrorCode, SellerPaymentAccount } from "@localhand/shared";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { requireDb } from "../db/client.js";
 import { orders, payments, sellerPaymentAccounts, sellers, shops } from "../db/schema.js";
 import type { PaymentsRuntime } from "./context.js";
@@ -8,6 +8,7 @@ import {
   decryptAccountToken,
   loadCurrentSellerAccount,
   toSellerPaymentAccount,
+  withProviderTimeout,
   type PaymentsLogger,
 } from "./payments.shared.js";
 import { assertPaymentAccountAllowed, type PaymentAccountInfo } from "./provider.js";
@@ -34,7 +35,10 @@ export async function startSellerPaymentConnection(
   const state = signPaymentState(runtime.settings.stateSecret, sellerId);
 
   try {
-    const { consentUrl } = await runtime.provider.createConnection(state);
+    const { consentUrl } = await withProviderTimeout(
+      runtime.provider.createConnection(state),
+      runtime.providerTimeoutMs,
+    );
     return { ok: true, value: { consentUrl } };
   } catch (error) {
     log.warn({ code: providerErrorCode(error) }, "payment connect start failed");
@@ -62,7 +66,10 @@ export async function completeSellerPaymentConnection(
 
   let exchange: Awaited<ReturnType<PaymentsRuntime["provider"]["exchangeCode"]>>;
   try {
-    exchange = await runtime.provider.exchangeCode(code);
+    exchange = await withProviderTimeout(
+      runtime.provider.exchangeCode(code),
+      runtime.providerTimeoutMs,
+    );
   } catch (error) {
     log.warn({ code: providerErrorCode(error) }, "payment code exchange failed");
     return {
@@ -74,7 +81,10 @@ export async function completeSellerPaymentConnection(
 
   let info: PaymentAccountInfo;
   try {
-    info = await runtime.provider.getAccountInfo(exchange.accessToken);
+    info = await withProviderTimeout(
+      runtime.provider.getAccountInfo(exchange.accessToken),
+      runtime.providerTimeoutMs,
+    );
   } catch (error) {
     log.warn({ code: providerErrorCode(error) }, "payment account lookup failed");
     return { ok: false, status: 502, error: "provider_unavailable" };
@@ -100,7 +110,10 @@ export async function completeSellerPaymentConnection(
   }
 
   try {
-    await runtime.provider.subscribeWebhooks(exchange.accessToken, runtime.webhookUrl);
+    await withProviderTimeout(
+      runtime.provider.subscribeWebhooks(exchange.accessToken, runtime.webhookUrl),
+      runtime.providerTimeoutMs,
+    );
   } catch (error) {
     await insertErrorAccount(version);
     log.warn({ code: providerErrorCode(error) }, "payment webhook subscription failed");
@@ -185,55 +198,107 @@ export async function disconnectSellerPaymentAccount(
   }
 
   const db = requireDb();
-  const [activePayment] = await db
-    .select({ status: payments.status })
-    .from(payments)
-    .innerJoin(orders, eq(payments.orderId, orders.id))
-    .innerJoin(shops, eq(orders.shopId, shops.id))
-    .where(
-      and(eq(shops.sellerId, sellerId), inArray(payments.status, ["pending", "manual_review"])),
-    )
-    .limit(1);
-
-  if (activePayment) {
-    return {
-      ok: false,
-      status: 409,
-      error:
-        activePayment.status === "manual_review"
-          ? "payment_requires_review"
-          : "payment_in_progress",
-    };
-  }
-
-  const current = await loadCurrentSellerAccount(sellerId);
-  if (!current) {
-    return { ok: false, status: 404, error: "not_found" };
-  }
-
   const now = new Date();
-  let updated = current;
-  if (current.status !== "disabled") {
-    const [row] = await db
+
+  // The same seller-scoped advisory lock serializes connect/callback and
+  // disconnect. The account row is locked FOR UPDATE and the active-payment
+  // check runs after the lock is held, so a create that took FOR SHARE on the
+  // account either commits its pending payment before this check or sees the
+  // account already disabled.
+  const outcome = await db.transaction(async (tx) => {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtextextended(${`seller-payments:${sellerId}`}, 0))`,
+    );
+
+    const [activeAccount] = await tx
+      .select()
+      .from(sellerPaymentAccounts)
+      .where(
+        and(
+          eq(sellerPaymentAccounts.sellerId, sellerId),
+          eq(sellerPaymentAccounts.status, "active"),
+        ),
+      )
+      .for("update")
+      .limit(1);
+
+    let current = activeAccount;
+    if (!current) {
+      const [previous] = await tx
+        .select()
+        .from(sellerPaymentAccounts)
+        .where(
+          and(
+            eq(sellerPaymentAccounts.sellerId, sellerId),
+            inArray(sellerPaymentAccounts.status, ["error", "disabled"]),
+          ),
+        )
+        .orderBy(desc(sellerPaymentAccounts.connectedAt), desc(sellerPaymentAccounts.id))
+        .for("update")
+        .limit(1);
+      current = previous;
+    }
+
+    if (!current) {
+      return { kind: "not_found" as const };
+    }
+
+    const [activePayment] = await tx
+      .select({ status: payments.status })
+      .from(payments)
+      .innerJoin(orders, eq(payments.orderId, orders.id))
+      .innerJoin(shops, eq(orders.shopId, shops.id))
+      .where(
+        and(eq(shops.sellerId, sellerId), inArray(payments.status, ["pending", "manual_review"])),
+      )
+      .limit(1);
+
+    if (activePayment) {
+      return {
+        kind: "conflict" as const,
+        error:
+          activePayment.status === "manual_review"
+            ? ("payment_requires_review" as const)
+            : ("payment_in_progress" as const),
+      };
+    }
+
+    if (current.status === "disabled") {
+      return { kind: "unchanged" as const, row: current };
+    }
+
+    const [row] = await tx
       .update(sellerPaymentAccounts)
       .set({ status: "disabled", updatedAt: now })
       .where(eq(sellerPaymentAccounts.id, current.id))
       .returning();
-    if (row) {
-      updated = row;
+    if (!row) {
+      throw new Error("payment account update returned no row");
     }
+
+    return { kind: "disabled" as const, previous: current, row };
+  });
+
+  if (outcome.kind === "not_found") {
+    return { ok: false, status: 404, error: "not_found" };
+  }
+  if (outcome.kind === "conflict") {
+    return { ok: false, status: 409, error: outcome.error };
   }
 
-  if (current.status !== "disabled") {
+  if (outcome.kind === "disabled") {
     try {
-      const token = decryptAccountToken(runtime, current);
+      const token = decryptAccountToken(runtime, outcome.previous);
       try {
-        await runtime.provider.unsubscribeWebhooks(token);
+        await withProviderTimeout(
+          runtime.provider.unsubscribeWebhooks(token),
+          runtime.providerTimeoutMs,
+        );
       } catch (error) {
         log.warn({ code: providerErrorCode(error) }, "payment webhook unsubscribe failed");
       }
       try {
-        await runtime.provider.revoke(token);
+        await withProviderTimeout(runtime.provider.revoke(token), runtime.providerTimeoutMs);
       } catch (error) {
         log.warn({ code: providerErrorCode(error) }, "payment token revoke failed");
       }
@@ -242,7 +307,7 @@ export async function disconnectSellerPaymentAccount(
     }
   }
 
-  return { ok: true, value: toSellerPaymentAccount(updated) };
+  return { ok: true, value: toSellerPaymentAccount(outcome.row) };
 }
 
 function providerErrorCode(error: unknown): string {

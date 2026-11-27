@@ -70,7 +70,7 @@ export class FakePaymentProvider implements PaymentProvider {
     return {
       providerPaymentId: record.providerPaymentId,
       status: record.status,
-      confirmationUrl: `${this.webOrigin}/dev/payments/${record.providerPaymentId}/complete`,
+      confirmationUrl: `${this.webOrigin}/dev/payments/${record.paymentId}/complete`,
     };
   }
 
@@ -183,6 +183,17 @@ export class FakePaymentProvider implements PaymentProvider {
       orderId: record.orderId,
       ...(record.paidAt === undefined ? {} : { paidAt: record.paidAt }),
     };
+  }
+
+  async cancelPayment(accessToken: string, providerPaymentId: string): Promise<void> {
+    this.assertEnabled();
+    this.requireAccount(accessToken);
+    const record = this.payments.get(providerPaymentId);
+    if (!record || record.status !== "pending") {
+      return;
+    }
+    record.status = "canceled";
+    record.paidAt = undefined;
   }
 
   async revoke(accessToken: string): Promise<void> {

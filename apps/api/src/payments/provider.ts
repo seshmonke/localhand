@@ -64,6 +64,12 @@ export interface PaymentProvider {
     input: CreateProviderPaymentInput,
   ): Promise<CreateProviderPaymentResult>;
   getPayment(accessToken: string, providerPaymentId: string): Promise<ProviderPayment>;
+  /**
+   * Best-effort cancellation of a payment created while the local order lock
+   * was lost (paid/another active attempt). Implementations must not throw for
+   * an already-terminal or missing provider payment.
+   */
+  cancelPayment(accessToken: string, providerPaymentId: string): Promise<void>;
   revoke(accessToken: string): Promise<void>;
 }
 

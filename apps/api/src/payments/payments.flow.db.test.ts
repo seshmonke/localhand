@@ -126,9 +126,15 @@ async function createOrder(
 
 type TestApp = ReturnType<AppModule["buildApp"]>;
 
-async function buildTestApp(provider?: FakePaymentProvider): Promise<TestApp> {
+async function buildTestApp(
+  provider?: FakePaymentProvider,
+  options: { paymentProviderTimeoutMs?: number } = {},
+): Promise<TestApp> {
   const instance = appModule.buildApp({
     ...(provider === undefined ? {} : { paymentProvider: provider }),
+    ...(options.paymentProviderTimeoutMs === undefined
+      ? {}
+      : { paymentProviderTimeoutMs: options.paymentProviderTimeoutMs }),
     reconcile: false,
   });
   await instance.ready();
@@ -254,6 +260,32 @@ async function countPayments(orderId: number): Promise<number> {
   return result.rows[0]?.count ?? 0;
 }
 
+async function countActivePayments(orderId: number): Promise<number> {
+  const result = await pool().query<{ count: number }>(
+    "SELECT count(*)::int AS count FROM payments WHERE order_id = $1 AND status IN ('pending', 'manual_review')",
+    [orderId],
+  );
+  return result.rows[0]?.count ?? 0;
+}
+
+/** Advisory lock `order:{id}` held by any session right now. */
+async function countOrderAdvisoryLocks(orderId: number): Promise<number> {
+  const result = await pool().query<{ count: number }>(
+    `SELECT count(*)::int AS count
+       FROM pg_locks
+      WHERE locktype = 'advisory'
+        AND granted
+        AND database = (SELECT oid FROM pg_database WHERE datname = current_database())
+        AND ((classid::bigint << 32) | objid::bigint) = hashtextextended($1, 0)`,
+    [`order:${orderId}`],
+  );
+  return result.rows[0]?.count ?? 0;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function backdatePayment(paymentId: number, minutes: number): Promise<void> {
   await pool().query(
     `UPDATE payments SET created_at = now() - ($2 || ' minutes')::interval WHERE id = $1`,
@@ -279,13 +311,25 @@ type CreateFailure = "none" | "unavailable" | "invalid_request" | "unauthorized"
 class ControllableFakeProvider extends FakePaymentProvider {
   createFailure: CreateFailure = "none";
   subscribeFailure = false;
-  getFailure: "none" | "unauthorized" = "none";
+  hangSubscribe = false;
+  getFailure: "none" | "unauthorized" | "unavailable" = "none";
   amountOverride: number | null = null;
+  currencyOverride: string | null = null;
+  orderIdOverride: number | null = null;
+  statusOverride: ProviderPayment["status"] | null = null;
+  unauthorizedTokens = new Set<string>();
+  createCalls = 0;
+  createdPayments = 0;
+  cancelledPayments = 0;
+  /** Runs after the provider payment was created but before it is returned. */
+  onCreatePayment?: () => Promise<void> | void;
+  getPaymentGate: { promise: Promise<void>; started: boolean } | null = null;
 
   override async createPayment(
     accessToken: string,
     input: CreateProviderPaymentInput,
   ): Promise<CreateProviderPaymentResult> {
+    this.createCalls += 1;
     if (this.createFailure === "unavailable") {
       throw new PaymentProviderError("provider_unavailable");
     }
@@ -295,10 +339,18 @@ class ControllableFakeProvider extends FakePaymentProvider {
     if (this.createFailure === "unauthorized") {
       throw new PaymentProviderError("unauthorized");
     }
-    return super.createPayment(accessToken, input);
+    const result = await super.createPayment(accessToken, input);
+    this.createdPayments += 1;
+    if (this.onCreatePayment) {
+      await this.onCreatePayment();
+    }
+    return result;
   }
 
   override async subscribeWebhooks(accessToken: string, url: string): Promise<void> {
+    if (this.hangSubscribe) {
+      return new Promise<void>(() => {});
+    }
     if (this.subscribeFailure) {
       throw new PaymentProviderError("provider_unavailable");
     }
@@ -309,13 +361,34 @@ class ControllableFakeProvider extends FakePaymentProvider {
     accessToken: string,
     providerPaymentId: string,
   ): Promise<ProviderPayment> {
+    if (this.unauthorizedTokens.has(accessToken)) {
+      throw new PaymentProviderError("unauthorized");
+    }
     if (this.getFailure === "unauthorized") {
       throw new PaymentProviderError("unauthorized");
     }
+    if (this.getFailure === "unavailable") {
+      throw new PaymentProviderError("provider_unavailable");
+    }
+    if (this.getPaymentGate) {
+      this.getPaymentGate.started = true;
+      await this.getPaymentGate.promise;
+    }
     const payment = await super.getPayment(accessToken, providerPaymentId);
-    return this.amountOverride === null
-      ? payment
-      : { ...payment, amountKopecks: this.amountOverride };
+    return {
+      ...payment,
+      ...(this.amountOverride === null ? {} : { amountKopecks: this.amountOverride }),
+      ...(this.currencyOverride === null
+        ? {}
+        : { currency: this.currencyOverride as ProviderPayment["currency"] }),
+      ...(this.orderIdOverride === null ? {} : { orderId: this.orderIdOverride }),
+      ...(this.statusOverride === null ? {} : { status: this.statusOverride }),
+    };
+  }
+
+  override async cancelPayment(accessToken: string, providerPaymentId: string): Promise<void> {
+    this.cancelledPayments += 1;
+    return super.cancelPayment(accessToken, providerPaymentId);
   }
 }
 
@@ -519,6 +592,7 @@ describeWithDb("payments flow API", () => {
       paidAt: null,
     });
     expect(payment.confirmationUrl).toContain("/dev/payments/");
+    expect(payment.confirmationUrl?.endsWith(`/dev/payments/${payment.id}/complete`)).toBe(true);
     expect(await orderStatus(orderId)).toBe("payment_pending");
 
     const replay = await createPayment(app, buyer, orderId, key);
@@ -1041,6 +1115,378 @@ describeWithDb("payments flow API", () => {
     } finally {
       await target.close();
     }
+  });
+
+  it("does not let an old failed key bypass the active/paid gate", async () => {
+    const provider = new ControllableFakeProvider({
+      enabled: true,
+      webOrigin: "http://localhost:5173",
+    });
+    const target = await buildTestApp(provider);
+    const seller = await createSeller();
+    const buyer = await createUser();
+    const orderId = await createOrder(buyer.id, seller.shopId);
+    await connectAccount(target, seller);
+
+    try {
+      const failedKey = newIdempotencyKey();
+      provider.createFailure = "invalid_request";
+      const failed = await createPayment(target, buyer, orderId, failedKey);
+      expect(failed.statusCode).toBe(502);
+
+      const [failedRow] = (
+        await pool().query<{ id: number; status: string; provider_payment_id: string | null }>(
+          "SELECT id, status, provider_payment_id FROM payments WHERE order_id = $1",
+          [orderId],
+        )
+      ).rows;
+      expect(failedRow?.status).toBe("failed");
+      expect(failedRow?.provider_payment_id).toBeNull();
+
+      provider.createFailure = "none";
+      const activeKey = newIdempotencyKey();
+      const active = await createPayment(target, buyer, orderId, activeKey);
+      expect(active.statusCode).toBe(201);
+      const activePayment = active.json<{ payment: PaymentBody }>().payment;
+      expect(await countActivePayments(orderId)).toBe(1);
+
+      const replayFailed = await createPayment(target, buyer, orderId, failedKey);
+      expect(replayFailed.statusCode).toBe(409);
+      expect(replayFailed.json()).toEqual({ error: "payment_in_progress" });
+      expect(provider.createCalls).toBe(2);
+      expect(provider.createdPayments).toBe(1);
+      expect(await countActivePayments(orderId)).toBe(1);
+
+      const stale = await paymentRow(failedRow?.id ?? 0);
+      expect(stale.status).toBe("failed");
+      expect(stale.confirmation_url).toBeNull();
+
+      const activeRow = await paymentRow(activePayment.id);
+      if (!activeRow.provider_payment_id) {
+        throw new Error("provider payment id missing");
+      }
+      await completeFakePayment(target, activeRow.provider_payment_id);
+      expect((await sendWebhook(target, activeRow.provider_payment_id)).statusCode).toBe(200);
+      expect(await orderStatus(orderId)).toBe("paid");
+
+      const replayAfterPaid = await createPayment(target, buyer, orderId, failedKey);
+      expect(replayAfterPaid.statusCode).toBe(409);
+      expect(replayAfterPaid.json()).toEqual({ error: "order_already_paid" });
+      expect(provider.createCalls).toBe(2);
+      expect(provider.createdPayments).toBe(1);
+
+      const staleAfterPaid = await paymentRow(failedRow?.id ?? 0);
+      expect(staleAfterPaid.status).toBe("failed");
+      expect(staleAfterPaid.confirmation_url).toBeNull();
+      const payableLinks = await pool().query<{ count: number }>(
+        "SELECT count(*)::int AS count FROM payments WHERE order_id = $1 AND confirmation_url IS NOT NULL",
+        [orderId],
+      );
+      expect(payableLinks.rows[0]?.count).toBe(1);
+    } finally {
+      await target.close();
+    }
+  });
+
+  it("cancels the provider payment when the order becomes paid during create", async () => {
+    const provider = new ControllableFakeProvider({
+      enabled: true,
+      webOrigin: "http://localhost:5173",
+    });
+    const target = await buildTestApp(provider);
+    const seller = await createSeller();
+    const buyer = await createUser();
+    const orderId = await createOrder(buyer.id, seller.shopId);
+    await connectAccount(target, seller);
+
+    try {
+      provider.onCreatePayment = async () => {
+        provider.onCreatePayment = undefined;
+        await pool().query("UPDATE orders SET status = 'paid' WHERE id = $1", [orderId]);
+      };
+
+      const response = await createPayment(target, buyer, orderId);
+      expect(response.statusCode).toBe(409);
+      expect(response.json()).toEqual({ error: "order_already_paid" });
+
+      const rows = await pool().query<{
+        status: string;
+        confirmation_url: string | null;
+        provider_payment_id: string | null;
+      }>("SELECT status, confirmation_url, provider_payment_id FROM payments WHERE order_id = $1", [
+        orderId,
+      ]);
+      expect(rows.rows).toHaveLength(1);
+      expect(rows.rows[0]).toMatchObject({
+        status: "failed",
+        confirmation_url: null,
+        provider_payment_id: null,
+      });
+      expect(provider.createdPayments).toBe(1);
+      expect(provider.cancelledPayments).toBe(1);
+      expect(await countActivePayments(orderId)).toBe(0);
+    } finally {
+      await target.close();
+    }
+  });
+
+  it("does not hold the order lock during a slow reconcile provider call", async () => {
+    const provider = new ControllableFakeProvider({
+      enabled: true,
+      webOrigin: "http://localhost:5173",
+    });
+    const target = await buildTestApp(provider);
+    const seller = await createSeller();
+    const buyer = await createUser();
+    const orderId = await createOrder(buyer.id, seller.shopId);
+    await connectAccount(target, seller);
+    const runtime = target.payments;
+    if (!runtime) {
+      throw new Error("payments runtime is missing");
+    }
+
+    try {
+      const created = (await createPayment(target, buyer, orderId)).json<{ payment: PaymentBody }>()
+        .payment;
+      await backdatePayment(created.id, 3);
+
+      let release!: () => void;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      provider.getPaymentGate = { promise: gate, started: false };
+
+      const reconcile = reconcileModule.runPaymentReconcile(runtime, target.log);
+      const deadline = Date.now() + 2_000;
+      while (!provider.getPaymentGate.started) {
+        if (Date.now() > deadline) {
+          throw new Error("reconcile never called the provider");
+        }
+        await sleep(10);
+      }
+
+      expect(await countOrderAdvisoryLocks(orderId)).toBe(0);
+      const startedAt = Date.now();
+      const concurrentCreate = await createPayment(target, buyer, orderId);
+      expect(concurrentCreate.statusCode).toBe(409);
+      expect(Date.now() - startedAt).toBeLessThan(500);
+
+      release();
+      await reconcile;
+      expect((await paymentRow(created.id)).status).toBe("pending");
+    } finally {
+      await target.close();
+    }
+  });
+
+  it("serializes create and disconnect so a payment never references a disabled account", async () => {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const seller = await createSeller();
+      const buyer = await createUser();
+      const orderId = await createOrder(buyer.id, seller.shopId);
+      await connectAccount(app, seller);
+
+      const [created, deleted] = await Promise.all([
+        createPayment(app, buyer, orderId),
+        request(app, seller, "DELETE", "/seller/payments/account"),
+      ]);
+
+      if (deleted.statusCode === 200) {
+        expect(deleted.json().account.status).toBe("disabled");
+        expect(created.statusCode).toBe(409);
+        expect(created.json()).toEqual({ error: "seller_payment_unavailable" });
+        expect(await countPayments(orderId)).toBe(0);
+      } else {
+        expect(deleted.statusCode).toBe(409);
+        expect(created.statusCode).toBe(201);
+        expect(await countActivePayments(orderId)).toBe(1);
+      }
+    }
+  });
+
+  it("times out a hanging OAuth webhook subscription", async () => {
+    const provider = new ControllableFakeProvider({
+      enabled: true,
+      webOrigin: "http://localhost:5173",
+    });
+    provider.hangSubscribe = true;
+    const target = await buildTestApp(provider, { paymentProviderTimeoutMs: 50 });
+    const seller = await createSeller();
+
+    try {
+      const start = await request(target, seller, "POST", "/seller/payments/connect");
+      const state = new URL(start.json<{ consentUrl: string }>().consentUrl).searchParams.get(
+        "state",
+      );
+      const startedAt = Date.now();
+      const callback = await target.inject({
+        method: "GET",
+        url: `/seller/payments/callback?code=hanging-subscribe&state=${encodeURIComponent(state ?? "")}`,
+        headers: { cookie: seller.cookie },
+      });
+      expect(callback.statusCode).toBe(502);
+      expect(Date.now() - startedAt).toBeLessThan(2_000);
+
+      const versions = await pool().query<{ status: string }>(
+        "SELECT status FROM seller_payment_accounts WHERE seller_id = $1",
+        [seller.sellerId],
+      );
+      expect(versions.rows.map((row) => row.status)).toEqual(["error"]);
+    } finally {
+      await target.close();
+    }
+  });
+
+  it("returns 502 on a webhook provider error and quarantines currency/order/status mismatches", async () => {
+    const errorProvider = new ControllableFakeProvider({
+      enabled: true,
+      webOrigin: "http://localhost:5173",
+    });
+    const errorTarget = await buildTestApp(errorProvider);
+    const errorSeller = await createSeller();
+    const errorBuyer = await createUser();
+    const errorOrder = await createOrder(errorBuyer.id, errorSeller.shopId);
+    await connectAccount(errorTarget, errorSeller);
+
+    try {
+      const created = (await createPayment(errorTarget, errorBuyer, errorOrder)).json<{
+        payment: PaymentBody;
+      }>().payment;
+      const row = await paymentRow(created.id);
+      if (!row.provider_payment_id) {
+        throw new Error("provider payment id missing");
+      }
+      errorProvider.getFailure = "unavailable";
+      const failed = await sendWebhook(errorTarget, row.provider_payment_id);
+      expect(failed.statusCode).toBe(502);
+      expect((await paymentRow(created.id)).status).toBe("pending");
+      expect(await orderStatus(errorOrder)).toBe("payment_pending");
+    } finally {
+      await errorTarget.close();
+    }
+
+    const cases: Array<{
+      name: string;
+      apply: (provider: ControllableFakeProvider) => void;
+    }> = [
+      { name: "currency", apply: (provider) => (provider.currencyOverride = "USD") },
+      { name: "order", apply: (provider) => (provider.orderIdOverride = 999_999) },
+      {
+        name: "status",
+        apply: (provider) =>
+          (provider.statusOverride = "waiting_for_capture" as ProviderPayment["status"]),
+      },
+    ];
+
+    for (const testCase of cases) {
+      const provider = new ControllableFakeProvider({
+        enabled: true,
+        webOrigin: "http://localhost:5173",
+      });
+      const target = await buildTestApp(provider);
+      const seller = await createSeller();
+      const buyer = await createUser();
+      const orderId = await createOrder(buyer.id, seller.shopId);
+      await connectAccount(target, seller);
+
+      try {
+        const created = (await createPayment(target, buyer, orderId)).json<{
+          payment: PaymentBody;
+        }>().payment;
+        const row = await paymentRow(created.id);
+        if (!row.provider_payment_id) {
+          throw new Error("provider payment id missing");
+        }
+
+        testCase.apply(provider);
+        const response = await sendWebhook(target, row.provider_payment_id);
+        expect(response.statusCode, testCase.name).toBe(200);
+        expect((await paymentRow(created.id)).status, testCase.name).toBe("manual_review");
+        expect(await orderStatus(orderId), testCase.name).toBe("payment_pending");
+        expect(await countActivePayments(orderId), testCase.name).toBe(1);
+      } finally {
+        await target.close();
+      }
+    }
+  });
+
+  it("uses a newer active account version during reconcile when the old token is unauthorized", async () => {
+    const provider = new ControllableFakeProvider({
+      enabled: true,
+      webOrigin: "http://localhost:5173",
+    });
+    const target = await buildTestApp(provider);
+    const seller = await createSeller();
+    const buyer = await createUser();
+    const orderId = await createOrder(buyer.id, seller.shopId);
+    const oldAccount = await connectAccount(target, seller, { code: "code-old" });
+    const runtime = target.payments;
+    if (!runtime) {
+      throw new Error("payments runtime is missing");
+    }
+
+    try {
+      const created = (await createPayment(target, buyer, orderId)).json<{ payment: PaymentBody }>()
+        .payment;
+      const row = await paymentRow(created.id);
+      if (!row.provider_payment_id) {
+        throw new Error("provider payment id missing");
+      }
+      await completeFakePayment(target, row.provider_payment_id);
+
+      const newAccount = await connectAccount(target, seller, { code: "code-new" });
+      expect(newAccount.id).not.toBe(oldAccount.id);
+      provider.unauthorizedTokens.add("fake_access_code-old");
+      await backdatePayment(created.id, 3);
+
+      await reconcileModule.runPaymentReconcile(runtime, target.log);
+
+      expect((await paymentRow(created.id)).status).toBe("succeeded");
+      expect(await orderStatus(orderId)).toBe("paid");
+      const versions = await pool().query<{ status: string }>(
+        "SELECT status FROM seller_payment_accounts WHERE seller_id = $1 ORDER BY id",
+        [seller.sellerId],
+      );
+      expect(versions.rows.map((entry) => entry.status)).toEqual(["superseded", "active"]);
+    } finally {
+      await target.close();
+    }
+  });
+
+  it("blocks disconnect on manual_review and requires a session for account reads", async () => {
+    const seller = await createSeller();
+    const buyer = await createUser();
+    const orderId = await createOrder(buyer.id, seller.shopId);
+    await connectAccount(app, seller);
+
+    const account = await pool().query<{ id: number }>(
+      "SELECT id FROM seller_payment_accounts WHERE seller_id = $1 AND status = 'active'",
+      [seller.sellerId],
+    );
+    const accountId = account.rows[0]?.id;
+    if (!accountId) {
+      throw new Error("active payment account missing");
+    }
+    await pool().query(
+      `INSERT INTO payments (order_id, seller_account_id, provider, status, amount_kopecks, currency, idempotency_key)
+       VALUES ($1, $2, 'fake', 'manual_review', 420000, 'RUB', $3)`,
+      [orderId, accountId, randomUUID()],
+    );
+
+    const blocked = await request(app, seller, "DELETE", "/seller/payments/account");
+    expect(blocked.statusCode).toBe(409);
+    expect(blocked.json()).toEqual({ error: "payment_requires_review" });
+
+    const getWithoutSession = await app.inject({
+      method: "GET",
+      url: "/seller/payments/account",
+    });
+    const deleteWithoutSession = await app.inject({
+      method: "DELETE",
+      url: "/seller/payments/account",
+    });
+    expect(getWithoutSession.statusCode).toBe(401);
+    expect(deleteWithoutSession.statusCode).toBe(401);
   });
 
   it("validates webhook body and enforces the body limit", async () => {

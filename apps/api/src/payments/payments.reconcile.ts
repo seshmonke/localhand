@@ -7,10 +7,10 @@ import {
   decryptAccountToken,
   loadProviderAccount,
   markAccountError,
-  PAYMENT_PROVIDER_TIMEOUT_MS,
   withProviderTimeout,
   type PaymentRow,
   type PaymentsLogger,
+  type QueryExecutor,
   type SellerAccountRow,
   type Transaction,
 } from "./payments.shared.js";
@@ -25,9 +25,11 @@ export const PAYMENTS_RECONCILE_MAX_ATTEMPTS = 3;
 const RECONCILE_BATCH_SIZE = 50;
 
 /**
- * One reconcile pass. It is deliberately idempotent and safe to run by hand:
- * both branches take the same `order:{id}` advisory lock as create and the
- * webhook, so a late webhook can never race the state transition.
+ * One reconcile pass. The provider HTTP call happens before the order lock:
+ * a slow provider must not block create, webhook or another reconcile pass.
+ * The status is applied in a short transaction that re-reads the payment and
+ * order under `order:{id}` and verifies that neither the provider payment id
+ * nor the provider account changed while the call was in flight.
  */
 export async function runPaymentReconcile(
   runtime: PaymentsRuntime,
@@ -125,84 +127,67 @@ async function reconcileWithProvider(
   now: Date,
   log: PaymentsLogger,
 ): Promise<void> {
-  await requireDb().transaction(async (tx) => {
-    await lockOrder(tx, orderId);
+  const db = requireDb();
 
-    const [payment] = await tx
-      .select()
-      .from(payments)
-      .where(eq(payments.id, paymentId))
-      .for("update");
-    const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).for("update");
-    if (
-      !payment ||
-      !order ||
-      payment.status !== "pending" ||
-      !payment.providerPaymentId ||
-      order.status !== "payment_pending"
-    ) {
-      return;
-    }
+  const [snapshot] = await db.select().from(payments).where(eq(payments.id, paymentId)).limit(1);
+  if (!snapshot || snapshot.status !== "pending" || !snapshot.providerPaymentId) {
+    return;
+  }
+  const providerPaymentId = snapshot.providerPaymentId;
 
-    const account = await loadProviderAccount(tx, payment.sellerAccountId);
-    if (!account) {
-      await failAttempt(tx, payment, "payment_account_missing", now, log);
-      return;
-    }
+  const account = await loadProviderAccount(db, snapshot.sellerAccountId);
+  if (!account) {
+    await recordFailedAttempt(
+      orderId,
+      paymentId,
+      providerPaymentId,
+      null,
+      "payment_account_missing",
+      now,
+      log,
+    );
+    return;
+  }
 
-    const result = await fetchProviderPayment(runtime, payment, account, log);
-    if (result.ok) {
-      const outcome = await applyProviderPayment(tx, payment, order, result.value, now, log);
-      await tx
-        .update(payments)
-        .set({ reconcileAttempts: 0, lastCheckedAt: now, updatedAt: now })
-        .where(eq(payments.id, payment.id));
-      log.info(
-        {
-          payment_id: payment.id,
-          order_id: payment.orderId,
-          status: outcome.status,
-          code: outcome.code ?? "payment_reconcile_checked",
-        },
-        "payment reconcile applied the provider status",
-      );
-      return;
-    }
+  let accountUsed = account;
+  let result = await fetchProviderPayment(runtime, snapshot, account, log);
 
-    // 401: the token used for this payment is dead. Try the newer active
-    // version of the same provider account before counting a failure.
-    if (result.code === "unauthorized") {
-      await markAccountError(tx, account.id, now);
-      const newer = await findNewerActiveAccount(tx, account);
-      if (newer) {
-        const retry = await fetchProviderPayment(runtime, payment, newer, log);
-        if (retry.ok) {
-          const outcome = await applyProviderPayment(tx, payment, order, retry.value, now, log);
-          await tx
-            .update(payments)
-            .set({ reconcileAttempts: 0, lastCheckedAt: now, updatedAt: now })
-            .where(eq(payments.id, payment.id));
-          log.info(
-            {
-              payment_id: payment.id,
-              order_id: payment.orderId,
-              status: outcome.status,
-              code: outcome.code ?? "payment_reconcile_recovered",
-            },
-            "payment reconcile recovered with a newer active account",
-          );
-          return;
-        }
-        if (retry.code === "unauthorized") {
-          await markAccountError(tx, newer.id, now);
-        }
-        await failAttempt(tx, payment, retry.code, now, log);
-        return;
+  // 401: mark the token version as error and retry with the newer active
+  // version of the same provider account before counting a failure.
+  if (!result.ok && result.code === "unauthorized") {
+    await markAccountError(db, account.id, now);
+    const newer = await findNewerActiveAccount(db, account);
+    if (newer) {
+      accountUsed = newer;
+      result = await fetchProviderPayment(runtime, snapshot, newer, log);
+      if (!result.ok && result.code === "unauthorized") {
+        await markAccountError(db, newer.id, now);
       }
     }
+  }
 
-    await failAttempt(tx, payment, result.code, now, log);
-  });
+  if (!result.ok) {
+    await recordFailedAttempt(
+      orderId,
+      paymentId,
+      providerPaymentId,
+      accountUsed.providerAccountId,
+      result.code,
+      now,
+      log,
+    );
+    return;
+  }
+
+  await applyFetchedStatus(
+    orderId,
+    paymentId,
+    providerPaymentId,
+    accountUsed.providerAccountId,
+    result.value,
+    now,
+    log,
+  );
 }
 
 type FetchResult =
@@ -235,7 +220,7 @@ async function fetchProviderPayment(
       ok: true,
       value: await withProviderTimeout(
         runtime.provider.getPayment(token, payment.providerPaymentId),
-        PAYMENT_PROVIDER_TIMEOUT_MS,
+        runtime.providerTimeoutMs,
       ),
     };
   } catch (error) {
@@ -248,11 +233,139 @@ async function fetchProviderPayment(
   }
 }
 
-async function findNewerActiveAccount(
+async function applyFetchedStatus(
+  orderId: number,
+  paymentId: number,
+  providerPaymentId: string,
+  providerAccountId: string | null,
+  providerPayment: Awaited<ReturnType<PaymentsRuntime["provider"]["getPayment"]>>,
+  now: Date,
+  log: PaymentsLogger,
+): Promise<void> {
+  await requireDb().transaction(async (tx) => {
+    await lockOrder(tx, orderId);
+
+    const [payment] = await tx
+      .select()
+      .from(payments)
+      .where(eq(payments.id, paymentId))
+      .for("update");
+    const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).for("update");
+    if (
+      !payment ||
+      !order ||
+      payment.status !== "pending" ||
+      payment.providerPaymentId !== providerPaymentId ||
+      order.status !== "payment_pending"
+    ) {
+      return;
+    }
+
+    if (!(await accountStillMatches(tx, payment, providerAccountId))) {
+      return;
+    }
+
+    const outcome = await applyProviderPayment(tx, payment, order, providerPayment, now, log);
+    await tx
+      .update(payments)
+      .set({ reconcileAttempts: 0, lastCheckedAt: now, updatedAt: now })
+      .where(eq(payments.id, payment.id));
+    log.info(
+      {
+        payment_id: payment.id,
+        order_id: payment.orderId,
+        status: outcome.status,
+        code: outcome.code ?? "payment_reconcile_checked",
+      },
+      "payment reconcile applied the provider status",
+    );
+  });
+}
+
+async function recordFailedAttempt(
+  orderId: number,
+  paymentId: number,
+  providerPaymentId: string,
+  providerAccountId: string | null,
+  code: string,
+  now: Date,
+  log: PaymentsLogger,
+): Promise<void> {
+  await requireDb().transaction(async (tx) => {
+    await lockOrder(tx, orderId);
+
+    const [payment] = await tx
+      .select()
+      .from(payments)
+      .where(eq(payments.id, paymentId))
+      .for("update");
+    if (
+      !payment ||
+      payment.status !== "pending" ||
+      payment.providerPaymentId !== providerPaymentId
+    ) {
+      return;
+    }
+    if (!(await accountStillMatches(tx, payment, providerAccountId))) {
+      return;
+    }
+
+    const attempts = payment.reconcileAttempts + 1;
+    if (attempts >= PAYMENTS_RECONCILE_MAX_ATTEMPTS) {
+      await tx
+        .update(payments)
+        .set({
+          status: "manual_review",
+          reconcileAttempts: attempts,
+          lastCheckedAt: now,
+          updatedAt: now,
+        })
+        .where(eq(payments.id, payment.id));
+      log.warn(
+        {
+          code: "payment_reconcile_manual_review",
+          payment_id: payment.id,
+          order_id: payment.orderId,
+          attempts,
+        },
+        "payment moved to manual review after repeated reconcile failures",
+      );
+      return;
+    }
+
+    await tx
+      .update(payments)
+      .set({ reconcileAttempts: attempts, lastCheckedAt: now, updatedAt: now })
+      .where(eq(payments.id, payment.id));
+    log.warn(
+      { code, payment_id: payment.id, order_id: payment.orderId, attempts },
+      "payment reconcile attempt failed",
+    );
+  });
+}
+
+/**
+ * The fetched provider status is only applied if the payment still resolves
+ * to the same provider account. A reconnect to a different provider account
+ * must be picked up by the next pass instead of applying a foreign status.
+ */
+async function accountStillMatches(
   tx: Transaction,
+  payment: PaymentRow,
+  providerAccountId: string | null,
+): Promise<boolean> {
+  if (providerAccountId === null) {
+    return true;
+  }
+  const current = await loadProviderAccount(tx, payment.sellerAccountId);
+  return current !== null && current.providerAccountId === providerAccountId;
+}
+
+async function findNewerActiveAccount(
+  executor: QueryExecutor,
   account: SellerAccountRow,
 ): Promise<SellerAccountRow | null> {
-  const [newer] = await tx
+  const [newer] = await executor
     .select()
     .from(sellerPaymentAccounts)
     .where(
@@ -265,47 +378,6 @@ async function findNewerActiveAccount(
     )
     .limit(1);
   return newer && newer.id !== account.id ? newer : null;
-}
-
-async function failAttempt(
-  tx: Transaction,
-  payment: PaymentRow,
-  code: string,
-  now: Date,
-  log: PaymentsLogger,
-): Promise<void> {
-  const attempts = payment.reconcileAttempts + 1;
-
-  if (attempts >= PAYMENTS_RECONCILE_MAX_ATTEMPTS) {
-    await tx
-      .update(payments)
-      .set({
-        status: "manual_review",
-        reconcileAttempts: attempts,
-        lastCheckedAt: now,
-        updatedAt: now,
-      })
-      .where(eq(payments.id, payment.id));
-    log.warn(
-      {
-        code: "payment_reconcile_manual_review",
-        payment_id: payment.id,
-        order_id: payment.orderId,
-        attempts,
-      },
-      "payment moved to manual review after repeated reconcile failures",
-    );
-    return;
-  }
-
-  await tx
-    .update(payments)
-    .set({ reconcileAttempts: attempts, lastCheckedAt: now, updatedAt: now })
-    .where(eq(payments.id, payment.id));
-  log.warn(
-    { code, payment_id: payment.id, order_id: payment.orderId, attempts },
-    "payment reconcile attempt failed",
-  );
 }
 
 async function lockOrder(tx: Transaction, orderId: number): Promise<void> {
