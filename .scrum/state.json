@@ -3,9 +3,9 @@
   "phase": "BUILDING",
   "init_closed": true,
   "sprint": 1,
-  "cycle": 2,
-  "updated_at": "2026-11-27T00:33:00Z",
+  "cycle": 3,
+  "updated_at": "2026-11-27T00:39:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Cycle 2: S1-2 seller shop in review (blocked-readonly fix a5f67f1). Sprint 2 pre-authorized by owner: auto-start after Sprint 1 closure, buyer-core scope, buyer OTP auth at checkout, dev adapters only, local preview, merge autonomy; budget is not a stop trigger. See HANDOFF."
+  "notes": "Cycle 3: S1-2 seller shop merged (PR #14, 11ca2c0), tasks 2.1–2.4 done. S1-3 products next (ready; brief/worktree/lease before dispatch). Sprint 2 pre-authorized: buyer-core, OTP at checkout, dev adapters, local preview, merge autonomy; budget not a stop trigger."
 }

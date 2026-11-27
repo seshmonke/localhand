@@ -1,35 +1,35 @@
-# Handoff: Sprint 1, cycle 2 — старт S1-2 shop
+# Handoff: Sprint 1, cycle 3 — S1-3 products
 
-Дата: 2026-11-27. Обновлено после merge S1-1 и docs-закрытия.
+Дата: 2026-11-27. Обновлено после merge S1-2.
 
 ## Состояние
 
 - Репозиторий: https://github.com/seshmonke/localhand, public.
-- main: `0c5c480` (S1-1 auth + docs-закрытие), PR #12/#13 merged.
-- Sprint 1: **BUILDING**, cycle 2.
-- S1-1 phone auth: **done**, PR #12 merged; tasks 1.1–1.6 отмечены.
-- S1-2 shop: **in_progress**, owner `scrum-worker`; brief
-  `docs/tasks/S1-2-seller-shop.md`, ветка `task/S1-2-shop`, lease
-  `.scrum/locks/S1-2.json` до 03:30Z.
-- S1-3 products, S1-4 admin UI, S1-5 security — `ready`.
+- main: `11ca2c0` (S1-2 shop, PR #14); до него `0c5c480` (S1-1 + docs).
+- Sprint 1: **BUILDING**, cycle 3.
+- S1-1 phone auth: **done**, PR #12; tasks 1.1–1.6 отмечены.
+- S1-2 shop: **done**, PR #14; tasks 2.1–2.4 отмечены.
+- S1-3 products: **ready**, не claimed. Перед dispatch: создать бриф
+  `docs/tasks/S1-3-products.md`, ветку `task/S1-3-products`, lease
+  `.scrum/locks/S1-3.json`.
+- S1-4 admin UI, S1-5 security — `ready`.
 
-## S1-1 evidence
+## Evidence
 
-- Verify (orchestrator): exit 0; API 58/58, shared 8/8, web 1/1,
-  build OK, `openspec validate --all --strict` 2/2, `check:public` чист.
-  Evidence: `.scrum/sprints/1/evidence/S1-1-verify.md`.
-- Review: независимый `scrum-reviewer`, **APPROVE** на `9ee2360`;
-  P1 trustProxy закрыт, тесты trusted/non-trusted XFF.
-- PR #12: `verify` + `review-gate` зелёные, squash-merge `d3e42b7`.
-- Preview smoke: S1-1 backend-only, login UI — S1-4; исключение
+- S1-1: `.scrum/sprints/1/evidence/S1-1-verify.md`; API 58/58,
+  shared 8/8, web 1/1, OpenSpec 2/2; review APPROVE; merge `d3e42b7`.
+- S1-2: `.scrum/sprints/1/evidence/S1-2-verify.md`; API 78/78,
+  shared 18/18, web 1/1, OpenSpec 2/2; review APPROVE; merge `11ca2c0`.
+- S1-1/S1-2 backend-only: login UI — S1-4; preview-исключение
   зафиксировано в evidence.
 
-## Carry-over (не блокирует S1-2)
+## Carry-over (не блокирует S1-3)
 
 - Backlog: `TRUST_PROXY=false`/`/0` в production, TTL/log-тесты,
-  `DATABASE_URL` fail-fast, OTP cleanup/rollback/метрики, seed demo-user.
-- S1-5 берёт carry-over по приоритету; из tasks 5.2 — только проверка
-  authz/rate-limit/логов. Состав S1-2 не расширяется.
+  `DATABASE_URL` fail-fast, OTP cleanup/rollback/метрики, seed demo-user,
+  TOCTOU blocked-guard (S1-5 moderation).
+- Из tasks 5.2 — authz/rate-limit/логи; остальное — по приоритету.
+  Состав S1-3 не расширяется.
 
 ## Sprint 2 authorization (27.11.2026)
 
@@ -53,27 +53,30 @@
 
 ## Текущий шаг
 
-1. S1-2 реализован; ревью — APPROVE, P2-1 (blocked read-only) и P2-2
-   (смена slug) закрыты в `a5f67f1`; идёт повторная проверка фикса.
-2. Orchestrator: verify → PR → checks → squash-merge.
-3. После merge — tasks 2.1–2.4, board/state/daily/evidence, затем S1-3.
+1. Создать ветку `task/S1-3-products` от main, бриф
+   `docs/tasks/S1-3-products.md` (AC — change tasks 3.1–3.4), worktree и
+   lease.
+2. Dispatch `scrum-worker`: product-admin контракты, `GET/POST
+   /seller/products`, `PATCH /seller/products/:id`, publish/hide, authz
+   только своего магазина, DB-тесты.
+3. Orchestrator: verify → independent review → PR → squash-merge.
 
 ## Гигиена
 
-- S1-1 task worktree и ветка `task/S1-1-phone-auth` удалены после
-  merge (локально и origin).
-- Время в `.scrum/**` — UTC; старые +03-записи нормализованы,
-  корректирующее событие в `events.jsonl`.
+- S1-1 и S1-2 task worktrees/ветки удалены после merge (локально и
+  origin); lease S1-2 снят.
+- Время в `.scrum/**` — UTC.
 
 ## Полезное
 
 - `docs/tasks/01-seller-onboarding.md` — Sprint 1 план.
 - `openspec/changes/02-seller-onboarding/` — change, spec, design, tasks.
 - Preview: `pnpm db:up && pnpm dev` → web 5173, API 3000, DB 5433.
-- Тестовая БД S1-2: `localhand_s1_2_test` (создана).
+- Тестовые БД: `localhand_s1_2_test`; для S1-3 — `localhand_s1_3_test`.
 
 ## Ограничения
 
-- Не начинать Sprint 2 без плана/проверки направления.
+- Sprint 2 авто-стартует после закрытия Sprint 1 по standing
+  authorization; без нового плана/скоупа не начинать.
 - Не мержить красный PR, не обходить branch protection.
 - Реальные SMS/платежи/прод — только с владельцем.

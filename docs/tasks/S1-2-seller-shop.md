@@ -7,27 +7,29 @@
 
 ## AC
 
-- [ ] `packages/shared`: контракты `seller.ts` — `SellerShop`,
+- [x] `packages/shared`: контракты `seller.ts` — `SellerShop`,
       `SellerShopResponse` (`shop: SellerShop | null`), `CreateShop`,
       `UpdateShop`; slug 3–40 `[a-z0-9-]`, без ведущего/хвостового
       дефиса, резервные slug отклоняются; экспорт из `index.ts`.
-- [ ] `GET /seller/shop`: 200 `{ shop }` или `{ shop: null }` по сессии;
+- [x] `GET /seller/shop`: 200 `{ shop }` или `{ shop: null }` по сессии;
       без/с протухшей cookie — 401.
-- [ ] `POST /seller/shop`: создаёт магазин в `draft`; если у user нет
+- [x] `POST /seller/shop`: создаёт магазин в `draft`; если у user нет
       seller — создаёт seller (`displayName` = имя магазина) в одной
       транзакции; существующий магазин — 409; занятый slug — 409;
       невалидный/резервный slug — 400; без сессии — 401.
-- [ ] `PATCH /seller/shop`: частично меняет name/slug/description/status;
+- [x] `PATCH /seller/shop`: частично меняет name/slug/description/status;
       `status` только `draft|published` (`blocked` — 400); занятый slug —
       409; нет магазина — 404; без сессии — 401.
-- [ ] Публикация: published-магазин отдаётся на `GET /shops/:slug`;
+- [x] Blocked-магазин read-only: PATCH → 409 `shop_blocked`, изменения
+      не применяются (фикс ревью).
+- [x] Публикация: published-магазин отдаётся на `GET /shops/:slug`;
       draft — 404; снятие с публикации возвращает 404 на витрине, данные
       сохраняются.
-- [ ] Authz: второй продавец не может изменить магазин первого; каждый
+- [x] Authz: второй продавец не может изменить магазин первого; каждый
       видит только свой; проверка через две сессии/два user.
-- [ ] Тесты: create, duplicate slug, invalid/reserved slug, publish/
+- [x] Тесты: create, duplicate slug, invalid/reserved slug, publish/
       unpublish storefront, no session 401, no shop 404, чужая изоляция.
-- [ ] `pnpm verify` в worktree — зелёный.
+- [x] `pnpm verify` в worktree — зелёный.
 
 ## Change
 

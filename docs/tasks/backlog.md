@@ -88,3 +88,11 @@
 - [ ] Привязать demo-продавца к demo-user при seed. Критерий: demo-лавка
   открывается, `sellers.user_id` заполнен. Источник: design.md,
   перенос из S1-1. Спринт: — (S1-5).
+- [ ] Убрать TOCTOU в blocked-guard магазина: conditional UPDATE с
+  `status <> 'blocked'` или row lock. Критерий: параллельный PATCH не
+  обходит platform block. Источник: P2 ревью S1-2. Спринт: — (S1-5).
+- [ ] Укрепить тестовую инфраструктуру API: не допускать silent skip
+  DB-тестов без `DATABASE_URL_TEST`; при росте suite — отдельная
+  схема/БД на файл вместо `fileParallelism: false`. Критерий: CI падает
+  при пропуске DB-тестов, файлы изолированы. Источник: P3 ревью S1-2.
+  Спринт: — (S1-5).

@@ -33,3 +33,6 @@
 - 27.11.2026. Sprint 1 начат командой владельца; cycle 1 закрыт —
   S1-1 phone auth смержен (PR #12, `d3e42b7`), tasks 1.1–1.6. Следующий —
   S1-2 shop. Sprint 1.
+- 27.11.2026. S1-2 seller shop смержен (PR #14, `11ca2c0`): контракты,
+  session guard, GET/POST/PATCH `/seller/shop`, slug, публикация,
+  blocked read-only. Следующий — S1-3 products. Sprint 1.
