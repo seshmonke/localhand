@@ -1,4 +1,5 @@
 import type { DeliveryCity, DeliveryPoint } from "@localhand/shared";
+import { createTokenBucket } from "./rate-limiter.js";
 import type {
   CreateShipmentInput,
   CreatedShipment,
@@ -44,6 +45,7 @@ type CdekTariff = {
   delivery_sum?: number;
   period_min?: number;
   period_max?: number;
+  tariff_mode?: number;
 };
 
 type CdekTariffResponse = {
@@ -128,6 +130,13 @@ export function createCdekDeliveryProvider(
   const pollIntervalMs = options.pollIntervalMs ?? 2_000;
   const pollTimeoutMs = options.pollTimeoutMs ?? 60_000;
   let token: { value: string; expiresAt: number } | null = null;
+  const bucket = createTokenBucket({ capacity: 200, refillPerSecond: 200 });
+
+  async function waitForOutboundSlot(): Promise<void> {
+    while (!bucket.tryAcquire(Date.now())) {
+      await sleep(5);
+    }
+  }
 
   async function authenticate(): Promise<string> {
     if (token && token.expiresAt > Date.now()) {
@@ -139,6 +148,7 @@ export function createCdekDeliveryProvider(
       client_id: config.clientId,
       client_secret: config.clientSecret,
     });
+    await waitForOutboundSlot();
     const response = await fetchImpl(`${config.apiUrl}/v2/oauth/token?${query.toString()}`, {
       method: "POST",
       headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -166,6 +176,7 @@ export function createCdekDeliveryProvider(
     allowRefresh = true,
   ): Promise<T> {
     const accessToken = await authenticate();
+    await waitForOutboundSlot();
     const response = await fetchImpl(`${config.apiUrl}${path}`, {
       ...init,
       headers: {
@@ -213,9 +224,16 @@ export function createCdekDeliveryProvider(
       method: "POST",
       body: JSON.stringify(body),
     });
-    return (response.tariff_codes ?? [])
-      .map(mapTariff)
-      .filter((tariff): tariff is DeliveryTariff => tariff !== null)
+    const all = (response.tariff_codes ?? [])
+      .map((tariff) => ({ raw: tariff, mapped: mapTariff(tariff) }))
+      .filter(
+        (entry): entry is { raw: CdekTariff; mapped: DeliveryTariff } => entry.mapped !== null,
+      );
+    // CDEK marks tariff_mode=2 for PVZ. If the response carries modes, never
+    // fall back to a cheaper door tariff for a PVZ checkout.
+    const pvz = all.filter((entry) => entry.raw.tariff_mode === 2);
+    return (pvz.length > 0 ? pvz : all)
+      .map((entry) => entry.mapped)
       .sort((left, right) => left.priceKopecks - right.priceKopecks);
   }
 
@@ -333,6 +351,7 @@ export function createCdekDeliveryProvider(
         providerNumber: order.cdek_number ?? order.number ?? accepted.request_uuid,
         statusCode: status?.code ?? "ACCEPTED",
         statusName: status?.name ?? "Принят",
+        statusDateTime: status?.date_time ?? null,
       };
     },
 
@@ -347,12 +366,39 @@ export function createCdekDeliveryProvider(
         }
         const status = order.statuses?.at(-1);
         return {
+          providerOrderId: order.uuid ?? providerOrderId,
           statusCode: status?.code ?? "UNKNOWN",
           statusName: status?.name ?? "Неизвестно",
           trackNumber: order.cdek_number ?? order.number ?? null,
+          statusDateTime: status?.date_time ?? null,
         };
       } catch (error) {
         if (error instanceof CdekError && error.status === 404) {
+          return null;
+        }
+        throw error;
+      }
+    },
+
+    async findShipmentByNumber(number: string): Promise<ShipmentState | null> {
+      try {
+        const response = await request<CdekResponse | CdekOrder | CdekOrder[]>(
+          `/v2/orders?im_number=${encodeURIComponent(number)}`,
+        );
+        const order = Array.isArray(response) ? response[0] : orderFromResponse(response);
+        if (!order) {
+          return null;
+        }
+        const status = order.statuses?.at(-1);
+        return {
+          providerOrderId: order.uuid ?? null,
+          statusCode: status?.code ?? "UNKNOWN",
+          statusName: status?.name ?? "Неизвестно",
+          trackNumber: order.cdek_number ?? order.number ?? null,
+          statusDateTime: status?.date_time ?? null,
+        };
+      } catch (error) {
+        if (error instanceof CdekError && (error.status === 400 || error.status === 404)) {
           return null;
         }
         throw error;

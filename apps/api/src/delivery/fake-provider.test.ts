@@ -60,13 +60,16 @@ describe("fake delivery provider", () => {
       providerNumber: "order-42",
       statusCode: "CREATED",
       statusName: "Создан",
+      statusDateTime: expect.any(String),
     });
     expect(await provider.createShipment(input)).toEqual(created);
 
     expect(await provider.getShipment("fake-42")).toEqual({
+      providerOrderId: "fake-42",
       statusCode: "CREATED",
       statusName: "Создан",
       trackNumber: null,
+      statusDateTime: expect.any(String),
     });
     expect(await provider.getShipment("missing")).toBeNull();
   });

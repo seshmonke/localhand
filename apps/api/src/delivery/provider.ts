@@ -29,12 +29,15 @@ export type CreatedShipment = {
   providerNumber: string;
   statusCode: string;
   statusName: string;
+  statusDateTime: string | null;
 };
 
 export type ShipmentState = {
+  providerOrderId: string | null;
   statusCode: string;
   statusName: string;
   trackNumber: string | null;
+  statusDateTime: string | null;
 };
 
 export interface DeliveryProvider {
@@ -45,5 +48,6 @@ export interface DeliveryProvider {
   listTariffs(input: DeliveryQuoteInput): Promise<DeliveryTariff[]>;
   createShipment(input: CreateShipmentInput): Promise<CreatedShipment>;
   getShipment(providerOrderId: string): Promise<ShipmentState | null>;
+  findShipmentByNumber(number: string): Promise<ShipmentState | null>;
   ensureOrderStatusWebhook(): Promise<void>;
 }

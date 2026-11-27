@@ -79,10 +79,19 @@ describe("CDEK delivery provider", () => {
           tariff_codes: [
             {
               tariff_code: 137,
-              tariff_name: "Дорогой",
+              tariff_name: "Дверной дешёвый",
+              delivery_sum: 100,
+              period_min: 1,
+              period_max: 2,
+              tariff_mode: 1,
+            },
+            {
+              tariff_code: 138,
+              tariff_name: "Дверной дорогой",
               delivery_sum: 500,
               period_min: 1,
               period_max: 2,
+              tariff_mode: 1,
             },
             {
               tariff_code: 136,
@@ -90,6 +99,7 @@ describe("CDEK delivery provider", () => {
               delivery_sum: 350.5,
               period_min: 2,
               period_max: 4,
+              tariff_mode: 2,
             },
           ],
         }),
@@ -162,6 +172,7 @@ describe("CDEK delivery provider", () => {
       providerNumber: "1234567890",
       statusCode: "CREATED",
       statusName: "Создан",
+      statusDateTime: "2026-11-27T16:00:00+0000",
     });
 
     const [, postInit] = fetchMock.mock.calls[1] ?? [];
@@ -198,9 +209,11 @@ describe("CDEK delivery provider", () => {
 
     const provider = createCdekDeliveryProvider(CONFIG, { fetch: fetchMock });
     expect(await provider.getShipment("uuid-1")).toEqual({
+      providerOrderId: "uuid-1",
       statusCode: "DELIVERED",
       statusName: "Вручён",
       trackNumber: "1234567890",
+      statusDateTime: "2026-11-28T16:00:00+0000",
     });
   });
 
