@@ -105,6 +105,21 @@ async function expectHeaderCta(page: Page, label: string, visible: boolean): Pro
   expect(box?.height ?? 0, `${label}: header CTA height`).toBeCloseTo(44, 0);
 }
 
+async function expectAddToCartSingleLine(page: Page, label: string): Promise<void> {
+  const button = page.getByRole("button", { name: /^В корзину:/ }).first();
+  const geometry = await button.evaluate((element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    return {
+      height: element.getBoundingClientRect().height,
+      lines: range.getClientRects().length,
+    };
+  });
+
+  expect(geometry.height, `${label}: cart button height`).toBeCloseTo(44, 0);
+  expect(geometry.lines, `${label}: cart button single line`).toBe(1);
+}
+
 async function expectCartBadgeInsideHeader(page: Page): Promise<void> {
   const header = await page.locator("header").first().boundingBox();
   const shell = await page.locator("header [data-page-shell]").first().boundingBox();
@@ -279,6 +294,10 @@ test("layout holds at 320/768/1440 across storefront and admin", async ({
 
           if (viewport.width >= 768) {
             await expectHeaderNav(page, `catalog ${viewport.key}`);
+          }
+
+          if (viewport.width === 320) {
+            await expectAddToCartSingleLine(page, `catalog ${viewport.key}`);
           }
 
           controlChecks.push(`${target.key}-${viewport.key}`);

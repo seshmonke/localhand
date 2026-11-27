@@ -9,10 +9,10 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const tone = tones[product.id % tones.length] ?? "bg-ink";
 
   return (
-    <article className="flex h-full flex-col overflow-hidden border-[3px] border-ink bg-paper">
+    <article className="flex h-full flex-col border-[3px] border-ink bg-paper has-[:focus-visible]:outline has-[:focus-visible]:outline-4 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent-red-text">
       <Link
         to={`/products/${product.id}`}
-        className="group/link flex grow flex-col focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-accent-orange"
+        className="group/link flex grow flex-col focus-visible:outline-none"
       >
         {product.imageUrl ? (
           <img
@@ -40,7 +40,11 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         </div>
       </Link>
       <div className="px-4 pb-4 pt-4">
-        <AddToCartButton item={cartItemFromProduct(product)} size="sm" className="h-11 w-full" />
+        <AddToCartButton
+          item={cartItemFromProduct(product)}
+          size="sm"
+          className="h-11 w-full whitespace-nowrap px-2 text-xs sm:px-3 sm:text-sm"
+        />
       </div>
     </article>
   );

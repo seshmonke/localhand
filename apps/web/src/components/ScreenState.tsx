@@ -45,22 +45,25 @@ export function ScreenState({ kind, title, description, action }: ScreenStatePro
 
 export function ProductGridSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4" aria-label="Загрузка товаров">
+    <output
+      aria-live="polite"
+      aria-busy="true"
+      className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4"
+    >
+      <span className="sr-only">Загрузка товаров</span>
       {[0, 1, 2, 3].map((item) => (
-        <div
-          key={item}
-          className="flex h-full flex-col overflow-hidden border-[3px] border-ink bg-paper"
-        >
+        <div key={item} className="flex h-full flex-col border-[3px] border-ink bg-paper">
           <div className="aspect-[4/5] w-full bg-ink/10" />
           <div className="flex grow flex-col gap-2 px-4 pt-4">
-            <div className="h-4 w-2/3 bg-ink/20" />
+            <div className="h-10 w-2/3 bg-ink/20 sm:h-4" />
             <div className="h-3 w-1/2 bg-ink/10" />
+            <div className="h-3 w-1/3 bg-ink/10" />
           </div>
           <div className="px-4 pb-4 pt-4">
             <div className="h-11 w-full bg-ink/20" />
           </div>
         </div>
       ))}
-    </div>
+    </output>
   );
 }
