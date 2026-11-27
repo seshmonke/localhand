@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": 3,
   "cycle": 3,
-  "updated_at": "2026-11-27T13:22:00Z",
+  "updated_at": "2026-11-27T14:30:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 3 cycle 3: S3-1 PR B1 payments flow in progress (branch task/S3-1b-payments-flow): seller account connect/callback, payment create/read, webhook, reconcile, fake-complete, API tests. UI/ADR/e2e in B2. PR A foundation merged 732d2cb. No real keys; fake path."
+  "notes": "Sprint 3 cycle 3: S3-1 PR B1 payments flow merged 51aa6f9 (PR #41): seller account, create/read, webhook, reconcile, fake-complete, 263 api tests. Quality methodology Q1.0 merged 91bd8a8 (PR #42); Superpowers installed globally in OpenCode (TDD/plans/review skills). Next: B2 payments UI + ADR 0004/manual-review runbook; Quality Q1.1/Q1.2 planned Sprint 4. No real keys; fake path."
 }
