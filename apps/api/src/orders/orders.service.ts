@@ -1,5 +1,5 @@
 import type { AuthUser, Checkout, OrderItem, OrderSummary } from "@localhand/shared";
-import { and, desc, eq, inArray, type SQL } from "drizzle-orm";
+import { and, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { requireDb } from "../db/client.js";
 import { orderItems, orders, products, sellers, shops } from "../db/schema.js";
 
@@ -127,27 +127,41 @@ function normalizeComment(comment: string | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+type CheckoutTransactionResult =
+  { kind: "existing" } | { kind: "unavailable" } | { kind: "created"; orders: OrderSummary[] };
+
 /**
  * Creates one order per shop in a single transaction. Any product or shop that
  * is not published aborts the transaction with `product_unavailable`, so a
  * failed checkout never leaves a partial multi-shop order.
  *
- * Replays with the same `clientCheckoutId` return the existing orders; a race
- * between two identical requests is resolved by the unique constraint and the
- * post-conflict read.
+ * Requests with the same `(buyer, clientCheckoutId)` are serialized by a
+ * transaction-scoped advisory lock that is taken before anything else, so a
+ * replay always returns the orders committed by the first request. The unique
+ * constraint and the post-conflict read stay as a safety net.
  */
 export async function checkout(user: AuthUser, input: Checkout): Promise<CheckoutResult> {
-  const existing = await findOrdersByClientCheckoutId(user.id, input.clientCheckoutId);
-  if (existing.length > 0) {
-    return { ok: true, orders: existing };
-  }
-
   const productIds = input.items.map((item) => item.productId);
   const buyerPhone = user.phone;
   const comment = normalizeComment(input.comment);
+  const lockKey = `${user.id}:${input.clientCheckoutId}`;
 
   try {
-    const created = await requireDb().transaction(async (tx) => {
+    const result = await requireDb().transaction(async (tx): Promise<CheckoutTransactionResult> => {
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`);
+
+      const [existingOrder] = await tx
+        .select({ id: orders.id })
+        .from(orders)
+        .where(
+          and(eq(orders.buyerUserId, user.id), eq(orders.clientCheckoutId, input.clientCheckoutId)),
+        )
+        .limit(1);
+
+      if (existingOrder) {
+        return { kind: "existing" };
+      }
+
       const productRows: PublishedProductRow[] = await tx
         .select({
           id: products.id,
@@ -170,7 +184,7 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
         .for("update", { of: products });
 
       if (productRows.length !== productIds.length) {
-        return null;
+        return { kind: "unavailable" };
       }
 
       type ShopGroup = {
@@ -246,14 +260,21 @@ export async function checkout(user: AuthUser, input: Checkout): Promise<Checkou
         );
       }
 
-      return summaries;
+      return { kind: "created", orders: summaries };
     });
 
-    if (created === null) {
+    if (result.kind === "existing") {
+      return {
+        ok: true,
+        orders: await findOrdersByClientCheckoutId(user.id, input.clientCheckoutId),
+      };
+    }
+
+    if (result.kind === "unavailable") {
       return { ok: false, error: "product_unavailable" };
     }
 
-    return { ok: true, orders: created };
+    return { ok: true, orders: result.orders };
   } catch (error) {
     if (isCheckoutIdempotencyConflict(error)) {
       const existingAfterRace = await findOrdersByClientCheckoutId(user.id, input.clientCheckoutId);

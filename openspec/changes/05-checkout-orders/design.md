@@ -56,6 +56,14 @@ Sprint 1: users/sellers/shops/products, OTP-сессия, seller admin,
   — только `clientCheckoutId` в рамках покупателя. Чтобы изменить состав
   заказа, клиент обязан сгенерировать новый UUID; тот же UUID с другим
   составом — replay, а не правка. Клиент также блокирует double-submit.
+- Запросы с одним ключом `(buyer_user_id, client_checkout_id)`
+  сериализуются транзакционным advisory lock
+  `pg_advisory_xact_lock(hashtextextended($1, 0))` с ключом
+  `"${buyerUserId}:${clientCheckoutId}"`. Lock берётся первым действием
+  транзакции, проверка существующих orders — после него и внутри той же
+  транзакции. Поэтому конкурентные same-key запросы создают один набор
+  заказов (первый), а второй возвращает его же; новый состав принимается
+  только с новым UUID.
 - Ответ 201 `{ orders: OrderSummary[] }`; web очищает заказанные
   позиции корзины.
 - Недоступный товар → 409 без заказа; пустой/дубли/лимит → 400.
@@ -94,8 +102,10 @@ Sprint 1: users/sellers/shops/products, OTP-сессия, seller admin,
 
 - Contract parse checkout/order.
 - DB API: успех, 401, 400 (пусто/дубли/лимит), 409 unavailable,
-  snapshot, идемпотентность (повтор с тем же и с другим составом items),
-  buyer/seller 404, seller scope, rate-limit.
+  snapshot, идемпотентность (повтор с тем же и с другим составом items,
+  товар из магазина, которого не было в первом checkout),
+  конкурентные same-key запросы с товарами разных магазинов, buyer/seller
+  404, seller scope, rate-limit.
 - Web: checkout guard, submit/clear cart, orders lists, seller list.
 - E2E: browser Playwright + API; бриф `docs/tasks/S2-4-security.md`.
 
@@ -106,7 +116,8 @@ Sprint 1: users/sellers/shops/products, OTP-сессия, seller admin,
 - PII: телефон/комментарий; legal до прода.
 - Идемпотентность только по clientCheckoutId; replay с тем же id и
   другим items возвращает исходные заказы, новый id — новый заказ
-  (осознанно).
+  (осознанно). Advisory lock сериализует same-key запросы: второй
+  получает первый набор, а не смесь магазинов.
 - Статус только `new`; отмена/оплата — следующие change.
 - `FOR UPDATE OF products` удерживает только строки товаров в порядке
   `products.id`; shops читаются без блокировки, взаимная блокировка

@@ -139,6 +139,42 @@ async function countOrders(): Promise<{ orders: number; items: number }> {
   return result.rows[0] ?? { orders: 0, items: 0 };
 }
 
+async function countLockWaiters(condition: string): Promise<number> {
+  const result = await dbClient
+    .requirePool()
+    .query<{ count: number }>(
+      `SELECT count(*)::int AS count FROM pg_locks WHERE NOT granted AND ${condition}`,
+    );
+  return result.rows[0]?.count ?? 0;
+}
+
+async function waitForLockWaiter(condition: string): Promise<void> {
+  const deadline = Date.now() + 2_000;
+  while (Date.now() < deadline) {
+    if ((await countLockWaiters(condition)) > 0) {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  throw new Error(`timed out waiting for a lock waiter: ${condition}`);
+}
+
+// The racing checkout either commits its own order (no advisory lock) or waits
+// on the advisory lock held by the blocked checkout (advisory lock works).
+async function waitForRacingCheckout(): Promise<void> {
+  const deadline = Date.now() + 2_000;
+  while (Date.now() < deadline) {
+    if ((await countOrders()).orders > 0) {
+      return;
+    }
+    if ((await countLockWaiters("locktype = 'advisory'")) > 0) {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  throw new Error("timed out waiting for the racing checkout");
+}
+
 function sortById<T extends { id: number }>(values: T[]): T[] {
   return [...values].sort((left, right) => left.id - right.id);
 }
@@ -316,12 +352,18 @@ describeWithDb("checkout and orders routes with a real database", () => {
     const seller = await createUser(1);
     const secondSeller = await createUser(2);
     const buyer = await createUser(3);
+    const thirdSeller = await createUser(4);
     await createShop(seller, "first-shop");
     await createShop(secondSeller, "second-shop");
+    await createShop(thirdSeller, "third-shop");
     const first = await createPublishedProduct(seller, { name: "Куртка", priceKopecks: 100_000 });
     const second = await createPublishedProduct(secondSeller, {
       name: "Шарф",
       priceKopecks: 50_000,
+    });
+    const third = await createPublishedProduct(thirdSeller, {
+      name: "Сумка",
+      priceKopecks: 70_000,
     });
     const clientCheckoutId = randomUUID();
 
@@ -334,13 +376,16 @@ describeWithDb("checkout and orders routes with a real database", () => {
     expect((repeated.json().orders as OrderBody[]).map((order) => order.id)).toEqual(createdIds);
     expect(await countOrders()).toEqual({ orders: 2, items: 2 });
 
-    // A replay is keyed only by clientCheckoutId: different items still return
-    // the orders created by the first request. The client must send a new UUID
-    // when the cart composition changes.
-    const differentItems = await checkout(buyer, [second.id], { clientCheckoutId });
-    expect(differentItems.statusCode).toBe(201);
-    const replayed = differentItems.json().orders as OrderBody[];
+    // A replay is keyed only by clientCheckoutId: even items from a shop that
+    // was absent from the first request return the original orders and never
+    // create the third order. This distinguishes the pre-insert replay check
+    // from the unique-constraint fallback, which would only catch shops that
+    // already have an order for this key.
+    const newShopItems = await checkout(buyer, [third.id], { clientCheckoutId });
+    expect(newShopItems.statusCode).toBe(201);
+    const replayed = newShopItems.json().orders as OrderBody[];
     expect(replayed.map((order) => order.id)).toEqual(createdIds);
+    expect(replayed.map((order) => order.shop.slug)).toEqual(["first-shop", "second-shop"]);
     const replayedProductIds = replayed.flatMap((order) =>
       order.items.map((item) => item.productId),
     );
@@ -348,6 +393,10 @@ describeWithDb("checkout and orders routes with a real database", () => {
       [first.id, second.id].sort((left, right) => left - right),
     );
     expect(await countOrders()).toEqual({ orders: 2, items: 2 });
+
+    const thirdSellerOrders = await request(thirdSeller, "GET", "/seller/orders");
+    expect(thirdSellerOrders.statusCode).toBe(200);
+    expect(thirdSellerOrders.json()).toEqual({ orders: [] });
 
     const otherId = await checkout(buyer, [first.id]);
     expect(otherId.statusCode).toBe(201);
@@ -376,6 +425,61 @@ describeWithDb("checkout and orders routes with a real database", () => {
     );
     expect(await countOrders()).toEqual({ orders: 1, items: 1 });
   });
+
+  it("serializes concurrent same-key checkouts with items from different shops", async () => {
+    const firstSeller = await createUser(1);
+    const secondSeller = await createUser(2);
+    const buyer = await createUser(3);
+    await createShop(firstSeller, "first-shop");
+    await createShop(secondSeller, "second-shop");
+    const firstProduct = await createPublishedProduct(firstSeller, {
+      name: "Куртка",
+      priceKopecks: 100_000,
+    });
+    const secondProduct = await createPublishedProduct(secondSeller, {
+      name: "Шарф",
+      priceKopecks: 50_000,
+    });
+    const clientCheckoutId = randomUUID();
+
+    // Hold the second product row so that its checkout passes the replay check
+    // and then blocks on the row lock. Both requests therefore observe "no
+    // existing orders" before either commits — the race the advisory lock must
+    // serialize. Without the lock the two requests create one order each.
+    const blocker = await dbClient.requirePool().connect();
+    try {
+      await blocker.query("BEGIN");
+      await blocker.query("SELECT id FROM products WHERE id = $1 FOR UPDATE", [secondProduct.id]);
+
+      const blockedCheckout = checkout(buyer, [secondProduct.id], { clientCheckoutId });
+      await waitForLockWaiter("locktype = 'transactionid'");
+
+      const racingCheckout = checkout(buyer, [firstProduct.id], { clientCheckoutId });
+      await waitForRacingCheckout();
+
+      await blocker.query("COMMIT");
+
+      const blocked = await blockedCheckout;
+      const racing = await racingCheckout;
+      expect(blocked.statusCode).toBe(201);
+      expect(racing.statusCode).toBe(201);
+
+      const blockedOrders = blocked.json().orders as OrderBody[];
+      const racingOrders = racing.json().orders as OrderBody[];
+      expect(blockedOrders).toHaveLength(1);
+      expect(racingOrders).toHaveLength(1);
+      expect(racingOrders).toEqual(blockedOrders);
+
+      const [order] = blockedOrders;
+      if (!order) {
+        throw new Error("order was not created");
+      }
+      expect(order.items[0]?.productId).toBe(secondProduct.id);
+      expect(await countOrders()).toEqual({ orders: 1, items: 1 });
+    } finally {
+      blocker.release();
+    }
+  }, 15_000);
 
   it("rejects empty, duplicate, oversized and malformed checkouts with 400", async () => {
     const seller = await createUser(1);
