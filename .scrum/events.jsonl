@@ -48,3 +48,4 @@
 {"ts":"2026-11-27T06:38:00Z","type":"decision","scope":"lcp_dod_proxy","sprint":2,"owner":"human","decision":"accept_lab_preview_lcp_as_v1_proxy","field_p75":"backlog_before_public_launch","date":"2026-11-27"}
 {"ts":"2026-11-27T06:38:30Z","type":"merge","sprint":2,"task":"S2-4","pr":33,"merge_commit":"8b748b2","status":"done"}
 {"ts":"2026-11-27T06:39:00Z","type":"sprint_closed","sprint":2,"status":"accepted","goal_achieved":true,"review":"ACCEPT","retro":".scrum/sprints/2/retro.md"}
+{"ts":"2026-11-27T09:11:00Z","type":"claim","sprint":null,"task":"LAYOUT-1","owner":"scrum-worker","branch":"task/layout-system","change":null,"lease":".scrum/locks/layout-system.json","note":"owner-approved post-Sprint-2 design PBI"}
