@@ -174,6 +174,7 @@ describe("AdminOrdersPage", () => {
     expect(
       await screen.findByRole("heading", { level: 2, name: "Сессия истекла" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Войдите снова, чтобы продолжить.")).toBeInTheDocument();
 
     sessionExpired = true;
     await browser.click(screen.getByRole("button", { name: "Войти" }));

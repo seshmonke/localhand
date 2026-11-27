@@ -44,7 +44,8 @@ change `05-checkout-orders` архивируется после merge обоих
       loading/empty/error.
 - [ ] 4.3 `/admin/orders`, `/admin/orders/:id`: seller таблица/cards,
       детали, ссылка в sidebar.
-- [ ] 4.4 Cart CTA enable → `/checkout`; header orders link; mobile 320/
+- [ ] 4.4 Cart CTA enable → `/checkout`; header badge без orders link
+      (заказы доступны после checkout и прямым URL); mobile 320/
       desktop 1440; a11y labels/focus/axe light/dark; LCP/бандл-evidence.
 - [ ] 4.5 safeNext allowlist `/checkout|/orders|/orders/:id` + тесты
       open redirect/loop; login buyer-neutral; web-тесты checkout/orders/

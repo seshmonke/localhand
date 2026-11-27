@@ -5,13 +5,19 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { useCart } from "../cart/CartContext.js";
 import { pluralizeItems } from "../cart/item-count.js";
-import { fieldControlClass, FormError, FormField } from "../components/FormField.js";
+import {
+  fieldControlClass,
+  fieldDescribedBy,
+  FormError,
+  FormField,
+} from "../components/FormField.js";
 import { ScreenState } from "../components/ScreenState.js";
 import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
 import { ApiError, checkout } from "../lib/api.js";
 import { orderKeys, useMeQuery } from "../lib/queries.js";
 
 const COMMENT_MAX_LENGTH = 500;
+export const COMMENT_HINT = "Необязательно. До 500 символов: удобное время, вопросы по вещи.";
 
 function formatPhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
@@ -261,11 +267,7 @@ export function CheckoutPage() {
               </p>
 
               <div className="mt-6">
-                <FormField
-                  id="checkout-comment"
-                  label="Комментарий продавцу"
-                  hint="Необязательно. До 500 символов: удобное время, вопросы по вещи."
-                >
+                <FormField id="checkout-comment" label="Комментарий продавцу" hint={COMMENT_HINT}>
                   <textarea
                     id="checkout-comment"
                     name="comment"
@@ -273,6 +275,7 @@ export function CheckoutPage() {
                     maxLength={COMMENT_MAX_LENGTH}
                     value={comment}
                     onChange={(event) => setComment(event.target.value)}
+                    aria-describedby={fieldDescribedBy("checkout-comment", COMMENT_HINT)}
                     className={`${fieldControlClass} min-h-28 resize-y`}
                   />
                 </FormField>

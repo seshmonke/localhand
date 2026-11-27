@@ -18,8 +18,10 @@ loading/empty/error/a11y.
       карточки mobile, детали, ссылка из sidebar; no shop — empty +
       onboarding.
 - [ ] 4.4 Cart CTA enable → `/checkout`; login buyer-neutral; safeNext
-      allowlist `/checkout`, `/orders`, `/orders/:id` + `/admin`; mobile/
-      desktop, labels/focus, axe light/dark; LCP/бандл запишет S2-4.
+      allowlist `/checkout`, `/orders`, `/orders/:id` + `/admin`; header
+      badge без ссылки «Мои заказы» (заказы — после checkout и прямым
+      URL); mobile/desktop, labels/focus, axe light/dark; LCP/бандл
+      запишет S2-4.
 - [ ] 4.5 Web-тесты: checkout guard/submit/clear/409, buyer orders,
       seller orders, safeNext open-redirect/loop, empty/error.
 - [ ] `pnpm verify` зелёный.

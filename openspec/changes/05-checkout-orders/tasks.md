@@ -15,5 +15,5 @@
 - [ ] 4.1 Добавить `/checkout`: guard, safeNext `/checkout|/orders|/orders/:id`, buyer-neutral login, сводка, comment, submit, double-submit disabled, clear cart; seller без магазина — ссылка на onboarding.
 - [ ] 4.2 Добавить `/orders` и `/orders/:id` для покупателя.
 - [ ] 4.3 Добавить `/admin/orders` и `/admin/orders/:id` для продавца; ссылка в sidebar.
-- [ ] 4.4 Сделать mobile/desktop, loading/empty/error, a11y (labels/focus/axe light/dark), header badge/orders link; LCP/бандл-дельту записать в evidence.
+- [ ] 4.4 Сделать mobile/desktop, loading/empty/error, a11y (labels/focus/axe light/dark), header badge без orders link (заказы — после checkout и прямым URL); LCP/бандл-дельту записать в evidence.
 - [ ] 4.5 Покрыть web-тестами checkout, buyer/seller orders, guard, ошибки, open redirect/next allowlist.

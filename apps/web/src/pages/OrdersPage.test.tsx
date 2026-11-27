@@ -1,7 +1,9 @@
 import { formatRubles, kopecks, type OrderSummary } from "@localhand/shared";
+import { QueryClient } from "@tanstack/react-query";
 import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { authKeys, orderKeys, sellerKeys } from "../lib/queries.js";
 import { installFetchMock } from "../test/mock-api.js";
 import { renderApp } from "../test/render-app.js";
 import { formatOrderDate } from "./OrdersPage.js";
@@ -96,27 +98,40 @@ describe("OrdersPage", () => {
     expect(screen.getByRole("button", { name: "Повторить" })).toBeInTheDocument();
   });
 
-  it("redirects to login when the orders request returns 401", async () => {
-    let meCalls = 0;
-    installFetchMock({
-      "GET /auth/me": () => {
-        meCalls += 1;
-        return meCalls === 1
-          ? { body: { user: demoUser } }
-          : { status: 401, body: { error: "unauthorized" } };
+  it("shows the buyer-neutral session expired state and clears buyer data on a 401", async () => {
+    let sessionExpired = false;
+    const client = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false, staleTime: 0 },
+        mutations: { retry: false },
       },
+    });
+    client.setQueryData(authKeys.me, { user: demoUser });
+    client.setQueryData(orderKeys.mine, { orders: [order] });
+    client.setQueryData(sellerKeys.orders, { orders: [] });
+
+    installFetchMock({
+      "GET /auth/me": () =>
+        sessionExpired
+          ? { status: 401, body: { error: "unauthorized" } }
+          : { body: { user: demoUser } },
       "GET /orders/mine": { status: 401, body: { error: "unauthorized" } },
     });
 
     const browser = userEvent.setup();
-    renderApp(["/orders"]);
+    renderApp(["/orders"], client);
 
     expect(
       await screen.findByRole("heading", { level: 2, name: "Сессия истекла" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Войдите снова, чтобы продолжить.")).toBeInTheDocument();
+
+    sessionExpired = true;
     await browser.click(screen.getByRole("button", { name: "Войти" }));
 
     expect(await screen.findByRole("heading", { level: 1, name: "Вход" })).toBeInTheDocument();
     expect(screen.getByTestId("location")).toHaveTextContent("/login?next=%2Forders");
+    expect(client.getQueryData(authKeys.me)).toBeUndefined();
+    expect(client.getQueryCache().findAll({ queryKey: orderKeys.all })).toHaveLength(0);
   });
 });

@@ -34,8 +34,8 @@
 
 - `apps/api`: schema/migration, checkout/orders/seller-orders routes и
   services, authz, rate-limit, тесты.
-- `apps/web`: checkout/orders pages, login next allowlist, header/orders
-  links, admin orders.
+- `apps/web`: checkout/orders pages, login next allowlist, header badge
+  без ссылки на заказы, admin orders.
 - `packages/shared`: checkout/order контракты.
 - Preview: buyer flow на dev-OTP; данные вымышленные.
 

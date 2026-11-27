@@ -95,7 +95,9 @@ Sprint 1: users/sellers/shops/products, OTP-сессия, seller admin,
   loading/error.
 - `/admin/orders` и `/admin/orders/:id`: seller таблица desktop/карточки
   mobile, детали, ссылка в sidebar.
-- Header: badge корзины; ссылка «Мои заказы» для авторизованного.
+- Header: badge корзины, без нового auth-запроса. Отдельной ссылки
+  «Мои заказы» нет: заказы доступны после успешного checkout и прямым
+  URL `/orders`.
 - 320/1440, a11y: labels, focus, aria-live, axe light/dark.
 
 ### Тесты

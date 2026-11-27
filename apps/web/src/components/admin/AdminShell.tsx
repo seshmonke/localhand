@@ -4,7 +4,7 @@ import { ClipboardList, LogOut, Package, Store } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router";
 import { ApiError, logout } from "../../lib/api.js";
-import { authKeys, clearSellerQueries, useMeQuery } from "../../lib/queries.js";
+import { authKeys, clearBuyerQueries, clearSellerQueries, useMeQuery } from "../../lib/queries.js";
 
 function formatPhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
@@ -48,7 +48,7 @@ export function AdminShell() {
 
   async function finishLogout() {
     try {
-      await clearSellerQueries(queryClient);
+      await Promise.all([clearSellerQueries(queryClient), clearBuyerQueries(queryClient)]);
     } finally {
       queryClient.removeQueries({ queryKey: authKeys.me });
       navigate("/login", { replace: true });

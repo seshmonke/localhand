@@ -5,13 +5,16 @@ import {
   type Checkout,
   type OrderSummary,
 } from "@localhand/shared";
-import { QueryClient } from "@tanstack/react-query";
-import { cleanup, screen, waitFor, within } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { authKeys, sellerKeys } from "../lib/queries.js";
+import { MemoryRouter, Route, Routes } from "react-router";
+import { CartProvider, useCart } from "../cart/CartContext.js";
+import { authKeys, orderKeys, sellerKeys } from "../lib/queries.js";
 import { installFetchMock } from "../test/mock-api.js";
 import { renderApp } from "../test/render-app.js";
+import { CheckoutPage, COMMENT_HINT } from "./CheckoutPage.js";
 import { formatOrderPhone } from "./OrdersPage.js";
 
 function phone(...parts: string[]): string {
@@ -73,6 +76,41 @@ function checkoutCalls(fetchMock: ReturnType<typeof installFetchMock>) {
   return fetchMock.mock.calls.filter(
     ([url, init]) => String(url).endsWith("/api/checkout") && init?.method === "POST",
   );
+}
+
+function CartCompositionEditor() {
+  const { removeItem, isHydrated } = useCart();
+  return (
+    <button type="button" onClick={() => removeItem(vase.productId)} disabled={!isHydrated}>
+      Убрать вазу из корзины (тест)
+    </button>
+  );
+}
+
+/** Renders CheckoutPage with a button that mutates the real cart composition. */
+function renderCheckoutWithCart(items: CartItem[]) {
+  seed(items);
+  const client = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, staleTime: 0 },
+      mutations: { retry: false },
+    },
+  });
+
+  render(
+    <QueryClientProvider client={client}>
+      <CartProvider>
+        <MemoryRouter initialEntries={["/checkout"]}>
+          <Routes>
+            <Route path="/checkout" element={<CheckoutPage />} />
+          </Routes>
+        </MemoryRouter>
+        <CartCompositionEditor />
+      </CartProvider>
+    </QueryClientProvider>,
+  );
+
+  return client;
 }
 
 beforeEach(() => {
@@ -138,7 +176,11 @@ describe("CheckoutPage", () => {
     expect(within(city).getByText("Ваза из стекла")).toBeInTheDocument();
     expect(screen.getByText(formatOrderPhone(demoUser.phone))).toBeInTheDocument();
 
-    await browser.type(screen.getByLabelText("Комментарий продавцу"), "Позвоните после 18:00");
+    const commentField = screen.getByLabelText("Комментарий продавцу");
+    expect(commentField).toHaveAttribute("aria-describedby", "checkout-comment-hint");
+    expect(document.getElementById("checkout-comment-hint")).toHaveTextContent(COMMENT_HINT);
+
+    await browser.type(commentField, "Позвоните после 18:00");
     await browser.click(screen.getByRole("button", { name: "Оформить заказ" }));
 
     expect(
@@ -217,6 +259,43 @@ describe("CheckoutPage", () => {
     expect(checkoutCalls(fetchMock)).toHaveLength(2);
   });
 
+  it("rotates the clientCheckoutId when the cart composition changes and keeps it for retries", async () => {
+    const submitted: Checkout[] = [];
+
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "POST /checkout": ({ body }) => {
+        submitted.push(body as Checkout);
+        return { status: 500, body: { error: "internal_error" } };
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderCheckoutWithCart([jacket, vase]);
+
+    await screen.findByRole("heading", { level: 1, name: "Проверьте заказ" });
+
+    const submit = () => browser.click(screen.getByRole("button", { name: "Оформить заказ" }));
+
+    await submit();
+    await screen.findByText(/Не удалось оформить заказ/);
+    await submit();
+    await waitFor(() => expect(submitted).toHaveLength(2));
+
+    // A retry with the same composition must reuse the idempotency key.
+    expect(submitted[1]?.clientCheckoutId).toBe(submitted[0]?.clientCheckoutId);
+
+    await browser.click(screen.getByRole("button", { name: "Убрать вазу из корзины (тест)" }));
+    expect(screen.queryByText("Ваза из стекла")).not.toBeInTheDocument();
+
+    await submit();
+    await waitFor(() => expect(submitted).toHaveLength(3));
+
+    // A different composition must get a fresh key and a reduced item list.
+    expect(submitted[2]?.clientCheckoutId).not.toBe(submitted[0]?.clientCheckoutId);
+    expect(submitted[2]?.items).toEqual([{ productId: jacket.productId }]);
+  });
+
   it("disables the submit button while checkout is pending", async () => {
     seed([jacket]);
     let finishCheckout: (value: { status: number; body: unknown }) => void = () => {};
@@ -255,6 +334,7 @@ describe("CheckoutPage", () => {
     });
     client.setQueryData(authKeys.me, { user: demoUser });
     client.setQueryData(sellerKeys.shop, { shop: null });
+    client.setQueryData(orderKeys.mine, { orders: [] });
 
     installFetchMock({
       "GET /auth/me": () =>
@@ -273,6 +353,7 @@ describe("CheckoutPage", () => {
     expect(
       await screen.findByRole("heading", { level: 2, name: "Сессия истекла" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Войдите снова, чтобы продолжить.")).toBeInTheDocument();
 
     sessionExpired = true;
     await browser.click(screen.getByRole("button", { name: "Войти" }));
@@ -283,5 +364,6 @@ describe("CheckoutPage", () => {
     );
     expect(client.getQueryData(authKeys.me)).toBeUndefined();
     expect(client.getQueryCache().findAll({ queryKey: sellerKeys.all })).toHaveLength(0);
+    expect(client.getQueryCache().findAll({ queryKey: orderKeys.all })).toHaveLength(0);
   });
 });

@@ -1,6 +1,7 @@
 import { cleanup, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { orderKeys } from "../lib/queries.js";
 import { installFetchMock } from "../test/mock-api.js";
 import { renderApp } from "../test/render-app.js";
 
@@ -151,12 +152,16 @@ describe("AdminShopPage", () => {
     });
 
     const browser = userEvent.setup();
-    renderApp(["/admin/shop"]);
+    const { client } = renderApp(["/admin/shop"]);
 
     await screen.findByRole("heading", { level: 1, name: "Ваш магазин" });
+    client.setQueryData(orderKeys.mine, { orders: [{ id: 42 }] });
+    client.setQueryData(orderKeys.detail(42), { order: { id: 42 } });
+
     await browser.click(screen.getByRole("button", { name: "Выйти" }));
 
     expect(await screen.findByRole("heading", { level: 1, name: "Вход" })).toBeInTheDocument();
     expect(loggedIn).toBe(false);
+    expect(client.getQueryCache().findAll({ queryKey: orderKeys.all })).toHaveLength(0);
   });
 });
