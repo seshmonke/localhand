@@ -132,6 +132,10 @@ export const DeliverySnapshotSchema = z.object({
   lastStatusAt: z.iso.datetime({ offset: true }).nullable(),
 });
 
+export const DeliveryResponseSchema = z.object({
+  delivery: DeliverySnapshotSchema,
+});
+
 export const DeliveryShipmentCreateSchema = z.object({
   tariffCode: BoundedText(DELIVERY_TARIFF_CODE_MAX_LENGTH),
 });
@@ -166,6 +170,7 @@ export type DeliveryCheckout = z.infer<typeof DeliveryCheckoutSchema>;
 export type DeliveryStatus = z.infer<typeof DeliveryStatusSchema>;
 export type DeliveryProvider = z.infer<typeof DeliveryProviderSchema>;
 export type DeliverySnapshot = z.infer<typeof DeliverySnapshotSchema>;
+export type DeliveryResponse = z.infer<typeof DeliveryResponseSchema>;
 export type DeliveryShipmentCreate = z.infer<typeof DeliveryShipmentCreateSchema>;
 export type DeliveryManualTrack = z.infer<typeof DeliveryManualTrackSchema>;
 export type DeliveryTariffListResponse = z.infer<typeof DeliveryTariffListResponseSchema>;
