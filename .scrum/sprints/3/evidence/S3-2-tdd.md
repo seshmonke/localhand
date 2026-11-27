@@ -2,8 +2,8 @@
 
 Tier T2. Для каждого AC сначала RED-тест, затем минимальный код, затем
 refactor. Evidence: `S3-2-tdd-a-red.log`, `S3-2-tdd-a-green.log`,
-`S3-2-property-red.log`; сводка — `S3-2-tdd-a.md`; журнал в
-`.scrum/sprints/3/daily.md`. PR B/C добавляют свои логи.
+`S3-2-property-red.log`, `S3-2-tdd-b.md`; журнал в
+`.scrum/sprints/3/daily.md`.
 
 ## PR A — schema/contracts/provider
 
@@ -21,19 +21,19 @@ refactor. Evidence: `S3-2-tdd-a-red.log`, `S3-2-tdd-a-green.log`,
 
 | AC | RED-тест | Что падает |
 |----|----------|------------|
-| Успешный quote | `delivery.quote.test.ts` | нет endpoint/расчёта |
-| ПВЗ не из города | `delivery.quote.test.ts` | point не валидируется |
-| Несколько магазинов | `delivery.quote.test.ts` | один общий тариф |
-| Подмена shop в quote | `checkout-orders.delivery.db.test.ts` | HMAC не покрывает per-shop цены |
-| CDEK недоступен | `delivery.quote.test.ts` | нет 502 |
-| Rate-limit 30/мин | `delivery.quote.test.ts` | нет 429 |
-| Checkout с доставкой | `checkout-orders.delivery.db.test.ts` | нет delivery/total |
-| Multi-shop цены | `checkout-orders.delivery.db.test.ts` | цены не per-shop |
-| Quote устарел | `checkout-orders.delivery.db.test.ts` | нет 409 stale |
-| Цена клиента игнорируется | `checkout-orders.delivery.db.test.ts` | доверяет телу |
-| Нет габаритов/города/ПВЗ сдачи | `checkout-orders.delivery.db.test.ts` | нет 409 `shop_shipment_point_missing` |
+| Успешный quote | `delivery.quote.db.test.ts` | нет endpoint/расчёта (404) |
+| ПВЗ не из города | `delivery.quote.db.test.ts` | point не валидируется |
+| Несколько магазинов | `delivery.quote.db.test.ts` | один общий тариф |
+| Подмена shop в quote | `orders.delivery.db.test.ts` | HMAC не покрывает per-shop цены |
+| 429/502/ПВЗ сдачи | `delivery.quote.db.test.ts` | нет лимита/ошибок |
+| Rate-limit 30/мин | `delivery.quote.db.test.ts` | нет 429 |
+| Checkout с доставкой | `orders.delivery.db.test.ts` | нет delivery/total |
+| Multi-shop цены | `orders.delivery.db.test.ts` | цены не per-shop |
+| Quote устарел/replay | `orders.delivery.db.test.ts` | нет 409/replay |
+| Цена клиента игнорируется | `orders.delivery.db.test.ts` | доверяет телу |
+| Нет доставки/габаритов/города | `orders.delivery.db.test.ts` | нет `delivery_required`/409 |
 | Volumetric weight | `delivery.packaging.test.ts` | не учитывает объём; fixture 20×15×10 → 600 г |
-| UI checkout | `CheckoutPage.delivery.test.tsx` | нет ПВЗ/цены |
+| UI checkout | `CheckoutPage.test.tsx` | нет ПВЗ/цены |
 | Product/shop UI | `ProductForm.test.tsx`, `ShopSettings.test.tsx` | нет полей |
 
 ## PR C — shipment/status/manual/e2e
@@ -62,7 +62,8 @@ refactor. Evidence: `S3-2-tdd-a-red.log`, `S3-2-tdd-a-green.log`,
 
 ## Property/contract
 
-- `total_kopecks = items_kopecks + delivery_kopecks` (fast-check).
+- `total_kopecks = items_kopecks + delivery_kopecks`
+  (`packages/shared/src/domain/money.property.test.ts`).
 - `max(weight_g, ceil(L*W*H/5))` не меньше каждого слагаемого;
   дробный объём округляется вверх до грамма.
 - HMAC quote: подпись/город/точка/hash/exp/цены per-shop — любое изменение → invalid.
