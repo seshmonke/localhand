@@ -30,7 +30,8 @@
 |---|---|---|---|
 | TDD/ATDD | 1 | | |
 | contract/property/threat | 1 | | |
-| mutation/SAST/SLO | 1 / после Q1.0–Q1.6 | | |
+| SLO-дизайн/логи | 1 | | |
+| mutation/SAST; alert/RUM | 1 / после Q1.0–Q1.6 | | |
 | trunk-based/flags/perf | 2 | | |
 | IaC/progressive/debt/postmortem | 3 | | |
 
