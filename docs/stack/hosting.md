@@ -28,6 +28,12 @@ db      :5432      — PostgreSQL 18, volume pgdata
 Caddy проксирует `/api/*` на `api`, остальное — на `web`. Один origin,
 без CORS в проде.
 
+`TRUST_PROXY` задаёт единственный доверенный прокси для
+`X-Forwarded-For`: только IP/CIDR Caddy (например `172.28.0.2/32`,
+можно список через запятую). `TRUST_PROXY=true` отклоняется, а в
+production без значения API не стартует. Вне production по умолчанию
+`false` — заголовку не доверяем.
+
 ## Бэкапы
 
 - Nightly `pg_dump` по cron/systemd timer.

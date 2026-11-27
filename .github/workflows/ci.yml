@@ -32,7 +32,9 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgres://localhand:localhand@localhost:5432/localhand_test
+      DATABASE_URL_TEST: postgres://localhand:localhand@localhost:5432/localhand_test
       JWT_SECRET: ci-only-secret-that-is-long-enough-123456
+      OTP_SECRET: ci-only-otp-secret-that-is-long-enough-123456
     steps:
       - uses: actions/checkout@v7
 
