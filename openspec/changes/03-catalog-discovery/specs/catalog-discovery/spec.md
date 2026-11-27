@@ -48,9 +48,14 @@
 #### Scenario: Первая страница
 
 - **WHEN** покупатель открывает каталог без параметров
-- **THEN** система возвращает page=1, pageSize=12, total и hasMore
+- **THEN** система возвращает page=1, pageSize=100, total и hasMore
 
 #### Scenario: Слишком большой размер
 
-- **WHEN** `pageSize` больше 48 или `page` меньше 1
+- **WHEN** `pageSize` больше 100, `pageSize` ≤ 0 или `page` меньше 1
+- **THEN** система возвращает 400 и не строит выдачу
+
+#### Scenario: Невалидный поиск или сортировка
+
+- **WHEN** `q` длиннее 100 или `sort` вне `newest|price_asc|price_desc`
 - **THEN** система возвращает 400 и не строит выдачу

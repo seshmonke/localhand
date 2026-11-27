@@ -6,7 +6,8 @@
 
 - `q` — trim, 1–100; пустой = без поиска.
 - `sort` — `newest` (default) | `price_asc` | `price_desc`.
-- `page` ≥ 1, default 1; `pageSize` 1–48, default 12.
+- `page` ≥ 1, default 1; `pageSize` 1–100, default 100 (сохраняет
+  текущую выдачу без query; web запрашивает 12).
 - Ответ `{ products, page, pageSize, total, hasMore }`; старые поля
   сохраняются. Это расширение контракта, не ломающее web.
 - Невалидные query → 400 `invalid_request`.
@@ -19,7 +20,7 @@
 - Сортировка: `newest` — `products.created_at desc, products.id desc`;
   цена — `price_kopecks asc/desc, id desc`.
 - `total` — count с теми же условиями; `hasMore = page * pageSize < total`.
-- Offset-пагинация; максимум 48. Индексы не добавляем: v1-объём мал,
+- Offset-пагинация; максимум 100. Индексы не добавляем: v1-объём мал,
   отдельный change при росте.
 
 ### Web

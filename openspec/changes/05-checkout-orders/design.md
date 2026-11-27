@@ -26,18 +26,19 @@ Sprint 1: users/sellers/shops/products, OTP-сессия, seller admin,
   restrict, status default `new`, total_kopecks int not null check ≥0,
   buyer_phone text not null, comment text null ≤500,
   client_checkout_id uuid not null, created_at, updated_at;
-  unique `(buyer_user_id, client_checkout_id)` для идемпотентности.
+  unique `(buyer_user_id, client_checkout_id, shop_id)` для
+  идемпотентности мультимагазинного checkout.
 - `order_items`: id, order_id FK orders cascade, product_id FK products
   set null (nullable после удаления), name text not null,
   price_kopecks int not null check ≥0, quantity int not null default 1.
 - Индексы: `orders(buyer_user_id, created_at desc)`,
   `orders(shop_id, created_at desc)`, `order_items(order_id)`.
-- Миграция аддитивная; down SQL и runbook — S2-4.
+- Миграция аддитивная; down SQL и runbook — task 3.7 этого change.
 
 ### Checkout
 
 - `POST /checkout` body `{ items: [{ productId }], comment?,
-  clientCheckoutId }`; items 1–50, productId unique.
+  clientCheckoutId }`; items 1–50 (корзина тоже 50), productId unique.
 - Auth → 401. Rate-limit per user + IP (например 10/мин); 429.
 - В одной транзакции: загрузить products+shops `FOR UPDATE`/условия
   published; если хотя бы один недоступен → 409 `product_unavailable`,
@@ -73,8 +74,8 @@ Sprint 1: users/sellers/shops/products, OTP-сессия, seller admin,
 ### UI
 
 - `/checkout`: guard `/auth/me`; если 401 → `/login?next=/checkout`;
-  сводка по магазинам, comment, submit; success → `/orders/:id` первого
-  заказа; double-submit disabled.
+  сводка по магазинам, comment, submit; success → `/orders` (при
+  нескольких магазинах несколько заказов); double-submit disabled.
 - `/orders` и `/orders/:id`: buyer список/детали, статус `new`, пусто/
   loading/error.
 - `/admin/orders` и `/admin/orders/:id`: seller таблица desktop/карточки
@@ -88,7 +89,7 @@ Sprint 1: users/sellers/shops/products, OTP-сессия, seller admin,
 - DB API: успех, 401, 400 (пусто/дубли/лимит), 409 unavailable,
   snapshot, идемпотентность, buyer/seller 404, seller scope, rate-limit.
 - Web: checkout guard, submit/clear cart, orders lists, seller list.
-- E2E: browser Playwright + API; см. sprint plan S2-4.
+- E2E: browser Playwright + API; бриф `docs/tasks/S2-4-security.md`.
 
 ## Risks / Trade-offs
 
@@ -104,7 +105,8 @@ Sprint 1: users/sellers/shops/products, OTP-сессия, seller admin,
 
 1. `0003_buyer_orders`: enum, orders, order_items, индексы.
 2. Применить, storefront/seller не сломан.
-3. Down SQL/runbook — S2-4; откат — revert + down на тестовой БД.
+3. Down SQL/runbook — task 3.7 этого change; откат — revert + down на
+   тестовой БД.
 
 ## Open Questions
 

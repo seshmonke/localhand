@@ -22,7 +22,8 @@ buyer-first discovery.
 
 ### Modified Capabilities
 
-Нет. Поведение без query-параметров сохраняется (page=1, pageSize=12).
+Нет. Без query сохраняется текущий набор (page=1, pageSize=100);
+ответ дополняется page/pageSize/total/hasMore, UI запрашивает 12.
 
 ## Impact
 

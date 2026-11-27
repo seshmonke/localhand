@@ -27,9 +27,8 @@
 
 ### Modified Capabilities
 
-- `phone-auth`: сессия используется покупателем, не только продавцом
-  (механика OTP/JWT не меняется). Дельта фиксирует buyer-сценарий в
-  `checkout-orders`, чтобы не дублировать требования.
+Нет. Механика `phone-auth` (OTP/JWT/cookie) не меняется; buyer-сценарий
+явно описан в `checkout-orders` как «Сессия покупателя».
 
 ## Impact
 
