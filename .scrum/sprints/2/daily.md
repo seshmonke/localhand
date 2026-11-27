@@ -63,3 +63,16 @@
 - Дальше: Playwright e2e + API buyer flow, authz/PII/logs, ADR/legal,
   axe/LCP/бандл, Sprint 2 review/retro/close.
 - Блокеры: нет.
+
+### Финал цикла
+
+- S2-4: API/browser e2e, axe 16×0, preview LCP gate 508/688,
+  PII/logs/no-store, ADR 0003; PR #33 merge `8b748b2`.
+- Owner decision: lab/preview LCP — DoD-прокси v1; field p75/RUM — бэклог.
+- Sprint 2 **закрыт**, ACCEPT; review/retro записаны.
+- Следующий шаг: layout-system PBI (согласован), затем Sprint 3 plan.
+
+### Итог синка
+
+- Sprint 2 закрыт; Sprint 3 не начат без плана/команды.
+- Эскалаций нет.

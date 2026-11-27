@@ -1,0 +1,12 @@
+$ pnpm --filter @localhand/web test:e2e
+$ playwright test
+
+Running 3 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/a11y.spec.ts:43:1 › axe has no serious or critical findings on buyer pages in light and dark (21.3s)
+  ✓  2 [chromium] › e2e/buyer-flow.spec.ts:21:1 › buyer and seller see the same order end-to-end (4.0s)
+[lab-lcp-over-budget] /: lab p75 2720 ms >= 2500 ms
+[lab-lcp-over-budget] /checkout: lab p75 2772 ms >= 2500 ms
+  ✓  3 [chromium] › e2e/perf.spec.ts:113:1 › lab LCP smoke on catalog and checkout (32.1s)
+
+  3 passed (58.5s)

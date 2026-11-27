@@ -62,3 +62,7 @@
 - 27.11.2026. S2-3 checkout/orders смержен (PR #30/#31, `b909f30`/
   `2849d8c`): orders API, checkout, buyer/seller orders UI; change `05`
   заархивирован. Следующий — S2-4 security/close. Sprint 2.
+- 27.11.2026. Sprint 2 закрыт: buyer-core — каталог, корзина,
+  checkout/orders, seller orders; PR #26/#28/#30/#31/#33, changes
+  `03`/`04`/`05` заархивированы. LCP: lab/preview gate принят владельцем
+  как DoD-прокси v1, field p75/RUM — бэклог. Sprint 2.

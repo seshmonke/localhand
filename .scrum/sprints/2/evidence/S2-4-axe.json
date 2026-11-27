@@ -1,0 +1,143 @@
+{
+  "generated_at": "2026-11-27T08:38:00.722Z",
+  "base": "http://127.0.0.1:4173",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa",
+    "wcag22a",
+    "wcag22aa"
+  ],
+  "orderId": 7,
+  "scans": {
+    "catalog-320-light": {
+      "url": "http://127.0.0.1:4173/",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "cart-320-light": {
+      "url": "http://127.0.0.1:4173/cart",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "checkout-320-light": {
+      "url": "http://127.0.0.1:4173/checkout",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "orders-320-light": {
+      "url": "http://127.0.0.1:4173/orders",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "catalog-320-dark": {
+      "url": "http://127.0.0.1:4173/",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "cart-320-dark": {
+      "url": "http://127.0.0.1:4173/cart",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "checkout-320-dark": {
+      "url": "http://127.0.0.1:4173/checkout",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "orders-320-dark": {
+      "url": "http://127.0.0.1:4173/orders",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "catalog-1440-light": {
+      "url": "http://127.0.0.1:4173/",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "cart-1440-light": {
+      "url": "http://127.0.0.1:4173/cart",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "checkout-1440-light": {
+      "url": "http://127.0.0.1:4173/checkout",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "orders-1440-light": {
+      "url": "http://127.0.0.1:4173/orders",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "catalog-1440-dark": {
+      "url": "http://127.0.0.1:4173/",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "cart-1440-dark": {
+      "url": "http://127.0.0.1:4173/cart",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "checkout-1440-dark": {
+      "url": "http://127.0.0.1:4173/checkout",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "orders-1440-dark": {
+      "url": "http://127.0.0.1:4173/orders",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    }
+  }
+}

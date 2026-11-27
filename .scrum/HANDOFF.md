@@ -1,71 +1,53 @@
-# Handoff: Sprint 2, cycle 4 — S2-4 security/e2e/close
+# Handoff: Sprint 2 закрыт — layout-system PBI
 
-Дата: 2026-11-27. Sprint 1 закрыт и заархивирован.
+Дата: 27.11.2026. Sprint 2 закрыт, LCP-исключение зафиксировано.
 
 ## Состояние
 
 - Репозиторий: https://github.com/seshmonke/localhand, public.
-- main: `2849d8c` (S2-3b orders UI, PR #31); close PR #32.
-- Sprint 1: **CLOSED**, review ACCEPT, retro записан.
-- S1-1…S1-5: **done**; change `02-seller-onboarding` →
-  `2026-11-27-02-seller-onboarding`; specs `phone-auth`, `seller-shop`,
-  `product-management` созданы.
-- Sprint 2: **BUILDING**, cycle 4; changes `03`, `04`, `05` archived.
-- S2-1 catalog: **done**, PR #26.
-- S2-2 cart: **done**, PR #28.
-- S2-3 checkout/orders: **done**, PR #30/#31.
-- S2-4 security/e2e/close: **in_progress**, owner `scrum-worker`; ветка
-  `task/S2-4-security`, lease до 10:00Z.
+- main: `8b748b2` (S2-4 security/e2e, PR #33) + close PR #34.
+- Sprint 1: **CLOSED**; Sprint 2: **CLOSED**, review ACCEPT.
+- S2-1 catalog (#26), S2-2 cart (#28), S2-3 checkout/orders (#30/#31),
+  S2-4 security/e2e (#33). Changes `03`/`04`/`05` заархивированы.
+- S2-4 evidence: `.scrum/sprints/2/evidence/S2-4-verify.md`; review/retro:
+  `.scrum/sprints/2/review.md`, `retro.md`.
 
-## Evidence S1
+## Owner decision (LCP/DoD)
 
-- `.scrum/sprints/1/evidence/S1-1-verify.md` … `S1-5-verify.md`;
-  скриншоты 320/1440, axe raw.
-- Review: `.scrum/sprints/1/review.md`; retro:
-  `.scrum/sprints/1/retro.md`.
-- Финальные counts: API 102, shared 33, web 35, OpenSpec 4/4 strict,
-  e2e seller flow 3/3.
-
-## Sprint 2 authorization
-
-Владелец дал standing authorization:
-
-- авто-старт после закрытия Sprint 1 — выполнен;
-- buyer-core: каталог/поиск/сортировка, карточка, магазин, корзина по
-  магазинам, checkout/заказ; продавец видит заказ;
-- buyer auth — телефон/OTP на checkout; guest-checkout нет;
-- ЮKassa/СДЭК/SMS — только интерфейсы/dev-адаптеры;
-- локальный preview + скриншоты/видео/e2e на тестовых данных;
-- merge после независимого ревью и зелёных checks; branch protection;
-- бюджет не блокер; 4–6 циклов — ориентир, при перерасходе режем скоуп;
-- стоп-триггеры: смена скоупа/продукта, реальные ПДн/деньги/прод,
-  инцидент безопасности, красный `main`, 3 REJECT, дыра в спеке;
-- план Sprint 2 пишет orchestrator и показывает перед стартом.
+Владелец 27.11.2026 принял: lab/preview LCP-гейт <2500 ms — DoD-прокси
+v1; field p75/RUM — бэклог до публичного запуска. Sprint 2 закрыт с
+этим явным исключением. Preview 508/688 ms, dev info 2720/2772.
 
 ## Следующий шаг
 
-1. `scrum-worker` реализует S2-4: Playwright/API e2e, authz/PII/logs,
-   ADR/legal, axe/LCP/бандл, evidence.
-2. Orchestrator: verify → review → PR/merge.
-3. Sprint 2 review/retro/close; Sprint 3 — только по плану/команде.
+1. PBI `layout-system` (согласован владельцем): PageShell/Container,
+   12 колонок, 8pt spacing, Stack/Grid/Sidebar/Card, единые высоты
+   контролов, overlay и screenshot-тесты 320/768/1440; исправить
+   рассинхрон admin form/status, header controls, контейнеры.
+2. После PBI — Sprint 3 plan (только по команде владельца).
+3. Field RUM/LCP, orders pagination, admin axe, Cache-Control spec,
+   auth/me no-store — бэклог.
+
+## Sprint 3
+
+Не начат. Нужен план и отдельная команда владельца. Lean mode согласован:
+1 feature-PR на PBI, 1 review + пакет фиксов, 1 close-PR, e2e/axe как
+можно раньше.
 
 ## Гигиена
 
-- S1 worktrees/ветки удалены; lease S1-5 снят.
-- S2-1 lease снят; worktree/ветка `task/S2-1-catalog` удалены.
-- S2-2 lease снят; worktree/ветка `task/S2-2-cart` удалены.
-- S2-3a/3b leases сняты; worktrees/ветки удалены.
+- S2 worktrees/ветки удалены; lease S2-4 снят.
 - Время в `.scrum/**` — UTC.
 
 ## Полезное
 
-- `docs/tasks/INDEX.md` — вход.
+- `docs/tasks/02-buyer-core.md` — Sprint 2 план (CLOSED).
 - `openspec/specs/` — текущая правда.
 - Preview: `pnpm db:up && pnpm dev` → web 5173, API 3000, DB 5433.
-- Тестовые БД: `localhand_s1_3_test`, `localhand_s2_test` (создана).
+- E2E: `pnpm test:e2e` при запущенном dev/preview; browser e2e — локальный
+  гейт, CI — API e2e.
 
 ## Ограничения
 
-- Не начинать Sprint 2 вне утверждённого плана/скоупа.
-- Не мержить красный PR, не обходить branch protection.
 - Реальные SMS/платежи/прод — только с владельцем.
+- Sprint 3 без плана не начинать.
