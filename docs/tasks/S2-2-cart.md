@@ -8,21 +8,21 @@ localStorage-корзину, видит группы/итоги, может уд
 
 ## AC
 
-- [ ] `packages/shared/src/contracts/cart.ts`: `CartItem` (productId,
+- [x] `packages/shared/src/contracts/cart.ts`: `CartItem` (productId,
       name, priceKopecks, imageUrl, shopSlug, shopName), `CartState`
       (version, items), Zod parse; лимит 50.
-- [ ] `apps/web/src/cart/**`: storage key `localhand.cart.v1`, безопасный
+- [x] `apps/web/src/cart/**`: storage key `localhand.cart.v1`, безопасный
       parse/version, hydrate после mount, add (идемпотентно), remove,
       clear, count, groups by shop, totals; ошибка localStorage — работа
       в памяти без падения.
-- [ ] ProductCard/ProductPage: кнопка «В корзину» для published; клик
+- [x] ProductCard/ProductPage: кнопка «В корзину» для published; клик
       не переходит по ссылке карточки; после add — aria-live сообщение.
-- [ ] Header: badge count + ссылка `/cart`; доступно без auth.
-- [ ] `/cart`: группы по магазинам, итог группы/общий, remove, clear,
+- [x] Header: badge count + ссылка `/cart`; доступно без auth.
+- [x] `/cart`: группы по магазинам, итог группы/общий, remove, clear,
       CTA checkout, empty state; 320/1440; labels/focus.
-- [ ] Тесты: storage/reducer unit (add/remove/clear/дубль/лимит/parse
+- [x] Тесты: storage/reducer unit (add/remove/clear/дубль/лимит/parse
       error), UI persistence/groups/badge/empty, ссылка checkout.
-- [ ] `pnpm verify` зелёный; axe/manual light 0 critical на `/cart`.
+- [x] `pnpm verify` зелёный; axe/manual light 0 critical на `/cart`.
 
 ## Change
 
