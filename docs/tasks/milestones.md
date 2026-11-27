@@ -39,3 +39,7 @@
 - 27.11.2026. S1-3 seller products смержен (PR #16, `b728eda`):
   контракты product-admin, create/edit/publish/hide, ownership 404,
   int4/NUL validation. Следующий — S1-4a admin auth/shop UI. Sprint 1.
+- 27.11.2026. S1-4a admin auth/shop UI смержен (PR #18, `f991c93`):
+  `/login` OTP, guard, admin shell, onboarding/settings/publish,
+  cache isolation, light/dark axe clean. Следующий — S1-4b products UI.
+  Sprint 1.
