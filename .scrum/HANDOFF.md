@@ -32,7 +32,8 @@
 - Backlog: TRUST_PROXY/`DATABASE_URL`, TTL/log-тесты, OTP cleanup,
   seed demo-user, TOCTOU blocked/publish, storefront id/SQL,
   `imageUrl: ""`, pagination/rate-limit, spec partial edit,
-  packages/ui focus ring, axe CI gate, perf/observability UI.
+  packages/ui focus ring, axe CI gate, perf/observability UI,
+  inverse-aside border, cache-тесты guard/logout.
 - S1-5 берёт по приоритету; состав 4b не расширяется.
 
 ## Sprint 2 authorization (27.11.2026)

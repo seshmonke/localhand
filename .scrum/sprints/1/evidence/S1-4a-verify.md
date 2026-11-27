@@ -35,11 +35,13 @@ openspec validate --all --strict
 Totals: 2 passed, 0 failed (2 items)
 ```
 
+Лог снят до добавления evidence; на финальном дереве (207 tracked
+files) `node scripts/check-public-repo.mjs` — clean.
+
 ## Browser smoke (local preview)
 
-Сценарий: `/login` → вымышленный тестовый номер (маска в скриншотах)
-→ dev-OTP из ответа API → `/admin/shop` → create shop → publish →
-статус published.
+Сценарий: `/login` → вымышленный тестовый номер → dev-OTP из ответа
+API → `/admin/shop` → create shop → publish → статус published.
 
 - 320×568: горизонтального overflow нет, форма в одну колонку.
 - 1440×900: sidebar + split-view формы/статуса.
@@ -54,11 +56,14 @@ Totals: 2 passed, 0 failed (2 items)
 
 - axe-core 4.14.1, Chromium, WCAG 2.1/2.2 AA.
 - Light: `/login` 320/1440, `/admin/shop` 320/1440, `/admin/products`
-  1440 — 0 violations.
+  1440 — 0 violations. Raw:
+  [S1-4a-axe-light.json](S1-4a-axe-light.json).
 - Dark (`data-theme="dark"`): `/login` 320/1440, `/admin/shop`
-  onboarding 320/1440 — 0 violations.
+  onboarding 320/1440 — 0 violations. Raw:
+  [S1-4a-axe-dark.json](S1-4a-axe-dark.json).
 - Focus полей — контрастный ink-ring; ошибки текстом + иконкой,
   aria-invalid/aria-describedby, aria-live.
+- Скрипт — локальный (вне репо); axe-гейт в CI — carry-over S1-5.
 
 ## Security
 
