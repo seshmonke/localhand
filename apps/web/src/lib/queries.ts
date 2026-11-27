@@ -1,5 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchCatalog, fetchProduct, fetchShop } from "./api.js";
+import { fetchCatalog, fetchMe, fetchProduct, fetchSellerShop, fetchShop } from "./api.js";
+
+export const authKeys = {
+  me: ["auth", "me"] as const,
+};
+
+export const sellerKeys = {
+  shop: ["seller", "shop"] as const,
+};
+
+export function useMeQuery() {
+  return useQuery({
+    queryKey: authKeys.me,
+    queryFn: fetchMe,
+    retry: false,
+  });
+}
+
+export function useSellerShopQuery() {
+  return useQuery({
+    queryKey: sellerKeys.shop,
+    queryFn: fetchSellerShop,
+  });
+}
 
 export function useCatalogQuery() {
   return useQuery({
