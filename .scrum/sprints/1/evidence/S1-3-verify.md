@@ -58,7 +58,7 @@ Totals: 2 passed, 0 failed (2 items)
   design и брифе; дерево `b12fe79` совпадает с merge `b728eda`.
 - Остаточные P3: TOCTOU publish (S1-5), `imageUrl: ""`, пагинация/
   rate-limit, storefront id/SQL в non-prod, skip DB-тестов без env,
-  spec partial edit/пустой PATCH до archive.
+  spec partial edit/пустой PATCH/очистка null до archive.
 
 ## Preview / smoke
 

@@ -43,11 +43,13 @@
 - sprint 2 — buyer-core: каталог/поиск/сортировка, карточка, магазин,
   корзина по магазинам, checkout/заказ; продавец видит заказ;
 - buyer auth — телефон/OTP на checkout, заказ привязан к `users`;
+  guest-checkout нет;
 - ЮKassa/СДЭК/SMS — только интерфейсы/dev-адаптеры;
 - preview локальный + скриншоты/видео и e2e на тестовых данных;
 - merge после независимого ревью и зелёных checks, без подтверждения на
   каждый PR; branch protection не ослабляется;
-- бюджет не блокер; 4–6 циклов — ориентир по объёму;
+- бюджет не блокер; жёсткого лимита нет; 4–6 циклов — ориентир по
+  объёму, при перерасходе режется скоуп;
 - стоп-триггеры: смена скоупа/продукта, реальные ПДн/деньги/прод,
   инцидент безопасности, красный `main`, 3 REJECT, дыра в спеке.
 - План Sprint 2 пишет orchestrator и показывает перед стартом.
@@ -55,8 +57,8 @@
 ## Текущий шаг
 
 1. Создать ветку `task/S1-4a-admin-auth` от main, бриф
-   `docs/tasks/S1-4a-admin-auth.md` (AC — change tasks 4.1–4.3), worktree
-   и lease.
+   `docs/tasks/S1-4a-admin-auth.md` (AC — change tasks 4.1–4.3 +
+   применимые 4.5), worktree и lease.
 2. Dispatch `scrum-worker`: API client с cookie, `/login`, guard
    `/admin`, onboarding/settings магазина, publish; mobile+desktop, a11y.
 3. Orchestrator: verify → independent review → PR → squash-merge.

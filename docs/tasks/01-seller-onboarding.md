@@ -67,8 +67,9 @@ Change: `02-seller-onboarding` (валиден strict).
 1. Auth: схема, контракты, OTP, сессия, тесты.
 2. Shop: API, slug, публикация, тесты.
 3. Products: API, публикация/скрытие, authz, тесты.
-4. Seller admin UI: login/onboarding/shop.
-5. Seller admin UI: товары, mobile/desktop, a11y.
+4. Seller admin UI: login/onboarding/shop + применимые loading/empty/
+   error, mobile/desktop и a11y из 4.5.
+5. Seller admin UI: товары + остаток mobile/desktop и a11y из 4.5.
 6. Security/evidence, e2e, docs, архив; review/retro.
 
 ## Старт
