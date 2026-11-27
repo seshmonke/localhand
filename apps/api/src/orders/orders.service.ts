@@ -80,6 +80,7 @@ function toOrderSummary(row: OrderRow, items: OrderItem[]): OrderSummary {
     buyerPhone: row.buyerPhone,
     comment: row.comment,
     createdAt: row.createdAt.toISOString(),
+    delivery: null,
     items,
   };
 }

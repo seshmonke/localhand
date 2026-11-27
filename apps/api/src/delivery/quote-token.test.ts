@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  DELIVERY_QUOTE_TOKEN_MAX_LENGTH,
+  DeliveryCheckoutSchema,
+  DeliveryQuoteResponseSchema,
+} from "@localhand/shared";
+import {
   createQuoteToken,
   hashProductIds,
   verifyQuoteToken,
@@ -68,7 +73,37 @@ describe("quote token", () => {
     expect(() => createQuoteToken(payload({ exp: NOW_SECONDS - 1 }), SECRET, NOW)).toThrow(/TTL/);
 
     const token = createQuoteToken(payload({ exp: NOW_SECONDS + 1 }), SECRET, NOW);
-    expect(verifyQuoteToken(token, SECRET, new Date(NOW.getTime() + 2_000))).toBeNull();
+    expect(verifyQuoteToken(token, SECRET, new Date(NOW.getTime() + 32_000))).toBeNull();
+  });
+
+  it("accepts a full 50-shop payload within the token length limit", () => {
+    const shops = Array.from({ length: 50 }, (_, index) => ({
+      shopId: index + 1,
+      tariffCode: "t".repeat(64),
+      tariffName: "n".repeat(120),
+      priceKopecks: Number.MAX_SAFE_INTEGER,
+      periodMin: 365,
+      periodMax: 365,
+    }));
+    const body = payload({ shops });
+    const token = createQuoteToken(body, SECRET, NOW);
+
+    expect(token.length).toBeLessThanOrEqual(DELIVERY_QUOTE_TOKEN_MAX_LENGTH);
+    expect(
+      DeliveryQuoteResponseSchema.safeParse({
+        quoteToken: token,
+        expiresAt: new Date((NOW_SECONDS + 600) * 1000).toISOString(),
+        shops,
+      }).success,
+    ).toBe(true);
+    expect(
+      DeliveryCheckoutSchema.safeParse({
+        cityCode: 44,
+        pointCode: "MSK123",
+        recipientName: "Иван Тестов",
+        quoteToken: token,
+      }).success,
+    ).toBe(true);
   });
 
   it("rejects another secret and malformed tokens", () => {

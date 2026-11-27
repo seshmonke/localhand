@@ -43,6 +43,13 @@
       "when": 1795783293907,
       "tag": "0005_daffy_colossus",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795798409174,
+      "tag": "0006_silent_blink",
+      "breakpoints": true
     }
   ]
 }

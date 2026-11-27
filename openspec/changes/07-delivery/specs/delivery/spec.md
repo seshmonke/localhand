@@ -122,6 +122,13 @@
   заказа
 - **THEN** система возвращает 409 `delivery_not_paid`
 
+#### Scenario: Старый заказ без доставки
+
+- **WHEN** paid-заказ создан до delivery и не имеет
+  `order_deliveries`/ПВЗ получателя
+- **THEN** CDEK create возвращает 409 `delivery_snapshot_missing`;
+  доступен только manual carrier/track
+
 #### Scenario: Повтор
 
 - **WHEN** продавец повторяет создание

@@ -15,6 +15,9 @@ const publishedShop = {
   slug: "demo-shop",
   name: "Демо-магазин",
   description: null,
+  cdekCityCode: null,
+  cdekCityName: null,
+  cdekShipmentPoint: null,
   status: "published" as const,
 };
 
@@ -26,6 +29,10 @@ const draftProduct = {
   description: null,
   priceKopecks: 420_000,
   imageUrl: null,
+  weightG: null,
+  lengthCm: null,
+  widthCm: null,
+  heightCm: null,
   status: "draft" as const,
 };
 

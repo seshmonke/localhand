@@ -1,8 +1,9 @@
 # S3-2 delivery — TDD trace
 
 Tier T2. Для каждого AC сначала RED-тест, затем минимальный код, затем
-refactor. Evidence: `S3-2-tdd-a.log`, `S3-2-tdd-b.log`, `S3-2-tdd-c.log`
-(RED/GREEN по PR A/B/C), журнал в `.scrum/sprints/3/daily.md`.
+refactor. Evidence: `S3-2-tdd-a-red.log`, `S3-2-tdd-a-green.log`,
+`S3-2-property-red.log`; сводка — `S3-2-tdd-a.md`; журнал в
+`.scrum/sprints/3/daily.md`. PR B/C добавляют свои логи.
 
 ## PR A — schema/contracts/provider
 
@@ -13,8 +14,8 @@ refactor. Evidence: `S3-2-tdd-a.log`, `S3-2-tdd-b.log`, `S3-2-tdd-c.log`
 | Delivery snapshot | `packages/shared/src/contracts/delivery.test.ts` | нет схем city/point/quote/shipment |
 | PII-валидация | `.../delivery.test.ts` | имя/телефон/трек без ограничений |
 | Quote token | `apps/api/src/delivery/quote-token.test.ts` | нет HMAC/TTL/hash/per-shop payload |
-| Event idempotency | `apps/api/src/delivery/status.test.ts` | нет ключа события |
-| Schema | `apps/api/src/db/schema.test.ts` | нет таблиц/колонок `0006` |
+| Event idempotency | `apps/api/src/db/schema.delivery.db.test.ts` | нет unique/повторного события |
+| Schema | `apps/api/src/db/schema.delivery.db.test.ts` | нет таблиц/колонок `0006` |
 
 ## PR B — quote/checkout/seller data/UI
 
@@ -62,7 +63,8 @@ refactor. Evidence: `S3-2-tdd-a.log`, `S3-2-tdd-b.log`, `S3-2-tdd-c.log`
 ## Property/contract
 
 - `total_kopecks = items_kopecks + delivery_kopecks` (fast-check).
-- `max(weight_g, L*W*H/5000)` не меньше каждого слагаемого.
+- `max(weight_g, ceil(L*W*H/5))` не меньше каждого слагаемого;
+  дробный объём округляется вверх до грамма.
 - HMAC quote: подпись/город/точка/hash/exp/цены per-shop — любое изменение → invalid.
 - CDEK fixtures: create request содержит `number`, `shipment_point`,
   `delivery_point`, `packages`; ответ 202 не терминален.

@@ -124,4 +124,6 @@
 - Spec review: два круга; исправлены tarif-from-quote, объёмный вес
   в граммах, per-shop quoteToken, webhook/reconcile без «?», live-PII
   guard, `shop_shipment_point_missing`; exception S3-2 в events.
-- Дальше: PR A (schema/contracts/provider).
+- PR A: схема `0006`, shared-контракты, env guards, quote token,
+  fake provider, limiter, down-runbook; verify 154/154/314, OpenSpec 9/9.
+- Дальше: PR B (quote/checkout/seller data/UI).

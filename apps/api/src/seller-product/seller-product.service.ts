@@ -6,7 +6,16 @@ import { getShopByUserId } from "../seller-shop/seller-shop.service.js";
 
 type ProductRow = Pick<
   typeof products.$inferSelect,
-  "id" | "name" | "description" | "priceKopecks" | "imageUrl" | "status"
+  | "id"
+  | "name"
+  | "description"
+  | "priceKopecks"
+  | "imageUrl"
+  | "weightG"
+  | "lengthCm"
+  | "widthCm"
+  | "heightCm"
+  | "status"
 >;
 
 export function toSellerProduct(row: ProductRow): SellerProduct {
@@ -16,6 +25,10 @@ export function toSellerProduct(row: ProductRow): SellerProduct {
     description: row.description,
     priceKopecks: row.priceKopecks,
     imageUrl: row.imageUrl,
+    weightG: row.weightG,
+    lengthCm: row.lengthCm,
+    widthCm: row.widthCm,
+    heightCm: row.heightCm,
     status: row.status,
   };
 }
@@ -26,6 +39,10 @@ const productColumns = {
   description: products.description,
   priceKopecks: products.priceKopecks,
   imageUrl: products.imageUrl,
+  weightG: products.weightG,
+  lengthCm: products.lengthCm,
+  widthCm: products.widthCm,
+  heightCm: products.heightCm,
   status: products.status,
 };
 
@@ -65,6 +82,10 @@ export async function createProduct(
       description: input.description ?? null,
       priceKopecks: input.priceKopecks,
       imageUrl: input.imageUrl ?? null,
+      weightG: input.weightG ?? null,
+      lengthCm: input.lengthCm ?? null,
+      widthCm: input.widthCm ?? null,
+      heightCm: input.heightCm ?? null,
       status: "draft",
     })
     .returning(productColumns);
@@ -120,6 +141,18 @@ export async function updateSellerProduct(
   }
   if (input.imageUrl !== undefined) {
     changes.imageUrl = input.imageUrl;
+  }
+  if (input.weightG !== undefined) {
+    changes.weightG = input.weightG;
+  }
+  if (input.lengthCm !== undefined) {
+    changes.lengthCm = input.lengthCm;
+  }
+  if (input.widthCm !== undefined) {
+    changes.widthCm = input.widthCm;
+  }
+  if (input.heightCm !== undefined) {
+    changes.heightCm = input.heightCm;
   }
   if (input.status !== undefined) {
     changes.status = input.status;

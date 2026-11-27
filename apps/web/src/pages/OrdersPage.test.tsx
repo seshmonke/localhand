@@ -23,6 +23,7 @@ const order: OrderSummary = {
   buyerPhone: demoUser.phone,
   comment: null,
   createdAt,
+  delivery: null,
   items: [
     {
       productId: 1,

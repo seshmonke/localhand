@@ -47,10 +47,10 @@ export const SellerProductSchema = z.object({
   description: z.string().nullable(),
   priceKopecks: z.number().int().min(0).max(PRODUCT_PRICE_MAX_KOPECKS),
   imageUrl: z.string().nullable(),
-  weightG: ProductWeightSchema.nullable().optional(),
-  lengthCm: ProductDimensionSchema.nullable().optional(),
-  widthCm: ProductDimensionSchema.nullable().optional(),
-  heightCm: ProductDimensionSchema.nullable().optional(),
+  weightG: ProductWeightSchema.nullable(),
+  lengthCm: ProductDimensionSchema.nullable(),
+  widthCm: ProductDimensionSchema.nullable(),
+  heightCm: ProductDimensionSchema.nullable(),
   status: ProductStatusSchema,
 });
 

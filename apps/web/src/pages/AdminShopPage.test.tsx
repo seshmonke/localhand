@@ -15,6 +15,9 @@ const draftShop = {
   slug: "demo-shop",
   name: "Демо-магазин",
   description: null,
+  cdekCityCode: null,
+  cdekCityName: null,
+  cdekShipmentPoint: null,
   status: "draft" as const,
 };
 

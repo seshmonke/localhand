@@ -17,6 +17,9 @@ const publishedShop = {
   slug: "demo-shop",
   name: "Демо-магазин",
   description: null,
+  cdekCityCode: null,
+  cdekCityName: null,
+  cdekShipmentPoint: null,
   status: "published" as const,
 };
 
@@ -26,6 +29,10 @@ const draftProduct = {
   description: "Тёплая куртка из девяностых.",
   priceKopecks: 420_000,
   imageUrl: null,
+  weightG: null,
+  lengthCm: null,
+  widthCm: null,
+  heightCm: null,
   status: "draft" as const,
 };
 
@@ -35,6 +42,10 @@ const publishedProduct = {
   description: null,
   priceKopecks: 89_900,
   imageUrl: "https://example.com/vase.jpg",
+  weightG: null,
+  lengthCm: null,
+  widthCm: null,
+  heightCm: null,
   status: "published" as const,
 };
 
@@ -44,6 +55,10 @@ const hiddenProduct = {
   description: null,
   priceKopecks: 350_000,
   imageUrl: null,
+  weightG: null,
+  lengthCm: null,
+  widthCm: null,
+  heightCm: null,
   status: "hidden" as const,
 };
 
