@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router";
 import { Announcer } from "../components/FormField.js";
 import { ProductCards } from "../components/admin/ProductCards.js";
 import { ProductTable } from "../components/admin/ProductTable.js";
+import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
 import { ScreenState } from "../components/ScreenState.js";
 import { ApiError } from "../lib/api.js";
 import { useSellerProductsQuery, useSellerShopQuery } from "../lib/queries.js";
@@ -134,21 +135,7 @@ function ProductsLoadError({
   next: string;
 }) {
   if (error instanceof ApiError && error.status === 401) {
-    return (
-      <ScreenState
-        kind="error"
-        title="Сессия истекла"
-        description="Войдите снова, чтобы открыть товары."
-        action={
-          <Link
-            to={`/login?next=${encodeURIComponent(next)}`}
-            className={buttonVariants({ variant: "outline" })}
-          >
-            Войти
-          </Link>
-        }
-      />
-    );
+    return <SessionExpiredState next={next} />;
   }
 
   return (

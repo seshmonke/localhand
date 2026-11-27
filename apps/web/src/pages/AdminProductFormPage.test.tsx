@@ -221,22 +221,29 @@ describe("AdminProductEditPage", () => {
     expect(screen.getByText("Изменений нет")).toBeInTheDocument();
   });
 
-  it("keeps the product id in the login return path after a 401", async () => {
+  it("opens login after a 401 on the edit page", async () => {
+    let sessionExpired = false;
     installFetchMock({
-      "GET /auth/me": { body: { user: demoUser } },
+      "GET /auth/me": () =>
+        sessionExpired
+          ? { status: 401, body: { error: "unauthorized" } }
+          : { body: { user: demoUser } },
       "GET /seller/shop": { body: { shop: publishedShop } },
       "GET /seller/products": { status: 401, body: { error: "unauthorized" } },
     });
 
+    const browser = userEvent.setup();
     renderApp(["/admin/products/11"]);
 
     expect(
       await screen.findByRole("heading", { level: 2, name: "Сессия истекла" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Войти" })).toHaveAttribute(
-      "href",
-      "/login?next=%2Fadmin%2Fproducts%2F11",
-    );
+    sessionExpired = true;
+    await browser.click(screen.getByRole("button", { name: "Войти" }));
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Вход в кабинет" }),
+    ).toBeInTheDocument();
   });
 
   it("locks status actions until unsaved edits are saved", async () => {

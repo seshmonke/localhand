@@ -13,6 +13,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { Announcer, FormError } from "../components/FormField.js";
 import { ProductFormFields } from "../components/admin/ProductFormFields.js";
 import { ProductStatusBadge, productStatusMeta } from "../components/admin/ProductStatusBadge.js";
+import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
 import {
   productErrorMessage,
   productStatusErrorMessage,
@@ -80,21 +81,7 @@ function ProductsLoadError({
   next?: string;
 }) {
   if (error instanceof ApiError && error.status === 401) {
-    return (
-      <ScreenState
-        kind="error"
-        title="Сессия истекла"
-        description="Войдите снова, чтобы открыть товары."
-        action={
-          <Link
-            to={`/login?next=${encodeURIComponent(next)}`}
-            className={buttonVariants({ variant: "outline" })}
-          >
-            Войти
-          </Link>
-        }
-      />
-    );
+    return <SessionExpiredState next={next} />;
   }
 
   return (

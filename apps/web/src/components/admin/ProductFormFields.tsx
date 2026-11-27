@@ -1,4 +1,8 @@
-import { PRODUCT_DESCRIPTION_MAX_LENGTH, PRODUCT_NAME_MAX_LENGTH } from "@localhand/shared";
+import {
+  PRODUCT_DESCRIPTION_MAX_LENGTH,
+  PRODUCT_IMAGE_URL_MAX_LENGTH,
+  PRODUCT_NAME_MAX_LENGTH,
+} from "@localhand/shared";
 import { cn } from "@localhand/ui";
 import { fieldControlClass, fieldDescribedBy, FormField } from "../FormField.js";
 import type { ProductFieldErrors, ProductFormValues } from "./product-form.js";
@@ -86,7 +90,7 @@ export function ProductFormFields({ values, errors, onChange }: ProductFormField
           autoCapitalize="none"
           autoComplete="off"
           spellCheck={false}
-          maxLength={2000}
+          maxLength={PRODUCT_IMAGE_URL_MAX_LENGTH}
           placeholder="https://example.com/photo.jpg"
           value={values.imageUrl}
           onChange={(event) => onChange("imageUrl", event.target.value)}

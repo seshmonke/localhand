@@ -1,5 +1,8 @@
+import { QueryClient } from "@tanstack/react-query";
 import { cleanup, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { authKeys, sellerKeys } from "../lib/queries.js";
 import { installFetchMock } from "../test/mock-api.js";
 import { renderApp } from "../test/render-app.js";
 
@@ -123,6 +126,40 @@ describe("AdminProductsPage", () => {
       await screen.findByRole("heading", { level: 2, name: "Товары не загрузились" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Повторить" })).toBeInTheDocument();
+  });
+
+  it("clears the cached session and seller data before opening login on 401", async () => {
+    let sessionExpired = false;
+    const client = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false, staleTime: 0 },
+        mutations: { retry: false },
+      },
+    });
+    client.setQueryData(authKeys.me, { user: demoUser });
+    client.setQueryData(sellerKeys.shop, { shop: publishedShop });
+
+    installFetchMock({
+      "GET /auth/me": () =>
+        sessionExpired
+          ? { status: 401, body: { error: "unauthorized" } }
+          : { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "GET /seller/products": { status: 401, body: { error: "unauthorized" } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/products"], client);
+
+    const loginButton = await screen.findByRole("button", { name: "Войти" });
+    sessionExpired = true;
+    await browser.click(loginButton);
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Вход в кабинет" }),
+    ).toBeInTheDocument();
+    expect(client.getQueryData(authKeys.me)).toBeUndefined();
+    expect(client.getQueryCache().findAll({ queryKey: sellerKeys.all })).toHaveLength(0);
   });
 
   it("points a seller without a shop to the shop settings and skips the product request", async () => {
