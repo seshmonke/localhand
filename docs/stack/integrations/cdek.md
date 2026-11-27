@@ -61,12 +61,18 @@ Content-Type: application/x-www-form-urlencoded
 
 `POST /v2/orders` — **асинхронный**:
 
-- Ответ `202` и `requests[].state`: `ACCEPTED|SUCCESSFUL|INVALID`.
+- Ответ `202` и `requests[].state`: `ACCEPTED|WAITING|SUCCESSFUL|INVALID`.
+  `WAITING` — нормальное нетерминальное состояние, poll до
+  терминального.
 - `ACCEPTED` не означает, что заказ создан; нужен polling
   `GET /v2/orders/{uuid}` или `GET /v2/orders?im_number=...`.
 - Первый poll — через 2–3 с; обработка может занять 30–60 с.
-- Ошибка `INVALID` содержит `errors[].code` и сообщение; исправить и
-  повторить с новым `im_number`, если номер уже занят.
+- Ошибка `INVALID` содержит `errors[].code` и сообщение. Поле
+  `number` — номер заказа в нашей ИС (уникален в пределах договора);
+  `im_number` — только query-параметр поиска `GET /v2/orders`, равный
+  `number`, не поле создания. Перед повторным созданием с новым
+  `number` — reconcile по существующему заказу, чтобы не сделать
+  дубль.
 - Данные заказа: `tariff_code`, `recipient` (имя, телефон, адрес/ПВЗ),
   `packages` (вес/габариты/позиции), `from_location`/`sender`,
   `delivery_point` или `to_location`, `number` (наш номер заказа).
@@ -88,7 +94,10 @@ Content-Type: application/x-www-form-urlencoded
   `DOWNLOAD_PHOTO`, `PREALERT_CLOSED`, `ACCOMPANYING_WAYBILL`,
   `OFFICE_AVAILABILITY`, `DELIV_PROBLEM`, `DELIV_AGREEMENT`,
   `COURIER_INFO`.
-- **Не более двух подписок на клиента.** Не создавать дубли.
+- **Не более двух подписок на обычного клиента.** Не создавать дубли.
+  Общая тестовая учётная запись уже имеет 4 подписки (проверено
+  27.11.2026); её подписки не трогать, для тестов webhook нужен
+  собственный аккаунт.
 - `GET /v2/webhooks`, `GET/DELETE /v2/webhooks/{uuid}`.
 - Тело `ORDER_STATUS`:
 
@@ -144,8 +153,9 @@ S3-2 ещё не реализован. Понадобится:
 - Адрес/ПВЗ получателя: `city_code`, `postal_code`, `address`,
   `delivery_point`, имя/телефон; PII — после юрпакета, в тестах
   вымышленные.
-- Заказ: `number` = `orders.id`/shop prefix, `im_number` уникален;
-  хранить `cdek_order_uuid`, `cdek_number`, `status_code`,
+- Заказ: `number` = `orders.id`/shop prefix, уникален в пределах
+  договора; `im_number` — только поиск, равен `number`; хранить
+  `cdek_order_uuid`, `cdek_number`, `status_code`,
   `status_date_time`.
 - Калькулятор: сохранять выбранный `tariff_code`, `delivery_sum`,
   `period_min/max` snapshot.

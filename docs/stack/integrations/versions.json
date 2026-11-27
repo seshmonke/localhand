@@ -7,7 +7,7 @@
       "api": "v3",
       "openapi": "3.0.2",
       "spec_url": "https://yookassa.ru/developers/api/yookassa-openapi-specification.yaml",
-      "spec_sha256": "871489490f23c833154a01c97a80b46bb1980b4966de22817fd047e811a95f4d",
+      "spec_sha256": "9b3db11fad0884207880da6aff75aa31258aece455f77af384c3c4773505fb99",
       "docs_url": "https://yookassa.ru/developers/api",
       "oauth_url": "https://yookassa.ru/oauth/v2/",
       "notes": "Partner OAuth; API v3; OpenAPI spec is YAML."
