@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
+import type { FastifyServerOptions } from "fastify";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { SESSION_COOKIE_NAME } from "../auth/session.js";
 import { PaymentProviderError } from "../payments/errors.js";
@@ -128,13 +129,17 @@ type TestApp = ReturnType<AppModule["buildApp"]>;
 
 async function buildTestApp(
   provider?: FakePaymentProvider,
-  options: { paymentProviderTimeoutMs?: number } = {},
+  options: {
+    paymentProviderTimeoutMs?: number;
+    logger?: FastifyServerOptions["logger"];
+  } = {},
 ): Promise<TestApp> {
   const instance = appModule.buildApp({
     ...(provider === undefined ? {} : { paymentProvider: provider }),
     ...(options.paymentProviderTimeoutMs === undefined
       ? {}
       : { paymentProviderTimeoutMs: options.paymentProviderTimeoutMs }),
+    ...(options.logger === undefined ? {} : { logger: options.logger }),
     reconcile: false,
   });
   await instance.ready();
@@ -230,12 +235,13 @@ async function paymentRow(paymentId: number) {
   const result = await pool().query<{
     id: number;
     order_id: number;
+    seller_account_id: number;
     status: string;
     provider_payment_id: string | null;
     confirmation_url: string | null;
     reconcile_attempts: number;
   }>(
-    "SELECT id, order_id, status, provider_payment_id, confirmation_url, reconcile_attempts FROM payments WHERE id = $1",
+    "SELECT id, order_id, seller_account_id, status, provider_payment_id, confirmation_url, reconcile_attempts FROM payments WHERE id = $1",
     [paymentId],
   );
   const row = result.rows[0];
@@ -317,12 +323,16 @@ class ControllableFakeProvider extends FakePaymentProvider {
   currencyOverride: string | null = null;
   orderIdOverride: number | null = null;
   statusOverride: ProviderPayment["status"] | null = null;
+  providerPaymentIdOverride: string | null = null;
+  createStatusOverride: CreateProviderPaymentResult["status"] | null = null;
   unauthorizedTokens = new Set<string>();
+  getPaymentTokens: string[] = [];
   createCalls = 0;
   createdPayments = 0;
   cancelledPayments = 0;
   /** Runs after the provider payment was created but before it is returned. */
   onCreatePayment?: () => Promise<void> | void;
+  createPaymentGate: { promise: Promise<void>; started: boolean } | null = null;
   getPaymentGate: { promise: Promise<void>; started: boolean } | null = null;
 
   override async createPayment(
@@ -339,12 +349,23 @@ class ControllableFakeProvider extends FakePaymentProvider {
     if (this.createFailure === "unauthorized") {
       throw new PaymentProviderError("unauthorized");
     }
+    if (this.createPaymentGate) {
+      this.createPaymentGate.started = true;
+      await this.createPaymentGate.promise;
+    }
     const result = await super.createPayment(accessToken, input);
     this.createdPayments += 1;
+    const adjusted = {
+      ...result,
+      ...(this.providerPaymentIdOverride === null
+        ? {}
+        : { providerPaymentId: this.providerPaymentIdOverride }),
+      ...(this.createStatusOverride === null ? {} : { status: this.createStatusOverride }),
+    };
     if (this.onCreatePayment) {
       await this.onCreatePayment();
     }
-    return result;
+    return adjusted;
   }
 
   override async subscribeWebhooks(accessToken: string, url: string): Promise<void> {
@@ -361,6 +382,11 @@ class ControllableFakeProvider extends FakePaymentProvider {
     accessToken: string,
     providerPaymentId: string,
   ): Promise<ProviderPayment> {
+    this.getPaymentTokens.push(accessToken);
+    if (this.getPaymentGate) {
+      this.getPaymentGate.started = true;
+      await this.getPaymentGate.promise;
+    }
     if (this.unauthorizedTokens.has(accessToken)) {
       throw new PaymentProviderError("unauthorized");
     }
@@ -369,10 +395,6 @@ class ControllableFakeProvider extends FakePaymentProvider {
     }
     if (this.getFailure === "unavailable") {
       throw new PaymentProviderError("provider_unavailable");
-    }
-    if (this.getPaymentGate) {
-      this.getPaymentGate.started = true;
-      await this.getPaymentGate.promise;
     }
     const payment = await super.getPayment(accessToken, providerPaymentId);
     return {
@@ -1410,7 +1432,7 @@ describeWithDb("payments flow API", () => {
     }
   });
 
-  it("uses a newer active account version during reconcile when the old token is unauthorized", async () => {
+  it("uses a newer active account when it reconnects during the in-flight getPayment", async () => {
     const provider = new ControllableFakeProvider({
       enabled: true,
       webOrigin: "http://localhost:5173",
@@ -1433,16 +1455,41 @@ describeWithDb("payments flow API", () => {
         throw new Error("provider payment id missing");
       }
       await completeFakePayment(target, row.provider_payment_id);
-
-      const newAccount = await connectAccount(target, seller, { code: "code-new" });
-      expect(newAccount.id).not.toBe(oldAccount.id);
-      provider.unauthorizedTokens.add("fake_access_code-old");
       await backdatePayment(created.id, 3);
 
-      await reconcileModule.runPaymentReconcile(runtime, target.log);
+      let release!: () => void;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      provider.getPaymentGate = { promise: gate, started: false };
+
+      const reconcile = reconcileModule.runPaymentReconcile(runtime, target.log);
+      const deadline = Date.now() + 2_000;
+      while (!provider.getPaymentGate.started) {
+        if (Date.now() > deadline) {
+          throw new Error("reconcile never reached the provider");
+        }
+        await sleep(10);
+      }
+
+      try {
+        // Reconnect while the old token call is blocked. The superseded
+        // account's token then returns 401, and reconcile must retry with the
+        // now-active version without user intervention.
+        const newAccount = await connectAccount(target, seller, { code: "code-new" });
+        expect(newAccount.id).not.toBe(oldAccount.id);
+        provider.unauthorizedTokens.add("fake_access_code-old");
+      } finally {
+        release();
+      }
+
+      await reconcile;
 
       expect((await paymentRow(created.id)).status).toBe("succeeded");
       expect(await orderStatus(orderId)).toBe("paid");
+      expect(provider.getPaymentTokens).toContain("fake_access_code-old");
+      expect(provider.getPaymentTokens).toContain("fake_access_code-new");
+
       const versions = await pool().query<{ status: string }>(
         "SELECT status FROM seller_payment_accounts WHERE seller_id = $1 ORDER BY id",
         [seller.sellerId],
@@ -1487,6 +1534,281 @@ describeWithDb("payments flow API", () => {
     });
     expect(getWithoutSession.statusCode).toBe(401);
     expect(deleteWithoutSession.statusCode).toBe(401);
+  });
+
+  it("refuses a failed-key retry after the seller disconnects", async () => {
+    const provider = new ControllableFakeProvider({
+      enabled: true,
+      webOrigin: "http://localhost:5173",
+    });
+    const target = await buildTestApp(provider);
+    const seller = await createSeller();
+    const buyer = await createUser();
+    const orderId = await createOrder(buyer.id, seller.shopId);
+    await connectAccount(target, seller);
+
+    try {
+      const key = newIdempotencyKey();
+      provider.createFailure = "invalid_request";
+      expect((await createPayment(target, buyer, orderId, key)).statusCode).toBe(502);
+      const [failedRow] = (
+        await pool().query<{ id: number }>("SELECT id FROM payments WHERE order_id = $1", [orderId])
+      ).rows;
+      if (!failedRow) {
+        throw new Error("failed payment row missing");
+      }
+
+      provider.createFailure = "none";
+      const deleted = await request(target, seller, "DELETE", "/seller/payments/account");
+      expect(deleted.statusCode).toBe(200);
+      expect(deleted.json().account.status).toBe("disabled");
+
+      const callsBeforeRetry = provider.createCalls;
+      const retried = await createPayment(target, buyer, orderId, key);
+      expect(retried.statusCode).toBe(409);
+      expect(retried.json()).toEqual({ error: "seller_payment_unavailable" });
+      expect(provider.createCalls).toBe(callsBeforeRetry);
+
+      const row = await paymentRow(failedRow.id);
+      expect(row.status).toBe("failed");
+      expect(row.provider_payment_id).toBeNull();
+      expect(row.confirmation_url).toBeNull();
+      expect(provider.createdPayments).toBe(0);
+    } finally {
+      await target.close();
+    }
+  });
+
+  it("serializes a failed-key retry with disconnect", async () => {
+    const provider = new ControllableFakeProvider({
+      enabled: true,
+      webOrigin: "http://localhost:5173",
+    });
+    const target = await buildTestApp(provider);
+
+    try {
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        const seller = await createSeller();
+        const buyer = await createUser();
+        const orderId = await createOrder(buyer.id, seller.shopId);
+        await connectAccount(target, seller);
+
+        const key = newIdempotencyKey();
+        provider.createFailure = "invalid_request";
+        expect((await createPayment(target, buyer, orderId, key)).statusCode).toBe(502);
+        provider.createFailure = "none";
+
+        const [retried, deleted] = await Promise.all([
+          createPayment(target, buyer, orderId, key),
+          request(target, seller, "DELETE", "/seller/payments/account"),
+        ]);
+
+        const [row] = (
+          await pool().query<{ id: number; status: string; confirmation_url: string | null }>(
+            "SELECT id, status, confirmation_url FROM payments WHERE order_id = $1",
+            [orderId],
+          )
+        ).rows;
+        if (!row) {
+          throw new Error("payment row missing");
+        }
+
+        if (deleted.statusCode === 200) {
+          expect(deleted.json().account.status).toBe("disabled");
+          expect(retried.statusCode).toBe(409);
+          expect(retried.json()).toEqual({ error: "seller_payment_unavailable" });
+          expect(row.status).toBe("failed");
+          expect(row.confirmation_url).toBeNull();
+          expect(await countActivePayments(orderId)).toBe(0);
+        } else {
+          expect(deleted.statusCode).toBe(409);
+          expect(deleted.json()).toEqual({ error: "payment_in_progress" });
+          expect(retried.statusCode).toBe(200);
+          expect(row.status).toBe("pending");
+          expect(row.confirmation_url).not.toBeNull();
+          expect(await countActivePayments(orderId)).toBe(1);
+        }
+      }
+    } finally {
+      await target.close();
+    }
+  });
+
+  it("starts a fresh orphan window when retrying a failed key", async () => {
+    const provider = new ControllableFakeProvider({
+      enabled: true,
+      webOrigin: "http://localhost:5173",
+    });
+    const target = await buildTestApp(provider);
+    const seller = await createSeller();
+    const buyer = await createUser();
+    const orderId = await createOrder(buyer.id, seller.shopId);
+    await connectAccount(target, seller);
+    const runtime = target.payments;
+    if (!runtime) {
+      throw new Error("payments runtime is missing");
+    }
+
+    try {
+      const key = newIdempotencyKey();
+      provider.createFailure = "invalid_request";
+      expect((await createPayment(target, buyer, orderId, key)).statusCode).toBe(502);
+      const [failedRow] = (
+        await pool().query<{ id: number }>("SELECT id FROM payments WHERE order_id = $1", [orderId])
+      ).rows;
+      if (!failedRow) {
+        throw new Error("failed payment row missing");
+      }
+      await backdatePayment(failedRow.id, 16);
+
+      // The previous account version is superseded by a reconnect; the retry
+      // must move the row to the new active version.
+      const reconnected = await connectAccount(target, seller, { code: "retry-code" });
+
+      provider.createFailure = "none";
+      let release!: () => void;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      provider.createPaymentGate = { promise: gate, started: false };
+
+      const retryPromise = createPayment(target, buyer, orderId, key);
+      const deadline = Date.now() + 2_000;
+      while (!provider.createPaymentGate.started) {
+        if (Date.now() > deadline) {
+          throw new Error("retry never reached the provider");
+        }
+        await sleep(10);
+      }
+
+      try {
+        await reconcileModule.runPaymentReconcile(runtime, target.log);
+        const inFlight = await paymentRow(failedRow.id);
+        expect(inFlight.status).toBe("pending");
+        expect(inFlight.reconcile_attempts).toBe(0);
+      } finally {
+        release();
+      }
+
+      const retried = await retryPromise;
+      expect(retried.statusCode).toBe(200);
+      const row = await paymentRow(failedRow.id);
+      expect(row.status).toBe("pending");
+      expect(row.provider_payment_id).not.toBeNull();
+      expect(row.confirmation_url).not.toBeNull();
+      expect(row.seller_account_id).toBe(reconnected.id);
+
+      const activeAccount = await pool().query<{ id: number }>(
+        "SELECT id FROM seller_payment_accounts WHERE seller_id = $1 AND status = 'active'",
+        [seller.sellerId],
+      );
+      expect(row.seller_account_id).toBe(activeAccount.rows[0]?.id);
+    } finally {
+      await target.close();
+    }
+  });
+
+  it("fails the current attempt without cancelling another payment on provider id conflict", async () => {
+    const provider = new ControllableFakeProvider({
+      enabled: true,
+      webOrigin: "http://localhost:5173",
+    });
+    const lines: string[] = [];
+    const target = await buildTestApp(provider, {
+      logger: {
+        level: "info",
+        stream: {
+          write(line: string) {
+            lines.push(line);
+          },
+        },
+      },
+    });
+    const seller = await createSeller();
+    const buyer = await createUser();
+    const firstOrder = await createOrder(buyer.id, seller.shopId);
+    const secondOrder = await createOrder(buyer.id, seller.shopId);
+    await connectAccount(target, seller);
+
+    try {
+      const first = (await createPayment(target, buyer, firstOrder)).json<{
+        payment: PaymentBody;
+      }>().payment;
+      const firstRow = await paymentRow(first.id);
+      if (!firstRow.provider_payment_id) {
+        throw new Error("provider payment id missing");
+      }
+
+      provider.providerPaymentIdOverride = firstRow.provider_payment_id;
+      const conflicting = await createPayment(target, buyer, secondOrder);
+      expect(conflicting.statusCode).toBe(409);
+      expect(conflicting.json()).toEqual({ error: "payment_in_progress" });
+      expect(provider.cancelledPayments).toBe(0);
+
+      const secondRow = await pool().query<{
+        status: string;
+        provider_payment_id: string | null;
+        confirmation_url: string | null;
+      }>("SELECT status, provider_payment_id, confirmation_url FROM payments WHERE order_id = $1", [
+        secondOrder,
+      ]);
+      expect(secondRow.rows[0]).toMatchObject({
+        status: "failed",
+        provider_payment_id: null,
+        confirmation_url: null,
+      });
+
+      const preserved = await paymentRow(first.id);
+      expect(preserved.status).toBe("pending");
+      expect(preserved.provider_payment_id).toBe(firstRow.provider_payment_id);
+      expect(preserved.confirmation_url).not.toBeNull();
+      expect(lines.join("")).toContain("payment_provider_id_conflict");
+    } finally {
+      await target.close();
+    }
+  });
+
+  it("quarantines a terminal status returned by create without exposing a URL", async () => {
+    const provider = new ControllableFakeProvider({
+      enabled: true,
+      webOrigin: "http://localhost:5173",
+    });
+    const target = await buildTestApp(provider);
+    const seller = await createSeller();
+    const buyer = await createUser();
+    const orderId = await createOrder(buyer.id, seller.shopId);
+    await connectAccount(target, seller);
+
+    try {
+      provider.createStatusOverride = "succeeded";
+      const response = await createPayment(target, buyer, orderId);
+      expect(response.statusCode).toBe(409);
+      expect(response.json()).toEqual({ error: "payment_requires_review" });
+
+      const [row] = (
+        await pool().query<{
+          status: string;
+          provider_payment_id: string | null;
+          confirmation_url: string | null;
+        }>(
+          "SELECT status, provider_payment_id, confirmation_url FROM payments WHERE order_id = $1",
+          [orderId],
+        )
+      ).rows;
+      expect(row).toMatchObject({
+        status: "manual_review",
+        confirmation_url: null,
+      });
+      expect(row?.provider_payment_id).not.toBeNull();
+      expect(await orderStatus(orderId)).toBe("new");
+      expect(provider.cancelledPayments).toBe(0);
+
+      const newKey = await createPayment(target, buyer, orderId);
+      expect(newKey.statusCode).toBe(409);
+      expect(newKey.json()).toEqual({ error: "payment_requires_review" });
+    } finally {
+      await target.close();
+    }
   });
 
   it("validates webhook body and enforces the body limit", async () => {

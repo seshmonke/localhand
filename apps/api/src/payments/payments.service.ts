@@ -35,7 +35,8 @@ export type CreateOrderPaymentValue = {
 };
 
 type CreatePlan =
-  | { kind: "replay" | "retry"; row: PaymentRow }
+  | { kind: "replay"; row: PaymentRow }
+  | { kind: "retry"; row: PaymentRow; account?: SellerAccountRow }
   | { kind: "inserted"; row: PaymentRow; account: SellerAccountRow }
   | { kind: "conflict"; status: 404 | 409 | 502; error: PaymentErrorCode };
 
@@ -74,9 +75,10 @@ async function retryFailedPlan(
   tx: Transaction,
   orderId: number,
   row: PaymentRow,
+  providerName: string,
 ): Promise<CreatePlan> {
   const [lockedOrder] = await tx
-    .select({ status: orders.status })
+    .select({ status: orders.status, shopId: orders.shopId })
     .from(orders)
     .where(eq(orders.id, orderId))
     .for("update");
@@ -105,13 +107,53 @@ async function retryFailedPlan(
     return conflict(409, "invalid_order_transition");
   }
 
+  const [shop] = await tx
+    .select({ sellerId: shops.sellerId })
+    .from(shops)
+    .where(eq(shops.id, lockedOrder.shopId))
+    .limit(1);
+  if (!shop) {
+    return conflict(404, "not_found");
+  }
+
+  // The previous attempt may reference a disabled/superseded account. A retry
+  // is a new attempt and must use the seller's current active account, under
+  // the same row lock that serializes disconnect.
+  const [account] = await tx
+    .select()
+    .from(sellerPaymentAccounts)
+    .where(
+      and(
+        eq(sellerPaymentAccounts.sellerId, shop.sellerId),
+        eq(sellerPaymentAccounts.status, "active"),
+        eq(sellerPaymentAccounts.provider, providerName),
+      ),
+    )
+    .for("share")
+    .limit(1);
+  if (!account) {
+    return conflict(409, "seller_payment_unavailable");
+  }
+
+  const now = new Date();
   const [updated] = await tx
     .update(payments)
-    .set({ status: "pending", updatedAt: new Date() })
+    .set({
+      status: "pending",
+      sellerAccountId: account.id,
+      providerPaymentId: null,
+      confirmationUrl: null,
+      reconcileAttempts: 0,
+      lastCheckedAt: null,
+      // Reconcile ages an attempt by createdAt; a retry must get a fresh
+      // 15-minute orphan window instead of inheriting the failed row's age.
+      createdAt: now,
+      updatedAt: now,
+    })
     .where(and(eq(payments.id, row.id), eq(payments.status, "failed")))
     .returning();
 
-  return updated ? { kind: "retry", row: updated } : replayPlan(row);
+  return { kind: "retry", row: updated ?? row, account };
 }
 
 export async function createOrderPayment(
@@ -153,7 +195,7 @@ export async function createOrderPayment(
         if (existing.status === "failed" && !existing.providerPaymentId) {
           // A failed 4xx row is not a free pass: re-apply the order/payment
           // gate under the order lock and only then re-arm the attempt.
-          return retryFailedPlan(tx, orderId, existing);
+          return retryFailedPlan(tx, orderId, existing, runtime.provider.name);
         }
         return replayPlan(existing);
       }
@@ -235,7 +277,7 @@ export async function createOrderPayment(
       return { kind: "inserted", row: created, account };
     });
   } catch (error) {
-    const raced = await resolveInsertRace(error, orderId, idempotencyKey);
+    const raced = await resolveInsertRace(error, orderId, idempotencyKey, runtime.provider.name);
     if (!raced) {
       throw error;
     }
@@ -252,7 +294,9 @@ export async function createOrderPayment(
   const account =
     plan.kind === "inserted"
       ? plan.account
-      : await loadProviderAccount(db, plan.row.sellerAccountId);
+      : plan.kind === "retry" && plan.account
+        ? plan.account
+        : await loadProviderAccount(db, plan.row.sellerAccountId);
 
   if (!account) {
     await markPaymentFailed(plan.row.id);
@@ -262,6 +306,12 @@ export async function createOrderPayment(
   const providerResult = await callProviderCreate(runtime, plan.row, account, log);
   if (!providerResult.ok) {
     return providerResult;
+  }
+
+  if (providerResult.value.status !== "pending") {
+    // A create call that already returns a terminal status is not a normal
+    // pending checkout; keep the provider id for ops but never expose a URL.
+    return quarantineProviderCreateResult(plan.row.id, orderId, providerResult.value, log);
   }
 
   const saved = await saveProviderResult(
@@ -286,6 +336,7 @@ async function resolveInsertRace(
   error: unknown,
   orderId: number,
   idempotencyKey: string,
+  providerName: string,
 ): Promise<CreatePlan | null> {
   if (isUniqueViolation(error, "payments_order_id_idempotency_key_unique")) {
     const [row] = await requireDb()
@@ -297,7 +348,7 @@ async function resolveInsertRace(
       return null;
     }
     if (row.status === "failed" && !row.providerPaymentId) {
-      return requireDb().transaction((tx) => retryFailedPlan(tx, orderId, row));
+      return requireDb().transaction((tx) => retryFailedPlan(tx, orderId, row, providerName));
     }
     return replayPlan(row);
   }
@@ -519,15 +570,22 @@ async function saveProviderResult(
       return { kind: "saved", row: updated };
     });
   } catch (error) {
-    if (
-      isUniqueViolation(error, "payments_order_id_active_unique") ||
-      isUniqueViolation(error, "payments_provider_payment_id_unique")
-    ) {
+    if (isUniqueViolation(error, "payments_order_id_active_unique")) {
       await markPaymentFailedAndClear(paymentId);
       await cancelCreatedProviderPayment(runtime, account, result.providerPaymentId, log);
       log.warn(
         { code: "payment_create_race", payment_id: paymentId, order_id: orderId },
-        "payment unique constraint rejected the provider result",
+        "another active payment won the unique constraint",
+      );
+      return { ok: false, status: 409, error: "payment_in_progress" };
+    }
+    if (isUniqueViolation(error, "payments_provider_payment_id_unique")) {
+      // The provider payment id belongs to another local payment. It may be a
+      // valid charge, so cancelling it could cancel somebody else's payment.
+      await markPaymentFailedAndClear(paymentId);
+      log.warn(
+        { code: "payment_provider_id_conflict", payment_id: paymentId, order_id: orderId },
+        "provider payment id is already linked to another payment",
       );
       return { ok: false, status: 409, error: "payment_in_progress" };
     }
@@ -540,6 +598,81 @@ async function saveProviderResult(
   }
 
   return { ok: true, value: outcome.row };
+}
+
+async function quarantineProviderCreateResult(
+  paymentId: number,
+  orderId: number,
+  result: CreateProviderPaymentResult,
+  log: PaymentsLogger,
+): Promise<{ ok: false; status: 409; error: PaymentErrorCode }> {
+  try {
+    await requireDb().transaction(async (tx) => {
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtextextended(${`order:${orderId}`}, 0))`,
+      );
+
+      const [row] = await tx
+        .select()
+        .from(payments)
+        .where(eq(payments.id, paymentId))
+        .for("update");
+      if (!row) {
+        throw new Error("payment row disappeared before the provider status was quarantined");
+      }
+      const retryable =
+        row.status === "pending" || (row.status === "failed" && row.providerPaymentId === null);
+      if (!retryable) {
+        return;
+      }
+
+      const now = new Date();
+      const [updated] = await tx
+        .update(payments)
+        .set({
+          status: "manual_review",
+          providerPaymentId: result.providerPaymentId,
+          confirmationUrl: null,
+          updatedAt: now,
+        })
+        .where(eq(payments.id, paymentId))
+        .returning();
+      if (!updated) {
+        throw new Error("payment quarantine update returned no row");
+      }
+
+      log.warn(
+        {
+          code: "payment_provider_unexpected_status",
+          payment_id: paymentId,
+          order_id: orderId,
+          status: result.status,
+        },
+        "provider create returned a terminal status; payment moved to manual review",
+      );
+    });
+  } catch (error) {
+    if (
+      isUniqueViolation(error, "payments_order_id_active_unique") ||
+      isUniqueViolation(error, "payments_provider_payment_id_unique")
+    ) {
+      await markPaymentFailedAndClear(paymentId);
+      log.warn(
+        {
+          code: isUniqueViolation(error, "payments_provider_payment_id_unique")
+            ? "payment_provider_id_conflict"
+            : "payment_create_race",
+          payment_id: paymentId,
+          order_id: orderId,
+        },
+        "payment could not be quarantined because of a unique conflict",
+      );
+      return { ok: false, status: 409, error: "payment_in_progress" };
+    }
+    throw error;
+  }
+
+  return { ok: false, status: 409, error: "payment_requires_review" };
 }
 
 async function failAttemptRow(tx: Transaction, row: PaymentRow, now: Date): Promise<void> {

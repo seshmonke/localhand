@@ -40,8 +40,9 @@ Change: `openspec/changes/06-payments/`.
       error/409, другой 4xx → failed/502, 5xx → pending/502; unique
       violation → 409.
 - [x] Replay: pending с URL → тот же URL; succeeded/canceled → без URL;
-      failed (4xx) → повторный create с тем же ключом; manual_review →
-      409 `payment_requires_review`.
+      failed (4xx) → повторный create с тем же ключом (только после
+      повторного гейта; stale failed после paid → 409 `order_already_paid`);
+      manual_review → 409 `payment_requires_review`.
 - [x] `GET /orders/:id/payment` buyer: active, иначе последний
       терминальный, `payment:null`, URL только pending.
 - [x] `GET /seller/orders/:id/payment`: seller authz, без URL, 404.

@@ -39,6 +39,12 @@ PBI делится на два PR/цикла: **A. foundation** (схема, к�
 
 - [ ] 3.7 Логи/метрики: коды без PII/токена/тела, rate-limit вебхука 60/мин, no-store на всех ответах; runbook `payments-manual-review.md` с тремя исходами: платежа нет → canceled/new, возврат в ЮKassa → canceled/new, оплата подтверждена → succeeded/paid + provider id/paid_at.
 
+> PR B1 review #2: stale `failed`-ключ проходит повторный гейт под
+> order-lock, retry берёт active-аккаунт продавца и свежий `createdAt`;
+> `provider_payment_id`-конфликт → 409 без отмены чужого платежа;
+> терминальный статус create → `manual_review`. Reconcile получает статус
+> провайдера вне транзакции.
+
 ## 4. UI оплаты (PR B)
 
 - [ ] 4.1 `/orders/:id`: приоритет статуса платежа над заказом (`manual_review` → «Требует проверки», `pending` → «Ожидает оплаты» даже при `new`), «Оплатить» для `new`, `paid`; `Idempotency-Key` хранится на попытку (sessionStorage/ref), при 409 — перечитать `GET /orders/:id/payment`; return URL, polling 3 с до 60 с, «Проверить ещё раз».

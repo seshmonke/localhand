@@ -20,13 +20,14 @@ export function startPaymentsReconcile(
 ): ReconcileScheduler {
   let active: Promise<void> | null = null;
   let stopped = false;
+  const controller = new AbortController();
 
   const run = (): Promise<void> => {
     if (stopped || active) {
       return active ?? Promise.resolve();
     }
 
-    active = runPaymentReconcile(runtime, app.log)
+    active = runPaymentReconcile(runtime, app.log, new Date(), controller.signal)
       .catch((error: unknown) => {
         app.log.error(
           { code: error instanceof Error ? error.name : "payments_reconcile_failed" },
@@ -46,6 +47,9 @@ export function startPaymentsReconcile(
 
   const stop = async (): Promise<void> => {
     stopped = true;
+    // Stop starting new payments in the pass; the pass itself is bounded by
+    // the provider timeout (10s) and the short order-lock transactions.
+    controller.abort();
     clearInterval(timer);
     if (active) {
       await active;

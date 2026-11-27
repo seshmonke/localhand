@@ -35,11 +35,16 @@ export async function runPaymentReconcile(
   runtime: PaymentsRuntime,
   log: PaymentsLogger,
   now = new Date(),
+  signal?: AbortSignal,
 ): Promise<void> {
   const db = requireDb();
 
   const orphanCutoff = new Date(now.getTime() - PAYMENTS_RECONCILE_ORPHAN_AGE_MS);
   const providerCutoff = new Date(now.getTime() - PAYMENTS_RECONCILE_PROVIDER_ID_AGE_MS);
+
+  if (signal?.aborted) {
+    return;
+  }
 
   const [orphans, providerBacked] = await Promise.all([
     db
@@ -69,9 +74,15 @@ export async function runPaymentReconcile(
   ]);
 
   for (const orphan of orphans) {
+    if (signal?.aborted) {
+      return;
+    }
     await reconcileOrphan(orphan.id, orphan.orderId, now, log);
   }
   for (const candidate of providerBacked) {
+    if (signal?.aborted) {
+      return;
+    }
     await reconcileWithProvider(runtime, candidate.id, candidate.orderId, now, log);
   }
 }

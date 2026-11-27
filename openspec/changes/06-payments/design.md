@@ -165,8 +165,12 @@ idempotent GET; токены/ключи не логируются. Без `YOOKA
   - `pending` с provider id — вернуть платёж и URL;
   - `succeeded`/`canceled` — вернуть платёж без URL (URL только
     `pending`);
-  - строка `failed` без provider id (явный 4xx) — повторить
-    `createPayment` с тем же provider idempotency key и обновить её;
+  - строка `failed` без provider id (явный 4xx) — повторно пройти
+    гейт под order-lock: `paid` → 409 `order_already_paid`, другой
+    active/`manual_review` → 409, только `new` без active — выбрать
+    active-аккаунт продавца `FOR SHARE`, перевести строку в `pending`
+    с этой версией аккаунта, сбросить `createdAt`, затем повторить
+    `createPayment` с тем же provider idempotency key вне транзакции;
   - строка `pending` без provider id (краш/таймаут) — тот же ключ
     повторяет вызов; новый ключ получает 409, пока reconcile не
     переведёт сироту в `manual_review` через 15 минут.
@@ -185,6 +189,12 @@ idempotent GET; токены/ключи не логируются. Без `YOOKA
     тот же ключ повторяет вызов, новый ключ получает 409. Reconcile
     через 15 минут переводит такую сироту в `manual_review`, а не
     `failed`, чтобы новый ключ не создал второе списание.
+  - `provider_payment_id` уже привязан к другой строке → текущая
+    строка `failed` без provider id/URL, 409, лог
+    `payment_provider_id_conflict`; чужой платёж не отменяется.
+  - create вернул терминальный статус ≠ `pending` → строка
+    `manual_review` с provider id и без URL, 409
+    `payment_requires_review`, лог; URL клиенту не отдаётся.
 - Rate-limit: 5 попыток в минуту на buyer; 429.
 
 ### Вебхук и reconcile
@@ -233,6 +243,10 @@ idempotent GET; токены/ключи не логируются. Без `YOOKA
   ним, поэтому не гоняется с вебхуком. 401 токена → аккаунт `error`;
   если есть новая active-версия с тем же `provider_account_id`,
   использовать её токен, иначе после 3 неудач — `manual_review`.
+  `getPayment` выполняется до короткой транзакции, чтобы сетевой вызов
+  не держал order-lock. На graceful shutdown новые платежи в проходе не
+  начинаются, текущий вызов ограничен 10-секундным timeout, затем
+  процесс закрывается.
 
 ### Чтение и UI
 
