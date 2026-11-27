@@ -22,8 +22,8 @@ SLO/RUM обязательными для критических путей. Н�
 - [ ] Contract-тесты web↔API на shared-схемах: изменение контракта без
       теста валит CI.
 - [ ] Property-based тесты для денег/идемпотентности/статусов.
-- [ ] Q1.3: после merge Q1.3 mutation T2 ≥ 70% changed становится
-      pre-merge гейтом; до этого — nightly-отчёт и owner-исключение.
+- [ ] Q1.3: mutation T2 ≥ 70% changed становится pre-merge гейтом
+      после merge Q1.0–Q1.6; до этого — nightly-отчёт и owner-исключение.
 - [ ] Threat model для payments/address PII записан в
       `docs/quality/threat-model.md`; abuse cases в change.
 - [ ] Semgrep important-only в PR-гейте; CodeQL/SBOM — nightly.
@@ -32,23 +32,24 @@ SLO/RUM обязательными для критических путей. Н�
       или owner-исключение до публичного запуска.
 - [ ] Q1.6: API p95/load-сценарий checkout/payments в тех же бюджетах.
 - [ ] `pnpm verify` + `openspec validate --all --strict` зелёные;
-      evidence в `.scrum/sprints/4/evidence/`.
+      evidence в `.scrum/sprints/<N>/evidence/`.
 
 ## Пункты программы (отдельные PBI)
 
-| PBI | Что | Owner | Evidence / гейт |
-|---|---|---|---|
-| **Q1.0** | TDD/DoD/roles/PR-шаблон | orchestrator | docs-PR, in review |
-| **Q1.1** | TDD/ATDD enforcement | QA + orchestrator | QA-аудит RED/GREEN, 3 PR без test-after |
-| **Q1.2** | Contract tests web↔API | Backend + Frontend | shared-схемы, negative/edge, CI gate |
-| **Q1.3** | Property/mutation | Backend + QA | fast-check payments/authz, Stryker 70% changed |
-| **Q1.4** | Security | DevSecOps + Architect | threat model, Semgrep PR, CodeQL/SBOM nightly |
-| **Q1.5** | Observability | DevSecOps + Backend | SLO 99,5%/p95<500ms/error<1%, logs/metrics/alert/RUM |
-| **Q1.6** | Performance | Backend + QA | API p95 бюджеты, k6/autocannon checkout/payments |
+| PBI | Что | Owner | Sprint | Evidence / гейт |
+|---|---|---|---|---|
+| **Q1.0** | TDD/DoD/roles/PR-шаблон | orchestrator | 3 | docs-PR, in review |
+| **Q1.1** | TDD/ATDD enforcement | QA + orchestrator | 4 | QA-аудит RED/GREEN, 3 PR без test-after |
+| **Q1.2** | Contract tests web↔API | Backend + Frontend | 4 | shared-схемы, negative/edge, CI gate |
+| **Q1.3** | Property/mutation | Backend + QA | 5 | fast-check payments/authz, Stryker 70% changed |
+| **Q1.4** | Security | DevSecOps + Architect | 5 | threat model, Semgrep PR, CodeQL/SBOM nightly |
+| **Q1.5** | Observability | DevSecOps + Backend | 6 | SLO 99,5%/p95<500ms/error<1%, logs/metrics/alert/RUM |
+| **Q1.6** | Performance | Backend + QA | 6 | API p95 бюджеты, k6/autocannon checkout/payments |
 
 Порядок: Q1.1 → Q1.2 → Q1.3/Q1.4 → Q1.5/Q1.6. T2-гейты блокирующие
-после merge Q1.0–Q1.6; до этого блокируют TDD/contract/property/threat
-model, mutation — nightly, SLO/alert/RUM — исключение.
+после merge Q1.0–Q1.6. До этого блокируют TDD/contract/property/threat
+model; SAST — ручной прогон или исключение; mutation — nightly;
+SLO-дизайн/логи обязательны, alert/RUM — исключение.
 
 ## Роли
 

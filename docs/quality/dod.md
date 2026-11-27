@@ -45,15 +45,16 @@ PBI Done, только если:
       nightly-отчёт и owner-исключение.
 - [ ] Typecheck, lint, build зелёные.
 - [ ] Нет новых high/critical уязвимостей; secret scan чист; authz-тесты
-      для новых ручек; для T2 threat model обновлён, SAST/Semgrep чист.
+      для новых ручек; для T2 threat model обновлён, SAST/Semgrep чист
+      (до Q1.4 — ручной прогон или owner-исключение).
 - [ ] A11y: клавиатура, фокус, labels, контраст; axe чист на изменённых
       страницах.
 - [ ] Perf-бюджет: preview lab LCP < 2500 ms (owner-approved DoD-прокси
       v1) и дельта бандла в бюджете; field p75 — до публичного запуска.
 - [ ] Наблюдаемость: логи/метрики/трейсы для нового пути; для T2 —
       SLO/алерт (API p95 < 500 ms, error rate < 1%, availability 99,5%)
-      и field RUM, если затронут фронт. До Q1.5 alert/RUM могут быть
-      owner-исключением; после — входят в T2-гейт.
+      и field RUM, если затронут фронт. До merge Q1.0–Q1.6 alert/RUM
+      могут быть owner-исключением; после — входят в T2-гейт.
 - [ ] Документация: ADR при решении, runbook при операции, changelog,
       postmortem для P0/P1.
 - [ ] OpenSpec: при изменении поведения — `verify-change` пройден,

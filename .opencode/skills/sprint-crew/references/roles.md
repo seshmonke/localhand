@@ -577,8 +577,8 @@ root cause, proposal, owner и метрикой.
 **Границы.**
 - Не принимает «тесты зелёные» без RED-evidence для T1/T2.
 - Не принимает contract change без contract-теста.
-- Не принимает T2 без threat model; mutation/SLO — по матрице активации
-  (до Q1.0–Q1.6 nightly/исключение, после — блок).
+- Не принимает T2 без threat model; mutation/SAST — nightly/ручной до
+  Q1.0–Q1.6; SLO-дизайн/логи обязательны, alert/RUM — исключение.
 
 **DoD роли.** Каждый P1 имеет repro/доказательство; тест ловит регрессию;
 TDD-evidence проверен; вердикт и проверенное записаны.

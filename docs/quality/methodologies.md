@@ -26,7 +26,7 @@ RED:   DATABASE_URL_TEST=... pnpm --filter @localhand/api test
        test: payments.flow.db.test.ts > refuses a failed-key retry after
        the seller disconnects
        expected 409, received 200 with confirmationUrl
-GREEN: same command; api 263/263 (DB suite included)
+GREEN: same command with PostgreSQL/CI; api 263/263 (DB suite included)
 REFACTOR: same tests green; behavior unchanged
 ```
 
@@ -116,7 +116,7 @@ error budget; field RUM для фронта. Нельзя улучшать то,
   error rate < 1%, availability 99,5% в месяц; LCP — preview-прокси
   < 2500 ms, field RUM — до публичного запуска или owner-исключение.
 - Гейт до активации: логи/метрики и SLO-дизайн обязательны, alert/RUM —
-  owner-исключение; после Q1.5 — alert/RUM входят в T2-гейт.
+  owner-исключение; после merge Q1.0–Q1.6 — alert/RUM входят в T2-гейт.
 
 ### 7. Performance budgets + load testing
 
@@ -155,11 +155,11 @@ canary/blue-green и быстрый rollback. Ручные изменения VM
 **Волна 1 — Sprint 3–4:**
 TDD, ATDD, contract tests, property/mutation для T2, threat model,
 SLO/RUM на checkout/payments, Semgrep important-only.
-**Активация T2-гейтов:** после merge всей программы `quality-wave-1`
-(Q1.0–Q1.6). До активации блокируют TDD/ATDD, contract, property и
-threat model; mutation идёт nightly-отчётом, SLO/alert — проектированием
-и логами, field RUM — owner-исключением до публичного запуска. После
-активации все гейты T2 блокируют merge.
+**Активация T2-гейтов:** одна точка — после merge всей программы
+`quality-wave-1` (Q1.0–Q1.6). До активации блокируют TDD/ATDD, contract,
+property и threat model; SAST — ручной Semgrep или owner-исключение;
+mutation — nightly; SLO-дизайн и логи обязательны, alert/RUM —
+owner-исключение. После активации все гейты T2 блокируют merge.
 
 **Волна 2 — Sprint 5–6:**
 trunk-based + feature flags, performance/load budgets, postmortems.

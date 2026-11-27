@@ -43,16 +43,16 @@
   quality-wave-1. Спринт: — (Sprint 4).
 - [ ] P1. Q1.3 Property/mutation: fast-check payments/authz, StrykerJS
   T2 ≥ 70% changed. Критерий: nightly, затем pre-merge gate. Источник:
-  quality-wave-1. Спринт: — (Sprint 4).
+  quality-wave-1. Спринт: — (Sprint 5).
 - [ ] P1. Q1.4 Security: threat model payments/address, Semgrep PR,
   CodeQL/SBOM nightly, ASVS T2. Критерий: high/critical = 0. Источник:
-  quality-wave-1. Спринт: — (Sprint 4).
+  quality-wave-1. Спринт: — (Sprint 5).
 - [ ] P1. Q1.5 Observability: SLO p95<500ms/error<1%/availability 99,5%,
   logs/metrics/alert/RUM. Критерий: SLO в бюджете. Источник:
-  quality-wave-1. Спринт: — (Sprint 4).
+  quality-wave-1. Спринт: — (Sprint 6).
 - [ ] P1. Q1.6 Performance: API p95 бюджеты, k6/autocannon
   checkout/payments. Критерий: бюджеты в CI. Источник: quality-wave-1.
-  Спринт: — (Sprint 4).
+  Спринт: — (Sprint 6).
 
 - [ ] Онбординг продавца: статус, ЮKassa, магазин. Критерий: продавец
   проходит путь до публикации товара. Источник: product.md. Спринт: —.
