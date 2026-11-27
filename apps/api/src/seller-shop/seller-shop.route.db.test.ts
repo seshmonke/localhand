@@ -107,6 +107,9 @@ describeWithDb("seller shop routes with a real database", () => {
         slug: "vintage-shop",
         name: "Винтаж на районе",
         description: "Секонд-хенд и винтаж",
+        cdekCityCode: null,
+        cdekCityName: null,
+        cdekShipmentPoint: null,
         status: "draft",
       },
     });
@@ -403,6 +406,63 @@ describeWithDb("seller shop routes with a real database", () => {
         name: "Второй изменён",
       }),
     });
+  });
+
+  it("stores the CDEK origin city and point atomically and clears old points", async () => {
+    const user = await createUser(1);
+    const created = await request(user, "POST", "/seller/shop", {
+      name: "Магазин с доставкой",
+      slug: "shipping-shop",
+    });
+    expect(created.statusCode).toBe(201);
+
+    const first = await request(user, "PATCH", "/seller/shop", {
+      cdekCityCode: 44,
+      cdekCityName: "Москва",
+      cdekShipmentPoint: "MSK001",
+    });
+    expect(first.statusCode).toBe(200);
+    expect(first.json().shop).toMatchObject({
+      cdekCityCode: 44,
+      cdekCityName: "Москва",
+      cdekShipmentPoint: "MSK001",
+    });
+
+    const sameCityNewPoint = await request(user, "PATCH", "/seller/shop", {
+      cdekShipmentPoint: "MSK002",
+    });
+    expect(sameCityNewPoint.statusCode).toBe(200);
+    expect(sameCityNewPoint.json().shop).toMatchObject({
+      cdekCityCode: 44,
+      cdekShipmentPoint: "MSK002",
+    });
+
+    const newCity = await request(user, "PATCH", "/seller/shop", {
+      cdekCityCode: 137,
+      cdekCityName: "Санкт-Петербург",
+    });
+    expect(newCity.statusCode).toBe(200);
+    expect(newCity.json().shop).toMatchObject({
+      cdekCityCode: 137,
+      cdekCityName: "Санкт-Петербург",
+      cdekShipmentPoint: null,
+    });
+
+    const pointWithoutCity = await request(user, "PATCH", "/seller/shop", {
+      cdekCityCode: null,
+    });
+    expect(pointWithoutCity.statusCode).toBe(200);
+    expect(pointWithoutCity.json().shop).toMatchObject({
+      cdekCityCode: null,
+      cdekCityName: null,
+      cdekShipmentPoint: null,
+    });
+
+    const missingCity = await request(user, "PATCH", "/seller/shop", {
+      cdekShipmentPoint: "MSK001",
+    });
+    expect(missingCity.statusCode).toBe(409);
+    expect(missingCity.json()).toEqual({ error: "shop_city_missing" });
   });
 
   it("returns 401 for missing, malformed and expired sessions", async () => {

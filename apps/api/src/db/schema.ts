@@ -35,6 +35,15 @@ export const paymentStatuses = [
   "failed",
   "manual_review",
 ] as const;
+export const deliveryStatuses = [
+  "quoted",
+  "created",
+  "in_transit",
+  "delivered",
+  "canceled",
+  "manual",
+  "failed",
+] as const;
 
 export const shopStatusEnum = pgEnum("shop_status", shopStatuses);
 export const productStatusEnum = pgEnum("product_status", productStatuses);
@@ -44,6 +53,7 @@ export const sellerPaymentAccountStatusEnum = pgEnum(
   sellerPaymentAccountStatuses,
 );
 export const paymentStatusEnum = pgEnum("payment_status", paymentStatuses);
+export const deliveryStatusEnum = pgEnum("delivery_status", deliveryStatuses);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -84,6 +94,9 @@ export const shops = pgTable("shops", {
   name: text("name").notNull(),
   description: text("description"),
   status: shopStatusEnum("status").notNull().default("draft"),
+  cdekCityCode: integer("cdek_city_code"),
+  cdekCityName: text("cdek_city_name"),
+  cdekShipmentPoint: text("cdek_shipment_point"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -99,11 +112,21 @@ export const products = pgTable(
     description: text("description"),
     priceKopecks: integer("price_kopecks").notNull(),
     imageUrl: text("image_url"),
+    weightG: integer("weight_g"),
+    lengthCm: integer("length_cm"),
+    widthCm: integer("width_cm"),
+    heightCm: integer("height_cm"),
     status: productStatusEnum("status").notNull().default("draft"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index("products_shop_id_idx").on(table.shopId)],
+  (table) => [
+    index("products_shop_id_idx").on(table.shopId),
+    check("products_weight_g_check", sql`${table.weightG} IS NULL OR ${table.weightG} > 0`),
+    check("products_length_cm_check", sql`${table.lengthCm} IS NULL OR ${table.lengthCm} > 0`),
+    check("products_width_cm_check", sql`${table.widthCm} IS NULL OR ${table.widthCm} > 0`),
+    check("products_height_cm_check", sql`${table.heightCm} IS NULL OR ${table.heightCm} > 0`),
+  ],
 );
 
 export const orders = pgTable(
@@ -118,6 +141,7 @@ export const orders = pgTable(
       .references(() => shops.id, { onDelete: "restrict" }),
     status: orderStatusEnum("status").notNull().default("new"),
     totalKopecks: bigint("total_kopecks", { mode: "number" }).notNull(),
+    deliveryKopecks: bigint("delivery_kopecks", { mode: "number" }).notNull().default(0),
     buyerPhone: text("buyer_phone").notNull(),
     comment: text("comment"),
     clientCheckoutId: uuid("client_checkout_id").notNull(),
@@ -131,6 +155,7 @@ export const orders = pgTable(
       table.shopId,
     ),
     check("orders_total_kopecks_check", sql`${table.totalKopecks} >= 0`),
+    check("orders_delivery_kopecks_check", sql`${table.deliveryKopecks} >= 0`),
     check(
       "orders_comment_length_check",
       sql`${table.comment} IS NULL OR char_length(${table.comment}) <= 500`,
@@ -231,6 +256,80 @@ export const payments = pgTable(
     check("payments_amount_kopecks_check", sql`${table.amountKopecks} >= 0`),
     check("payments_currency_check", sql`${table.currency} = 'RUB'`),
     check("payments_reconcile_attempts_check", sql`${table.reconcileAttempts} >= 0`),
+  ],
+);
+
+export const orderDeliveries = pgTable(
+  "order_deliveries",
+  {
+    id: serial("id").primaryKey(),
+    orderId: integer("order_id")
+      .notNull()
+      .unique()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(),
+    status: deliveryStatusEnum("status").notNull().default("quoted"),
+    cityCode: integer("city_code").notNull(),
+    cityName: text("city_name").notNull(),
+    pointCode: text("point_code").notNull(),
+    pointAddress: text("point_address").notNull(),
+    recipientName: text("recipient_name").notNull(),
+    recipientPhone: text("recipient_phone").notNull(),
+    providerTariffCode: text("provider_tariff_code"),
+    tariffName: text("tariff_name"),
+    priceKopecks: bigint("price_kopecks", { mode: "number" }).notNull(),
+    periodMin: smallint("period_min"),
+    periodMax: smallint("period_max"),
+    providerOrderId: text("provider_order_id"),
+    providerNumber: text("provider_number"),
+    carrier: text("carrier"),
+    trackNumber: text("track_number"),
+    lastStatusCode: text("last_status_code"),
+    lastStatusAt: timestamp("last_status_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("order_deliveries_provider_order_id_unique")
+      .on(table.providerOrderId)
+      .where(sql`${table.providerOrderId} IS NOT NULL`),
+    uniqueIndex("order_deliveries_provider_number_unique")
+      .on(table.providerNumber)
+      .where(sql`${table.providerNumber} IS NOT NULL`),
+    index("order_deliveries_status_updated_at_idx").on(table.status, table.updatedAt),
+    check("order_deliveries_provider_check", sql`${table.provider} IN ('cdek', 'manual', 'fake')`),
+    check("order_deliveries_price_kopecks_check", sql`${table.priceKopecks} >= 0`),
+    check(
+      "order_deliveries_period_min_check",
+      sql`${table.periodMin} IS NULL OR ${table.periodMin} >= 0`,
+    ),
+    check(
+      "order_deliveries_period_max_check",
+      sql`${table.periodMax} IS NULL OR ${table.periodMax} >= 0`,
+    ),
+  ],
+);
+
+export const deliveryEvents = pgTable(
+  "delivery_events",
+  {
+    id: serial("id").primaryKey(),
+    deliveryId: integer("delivery_id")
+      .notNull()
+      .references(() => orderDeliveries.id, { onDelete: "cascade" }),
+    statusCode: text("status_code").notNull(),
+    statusName: text("status_name").notNull(),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+    payloadHash: text("payload_hash").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique("delivery_events_delivery_status_occurred_unique").on(
+      table.deliveryId,
+      table.statusCode,
+      table.occurredAt,
+    ),
+    index("delivery_events_delivery_id_occurred_at_idx").on(table.deliveryId, table.occurredAt),
   ],
 );
 

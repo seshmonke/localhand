@@ -20,6 +20,9 @@ const publishedShop = {
   slug: "demo-shop",
   name: "Демо-магазин",
   description: null,
+  cdekCityCode: null,
+  cdekCityName: null,
+  cdekShipmentPoint: null,
   status: "published" as const,
 };
 const createdAt = "2026-11-27T10:00:00.000Z";

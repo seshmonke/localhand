@@ -29,6 +29,7 @@ const order: OrderSummary = {
   buyerPhone: demoUser.phone,
   comment: "Позвоните после 18:00",
   createdAt,
+  delivery: null,
   items: [
     {
       productId: 1,

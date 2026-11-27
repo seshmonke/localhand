@@ -3,7 +3,17 @@ import { eq } from "drizzle-orm";
 import { requireDb } from "../db/client.js";
 import { sellers, shops } from "../db/schema.js";
 
-type ShopRow = Pick<typeof shops.$inferSelect, "id" | "slug" | "name" | "description" | "status">;
+type ShopRow = Pick<
+  typeof shops.$inferSelect,
+  | "id"
+  | "slug"
+  | "name"
+  | "description"
+  | "status"
+  | "cdekCityCode"
+  | "cdekCityName"
+  | "cdekShipmentPoint"
+>;
 
 export function toSellerShop(row: ShopRow): SellerShop {
   return {
@@ -11,6 +21,9 @@ export function toSellerShop(row: ShopRow): SellerShop {
     slug: row.slug,
     name: row.name,
     description: row.description,
+    cdekCityCode: row.cdekCityCode,
+    cdekCityName: row.cdekCityName,
+    cdekShipmentPoint: row.cdekShipmentPoint,
     status: row.status,
   };
 }
@@ -23,6 +36,9 @@ export async function getShopByUserId(userId: number): Promise<SellerShop | null
       name: shops.name,
       description: shops.description,
       status: shops.status,
+      cdekCityCode: shops.cdekCityCode,
+      cdekCityName: shops.cdekCityName,
+      cdekShipmentPoint: shops.cdekShipmentPoint,
     })
     .from(shops)
     .innerJoin(sellers, eq(shops.sellerId, sellers.id))
@@ -90,13 +106,18 @@ export async function createShop(userId: number, input: CreateShop): Promise<Cre
 
 export type UpdateShopResult =
   | { ok: true; shop: SellerShop }
-  | { ok: false; error: "not_found" | "slug_taken" | "shop_blocked" };
+  | { ok: false; error: "not_found" | "slug_taken" | "shop_blocked" | "shop_city_missing" };
 
 export async function updateShop(userId: number, input: UpdateShop): Promise<UpdateShopResult> {
   const db = requireDb();
 
   const [existing] = await db
-    .select({ id: shops.id, status: shops.status })
+    .select({
+      id: shops.id,
+      status: shops.status,
+      cdekCityCode: shops.cdekCityCode,
+      cdekShipmentPoint: shops.cdekShipmentPoint,
+    })
     .from(shops)
     .innerJoin(sellers, eq(shops.sellerId, sellers.id))
     .where(eq(sellers.userId, userId))
@@ -119,6 +140,35 @@ export async function updateShop(userId: number, input: UpdateShop): Promise<Upd
   }
   if (input.description !== undefined) {
     changes.description = input.description;
+  }
+  if (input.cdekCityCode !== undefined) {
+    changes.cdekCityCode = input.cdekCityCode;
+    if (input.cdekCityCode === null) {
+      // Clearing the city must clear every dependent origin field.
+      changes.cdekCityName = null;
+      changes.cdekShipmentPoint = null;
+    } else if (input.cdekCityCode !== existing.cdekCityCode) {
+      // A different city invalidates the old name/point unless the same
+      // request supplies replacements. This prevents a PVZ from another city.
+      changes.cdekCityName = input.cdekCityName ?? null;
+      changes.cdekShipmentPoint = input.cdekShipmentPoint ?? null;
+    }
+  }
+  if (input.cdekCityName !== undefined) {
+    changes.cdekCityName = input.cdekCityName;
+  }
+  if (input.cdekShipmentPoint !== undefined) {
+    changes.cdekShipmentPoint = input.cdekShipmentPoint;
+  }
+
+  const nextCityCode =
+    changes.cdekCityCode !== undefined ? changes.cdekCityCode : existing.cdekCityCode;
+  const nextPoint =
+    changes.cdekShipmentPoint !== undefined
+      ? changes.cdekShipmentPoint
+      : existing.cdekShipmentPoint;
+  if (nextPoint !== null && nextPoint !== undefined && nextCityCode === null) {
+    return { ok: false, error: "shop_city_missing" };
   }
   if (input.status !== undefined) {
     changes.status = input.status;

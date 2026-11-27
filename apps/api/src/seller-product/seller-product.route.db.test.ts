@@ -52,6 +52,10 @@ type ProductBody = {
   description: string | null;
   priceKopecks: number;
   imageUrl: string | null;
+  weightG: number | null;
+  lengthCm: number | null;
+  widthCm: number | null;
+  heightCm: number | null;
   status: "draft" | "published" | "hidden";
 };
 
@@ -179,6 +183,10 @@ describeWithDb("seller product routes with a real database", () => {
         description: "Винтажная джинсовая куртка",
         priceKopecks: 420_000,
         imageUrl: "https://example.com/jacket.jpg",
+        weightG: null,
+        lengthCm: null,
+        widthCm: null,
+        heightCm: null,
         status: "draft",
       },
     });
@@ -496,6 +504,10 @@ describeWithDb("seller product routes with a real database", () => {
         description: null,
         priceKopecks: 0,
         imageUrl: null,
+        weightG: null,
+        lengthCm: null,
+        widthCm: null,
+        heightCm: null,
         status: "hidden",
       },
     });
@@ -649,5 +661,44 @@ describeWithDb("seller product routes with a real database", () => {
     await publishShop(user);
     const republished = await app.inject({ method: "GET", url: `/products/${product.id}` });
     expect(republished.statusCode).toBe(200);
+  });
+
+  it("stores, updates and clears physical dimensions", async () => {
+    const user = await createUser(1);
+    await createShop(user, "dimensions-shop");
+
+    const product = await createProduct(user, {
+      name: "Куртка 90-х",
+      priceKopecks: 420_000,
+      weightG: 1200,
+      lengthCm: 40,
+      widthCm: 30,
+      heightCm: 10,
+    });
+    expect(product).toMatchObject({
+      weightG: 1200,
+      lengthCm: 40,
+      widthCm: 30,
+      heightCm: 10,
+    });
+    expect(await listProducts(user)).toEqual([product]);
+
+    const cleared = await request(user, "PATCH", `/seller/products/${product.id}`, {
+      weightG: null,
+      heightCm: null,
+    });
+    expect(cleared.statusCode).toBe(200);
+    expect(cleared.json().product).toMatchObject({
+      weightG: null,
+      lengthCm: 40,
+      widthCm: 30,
+      heightCm: null,
+    });
+
+    const invalid = await request(user, "PATCH", `/seller/products/${product.id}`, {
+      weightG: 0,
+    });
+    expect(invalid.statusCode).toBe(400);
+    expect(invalid.json()).toEqual({ error: "invalid_request" });
   });
 });
