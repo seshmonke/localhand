@@ -28,8 +28,8 @@ ACCEPT, change `02-seller-onboarding` заархивирован.
 - [Спринт 2: buyer-core](02-buyer-core.md) — CLOSED 27.11.2026;
   S2-1…S2-4 (PR #26/#28/#30/#31/#33), changes `03`/`04`/`05` в архиве.
   LCP: owner-approved lab/preview proxy, field RUM в бэклоге.
-- [Спринт 3: money-path](03-money-path.md) — BUILDING, cycle 4;
-  S3-1 payments закрыт, `06-payments` в архиве; дальше `07-delivery`,
+- [Спринт 3: money-path](03-money-path.md) — BUILDING, cycle 5;
+  S3-1 payments закрыт, `06-payments` в архиве; S3-2 `07-delivery` в работе,
   `08-order-lifecycle`, `09-orders-pagination`. ЮKassa/СДЭК — тестовый
   контур, без реальных денег и адресов.
 
