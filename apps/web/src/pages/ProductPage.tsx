@@ -2,6 +2,8 @@ import { formatRubles, kopecks } from "@localhand/shared";
 import { Button, buttonVariants } from "@localhand/ui";
 import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router";
+import { AddToCartButton } from "../cart/AddToCartButton.js";
+import { cartItemFromProduct } from "../cart/cart-item.js";
 import { ScreenState } from "../components/ScreenState.js";
 import { ApiNotFoundError } from "../lib/api.js";
 import { useProductQuery } from "../lib/queries.js";
@@ -108,9 +110,11 @@ export function ProductPage() {
           ) : null}
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button size="lg" disabled>
-              Корзина — скоро
-            </Button>
+            <AddToCartButton
+              item={cartItemFromProduct(item)}
+              size="lg"
+              className="w-full sm:w-auto"
+            />
             <Link
               to={`/shops/${item.shop.slug}`}
               className={buttonVariants({ variant: "outline", size: "lg" })}

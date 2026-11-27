@@ -1,5 +1,7 @@
 import { formatRubles, kopecks, type ProductCard as ProductCardData } from "@localhand/shared";
 import { Link } from "react-router";
+import { AddToCartButton } from "../cart/AddToCartButton.js";
+import { cartItemFromProduct } from "../cart/cart-item.js";
 
 const tones = ["bg-accent-red", "bg-accent-orange", "bg-accent-green", "bg-ink"];
 
@@ -34,6 +36,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           {formatRubles(kopecks(product.priceKopecks))}
         </p>
       </div>
+      <AddToCartButton item={cartItemFromProduct(product)} size="sm" className="mt-3 h-11 w-full" />
     </Link>
   );
 }
