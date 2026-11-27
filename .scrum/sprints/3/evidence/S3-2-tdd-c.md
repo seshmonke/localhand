@@ -4,12 +4,12 @@
 
 ## RED/GREEN
 
-- RED: shipment endpoints отсутствовали (404), adapter-модуль не
-  существовал; фиксируется тестами до реализации.
+- RED: pre-code прогон на main — shipment endpoint 404 вместо 401;
+  `S3-2-tdd-c-red.txt`.
 - GREEN: `pnpm verify` shared 156, web 157, api 347, OpenSpec 9/9,
   public 515; см. `S3-2-verify-c.txt`.
 - Mutation-check webhook idempotency: без unique-constraint повтор
-  события создаёт дубль — `S3-2-tdd-c-red.log`.
+  события создаёт дубль — `S3-2-tdd-c-red.txt`.
 
 ## Покрыто
 

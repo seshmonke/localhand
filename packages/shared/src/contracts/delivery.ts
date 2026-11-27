@@ -23,7 +23,9 @@ const TRACK_NUMBER_PATTERN = /^[A-Za-z0-9-]+$/;
 const BoundedText = (max: number) =>
   z.string().trim().min(1).max(max).refine(hasNoNulByte, NUL_BYTE_MESSAGE);
 
-export const DeliveryCityCodeSchema = z.number().int().min(0).max(ORDER_ID_MAX);
+export const DeliveryCityCodeSchema = z.number().int().positive().max(ORDER_ID_MAX);
+/** Manual/legacy snapshots may not know a CDEK city code. */
+export const DeliverySnapshotCityCodeSchema = z.number().int().min(0).max(ORDER_ID_MAX);
 
 export const DeliveryCitySchema = z.object({
   code: DeliveryCityCodeSchema,
@@ -114,7 +116,7 @@ export const DeliveryProviderSchema = z.enum(["cdek", "manual", "fake"]);
 export const DeliverySnapshotSchema = z.object({
   provider: DeliveryProviderSchema,
   status: DeliveryStatusSchema,
-  cityCode: DeliveryCityCodeSchema,
+  cityCode: DeliverySnapshotCityCodeSchema,
   cityName: BoundedText(DELIVERY_CITY_NAME_MAX_LENGTH),
   pointCode: DeliveryPointCodeSchema,
   pointAddress: BoundedText(DELIVERY_POINT_ADDRESS_MAX_LENGTH),

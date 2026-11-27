@@ -32,7 +32,7 @@ A foundation, B checkout/UI, C shipment/status/e2e.
 
 ## 3. PR C: shipment/status/manual/e2e
 
-- [x] 3.1 RED: shipment/webhook/manual/e2e tests падают.
+- [ ] 3.1 RED: shipment/webhook/manual/e2e tests падают.
 - [x] 3.2 `GET /seller/orders/:id/delivery/tariffs` (paid, CDEK from shop city/point to buyer PVZ).
 - [x] 3.3 `POST /seller/orders/:id/delivery {tariffCode}`: paid-only, tariff must equal paid quote/price, 409 `delivery_tariff_mismatch`, idempotent `number=order-{id}`, `shipment_point`, 202, provider id/number, `created`; reconcile before retry.
 - [x] 3.4 `PATCH /seller/orders/:id/delivery` manual carrier/track: only paid + no CDEK order; 409 if exists.

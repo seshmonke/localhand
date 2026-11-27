@@ -21,8 +21,8 @@
 - `pnpm verify`: exit 0; shared 154, web 154, api 313, OpenSpec 9/9,
   public 499 files. В API входят property-тесты упаковки/токена,
   event idempotency/cascade DB-тесты, seller dimensions/city.
-- RED/GREEN: `S3-2-tdd-a-red.log`, `S3-2-tdd-a-green.log`;
-  mutation-check TTL — `S3-2-property-red.log`.
+- RED/GREEN: `S3-2-tdd-a-red.txt`, `S3-2-tdd-a-green.txt`;
+  mutation-check TTL — `S3-2-property-red.txt`.
 
 ## Покрытые AC
 

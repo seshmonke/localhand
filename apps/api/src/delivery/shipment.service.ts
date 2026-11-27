@@ -4,7 +4,7 @@ import type {
   DeliverySnapshot,
   DeliveryTariffListResponse,
 } from "@localhand/shared";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull, lte, or } from "drizzle-orm";
 import { requireDb } from "../db/client.js";
 import {
   deliveryEvents,
@@ -312,6 +312,9 @@ export async function createSellerShipment(
     if (context.delivery.providerOrderId) {
       return { ok: true, delivery: toSnapshot(context) as DeliverySnapshot };
     }
+    if (context.delivery.status === "manual" || context.delivery.trackNumber !== null) {
+      return { ok: false, error: "delivery_already_exists" };
+    }
 
     let remote = null;
     try {
@@ -467,16 +470,18 @@ export async function saveManualTrack(
       }
 
       const provider = getDeliveryProvider();
-      if (!provider) {
-        return { ok: false, error: "delivery_unavailable" };
-      }
-      try {
-        const remote = await provider.findShipmentByNumber(`order-${orderId}`);
-        if (remote) {
-          return { ok: false, error: "delivery_already_exists" };
+      // In manual mode there is no API to ask: the seller explicitly takes
+      // responsibility for the carrier/track. Only a configured provider is
+      // consulted to avoid creating a manual duplicate of a CDEK order.
+      if (provider) {
+        try {
+          const remote = await provider.findShipmentByNumber(`order-${orderId}`);
+          if (remote) {
+            return { ok: false, error: "delivery_already_exists" };
+          }
+        } catch {
+          return { ok: false, error: "delivery_provider_error" };
         }
-      } catch {
-        return { ok: false, error: "delivery_provider_error" };
       }
     }
 
@@ -642,7 +647,12 @@ export async function handleCdekWebhook(payload: {
         lastStatusAt: occurredAt,
         updatedAt: new Date(),
       })
-      .where(eq(orderDeliveries.id, row.id));
+      .where(
+        and(
+          eq(orderDeliveries.id, row.id),
+          or(isNull(orderDeliveries.lastStatusAt), lte(orderDeliveries.lastStatusAt, occurredAt)),
+        ),
+      );
     await tx
       .insert(deliveryEvents)
       .values({

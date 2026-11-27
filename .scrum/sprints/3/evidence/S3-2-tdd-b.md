@@ -5,14 +5,14 @@
 ## RED
 
 - `POST /delivery/quote`, `/delivery/cities`, `/delivery/points` → 404 до
-  реализации: `.scrum/sprints/3/evidence/S3-2-tdd-b-red.log`.
+  реализации: `.scrum/sprints/3/evidence/S3-2-tdd-b-red.txt`.
 - Checkout без доставки при настроенном провайдере создавал заказ:
   regression-тест `delivery_required` (P1 ревью).
 
 ## GREEN
 
 - `pnpm verify` на #60: shared 156, web 157, api 327, OpenSpec 9/9,
-  public 504; см. `S3-2-verify-b.txt`, `S3-2-tdd-b-green.log`.
+  public 504; см. `S3-2-verify-b.txt`, `S3-2-tdd-b-green.txt`.
 - Quote: города/ПВЗ, per-shop цена, point-city, габариты/город/ПВЗ
   сдачи, 429, no-store, signed token.
 - Checkout: `total = items + delivery` property, `delivery_required`,
