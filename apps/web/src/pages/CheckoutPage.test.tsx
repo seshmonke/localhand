@@ -315,6 +315,9 @@ describe("CheckoutPage", () => {
     await screen.findByRole("option", { name: /ПВЗ Невский/ });
     await browser.selectOptions(screen.getByLabelText("Пункт выдачи"), "SPB001");
 
+    expect((await screen.findAllByText(/380/)).length).toBeGreaterThan(0);
+    expect(screen.getByText(/4 580/)).toBeInTheDocument();
+
     await browser.click(screen.getByRole("button", { name: "Оформить заказ" }));
 
     expect(

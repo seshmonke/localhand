@@ -530,7 +530,7 @@ export function CheckoutPage() {
                     <dt>Товаров</dt>
                     <dd>{pluralizeItems(count)}</dd>
                   </div>
-                  {deliveryReady ? (
+                  {quoteQuery.data ? (
                     <div className="flex justify-between gap-4">
                       <dt>Доставка</dt>
                       <dd>{formatRubles(kopecks(deliveryKopecks))}</dd>
