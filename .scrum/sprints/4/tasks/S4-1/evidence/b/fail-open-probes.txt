@@ -1,0 +1,54 @@
+$ mv apps/web/tsconfig.json apps/web/tsconfig.json.bak; pnpm check:i18n
+$ node scripts/check-i18n.mjs
+file://./scripts/check-i18n.mjs:229
+      throw new Error(`check-i18n: missing project config ${toRepoPath(project, config.root)}`);
+            ^
+
+Error: check-i18n: missing project config apps/web/tsconfig.json
+    at scanProject (file://./scripts/check-i18n.mjs:229:13)
+    at runCheck (file://./scripts/check-i18n.mjs:365:18)
+    at file://./scripts/check-i18n.mjs:420:22
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5)
+
+Node.js v26.13.1
+[ELIFECYCLE] Command failed with exit code 1.
+exit=1
+$ mv packages/ui/tsconfig.json packages/ui/tsconfig.json.bak; pnpm check:i18n
+$ node scripts/check-i18n.mjs
+file://./scripts/check-i18n.mjs:229
+      throw new Error(`check-i18n: missing project config ${toRepoPath(project, config.root)}`);
+            ^
+
+Error: check-i18n: missing project config packages/ui/tsconfig.json
+    at scanProject (file://./scripts/check-i18n.mjs:229:13)
+    at runCheck (file://./scripts/check-i18n.mjs:365:18)
+    at file://./scripts/check-i18n.mjs:420:22
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5)
+
+Node.js v26.13.1
+[ELIFECYCLE] Command failed with exit code 1.
+exit=1
+$ mv scripts/i18n-baseline.json <tmp>/i18n-baseline.bak; pnpm check:i18n:update; pnpm check:i18n:init --help?
+$ node scripts/check-i18n.mjs --update-baseline
+i18n scan: 125 production files, 85 test files; 6 keys, 0 production usages
+cyrillic: 752 baselined findings / 826 occurrences; 35 allowlisted occurrences
+check-i18n: baseline is missing; use --init-baseline once
+[ELIFECYCLE] Command failed with exit code 1.
+exit=1
+$ node scripts/check-i18n.mjs --init-baseline
+i18n scan: 125 production files, 85 test files; 6 keys, 0 production usages
+cyrillic: 752 baselined findings / 826 occurrences; 35 allowlisted occurrences
+baseline initialized: 752 findings
+exit=0
+$ pnpm check:i18n:update (existing baseline)
+$ node scripts/check-i18n.mjs --update-baseline
+i18n scan: 125 production files, 85 test files; 6 keys, 0 production usages
+cyrillic: 752 baselined findings / 826 occurrences; 35 allowlisted occurrences
+baseline updated: 752 findings
+exit=0
+$ node -e validateAllowlist kind-only
+rejected: check-i18n: allowlist entry needs texts+kinds: x.ts

@@ -1,0 +1,65 @@
+[
+  {
+    "file": "apps/api/src/db/seed.ts",
+    "kinds": ["string"],
+    "texts": [
+      "PDF-зин локального автора. Ссылка приходит после оплаты.",
+      "Винтаж на районе",
+      "Винтажная куртка, состояние хорошее. Замеры по запросу.",
+      "Куртка 90-х",
+      "Локальный бренд, шерсть, ручная работа.",
+      "Небольшая партия, натуральная кожа, ручная сборка.",
+      "Свитер ручной вязки",
+      "Сумка из остатков кожи",
+      "Тестовый магазин Local Hand: винтаж, локальные вещи и цифровые работы.",
+      "Цифровой зин"
+    ],
+    "reason": "fictional demo seed data, not runtime copy"
+  },
+  {
+    "file": "apps/api/src/delivery/fake-provider.ts",
+    "kinds": ["string"],
+    "texts": [
+      "Казань",
+      "Казань, Баумана 1",
+      "Москва",
+      "Москва, Арбат 2",
+      "Москва, Тверская 1",
+      "ПВЗ Арбат",
+      "ПВЗ Баумана",
+      "ПВЗ Невский",
+      "ПВЗ Садовая",
+      "ПВЗ Тверская",
+      "Посылка склад-ПВЗ",
+      "Санкт-Петербург",
+      "Санкт-Петербург, Невский 1",
+      "Санкт-Петербург, Садовая 2",
+      "Создан"
+    ],
+    "reason": "fake CDEK provider payload (city/PVZ data), not runtime copy"
+  },
+  {
+    "file": "apps/api/src/delivery/cdek-provider.ts",
+    "kinds": ["string"],
+    "texts": ["Принят", "Неизвестно"],
+    "reason": "CDEK provider status payload/fallbacks, not our runtime copy"
+  },
+  {
+    "file": "apps/web/index.html",
+    "kinds": ["html-text"],
+    "texts": [
+      "Local Hand — секонд-хенд и локальные бренды",
+      "Local Hand — маркетплейс секонд-хенда, винтажа и локальных брендов. Свой магазин для продавца и общая витрина для покупателя.",
+      "Маркетплейс секонд-хенда, винтажа и локальных брендов. Свой магазин и общая витрина."
+    ],
+    "reason": "static HTML meta/title (3 fragments), ADR 0006 allowlist; not migrated in S4-3"
+  },
+  {
+    "key": "common.greeting",
+    "reason": "foundation key exercised by @localhand/i18n tests; first production use in S4-2"
+  },
+  {
+    "key": "cart.item",
+    "reason": "foundation plural key exercised by @localhand/i18n tests; first production use in S4-2"
+  }
+]

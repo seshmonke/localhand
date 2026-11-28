@@ -1,0 +1,5 @@
+$ node scripts/check-i18n.mjs
+i18n scan: 125 production files, 85 test files; 6 keys, 0 production usages
+cyrillic: 752 baselined findings / 826 occurrences; 35 allowlisted occurrences
+i18n check passed (baseline: 752 findings)
+exit=0

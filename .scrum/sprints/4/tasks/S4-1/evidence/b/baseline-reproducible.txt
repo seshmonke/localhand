@@ -1,0 +1,22 @@
+$ sha256sum scripts/i18n-baseline.json
+c2ea173092ad2ce4469b3113121f883280733d7904992e6447ee0d7ac525a056  scripts/i18n-baseline.json
+$ pnpm check:i18n:update
+$ node scripts/check-i18n.mjs --update-baseline
+i18n scan: 125 production files, 85 test files; 6 keys, 0 production usages
+cyrillic: 752 baselined findings / 826 occurrences; 35 allowlisted occurrences
+baseline updated: 752 findings
+$ sha256sum scripts/i18n-baseline.json
+c2ea173092ad2ce4469b3113121f883280733d7904992e6447ee0d7ac525a056  scripts/i18n-baseline.json
+$ pnpm check:i18n:update (second)
+$ node scripts/check-i18n.mjs --update-baseline
+i18n scan: 125 production files, 85 test files; 6 keys, 0 production usages
+cyrillic: 752 baselined findings / 826 occurrences; 35 allowlisted occurrences
+baseline updated: 752 findings
+$ sha256sum scripts/i18n-baseline.json
+c2ea173092ad2ce4469b3113121f883280733d7904992e6447ee0d7ac525a056  scripts/i18n-baseline.json
+$ pnpm check:i18n
+$ node scripts/check-i18n.mjs
+i18n scan: 125 production files, 85 test files; 6 keys, 0 production usages
+cyrillic: 752 baselined findings / 826 occurrences; 35 allowlisted occurrences
+i18n check passed (baseline: 752 findings)
+exit=0
