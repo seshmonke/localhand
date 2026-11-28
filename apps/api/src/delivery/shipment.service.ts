@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { SELLER_DELIVERY_EVENTS_MAX } from "@localhand/shared";
 import type {
   DeliveryEvent,
   DeliveryManualTrack,
@@ -29,7 +30,6 @@ export type ShipmentError =
   | "delivery_snapshot_missing"
   | "delivery_dimensions_missing"
   | "delivery_tariff_mismatch"
-  | "delivery_already_created"
   | "delivery_already_exists"
   | "delivery_provider_error";
 
@@ -67,8 +67,6 @@ type DeliveryContext = {
     lastStatusAt: Date | null;
   } | null;
 };
-
-const SELLER_DELIVERY_EVENTS_LIMIT = 50;
 
 const deliverySelect = {
   id: orderDeliveries.id,
@@ -251,7 +249,7 @@ export async function getSellerDelivery(
     .from(deliveryEvents)
     .where(eq(deliveryEvents.deliveryId, deliveryRow.id))
     .orderBy(desc(deliveryEvents.occurredAt), desc(deliveryEvents.id))
-    .limit(SELLER_DELIVERY_EVENTS_LIMIT);
+    .limit(SELLER_DELIVERY_EVENTS_MAX);
 
   const events: DeliveryEvent[] = rows.map((row) => ({
     statusCode: row.statusCode,

@@ -30,3 +30,29 @@ ZodError: [ { "expected": "array", "code": "invalid_type",
 exit=1
 
 Note: authz/404/no-store guards were already green (regression guard).
+
+## 3. Web client: missing exports and query keys (reviewer reproduction)
+
+Reproduced on a clean base `066b29b` with only
+`apps/web/src/lib/api.test.ts` from the D4a change (no production web code):
+
+```bash
+$ apps/web$ node_modules/.bin/vitest run src/lib/api.test.ts
+
+ FAIL  src/lib/api.test.ts > seller delivery API client > fetches the seller delivery with its events
+TypeError: fetchSellerDelivery is not a function
+ FAIL  src/lib/api.test.ts > seller delivery API client > fetches seller tariffs for the order
+TypeError: fetchSellerDeliveryTariffs is not a function
+ FAIL  src/lib/api.test.ts > seller delivery API client > creates a shipment with the paid tariff code
+TypeError: createSellerShipment is not a function
+ FAIL  src/lib/api.test.ts > seller delivery API client > saves a manual carrier and track
+TypeError: saveSellerManualTrack is not a function
+ FAIL  src/lib/api.test.ts > seller delivery API client > propagates API errors with status and code
+TypeError: createSellerShipment is not a function
+ FAIL  src/lib/api.test.ts > seller delivery API client > keeps seller delivery query keys stable
+TypeError: sellerKeys.delivery is not a function
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+exit=1
+```
