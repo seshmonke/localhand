@@ -1,4 +1,7 @@
 import {
+  DELIVERY_CARRIER_MAX_LENGTH,
+  DELIVERY_TRACK_NUMBER_MAX_LENGTH,
+  DeliveryManualTrackSchema,
   formatRubles,
   kopecks,
   type DeliverySnapshot,
@@ -8,19 +11,22 @@ import {
 import { Button } from "@localhand/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useId, useState, type ReactNode } from "react";
-import { ApiError, createSellerShipment } from "../../lib/api.js";
+import { ApiError, createSellerShipment, saveSellerManualTrack } from "../../lib/api.js";
 import {
   sellerKeys,
   useSellerDeliveryTariffsQuery,
   useSellerOrderDeliveryQuery,
 } from "../../lib/queries.js";
-import { FormError } from "../FormField.js";
+import { fieldControlClass, fieldDescribedBy, FormError, FormField } from "../FormField.js";
 import { Card } from "../layout/index.js";
 import { DELIVERY_STATUS_LABELS } from "../orders/DeliverySummaryCard.js";
 import { SessionExpiredState } from "./SessionExpiredState.js";
 
 const PROVIDER_UNAVAILABLE = "СДЭК временно недоступен. Повторите позже.";
 const SESSION_MESSAGE = "Сессия истекла. Войдите снова.";
+const GENERIC_MANUAL_ERROR = "Не удалось сохранить трек. Проверьте соединение и повторите.";
+const ALREADY_EXISTS_MESSAGE = "Отправление уже создано. Обновите страницу, чтобы увидеть трек.";
+const TRACK_HINT = "Латинские буквы, цифры и дефис.";
 const CONFLICT_MESSAGES: Record<string, string> = {
   delivery_tariff_mismatch:
     "Тариф изменился. Пересчитайте тарифы; цена доставки в заказе не меняется.",
@@ -54,6 +60,45 @@ function errorMessage(error: unknown, fallback: string): string {
   return CONFLICT_MESSAGES[error.code] ?? fallback;
 }
 
+type ManualFieldErrors = {
+  carrier?: string;
+  trackNumber?: string;
+};
+
+function validateManualTrack(input: {
+  carrier: string;
+  trackNumber: string;
+}):
+  | { data: { carrier: string; trackNumber: string }; errors?: undefined }
+  | { data?: undefined; errors: ManualFieldErrors } {
+  const result = DeliveryManualTrackSchema.safeParse(input);
+  if (result.success) {
+    return { data: result.data };
+  }
+
+  const errors: ManualFieldErrors = {};
+  for (const issue of result.error.issues) {
+    const field = issue.path[0];
+    if ((field !== "carrier" && field !== "trackNumber") || errors[field] !== undefined) {
+      continue;
+    }
+    if (issue.code === "too_big") {
+      errors[field] =
+        field === "carrier"
+          ? `Не больше ${DELIVERY_CARRIER_MAX_LENGTH} символов.`
+          : `Не больше ${DELIVERY_TRACK_NUMBER_MAX_LENGTH} символов.`;
+    } else {
+      errors[field] =
+        issue.message === "invalid_track_number"
+          ? "Только латинские буквы, цифры и дефис."
+          : field === "carrier"
+            ? "Укажите перевозчика."
+            : "Укажите трек-номер.";
+    }
+  }
+  return { errors };
+}
+
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
@@ -74,12 +119,17 @@ export function AdminDeliveryCard({
 }) {
   const queryClient = useQueryClient();
   const headingId = useId();
+  const manualHeadingId = useId();
   const paid = orderStatus === "paid";
   const deliveryQuery = useSellerOrderDeliveryQuery(orderId, paid && delivery !== null);
   const [tariffsRequested, setTariffsRequested] = useState(false);
   const tariffsQuery = useSellerDeliveryTariffsQuery(orderId, tariffsRequested);
   const [notice, setNotice] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [carrier, setCarrier] = useState("");
+  const [trackNumber, setTrackNumber] = useState("");
+  const [manualFieldErrors, setManualFieldErrors] = useState<ManualFieldErrors>({});
+  const [manualBlocked, setManualBlocked] = useState(false);
 
   const current = deliveryQuery.data?.delivery ?? delivery;
   const events = [...(deliveryQuery.data?.events ?? [])].sort(
@@ -109,7 +159,10 @@ export function AdminDeliveryCard({
       void deliveryQuery.refetch();
     },
     onError: (error) => {
-      if (error instanceof ApiError && error.code === "delivery_already_created") {
+      if (
+        error instanceof ApiError &&
+        (error.code === "delivery_already_created" || error.code === "delivery_already_exists")
+      ) {
         setActionError(null);
         setNotice("Отправление уже создано. Обновляем данные.");
         void deliveryQuery.refetch();
@@ -119,6 +172,41 @@ export function AdminDeliveryCard({
       setActionError(
         errorMessage(error, "Не удалось создать отправление. Проверьте соединение и повторите."),
       );
+    },
+  });
+
+  const manualMutation = useMutation({
+    mutationFn: (input: { carrier: string; trackNumber: string }) =>
+      saveSellerManualTrack(orderId, input),
+    onSuccess: (data) => {
+      setNotice("Ручной трек сохранён.");
+      setActionError(null);
+      setManualFieldErrors({});
+      queryClient.setQueryData<SellerDeliveryResponse>(
+        sellerKeys.delivery(orderId),
+        (previous) => ({ delivery: data.delivery, events: previous?.events ?? [] }),
+      );
+      void deliveryQuery.refetch();
+    },
+    onError: (error) => {
+      setNotice(null);
+      if (
+        error instanceof ApiError &&
+        (error.code === "delivery_already_exists" || error.code === "delivery_already_created")
+      ) {
+        setManualBlocked(true);
+        setActionError(ALREADY_EXISTS_MESSAGE);
+        if (delivery !== null) {
+          void deliveryQuery.refetch();
+        }
+        return;
+      }
+      if (error instanceof ApiError && error.status === 404) {
+        setManualBlocked(true);
+        setActionError("Заказ не найден.");
+        return;
+      }
+      setActionError(errorMessage(error, GENERIC_MANUAL_ERROR));
     },
   });
 
@@ -132,6 +220,15 @@ export function AdminDeliveryCard({
   const period = current === null ? null : periodLabel(current.periodMin, current.periodMax);
   const requestTariffs = () =>
     tariffsRequested ? void tariffsQuery.refetch() : setTariffsRequested(true);
+  const manualAvailable =
+    paid &&
+    !sessionExpired &&
+    !notFound &&
+    !manualBlocked &&
+    (current === null ||
+      (current.providerOrderId === null &&
+        current.status !== "manual" &&
+        current.trackNumber === null));
 
   return (
     <Card as="section" aria-labelledby={headingId}>
@@ -143,7 +240,8 @@ export function AdminDeliveryCard({
         <>
           <p className="mt-4 text-sm leading-relaxed">Доставка не оформлена</p>
           <p className="mt-2 text-xs leading-relaxed text-ink/60">
-            После подключения доставки отправление можно будет оформить вручную.
+            Город, ПВЗ и получатель не сохранены в заказе — трек вводится вручную, покупатель увидит
+            только перевозчика и номер.
           </p>
         </>
       ) : null}
@@ -179,8 +277,18 @@ export function AdminDeliveryCard({
 
       {sessionExpired ? <SessionExpiredState next={`/admin/orders/${orderId}`} /> : null}
       {queryError !== null && !sessionExpired ? (
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col gap-3">
           <FormError message={errorMessage(queryError, "Не удалось загрузить доставку.")} />
+          {queryError instanceof ApiError && queryError.status !== 404 ? (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => void deliveryQuery.refetch()}
+              disabled={deliveryQuery.isFetching}
+            >
+              {deliveryQuery.isFetching ? "Повторяем…" : "Повторить"}
+            </Button>
+          ) : null}
         </div>
       ) : null}
 
@@ -233,6 +341,99 @@ export function AdminDeliveryCard({
             </>
           )}
         </div>
+      ) : null}
+
+      {manualAvailable ? (
+        <form
+          className="mt-6 flex flex-col gap-3 border-t-[3px] border-ink pt-4"
+          aria-labelledby={manualHeadingId}
+          noValidate
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (manualMutation.isPending) {
+              return;
+            }
+            const result = validateManualTrack({ carrier, trackNumber });
+            if (result.data === undefined) {
+              setManualFieldErrors(result.errors);
+              setActionError(null);
+              setNotice(null);
+              return;
+            }
+            setManualFieldErrors({});
+            setActionError(null);
+            manualMutation.mutate(result.data);
+          }}
+        >
+          <h3 id={manualHeadingId} className="font-mono text-[10px] uppercase tracking-[0.18em]">
+            Ручной трек
+          </h3>
+          <p className="text-sm leading-relaxed text-ink/70">
+            Используйте, если отправление СДЭК точно не создано. После сохранения трек не меняется.
+          </p>
+          <FormField id="manual-carrier" label="Перевозчик" error={manualFieldErrors.carrier}>
+            <input
+              id="manual-carrier"
+              name="carrier"
+              type="text"
+              autoComplete="organization"
+              maxLength={DELIVERY_CARRIER_MAX_LENGTH}
+              value={carrier}
+              onChange={(event) => {
+                setCarrier(event.target.value);
+                if (manualFieldErrors.carrier) {
+                  setManualFieldErrors((currentErrors) => ({
+                    ...currentErrors,
+                    carrier: undefined,
+                  }));
+                }
+              }}
+              aria-invalid={manualFieldErrors.carrier ? true : undefined}
+              aria-describedby={fieldDescribedBy(
+                "manual-carrier",
+                undefined,
+                manualFieldErrors.carrier,
+              )}
+              className={fieldControlClass}
+            />
+          </FormField>
+          <FormField
+            id="manual-track"
+            label="Трек-номер"
+            hint={TRACK_HINT}
+            error={manualFieldErrors.trackNumber}
+          >
+            <input
+              id="manual-track"
+              name="trackNumber"
+              type="text"
+              autoCapitalize="none"
+              autoComplete="off"
+              spellCheck={false}
+              maxLength={DELIVERY_TRACK_NUMBER_MAX_LENGTH}
+              value={trackNumber}
+              onChange={(event) => {
+                setTrackNumber(event.target.value);
+                if (manualFieldErrors.trackNumber) {
+                  setManualFieldErrors((currentErrors) => ({
+                    ...currentErrors,
+                    trackNumber: undefined,
+                  }));
+                }
+              }}
+              aria-invalid={manualFieldErrors.trackNumber ? true : undefined}
+              aria-describedby={fieldDescribedBy(
+                "manual-track",
+                TRACK_HINT,
+                manualFieldErrors.trackNumber,
+              )}
+              className={fieldControlClass}
+            />
+          </FormField>
+          <Button type="submit" className="w-full" disabled={manualMutation.isPending}>
+            {manualMutation.isPending ? "Сохраняем…" : "Сохранить трек"}
+          </Button>
+        </form>
       ) : null}
 
       {showEvents ? (
