@@ -1,0 +1,23 @@
+# GREEN evidence: S3-2-E2E API/DB delivery e2e
+# date: 2026-11-28; branch task/S3-2-e2e-api; base 339f0c5.
+
+## 1. New e2e + existing delivery DB suites
+$ DATABASE_URL_TEST=postgres://localhand:localhand@localhost:5433/localhand_s2_test \
+  JWT_SECRET=… OTP_SECRET=… pnpm --filter @localhand/api exec vitest run \
+  src/delivery/delivery.e2e.db.test.ts \
+  src/delivery/shipment.db.test.ts \
+  src/delivery/shipment.manual.db.test.ts
+
+ Test Files  3 passed (3)
+      Tests  20 passed (20)
+exit=0
+
+New file, 3 tests:
+  - runs quote -> checkout -> paid -> tariffs -> create -> webhook -> delivered
+  - falls back to a manual track after a definitive provider failure
+  - keeps recipient PII and payload hashes out of the log stream
+
+## 2. Full API suite (inside pnpm verify)
+apps/api test:  Test Files  41 passed (41)
+apps/api test:       Tests  374 passed (374)
+exit=0
