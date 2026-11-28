@@ -1,0 +1,6 @@
+# Command: pnpm --filter @localhand/web exec vitest run src/pages/AdminShopPage.test.tsx
+# Exit: 0 (GREEN)
+# Summary: Test Files 1 passed (1) | Tests 8 passed (8)
+
+Test Files  1 passed (1)
+     Tests  8 passed (8)
