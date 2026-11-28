@@ -18,7 +18,7 @@
   `.scrum/sprints/3/tasks/S3-2/`.
 - Preview: N/A (код не менялся).
 
-## Проверки
+## Проверки round 1 (924d04c)
 
 | Команда / проверка | Exit | Результат |
 |---|---:|---|
@@ -32,7 +32,7 @@
 | `bash scripts/slop-check.sh` на slop/clean/без аргументов | 1/0/2 | соответствует контракту |
 | CI `verify` / `review-gate` | pass / fail | review-gate ждёт label `reviewed`, это не дефект PR |
 
-## Blocking (3)
+## Blocking round 1 (закрыто в aa7452d)
 
 ### P2 — `git diff --check` красный, хотя PR заявляет clean
 
@@ -69,7 +69,7 @@
 - Действие: исправить имена в таблице AC или сослаться на
   `evidence/README.md`; проверить `test -f` для каждой ссылки.
 
-## Non-blocking
+## Non-blocking round 1
 
 ### P2 — старые пути в активных docs/quality
 
@@ -115,7 +115,7 @@
 - Действие: добавить шапку или `No doc change`-эквивалент для
   исторического дока.
 
-## Drift check
+## Drift check round 1 (924d04c)
 
 - [x] Старый skill-id `sprint-crew` удалён; `VERSION=0.6.0`; один
   skill-id; agents ссылаются на `scrum-crew`; `AGENTS.md` обновлён.
@@ -128,11 +128,10 @@
   только `.opencode/`, `.scrum/`, `AGENTS.md`, ссылки `docs/tasks`.
 - [x] Секреты/PII/absolute paths в добавленных файлах не найдены;
   `check:public` — 651 tracked files, 0 patterns.
-- [ ] Старые пути в `docs/quality` (P2 выше) и v0.5.0 в HANDOFF/state
-  (P2 выше) — drift, требующий фикса/трекинга.
-- [ ] `git diff --check` не clean; обещание в PR body не подтверждено.
+- [x] Старые пути в `docs/quality` и v0.5.0 в HANDOFF/state — закрыто в `aa7452d` (v0.5.0 остался только в историческом retro и upgrade.md).
+- [x] `git diff --check` — exit 0 в `aa7452d`.
 
-## Вердикт
+## Вердикт round 1
 
 **REQUEST_CHANGES** — 3 блокирующих P2: false-green `git diff --check`,
 stale v0.5.0 в HANDOFF/state, битые evidence-ссылки в report S3-2.
@@ -145,3 +144,25 @@ skill-файлы побайтно совпадают с upstream v0.6.0; оди�
 и PII нет; откат — revert squash-коммита. Остаточный риск — навигационный
 drift (state/HANDOFF, docs/quality) и доверие к evidence-таблице; он
 устраняется тремя точечными правками и follow-up по `docs/quality`.
+
+---
+
+## Re-review aa7452d (2026-11-28)
+
+- Head: `aa7452d`; base: `2f4ed4a`.
+- P2/P3 round 1 закрыты: `git diff --check` exit 0; в HANDOFF/state
+  активного v0.5.0 нет (v0.5.0 остался только в историческом retro и
+  references/upgrade.md); report S3-2 ссылается на существующие
+  `S3-2-3.10-axe-results.json` / `S3-2-3.10-lcp-preview.json`;
+  docs/quality пути ведут на `scrum-crew`; label evidence README, trace
+  links, brief Q1.0–Q1.6 и context headers HANDOFF/03 исправлены.
+- Проверки: `git diff --check 2f4ed4a..HEAD` — 0; `pnpm verify` — 0
+  (shared 161, web 220, API 394; OpenSpec 9/9); `openspec validate --all
+  --strict` — 0 (9/9); `VERSION=0.6.0` — 0; старой `sprint-crew` нет —
+  0; skill internal links — 0 missing.
+- Новое: P3 — в `.scrum/state.json` notes дважды повторена фраза
+  «Live YooKassa/CDEK, ... owner gates»; `updated_at` не сдвинут при
+  изменении state. P3 — PR body перечисляет только `docs/tasks`, но diff
+  включает 2 строки `docs/quality` (закрытие P2 round 1). Оба P3 не
+  блокируют: JSON валиден, code/CI/deps не менялись.
+- **Финальный вердикт: APPROVE.** P0/P1/P2 нет; два P3.
