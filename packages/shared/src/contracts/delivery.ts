@@ -10,6 +10,8 @@ export const DELIVERY_TARIFF_NAME_MAX_LENGTH = 120;
 export const DELIVERY_RECIPIENT_NAME_MAX_LENGTH = 100;
 export const DELIVERY_CARRIER_MAX_LENGTH = 80;
 export const DELIVERY_TRACK_NUMBER_MAX_LENGTH = 64;
+export const DELIVERY_EVENT_STATUS_CODE_MAX_LENGTH = 64;
+export const DELIVERY_EVENT_STATUS_NAME_MAX_LENGTH = 160;
 export const DELIVERY_QUOTE_TOKEN_MAX_LENGTH = 32_768;
 export const DELIVERY_QUOTE_TTL_SECONDS = 600;
 
@@ -138,6 +140,17 @@ export const DeliveryResponseSchema = z.object({
   delivery: DeliverySnapshotSchema,
 });
 
+export const DeliveryEventSchema = z.object({
+  statusCode: BoundedText(DELIVERY_EVENT_STATUS_CODE_MAX_LENGTH),
+  statusName: BoundedText(DELIVERY_EVENT_STATUS_NAME_MAX_LENGTH),
+  occurredAt: z.iso.datetime({ offset: true }),
+});
+
+export const SellerDeliveryResponseSchema = z.object({
+  delivery: DeliverySnapshotSchema,
+  events: z.array(DeliveryEventSchema),
+});
+
 export const DeliveryShipmentCreateSchema = z.object({
   tariffCode: BoundedText(DELIVERY_TARIFF_CODE_MAX_LENGTH),
 });
@@ -173,6 +186,8 @@ export type DeliveryStatus = z.infer<typeof DeliveryStatusSchema>;
 export type DeliveryProvider = z.infer<typeof DeliveryProviderSchema>;
 export type DeliverySnapshot = z.infer<typeof DeliverySnapshotSchema>;
 export type DeliveryResponse = z.infer<typeof DeliveryResponseSchema>;
+export type DeliveryEvent = z.infer<typeof DeliveryEventSchema>;
+export type SellerDeliveryResponse = z.infer<typeof SellerDeliveryResponseSchema>;
 export type DeliveryShipmentCreate = z.infer<typeof DeliveryShipmentCreateSchema>;
 export type DeliveryManualTrack = z.infer<typeof DeliveryManualTrackSchema>;
 export type DeliveryTariffListResponse = z.infer<typeof DeliveryTariffListResponseSchema>;

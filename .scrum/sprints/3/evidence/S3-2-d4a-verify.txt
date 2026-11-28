@@ -1,0 +1,32 @@
+# VERIFY evidence: S3-2-D4a
+# date: 2026-11-28; worktree task/S3-2-d4a-delivery-events-api
+
+$ DATABASE_URL_TEST=postgres://localhand:localhand@localhost:5433/localhand_s2_test \
+  JWT_SECRET=… OTP_SECRET=… pnpm verify
+$ pnpm typecheck && pnpm lint && pnpm format:check && pnpm check:public &&
+  pnpm test && pnpm build && pnpm openspec:validate
+
+$ pnpm --filter @localhand/shared build && pnpm -r typecheck
+packages/shared typecheck: Done
+packages/ui typecheck: Done
+apps/web typecheck: Done
+apps/api typecheck: Done
+$ oxlint .
+$ prettier --check .
+All matched files use Prettier code style!
+$ node scripts/check-public-repo.mjs
+Public repo check: 537 tracked files, no secrets/PII patterns found
+$ pnpm --filter @localhand/shared build && pnpm -r test
+packages/shared test:  Test Files  12 passed (12)
+packages/shared test:       Tests  160 passed (160)
+apps/web test:  Test Files  24 passed (24)
+apps/web test:       Tests  170 passed (170)
+apps/api test:  Test Files  38 passed (38)
+apps/api test:       Tests  356 passed (356)
+packages/shared build: Done
+packages/ui build: Done
+apps/web build: Done
+apps/api build: Done
+$ openspec validate --all --strict
+Totals: 9 passed, 0 failed (9 items)
+exit=0
