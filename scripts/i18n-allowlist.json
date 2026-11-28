@@ -1,0 +1,32 @@
+[
+  {
+    "file": "apps/api/src/db/seed.ts",
+    "reason": "fictional demo seed data, not runtime copy"
+  },
+  {
+    "file": "apps/api/src/delivery/fake-provider.ts",
+    "reason": "fake CDEK provider payload (city/PVZ data), not runtime copy"
+  },
+  {
+    "file": "apps/api/src/delivery/cdek-provider.ts",
+    "texts": ["Принят", "Неизвестно"],
+    "reason": "CDEK provider status payload/fallbacks, not our runtime copy"
+  },
+  {
+    "file": "apps/web/index.html",
+    "texts": [
+      "Local Hand — секонд-хенд и локальные бренды",
+      "Local Hand — маркетплейс секонд-хенда, винтажа и локальных брендов. Свой магазин для продавца и общая витрина для покупателя.",
+      "Маркетплейс секонд-хенда, винтажа и локальных брендов. Свой магазин и общая витрина."
+    ],
+    "reason": "static HTML meta/title (3 fragments), ADR 0006 allowlist; not migrated in S4-3"
+  },
+  {
+    "key": "common.greeting",
+    "reason": "foundation key exercised by @localhand/i18n tests; first production use in S4-2"
+  },
+  {
+    "key": "cart.item",
+    "reason": "foundation plural key exercised by @localhand/i18n tests; first production use in S4-2"
+  }
+]
