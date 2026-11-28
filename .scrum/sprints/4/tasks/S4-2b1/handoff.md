@@ -59,7 +59,7 @@ Durable-путь: `.scrum/sprints/4/tasks/S4-2b1/handoff.md`. Ветка
 
 - `#task-4`: review/merge B1.
 - `#spec`: namespace `DeliverySummaryCard` для B2.
-- Push недоступен; передан SHA `00e5eeb`.
+- PR **#91** открыт: <https://github.com/seshmonke/localhand/pull/91>.
 
 ## Doc change
 

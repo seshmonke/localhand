@@ -23,6 +23,7 @@
 - Не тронуты W2/shared/SMS/`ORDER_STATUS_LABELS`/B2 delivery,
   `openspec/specs/`, state/board/README.
 - Brief S4-2b1 прочитан; AC и контракты совпадают с заданием.
+- PR **#91** открыт: <https://github.com/seshmonke/localhand/pull/91>.
 - Doc change: `No doc change: i18n refactor`.
 
 ## AC и evidence
@@ -108,7 +109,7 @@ Vite proxy на `:3100` патчился временно и возвращён 
   API/web на свободных портах и не коммитить proxy-патч; e2e требует
   fake payments/delivery и `WEB_ORIGIN`, совпадающий с base URL.
 - Открытые треды: `#task-4` (review/merge B1), `#spec` (namespace B2).
-- Push недоступен в сессии; передан SHA `00e5eeb`.
+- PR #91 открыт; review ожидает.
 
 ## Блокеры
 
