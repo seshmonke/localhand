@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { expect, type APIRequestContext, type BrowserContext, type Page } from "@playwright/test";
 
 /**
@@ -41,6 +42,42 @@ export type CatalogFixture = {
   shop: { slug: string; name: string };
   products: CatalogProduct[];
 };
+
+/** Physical product size used for the delivery quote (S3-2). */
+export type ProductDimensions = {
+  weightG: number;
+  lengthCm: number;
+  widthCm: number;
+  heightCm: number;
+};
+
+/** Shop pickup point the seller ships from (S3-2). */
+export type ShopDeliveryOrigin = {
+  cdekCityCode: number;
+  cdekCityName: string;
+  cdekShipmentPoint: string;
+};
+
+export type CreateCatalogOptions = {
+  dimensions?: ProductDimensions;
+  deliveryOrigin?: ShopDeliveryOrigin;
+};
+
+export type DeliveryPointChoice = {
+  cityCode: number;
+  cityName: string;
+  pointCode: string;
+  pointAddress: string;
+};
+
+export const DEFAULT_DIMENSIONS: ProductDimensions = {
+  weightG: 1_200,
+  lengthCm: 40,
+  widthCm: 30,
+  heightCm: 10,
+};
+
+export const DEFAULT_RECIPIENT_NAME = "Иван Тестов";
 
 export type CartState = {
   version: typeof CART_VERSION;
@@ -111,6 +148,7 @@ export async function loginViaApi(
 export async function createPublishedCatalog(
   request: APIRequestContext,
   productNames: string[] = ["E2E Куртка", "E2E Шарф"],
+  options: CreateCatalogOptions = {},
 ): Promise<CatalogFixture> {
   const suffix = uniqueSuffix();
   const seller = await loginViaApi(request);
@@ -125,7 +163,7 @@ export async function createPublishedCatalog(
 
   const publishResponse = await request.patch("/api/seller/shop", {
     headers: { cookie: seller.cookie },
-    data: { status: "published" },
+    data: { status: "published", ...options.deliveryOrigin },
   });
   expect(publishResponse.status(), await publishResponse.text()).toBe(200);
 
@@ -136,7 +174,12 @@ export async function createPublishedCatalog(
 
     const created = await request.post("/api/seller/products", {
       headers: { cookie: seller.cookie },
-      data: { name, priceKopecks, description: "Товар для e2e" },
+      data: {
+        name,
+        priceKopecks,
+        description: "Товар для e2e",
+        ...options.dimensions,
+      },
     });
     expect(created.status(), await created.text()).toBe(201);
     const product = (await created.json()) as { product: { id: number } };
@@ -212,4 +255,125 @@ export async function loginViaUi(page: Page, phone: string): Promise<void> {
 
 export async function waitForStablePage(page: Page): Promise<void> {
   await page.evaluate(() => document.fonts.ready);
+}
+
+const DELIVERY_502_MESSAGE =
+  "delivery API returned 502 delivery_unavailable: DELIVERY_PROVIDER is not configured or the provider is unavailable. " +
+  "Browser e2e needs a working delivery provider (DELIVERY_PROVIDER=fake, DELIVERY_ENV=test).";
+
+/**
+ * Fake-provider city/PVZ pair. `cityOffset` picks a different city: the shop
+ * ships from one city and the buyer receives in another. A 502 is never a
+ * silent "delivery off": it fails with an explicit configuration/provider
+ * error, so a misconfigured stand cannot fall back to a delivery-less flow.
+ */
+export async function findDeliveryPoint(
+  request: APIRequestContext,
+  cityOffset = 0,
+): Promise<DeliveryPointChoice> {
+  const citiesResponse = await request.get("/api/delivery/cities?query=");
+  if (citiesResponse.status() === 502) {
+    throw new Error(DELIVERY_502_MESSAGE);
+  }
+  expect(citiesResponse.status(), await citiesResponse.text()).toBe(200);
+  const { cities } = (await citiesResponse.json()) as {
+    cities: Array<{ code: number; name: string }>;
+  };
+  const city = cities[cityOffset];
+  if (!city) {
+    throw new Error(`delivery provider returned no city at offset ${cityOffset}`);
+  }
+
+  const pointsResponse = await request.get(`/api/delivery/points?cityCode=${city.code}`);
+  expect(pointsResponse.status(), await pointsResponse.text()).toBe(200);
+  const { points } = (await pointsResponse.json()) as {
+    points: Array<{ code: string; address: string }>;
+  };
+  const point = points[0];
+  if (!point) {
+    throw new Error("delivery provider returned no points");
+  }
+
+  return {
+    cityCode: city.code,
+    cityName: city.name,
+    pointCode: point.code,
+    pointAddress: point.address,
+  };
+}
+
+/** Shop origin in another city than the buyer destination. */
+export function findDeliveryOrigin(request: APIRequestContext): Promise<DeliveryPointChoice> {
+  return findDeliveryPoint(request, 1);
+}
+
+/**
+ * Fills in dimensions and the shop origin on a catalog created without them
+ * and returns the buyer destination (first city). Deliberately not nullable:
+ * a delivery-less stack fails loudly instead of silently skipping delivery.
+ */
+export async function ensureCatalogDeliveryReady(
+  request: APIRequestContext,
+  catalog: CatalogFixture,
+): Promise<DeliveryPointChoice> {
+  const destination = await findDeliveryPoint(request);
+  const origin = await findDeliveryOrigin(request);
+  for (const product of catalog.products) {
+    const response = await request.patch(`/api/seller/products/${product.id}`, {
+      headers: { cookie: catalog.seller.cookie },
+      data: { ...DEFAULT_DIMENSIONS },
+    });
+    expect(response.status(), await response.text()).toBe(200);
+  }
+
+  const shopResponse = await request.patch("/api/seller/shop", {
+    headers: { cookie: catalog.seller.cookie },
+    data: {
+      cdekCityCode: origin.cityCode,
+      cdekCityName: origin.cityName,
+      cdekShipmentPoint: origin.pointCode,
+    },
+  });
+  expect(shopResponse.status(), await shopResponse.text()).toBe(200);
+  return destination;
+}
+
+/** Creates a physical order through the real quote + checkout API. */
+export async function createDeliveryOrder(
+  request: APIRequestContext,
+  catalog: CatalogFixture,
+  buyer: ApiSession,
+  choice?: DeliveryPointChoice,
+): Promise<number> {
+  const point = choice ?? (await findDeliveryPoint(request));
+  const quoteResponse = await request.post("/api/delivery/quote", {
+    data: {
+      items: catalog.products.map((product) => ({ productId: product.id })),
+      cityCode: point.cityCode,
+      pointCode: point.pointCode,
+    },
+  });
+  expect(quoteResponse.status(), await quoteResponse.text()).toBe(200);
+  const quote = (await quoteResponse.json()) as { quoteToken: string };
+
+  const response = await request.post("/api/checkout", {
+    headers: { cookie: buyer.cookie },
+    data: {
+      items: catalog.products.map((product) => ({ productId: product.id })),
+      delivery: {
+        cityCode: point.cityCode,
+        pointCode: point.pointCode,
+        recipientName: DEFAULT_RECIPIENT_NAME,
+        quoteToken: quote.quoteToken,
+      },
+      clientCheckoutId: randomUUID(),
+    },
+  });
+  expect(response.status(), await response.text()).toBe(201);
+  const payload = (await response.json()) as { orders: Array<{ id: number }> };
+  const orderId = payload.orders[0]?.id;
+  if (!orderId) {
+    throw new Error("checkout did not return an order");
+  }
+  return orderId;
 }

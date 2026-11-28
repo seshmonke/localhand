@@ -1,0 +1,15 @@
+$ pnpm verify   # typecheck + lint + format + public + test + build + openspec
+exit code: 0
+
+apps/api build: Done
+$ openspec validate --all --strict
+✓ change/07-delivery
+✓ spec/cart
+✓ spec/catalog-discovery
+✓ spec/checkout-orders
+✓ spec/payments
+✓ spec/phone-auth
+✓ spec/product-management
+✓ spec/seller-shop
+✓ spec/storefront
+Totals: 9 passed, 0 failed (9 items)

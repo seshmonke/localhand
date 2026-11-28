@@ -1,0 +1,6 @@
+PR A changes browser tests only: no production files, so it does not change the bundle.
+Reference build on the A base (e934ced), not attributable to A:
+apps/web build: dist/assets/index-DOMfajIs.css                                   42.29 kB │ gzip:  11.30 kB
+apps/web build: dist/assets/index-BwusgA_5.js                                   613.39 kB │ gzip: 171.74 kB
+
+Bundle size/regression is a PR B concern (axe/perf + legacy specs), reported there.
