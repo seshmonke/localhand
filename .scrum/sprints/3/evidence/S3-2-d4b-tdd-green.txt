@@ -8,5 +8,7 @@ Test Files 2 passed (2)
 Tests 22 passed (22)
 
 Full gate: pnpm verify — exit 0 (see S3-2-d4b-verify.txt)
-  shared 160 passed; web 185 passed; api 209 passed / 162 skipped;
+  shared 160 passed; web 191 passed; api 209 passed / 162 skipped;
   typecheck/lint/format/check:public/build/openspec — ok.
+
+Final after review fixes: web 25 files / 191 tests; verify exit 0.

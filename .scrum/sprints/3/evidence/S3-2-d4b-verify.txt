@@ -7,7 +7,7 @@ Exit: 0
 Steps: typecheck → lint → format:check → check:public → test → build → openspec.
 package results:
   shared: 12 files, 160 tests passed
-  web:    25 files, 185 tests passed
+  web:    25 files, 191 tests passed
   api:    25 files passed / 15 skipped; 209 tests passed / 162 skipped
   openspec validate --all --strict: 9 passed, 0 failed
   build: web + api done
