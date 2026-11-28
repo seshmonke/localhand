@@ -21,7 +21,7 @@
   `reason=conflict|provider_error` (no URL/secrets) and never crashes.
 - CDEK: matching subscription is a no-op; one foreign subscription creates
   one; two foreign throw `DeliveryWebhookConflictError`, no third POST.
-- Targeted 20 passed; full API 371 passed (368 before new tests); `pnpm verify`
+- Targeted 21 passed; full API 371 passed (368 before new tests); `pnpm verify`
   with both DB envs on migrated DB -> exit 0. `tasks.md`: 3.6 `[x]`, 3.7 `[ ]`.
 
 ## REFACTOR
