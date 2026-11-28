@@ -15,12 +15,12 @@
 
 - [ ] `packages/i18n` (`@localhand/i18n`): `resources/ru.ts`, `t`,
   typed keys, plural `ru`, init `lng=ru`.
-- [ ] Web: `react-i18next`, init в `main.tsx` и test setup; API может
-  импортировать `t` без React.
+- [ ] Web: `react-i18next`, init в `main.tsx` и test setup.
 - [ ] `scripts/check-i18n.mjs`: кириллица вне каталога, missing/dead keys;
   baseline; `pnpm check:i18n` в `verify`.
 - [ ] `apps/web/index.html` meta/title — allowlist с причиной.
-- [ ] Unit: `t` interpolation/plural; scanner fixture; `pnpm verify` 0.
+- [ ] Unit: `t` interpolation/plural; scanner fixture file (Cyrillic) fails;
+  `pnpm verify` 0.
 - [ ] ADR 0006; baseline воспроизводим.
 
 ## 3. Tier и change
@@ -34,7 +34,9 @@
 - `apps/web/src/i18n.ts`, `main.tsx`, test setup
 - `apps/web/package.json`, `apps/api/package.json` (только зависимость,
   если нужно)
-- `scripts/check-i18n.mjs`, `scripts/i18n-baseline.json`
+- `scripts/check-i18n.mjs`, `scripts/i18n-baseline.json`,
+  `scripts/fixtures/i18n/**`
+- `apps/web/index.html` (allowlist)
 - root `package.json` (`check:i18n`, `verify`)
 - `pnpm-lock.yaml`
 - `docs/stack/adr/0006-i18n.md`
@@ -67,7 +69,8 @@
 
 ## 9. Evidence contract
 
-- TDD: RED/GREEN для `t`/scanner fixture; baseline generated.
+- TDD: RED/GREEN для `t`/scanner fixture; baseline generated. Fixture —
+  production-like file вне tests, scanner его ловит.
 - `pnpm check:i18n` passes with baseline; new test string fails.
 - No behavior/UI text changes.
 

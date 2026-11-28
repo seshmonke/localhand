@@ -43,22 +43,22 @@
   Спринт: — (Sprint 4–5).
 - [ ] P1. Q1.1 TDD/ATDD enforcement: RED/GREEN evidence, QA-аудит,
   3 PR без test-after. Критерий: PR-шаблон и аудит. Источник:
-  quality-wave-1. Спринт: — (Sprint 4).
+  quality-wave-1. Спринт: — (Sprint 5).
 - [ ] P1. Q1.2 Contract tests web↔API: shared-схемы, negative/edge,
   CI gate. Критерий: изменение контракта без теста валит CI. Источник:
-  quality-wave-1. Спринт: — (Sprint 4).
+  quality-wave-1. Спринт: — (Sprint 5).
 - [ ] P1. Q1.3 Property/mutation: fast-check payments/authz, StrykerJS
   T2 ≥ 70% changed. Критерий: nightly, затем pre-merge gate. Источник:
-  quality-wave-1. Спринт: — (Sprint 5).
+  quality-wave-1. Спринт: — (Sprint 6).
 - [ ] P1. Q1.4 Security: threat model payments/address, Semgrep PR,
   CodeQL/SBOM nightly, ASVS T2. Критерий: high/critical = 0. Источник:
-  quality-wave-1. Спринт: — (Sprint 5).
+  quality-wave-1. Спринт: — (Sprint 6).
 - [ ] P1. Q1.5 Observability: SLO p95<500ms/error<1%/availability 99,5%,
   logs/metrics/alert/RUM. Критерий: SLO в бюджете. Источник:
-  quality-wave-1. Спринт: — (Sprint 6).
+  quality-wave-1. Спринт: — (Sprint 7).
 - [ ] P1. Q1.6 Performance: API p95 бюджеты, k6/autocannon
   checkout/payments. Критерий: бюджеты в CI. Источник: quality-wave-1.
-  Спринт: — (Sprint 6).
+  Спринт: — (Sprint 7).
 
 - [ ] Онбординг продавца: статус, ЮKassa, магазин. Критерий: продавец
   проходит путь до публикации товара. Источник: product.md. Спринт: —.
@@ -106,17 +106,21 @@
   web-suite зелёные; rerun прошёл. Критерий: детерминированное ожидание
   навигации/заголовка (не просто увеличенный timeout), 20 полных
   web-suite подряд + CI зелёные, без ослабления проверок. Источник:
-  CI main 28.11.2026. Спринт: — (Sprint 4).
+  CI main 28.11.2026. Спринт: — (Sprint 5).
 
 - [ ] P1. TDD-first audit/repro delivery shipment: retrospective RED 3.1
-  (owner exception до Q1.1/Sprint 4); восстановить RED до кода на
+  (owner exception до Q1.1/Sprint 5); восстановить RED до кода на
   изолированном repro или подтвердить mutation/e2e-покрытие и закрыть
   исключение. Критерий: RED падает до реализации, GREEN после, evidence
   в task-workspace; иначе исключение становится P1-долгом. Источник:
-  close review #80, owner 28.11.2026. Спринт: — (Sprint 4).
+  close review #80, owner 28.11.2026. Спринт: — (Sprint 5).
 
 ## P2
 
+- [ ] P2. W2 behavior/owner/legal: кнопки категорий, захардкоженные stats,
+  demo-ссылка, «Без комиссии»/«приведёт покупателей». Не T0 copy; решить
+  поведение/допустимость с владельцем, затем PBI. Источник: W2 audit
+  `.scrum/reviews/text-site-audit.md`. Спринт: — (после Sprint 4).
 - [ ] P2. Delivery webhook subscription: distributed lock для нескольких
   реплик API. Критерий: два инстанса одновременно проверяют
   `ORDER_STATUS` и создают ровно одну подписку (advisory lock/DB lease),

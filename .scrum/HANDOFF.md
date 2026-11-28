@@ -23,10 +23,9 @@
 
 ## Следующий шаг
 
-1. `scrum-crew` v0.6.1 установлен (PR #84); следующий шаг — Sprint 4
-   planning только по команде владельца.
-2. Sprint 4: S3-3 lifecycle, S3-4 hardening, Q1.1/Q1.2 + Text review W1;
-   live-интеграции и юрпакет — owner-гейты.
+1. `scrum-crew` v0.6.1 установлен (PR #84); Sprint 4 — i18n runtime copy.
+2. S3-3 lifecycle, S3-4 hardening, Q1.1/Q1.2 — Sprint 5; Q1.3–Q1.6
+   сдвинуты на один спринт; live-интеграции и юрпакет — owner-гейты.
 3. Owner-gates до публичного MVP: YooKassa adapter/keys, CDEK
    contract/live PII, юрпакет, Selectel deploy/SMS.
 

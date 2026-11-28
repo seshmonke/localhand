@@ -8,9 +8,9 @@
 
 ## Goal
 
-Все runtime-тексты сайта, SMS и shared-лейблы в одном typed
-i18next-каталоге; 100% coverage gate в `pnpm verify`; W1/W2 copy прошли
-Copywriter review.
+Все runtime JS/API/SMS-тексты и shared-лейблы в одном typed
+i18next-каталоге; 100% gate в `pnpm verify`; static `index.html` meta —
+allowlist; W1/W2 copy review с evidence.
 
 ## PBI и trace
 
@@ -19,6 +19,8 @@ Copywriter review.
 | S4-1 i18n foundation | No spec change: i18n refactor | scrum-worker | — | in_progress |
 | S4-2 W1 migration | No spec change: i18n refactor | scrum-worker | — | pending |
 | S4-3 W2 migration + copy | No spec change: i18n refactor | scrum-worker | — | pending |
+
+Tier: S4-1 T1, S4-2 T1, S4-3 T1+T0 copy, S4-4 T1, S4-5 T0.
 | S4-4 shared/SMS/meta + 100% | No spec change: i18n refactor | scrum-worker | — | pending |
 | S4-5 close | — | SM | — | pending |
 
@@ -36,11 +38,17 @@ Copywriter review.
 - `No spec change: i18n refactor, ru-only, no behavior change`.
 - `pnpm verify` + `pnpm check:i18n`; OpenSpec 9/9.
 - ADR 0006; W1/W2 Copywriter + slop/motif.
-- E2E 13, axe 320/1440, preview LCP — на close.
-- 100%: 0 кириллицы вне `packages/i18n/resources/ru.ts` кроме allowlist.
+- E2E 13, axe 72/0 320/1440, preview LCP <2500, bundle delta в бюджете.
+- 100%: 0 кириллицы вне `packages/i18n/resources/ru.ts`; allowlist —
+  `index.html` meta, tests, seed/provider payload.
+
+## Rollback
+
+Revert PR S4-1…S4-5; зависимости/каталог уходят, строки возвращаются
+из git. Baseline/ADR — часть revert.
 
 ## Non-goals
 
 - `08`/`09`/Q1.1/Q1.2 — Sprint 5.
 - Docs/legal/архивы, вторая локаль, switcher.
-- Live YooKassa/CDEK, деплой/SMS — owner-гейты.
+- Live YooKassa/CDEK, production deploy/live SMS — owner-гейты.
