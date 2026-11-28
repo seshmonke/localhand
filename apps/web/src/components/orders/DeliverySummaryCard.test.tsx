@@ -43,6 +43,10 @@ function price(value: number): string {
   return formatRubles(kopecks(value)).replace(/\s+/g, " ");
 }
 
+function rowLabels(region: HTMLElement): string[] {
+  return [...region.querySelectorAll("dt")].map((node) => node.textContent ?? "");
+}
+
 describe("DeliverySummaryCard", () => {
   it("shows one neutral line and no definition list without delivery", () => {
     const { container } = render(<DeliverySummaryCard delivery={null} role={buyerRole} />);
@@ -78,6 +82,16 @@ describe("DeliverySummaryCard", () => {
 
     const region = screen.getByRole("region", { name: "Доставка" });
     expect(within(region).getByText("Доставлено")).toBeInTheDocument();
+    expect(rowLabels(region)).toEqual([
+      "Город",
+      "Пункт выдачи",
+      "Получатель",
+      "Доставка",
+      "Срок",
+      "Тариф",
+      "Трек",
+      "Обновлено",
+    ]);
     expect(within(region).getByText(longAddress)).toHaveClass("break-words");
     expect(within(region).getByText("Иван Тестов")).toBeInTheDocument();
     expect(within(region).getByText(price(45_000))).toBeInTheDocument();
@@ -117,6 +131,7 @@ describe("DeliverySummaryCard", () => {
 
     expect(screen.getByText("В пути")).toBeInTheDocument();
     expect(screen.getByText("2–5 дн.")).toBeInTheDocument();
+    expect(screen.getByText("ПВЗ получателя")).toBeInTheDocument();
     expect(screen.getByText("Перевозчик · 9876543210")).toBeInTheDocument();
     expect(screen.getByText("Почта России · RA123456789RU")).toBeInTheDocument();
   });

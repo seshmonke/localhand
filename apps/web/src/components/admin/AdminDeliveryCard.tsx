@@ -11,6 +11,7 @@ import {
 import { Button } from "@localhand/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useId, useRef, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { ApiError, createSellerShipment, saveSellerManualTrack } from "../../lib/api.js";
 import {
   sellerKeys,
@@ -22,42 +23,48 @@ import { Card } from "../layout/index.js";
 import { DELIVERY_STATUS_LABELS } from "../orders/DeliverySummaryCard.js";
 import { SessionExpiredState } from "./SessionExpiredState.js";
 
-const PROVIDER_UNAVAILABLE = "СДЭК временно недоступен. Повторите позже.";
-const SESSION_MESSAGE = "Сессия истекла. Войдите снова.";
-const GENERIC_MANUAL_ERROR = "Не удалось сохранить трек. Проверьте соединение и повторите.";
-const ALREADY_EXISTS_MESSAGE = "Отправление уже создано. Обновите страницу, чтобы увидеть трек.";
-const TRACK_HINT = "Латинские буквы, цифры и дефис.";
-const CONFLICT_MESSAGES: Record<string, string> = {
-  delivery_tariff_mismatch:
-    "Тариф изменился. Пересчитайте тарифы. Цена доставки в заказе не изменится.",
-  delivery_not_paid: "Доставка доступна после оплаты.",
-  delivery_snapshot_missing: "В заказе нет данных доставки.",
-  delivery_dimensions_missing:
-    "У товаров не заполнены вес и габариты. Заполните их в карточке товара.",
-  delivery_already_created: "Отправление уже создано. Обновите данные.",
-  delivery_already_exists: "Отправление уже создано. Обновите данные.",
-};
+type Translate = ReturnType<typeof useTranslation>["t"];
+
+function conflictMessage(code: string, t: Translate): string | null {
+  switch (code) {
+    case "delivery_tariff_mismatch":
+      return t("admin.delivery.conflict.tariffMismatch");
+    case "delivery_not_paid":
+      return t("admin.delivery.notPaid");
+    case "delivery_snapshot_missing":
+      return t("admin.delivery.conflict.snapshotMissing");
+    case "delivery_dimensions_missing":
+      return t("admin.delivery.conflict.dimensionsMissing");
+    case "delivery_already_created":
+    case "delivery_already_exists":
+      return t("admin.delivery.conflict.alreadyCreated");
+    default:
+      return null;
+  }
+}
 
 const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
   dateStyle: "long",
   timeStyle: "short",
 });
 const formatDate = (value: string) => dateFormatter.format(new Date(value));
-const periodLabel = (min: number | null, max: number | null) => {
+const periodLabel = (min: number | null, max: number | null, t: Translate) => {
   const single = max ?? min;
   if (single === null) return null;
-  return min !== null && max !== null && min !== max ? `${min}–${max} дн.` : `${single} дн.`;
+  return min !== null && max !== null && min !== max
+    ? t("delivery.period.range", { min, max })
+    : t("delivery.period.days", { count: single });
 };
 const dtClass = "font-mono text-[10px] uppercase tracking-wide text-ink/60";
 const itemClass =
   "flex flex-wrap items-baseline justify-between gap-2 border-t-[3px] border-ink/20 pt-2";
 
-function errorMessage(error: unknown, fallback: string): string {
+function errorMessage(error: unknown, fallback: string, t: Translate): string {
   if (!(error instanceof ApiError)) return fallback;
-  if (error.status === 401) return SESSION_MESSAGE;
-  if (error.status === 404) return "Заказ не найден.";
-  if (error.status === 502) return PROVIDER_UNAVAILABLE;
-  return CONFLICT_MESSAGES[error.code] ?? fallback;
+  if (error.status === 401) return t("common.sessionExpired.inline");
+  if (error.status === 404) return t("admin.delivery.error.notFound");
+  if (error.status === 502) return t("admin.delivery.error.providerUnavailable");
+  return conflictMessage(error.code, t) ?? fallback;
 }
 
 type ManualFieldErrors = {
@@ -65,10 +72,13 @@ type ManualFieldErrors = {
   trackNumber?: string;
 };
 
-function validateManualTrack(input: {
-  carrier: string;
-  trackNumber: string;
-}):
+function validateManualTrack(
+  input: {
+    carrier: string;
+    trackNumber: string;
+  },
+  t: Translate,
+):
   | { data: { carrier: string; trackNumber: string }; errors?: undefined }
   | { data?: undefined; errors: ManualFieldErrors } {
   const result = DeliveryManualTrackSchema.safeParse(input);
@@ -84,10 +94,10 @@ function validateManualTrack(input: {
     }
     errors[field] =
       issue.message === "invalid_track_number"
-        ? "Только латинские буквы, цифры и дефис."
+        ? t("admin.delivery.manual.trackInvalid")
         : field === "carrier"
-          ? "Укажите перевозчика."
-          : "Укажите трек.";
+          ? t("admin.delivery.manual.carrierRequired")
+          : t("admin.delivery.manual.trackRequired");
   }
   return { errors };
 }
@@ -110,6 +120,7 @@ export function AdminDeliveryCard({
   orderStatus: OrderStatus;
   delivery: DeliverySnapshot | null;
 }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const headingId = useId();
   const manualHeadingId = useId();
@@ -135,7 +146,7 @@ export function AdminDeliveryCard({
   const queryError = deliveryQuery.isError ? deliveryQuery.error : null;
   const sessionExpired =
     (queryError instanceof ApiError && queryError.status === 401) ||
-    actionError === SESSION_MESSAGE ||
+    actionError === t("common.sessionExpired.inline") ||
     (tariffsQuery.error instanceof ApiError && tariffsQuery.error.status === 401);
   const notFound = queryError instanceof ApiError && queryError.status === 404;
   const quota = tariffsQuery.data;
@@ -152,7 +163,11 @@ export function AdminDeliveryCard({
         (previous) => ({ delivery: data.delivery, events: previous?.events ?? [] }),
       );
       const track = data.delivery.trackNumber;
-      setNotice(track === null ? "Отправление создано." : `Отправление создано. Трек: ${track}.`);
+      setNotice(
+        track === null
+          ? t("admin.delivery.notice.created")
+          : t("admin.delivery.notice.createdWithTrack", { track }),
+      );
       void deliveryQuery.refetch();
     },
     onError: (error) => {
@@ -161,14 +176,12 @@ export function AdminDeliveryCard({
         (error.code === "delivery_already_created" || error.code === "delivery_already_exists")
       ) {
         setActionError(null);
-        setNotice("Отправление уже создано. Обновляем данные.");
+        setNotice(t("admin.delivery.notice.alreadyExistsRefreshing"));
         void deliveryQuery.refetch();
         return;
       }
       setNotice(null);
-      setActionError(
-        errorMessage(error, "Не удалось создать отправление. Проверьте соединение и повторите."),
-      );
+      setActionError(errorMessage(error, t("admin.delivery.error.create"), t));
     },
   });
 
@@ -176,7 +189,7 @@ export function AdminDeliveryCard({
     mutationFn: (input: { carrier: string; trackNumber: string }) =>
       saveSellerManualTrack(orderId, input),
     onSuccess: (data) => {
-      setNotice("Ручной трек сохранён.");
+      setNotice(t("admin.delivery.manual.saved"));
       setActionError(null);
       setManualFieldErrors({});
       queryClient.setQueryData<SellerDeliveryResponse>(
@@ -192,7 +205,7 @@ export function AdminDeliveryCard({
         (error.code === "delivery_already_exists" || error.code === "delivery_already_created")
       ) {
         setManualBlocked(true);
-        setActionError(ALREADY_EXISTS_MESSAGE);
+        setActionError(t("admin.delivery.manual.error.alreadyExists"));
         if (delivery !== null) {
           void deliveryQuery.refetch();
         }
@@ -200,21 +213,21 @@ export function AdminDeliveryCard({
       }
       if (error instanceof ApiError && error.status === 404) {
         setManualBlocked(true);
-        setActionError("Заказ не найден.");
+        setActionError(t("admin.delivery.error.notFound"));
         return;
       }
-      setActionError(errorMessage(error, GENERIC_MANUAL_ERROR));
+      setActionError(errorMessage(error, t("admin.delivery.error.manual"), t));
     },
   });
 
   const track =
     current !== null && current.trackNumber !== null
-      ? `${current.carrier ?? "Перевозчик"} · ${current.trackNumber}`
+      ? `${current.carrier ?? t("delivery.carrierFallback")} · ${current.trackNumber}`
       : null;
   const showQuoted = paid && current?.status === "quoted" && !sessionExpired && !notFound;
   const showEvents = paid && current !== null && current.status !== "quoted";
   const canRefresh = current?.status === "created" || current?.status === "in_transit";
-  const period = current === null ? null : periodLabel(current.periodMin, current.periodMax);
+  const period = current === null ? null : periodLabel(current.periodMin, current.periodMax, t);
   const requestTariffs = () =>
     tariffsRequested ? void tariffsQuery.refetch() : setTariffsRequested(true);
   const manualAvailable =
@@ -230,15 +243,14 @@ export function AdminDeliveryCard({
   return (
     <Card as="section" aria-labelledby={headingId}>
       <h2 id={headingId} className="font-mono text-[10px] uppercase tracking-[0.2em]">
-        Доставка
+        {t("delivery.title")}
       </h2>
 
       {current === null && paid ? (
         <>
-          <p className="mt-4 text-sm leading-relaxed">Доставка не оформлена</p>
+          <p className="mt-4 text-sm leading-relaxed">{t("delivery.missing")}</p>
           <p className="mt-2 text-xs leading-relaxed text-ink/60">
-            Город, ПВЗ и получатель не сохранены в заказе. Трек можно ввести вручную: покупатель
-            увидит перевозчика и номер.
+            {t("admin.delivery.manualUnavailableHint")}
           </p>
         </>
       ) : null}
@@ -252,30 +264,30 @@ export function AdminDeliveryCard({
             </span>
           </div>
           <dl className="mt-4 flex flex-col gap-3 text-sm">
-            <Row label="Город">{current.cityName}</Row>
-            <Row label="ПВЗ получателя">{current.pointAddress}</Row>
-            <Row label="Получатель">{current.recipientName}</Row>
+            <Row label={t("delivery.city")}>{current.cityName}</Row>
+            <Row label={t("delivery.point.seller")}>{current.pointAddress}</Row>
+            <Row label={t("delivery.recipient")}>{current.recipientName}</Row>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <dt className={dtClass}>Доставка</dt>
+              <dt className={dtClass}>{t("delivery.price")}</dt>
               <dd className="font-mono text-sm font-semibold tabular-nums">
                 {formatRubles(kopecks(current.priceKopecks))}
               </dd>
             </div>
-            {current.tariffName === null ? null : <Row label="Тариф">{current.tariffName}</Row>}
-            {period === null ? null : <Row label="Срок">{period}</Row>}
-            {track === null ? null : <Row label="Трек">{track}</Row>}
+            {current.tariffName === null ? null : (
+              <Row label={t("delivery.tariff")}>{current.tariffName}</Row>
+            )}
+            {period === null ? null : <Row label={t("delivery.period")}>{period}</Row>}
+            {track === null ? null : <Row label={t("delivery.track")}>{track}</Row>}
           </dl>
         </>
       )}
 
-      {paid ? null : (
-        <p className="mt-4 text-sm leading-relaxed">Доставка доступна после оплаты.</p>
-      )}
+      {paid ? null : <p className="mt-4 text-sm leading-relaxed">{t("admin.delivery.notPaid")}</p>}
 
       {sessionExpired ? <SessionExpiredState next={`/admin/orders/${orderId}`} /> : null}
       {queryError !== null && !sessionExpired ? (
         <div className="mt-4 flex flex-col gap-3">
-          <FormError message={errorMessage(queryError, "Не удалось загрузить доставку.")} />
+          <FormError message={errorMessage(queryError, t("admin.delivery.error.load"), t)} />
           {!(queryError instanceof ApiError && queryError.status === 404) ? (
             <Button
               variant="outline"
@@ -283,7 +295,7 @@ export function AdminDeliveryCard({
               onClick={() => void deliveryQuery.refetch()}
               disabled={deliveryQuery.isFetching}
             >
-              {deliveryQuery.isFetching ? "Повторяем…" : "Повторить"}
+              {deliveryQuery.isFetching ? t("admin.delivery.retrying") : t("common.retry")}
             </Button>
           ) : null}
         </div>
@@ -298,31 +310,32 @@ export function AdminDeliveryCard({
             disabled={tariffsQuery.isFetching}
           >
             {tariffsQuery.isFetching
-              ? "Считаем тарифы…"
+              ? t("admin.delivery.tariffs.calculating")
               : quota === undefined
-                ? "Рассчитать тарифы"
-                : "Обновить тарифы"}
+                ? t("admin.delivery.tariffs.calculate")
+                : t("admin.delivery.tariffs.refresh")}
           </Button>
           {tariffsQuery.isError && !sessionExpired ? (
             <FormError
-              message={errorMessage(
-                tariffsQuery.error,
-                "Не удалось рассчитать тарифы. Проверьте соединение и повторите.",
-              )}
+              message={errorMessage(tariffsQuery.error, t("admin.delivery.error.tariffs"), t)}
             />
           ) : null}
           {quota === undefined ? null : (
             <>
               <p className="text-sm leading-relaxed">
-                Оплаченный тариф: {paidName ?? "тариф заказа"} ·{" "}
+                {t("admin.delivery.tariffs.paid")}{" "}
+                {paidName ?? t("admin.delivery.tariffs.fallback")} ·{" "}
                 {formatRubles(kopecks(delivery?.priceKopecks ?? quota.paid.priceKopecks))}
               </p>
-              <ul aria-label="Доступные тарифы" className="flex flex-col gap-2 text-sm">
+              <ul
+                aria-label={t("admin.delivery.tariffs.list")}
+                className="flex flex-col gap-2 text-sm"
+              >
                 {quota.tariffs.map((tariff) => (
                   <li key={tariff.tariffCode} className={itemClass}>
                     <span className="font-semibold">{tariff.tariffName}</span>
                     <span className="font-mono text-xs">
-                      {periodLabel(tariff.periodMin, tariff.periodMax)} ·{" "}
+                      {periodLabel(tariff.periodMin, tariff.periodMax, t)} ·{" "}
                       {formatRubles(kopecks(tariff.priceKopecks))}
                     </span>
                   </li>
@@ -333,7 +346,9 @@ export function AdminDeliveryCard({
                 onClick={() => createMutation.mutate(quota.paid.tariffCode)}
                 disabled={createMutation.isPending}
               >
-                {createMutation.isPending ? "Создаём…" : "Создать отправление"}
+                {createMutation.isPending
+                  ? t("admin.delivery.create.pending")
+                  : t("admin.delivery.create.action")}
               </Button>
             </>
           )}
@@ -350,7 +365,7 @@ export function AdminDeliveryCard({
             if (manualMutation.isPending) {
               return;
             }
-            const result = validateManualTrack({ carrier, trackNumber });
+            const result = validateManualTrack({ carrier, trackNumber }, t);
             if (result.data === undefined) {
               setManualFieldErrors(result.errors);
               setActionError(null);
@@ -364,19 +379,22 @@ export function AdminDeliveryCard({
           }}
         >
           <h3 id={manualHeadingId} className="font-mono text-[10px] uppercase tracking-[0.18em]">
-            Ручной трек
+            {t("admin.delivery.manual.title")}
           </h3>
           <p className="text-sm leading-relaxed text-ink/70">
-            Если отправление СДЭК не создано, введите трек вручную. После сохранения трек не
-            изменится.
+            {t("admin.delivery.manual.description")}
           </p>
           {manualFieldErrors.carrier !== undefined ||
           manualFieldErrors.trackNumber !== undefined ? (
             <p role="alert" className="text-sm font-semibold">
-              Проверьте выделенные поля.
+              {t("admin.delivery.manual.fieldsError")}
             </p>
           ) : null}
-          <FormField id={carrierFieldId} label="Перевозчик" error={manualFieldErrors.carrier}>
+          <FormField
+            id={carrierFieldId}
+            label={t("admin.delivery.manual.carrier")}
+            error={manualFieldErrors.carrier}
+          >
             <input
               ref={carrierInputRef}
               id={carrierFieldId}
@@ -405,8 +423,8 @@ export function AdminDeliveryCard({
           </FormField>
           <FormField
             id={trackFieldId}
-            label="Трек"
-            hint={TRACK_HINT}
+            label={t("admin.delivery.manual.track")}
+            hint={t("admin.delivery.manual.trackHint")}
             error={manualFieldErrors.trackNumber}
           >
             <input
@@ -431,14 +449,16 @@ export function AdminDeliveryCard({
               aria-invalid={manualFieldErrors.trackNumber ? true : undefined}
               aria-describedby={fieldDescribedBy(
                 trackFieldId,
-                TRACK_HINT,
+                t("admin.delivery.manual.trackHint"),
                 manualFieldErrors.trackNumber,
               )}
               className={fieldControlClass}
             />
           </FormField>
           <Button type="submit" className="w-full" disabled={manualMutation.isPending}>
-            {manualMutation.isPending ? "Сохраняем…" : "Сохранить трек"}
+            {manualMutation.isPending
+              ? t("admin.delivery.manual.saving")
+              : t("admin.delivery.manual.save")}
           </Button>
         </form>
       ) : null}
@@ -446,7 +466,9 @@ export function AdminDeliveryCard({
       {showEvents ? (
         <div className="mt-6 border-t-[3px] border-ink pt-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-mono text-[10px] uppercase tracking-[0.18em]">История</h3>
+            <h3 className="font-mono text-[10px] uppercase tracking-[0.18em]">
+              {t("admin.delivery.history.title")}
+            </h3>
             {canRefresh ? (
               <Button
                 size="sm"
@@ -455,16 +477,18 @@ export function AdminDeliveryCard({
                 onClick={() => void deliveryQuery.refetch()}
                 disabled={deliveryQuery.isFetching}
               >
-                {deliveryQuery.isFetching ? "Обновляем…" : "Обновить"}
+                {deliveryQuery.isFetching
+                  ? t("admin.delivery.history.refreshing")
+                  : t("admin.delivery.history.refresh")}
               </Button>
             ) : null}
           </div>
           {deliveryQuery.isPending ? (
             <output aria-live="polite" className="mt-3 block text-sm">
-              Загружаем историю…
+              {t("admin.delivery.history.loading")}
             </output>
           ) : events.length === 0 ? (
-            <p className="mt-3 text-sm leading-relaxed">Событий пока нет.</p>
+            <p className="mt-3 text-sm leading-relaxed">{t("admin.delivery.history.empty")}</p>
           ) : (
             <ol className="mt-3 flex flex-col gap-2 text-sm">
               {events.map((event) => (

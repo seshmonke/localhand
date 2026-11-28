@@ -144,6 +144,8 @@ describe("AdminDeliveryCard", () => {
     const browser = userEvent.setup();
     const section = screen.getByRole("region", { name: "Доставка" });
     expect(await within(section).findByText("Ожидает отправки")).toBeInTheDocument();
+    const labels = [...section.querySelectorAll("dt")].map((node) => node.textContent);
+    expect(labels).toEqual(["Город", "ПВЗ получателя", "Получатель", "Доставка", "Тариф", "Срок"]);
 
     await browser.click(within(section).getByRole("button", { name: "Рассчитать тарифы" }));
     const paidLabel = await within(section).findByText(/Оплаченный тариф/);
@@ -216,6 +218,89 @@ describe("AdminDeliveryCard", () => {
     await waitFor(() => expect(attempts).toBe(2));
   });
 
+  it("reports a network error when creating a shipment", async () => {
+    renderCard({
+      "GET /seller/orders/42/delivery": { body: { delivery: quoted, events: [] } },
+      "GET /seller/orders/42/delivery/tariffs": { body: tariffs },
+      "POST /seller/orders/42/delivery": () => {
+        throw new TypeError("Failed to fetch");
+      },
+    });
+    const browser = userEvent.setup();
+    const section = screen.getByRole("region", { name: "Доставка" });
+    await browser.click(await within(section).findByRole("button", { name: "Рассчитать тарифы" }));
+    await browser.click(
+      await within(section).findByRole("button", { name: "Создать отправление" }),
+    );
+
+    expect(
+      await within(section).findByText(
+        "Не удалось создать отправление. Проверьте соединение и повторите.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it.each([
+    ["delivery_not_paid", "Доставка доступна после оплаты."],
+    ["delivery_snapshot_missing", "В заказе нет данных доставки."],
+    [
+      "delivery_dimensions_missing",
+      "У товаров не заполнены вес и габариты. Заполните их в карточке товара.",
+    ],
+  ])("shows the %s conflict message", async (code, text) => {
+    renderCard({
+      "GET /seller/orders/42/delivery": { body: { delivery: quoted, events: [] } },
+      "GET /seller/orders/42/delivery/tariffs": { body: tariffs },
+      "POST /seller/orders/42/delivery": { status: 409, body: { error: code } },
+    });
+    const browser = userEvent.setup();
+    const section = screen.getByRole("region", { name: "Доставка" });
+    await browser.click(await within(section).findByRole("button", { name: "Рассчитать тарифы" }));
+    await browser.click(
+      await within(section).findByRole("button", { name: "Создать отправление" }),
+    );
+
+    expect(await within(section).findByText(text)).toBeInTheDocument();
+  });
+
+  it("reports a network error when saving a manual track", async () => {
+    renderCard({
+      "GET /seller/orders/42/delivery": { body: { delivery: quoted, events: [] } },
+      "PATCH /seller/orders/42/delivery": () => {
+        throw new TypeError("Failed to fetch");
+      },
+    });
+    const section = screen.getByRole("region", { name: "Доставка" });
+    await within(section).findByText("Ожидает отправки");
+    const browser = await fillManualTrack(section);
+    await browser.click(within(section).getByRole("button", { name: "Сохранить трек" }));
+
+    expect(
+      await within(section).findByText(
+        "Не удалось сохранить трек. Проверьте соединение и повторите.",
+      ),
+    ).toBeInTheDocument();
+    expect(within(section).getByRole("button", { name: "Сохранить трек" })).toBeEnabled();
+  });
+
+  it("reports a network error when calculating tariffs", async () => {
+    renderCard({
+      "GET /seller/orders/42/delivery": { body: { delivery: quoted, events: [] } },
+      "GET /seller/orders/42/delivery/tariffs": () => {
+        throw new TypeError("Failed to fetch");
+      },
+    });
+    const browser = userEvent.setup();
+    const section = screen.getByRole("region", { name: "Доставка" });
+    await browser.click(await within(section).findByRole("button", { name: "Рассчитать тарифы" }));
+
+    expect(
+      await within(section).findByText(
+        "Не удалось рассчитать тарифы. Проверьте соединение и повторите.",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("refreshes data when create reports delivery_already_exists", async () => {
     let gets = 0;
     renderCard({
@@ -269,6 +354,8 @@ describe("AdminDeliveryCard", () => {
     const section = screen.getByRole("region", { name: "Доставка" });
     expect(within(section).getByText("Доставка не оформлена")).toBeInTheDocument();
     expect(within(section).getByText(/Трек можно ввести вручную/)).toBeInTheDocument();
+    expect(within(section).getByText(/Если отправление СДЭК не создано/)).toBeInTheDocument();
+    expect(within(section).getByText("Латинские буквы, цифры и дефис.")).toBeInTheDocument();
     expect(within(section).getByLabelText("Перевозчик")).toBeInTheDocument();
     expect(within(section).getByRole("button", { name: "Сохранить трек" })).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
