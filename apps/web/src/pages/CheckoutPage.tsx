@@ -2,6 +2,9 @@ import { formatRubles, kopecks, type OrderSummary } from "@localhand/shared";
 import { Button, buttonVariants } from "@localhand/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
+
+type Translate = ReturnType<typeof useTranslation>["t"];
 import { Link, useNavigate } from "react-router";
 import { useCart } from "../cart/CartContext.js";
 import { pluralizeItems } from "../cart/item-count.js";
@@ -32,7 +35,6 @@ import {
 import { orderKeys, useMeQuery } from "../lib/queries.js";
 
 const COMMENT_MAX_LENGTH = 500;
-export const COMMENT_HINT = "Необязательно. До 500 символов: удобное время, вопросы по товару.";
 
 function formatPhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
@@ -42,48 +44,49 @@ function formatPhone(phone: string): string {
   return `+${digits.slice(0, 1)} ${digits.slice(1, 4)} ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`;
 }
 
-function checkoutErrorMessage(error: unknown): string {
+function checkoutErrorMessage(error: unknown, t: Translate): string {
   if (error instanceof ApiError) {
     if (error.code === "delivery_required") {
-      return "Укажите город, пункт выдачи и имя получателя: без доставки заказ не оформить.";
+      return t("checkout.error.deliveryRequired");
     }
     switch (error.status) {
       case 400:
-        return "Проверьте корзину: в одном заказе от 1 до 50 товаров.";
+        return t("checkout.error.cartRange");
       case 429:
-        return "Слишком много попыток оформления. Подождите минуту и попробуйте снова.";
+        return t("checkout.error.rateLimited");
       case 409:
-        return "Некоторые товары больше недоступны. Проверьте корзину и попробуйте снова.";
+        return t("checkout.error.unavailable");
       case 401:
-        return "Сессия истекла. Войдите снова.";
+        return t("common.sessionExpired.inline");
       default:
         break;
     }
   }
 
-  return "Не удалось оформить заказ. Проверьте соединение и попробуйте снова.";
+  return t("checkout.error.generic");
 }
 
-function deliveryQuoteErrorMessage(error: unknown): string {
+function deliveryQuoteErrorMessage(error: unknown, t: Translate): string {
   if (error instanceof ApiError) {
     switch (error.code) {
       case "delivery_dimensions_missing":
-        return "У одного из товаров не указаны вес и габариты. Напишите продавцу.";
+        return t("checkout.quoteError.dimensionsMissing");
       case "shop_city_missing":
       case "shop_shipment_point_missing":
-        return "Продавец ещё не настроил отправку из своего города.";
+        return t("checkout.quoteError.shopCityMissing");
       case "delivery_point_invalid":
-        return "Этот пункт выдачи не подходит для выбранного города.";
+        return t("checkout.quoteError.pointInvalid");
       case "delivery_unavailable":
-        return "Доставка временно недоступна. Попробуйте позже.";
+        return t("checkout.error.deliveryUnavailable");
       default:
         break;
     }
   }
-  return "Не удалось рассчитать доставку. Выберите другой пункт выдачи или попробуйте снова.";
+  return t("checkout.quoteError.generic");
 }
 
 export function CheckoutPage() {
+  const { t } = useTranslation();
   const { items, count, groups, totalKopecks, isHydrated, hasItem, removeItem } = useCart();
   const me = useMeQuery();
   const navigate = useNavigate();
@@ -126,10 +129,8 @@ export function CheckoutPage() {
 
   const deliveryKopecks =
     quoteQuery.data?.shops.reduce((sum, shop) => sum + shop.priceKopecks, 0) ?? 0;
-  const deliveryPeriodMax = quoteQuery.data?.shops.reduce(
-    (max, shop) => Math.max(max, shop.periodMax),
-    0,
-  );
+  const deliveryPeriodMax =
+    quoteQuery.data?.shops.reduce((max, shop) => Math.max(max, shop.periodMax), 0) ?? 0;
   const deliveryReady = quoteQuery.data !== undefined && recipientName.trim().length > 0;
   const deliveryStarted = cityCode !== null || pointCode.length > 0 || recipientName.length > 0;
   const checkoutIdRef = useRef<string>(crypto.randomUUID());
@@ -162,22 +163,20 @@ export function CheckoutPage() {
           return;
         }
         if (error.status === 409 && error.code === "delivery_quote_stale") {
-          setFormError("Цена доставки изменилась. Выберите ПВЗ заново.");
+          setFormError(t("checkout.error.quoteStale"));
           void quoteQuery.refetch();
           return;
         }
         if (error.status === 409 && error.code === "delivery_required") {
-          setFormError(
-            "Укажите город, пункт выдачи и имя получателя: без доставки заказ не оформить.",
-          );
+          setFormError(t("checkout.error.deliveryRequired"));
           return;
         }
         if (error.status === 502 && error.code === "delivery_unavailable") {
-          setFormError("Доставка временно недоступна. Попробуйте позже.");
+          setFormError(t("checkout.error.deliveryUnavailable"));
           return;
         }
       }
-      setFormError(checkoutErrorMessage(error));
+      setFormError(checkoutErrorMessage(error, t));
     },
   });
 
@@ -222,7 +221,7 @@ export function CheckoutPage() {
     setUnavailable(false);
 
     if (deliveryStarted && !deliveryReady) {
-      setFormError("Выберите город, пункт выдачи и укажите имя получателя.");
+      setFormError(t("checkout.error.deliveryStarted"));
       return;
     }
 
@@ -247,7 +246,7 @@ export function CheckoutPage() {
   if (sessionExpired) {
     return (
       <PageShell className="py-10 sm:py-12">
-        <h1 className="sr-only">Оформление заказа</h1>
+        <h1 className="sr-only">{t("checkout.eyebrow")}</h1>
         <SessionExpiredState next="/checkout" />
       </PageShell>
     );
@@ -256,11 +255,11 @@ export function CheckoutPage() {
   if (!isHydrated) {
     return (
       <PageShell className="py-10 sm:py-12">
-        <h1 className="sr-only">Оформление заказа</h1>
+        <h1 className="sr-only">{t("checkout.eyebrow")}</h1>
         <ScreenState
           kind="loading"
-          title="Проверяем корзину"
-          description="Восстанавливаем товары с этого устройства."
+          title={t("checkout.loading.title")}
+          description={t("checkout.loading.description")}
         />
       </PageShell>
     );
@@ -269,14 +268,14 @@ export function CheckoutPage() {
   if (items.length === 0) {
     return (
       <PageShell className="py-10 sm:py-12">
-        <h1 className="sr-only">Оформление заказа</h1>
+        <h1 className="sr-only">{t("checkout.eyebrow")}</h1>
         <ScreenState
           kind="empty"
-          title="Корзина пуста"
-          description="Добавьте товары из каталога, чтобы оформить заказ."
+          title={t("checkout.empty.title")}
+          description={t("checkout.empty.description")}
           action={
             <Link to="/" className={buttonVariants({ variant: "outline" })}>
-              Перейти в каталог
+              {t("checkout.empty.action")}
             </Link>
           }
         />
@@ -287,11 +286,11 @@ export function CheckoutPage() {
   if (createdOrders) {
     return (
       <PageShell className="py-10 sm:py-12">
-        <h1 className="sr-only">Оформление заказа</h1>
+        <h1 className="sr-only">{t("checkout.eyebrow")}</h1>
         <ScreenState
           kind="loading"
-          title="Заказ оформлен"
-          description="Переходим к заказу и оплате."
+          title={t("checkout.success.title")}
+          description={t("checkout.success.description")}
         />
       </PageShell>
     );
@@ -299,14 +298,17 @@ export function CheckoutPage() {
 
   const phone = me.data?.user.phone;
   const pending = checkoutMutation.isPending;
+  const pointHint = t("checkout.delivery.pointHint");
+  const recipientHint = t("checkout.delivery.recipientHint");
+  const commentHint = t("checkout.contacts.commentHint");
 
   return (
     <PageShell className="py-10 sm:py-12">
       <Stack gap={8}>
         <PageHeader
-          eyebrow="Оформление заказа"
-          title="Проверьте заказ"
-          description="У каждого магазина свой заказ. Оплата проходит на странице ЮKassa, деньги получает продавец."
+          eyebrow={t("checkout.eyebrow")}
+          title={t("checkout.title")}
+          description={t("checkout.description")}
         />
 
         <form noValidate onSubmit={handleSubmit}>
@@ -332,7 +334,7 @@ export function CheckoutPage() {
                           </Link>
                         </h2>
                         <p className="font-mono text-xs uppercase tracking-wide">
-                          Итого: {formatRubles(kopecks(group.totalKopecks))}
+                          {t("checkout.shopTotal")} {formatRubles(kopecks(group.totalKopecks))}
                         </p>
                       </header>
                       <ul className="divide-y-[3px] divide-ink">
@@ -359,15 +361,12 @@ export function CheckoutPage() {
 
                 <Card as="section" aria-labelledby="checkout-delivery-title">
                   <h2 id="checkout-delivery-title" className="font-display text-2xl uppercase">
-                    Доставка
+                    {t("checkout.delivery.title")}
                   </h2>
-                  <p className="mt-2 text-sm leading-relaxed">
-                    Выберите город и пункт выдачи СДЭК. Стоимость и срок рассчитаем после выбора
-                    ПВЗ.
-                  </p>
+                  <p className="mt-2 text-sm leading-relaxed">{t("checkout.delivery.intro")}</p>
 
                   <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                    <FormField id="checkout-city" label="Город доставки">
+                    <FormField id="checkout-city" label={t("checkout.delivery.cityLabel")}>
                       <select
                         id="checkout-city"
                         name="cityCode"
@@ -380,7 +379,9 @@ export function CheckoutPage() {
                         className={fieldControlClass}
                       >
                         <option value="">
-                          {citiesQuery.isLoading ? "Загружаем города…" : "Выберите город"}
+                          {citiesQuery.isLoading
+                            ? t("checkout.delivery.cityLoading")
+                            : t("checkout.delivery.cityPlaceholder")}
                         </option>
                         {citiesQuery.data?.cities.map((city) => (
                           <option key={city.code} value={city.code}>
@@ -392,8 +393,8 @@ export function CheckoutPage() {
 
                     <FormField
                       id="checkout-point"
-                      label="Пункт выдачи"
-                      hint="Список ПВЗ выбранного города."
+                      label={t("checkout.delivery.pointLabel")}
+                      hint={pointHint}
                     >
                       <select
                         id="checkout-point"
@@ -401,14 +402,13 @@ export function CheckoutPage() {
                         value={pointCode}
                         disabled={cityCode === null || pointsQuery.isLoading}
                         onChange={(event) => setPointCode(event.target.value)}
-                        aria-describedby={fieldDescribedBy(
-                          "checkout-point",
-                          "Список ПВЗ выбранного города.",
-                        )}
+                        aria-describedby={fieldDescribedBy("checkout-point", pointHint)}
                         className={fieldControlClass}
                       >
                         <option value="">
-                          {pointsQuery.isLoading ? "Загружаем ПВЗ…" : "Выберите ПВЗ"}
+                          {pointsQuery.isLoading
+                            ? t("checkout.delivery.pointLoading")
+                            : t("checkout.delivery.pointPlaceholder")}
                         </option>
                         {pointsQuery.data?.points.map((point) => (
                           <option key={point.code} value={point.code}>
@@ -420,8 +420,8 @@ export function CheckoutPage() {
 
                     <FormField
                       id="checkout-recipient"
-                      label="Имя получателя"
-                      hint="Имя, на которое оформлена доставка."
+                      label={t("checkout.delivery.recipientLabel")}
+                      hint={recipientHint}
                     >
                       <input
                         id="checkout-recipient"
@@ -432,10 +432,7 @@ export function CheckoutPage() {
                         value={recipientName}
                         onChange={(event) => setRecipientName(event.target.value)}
                         aria-invalid={deliveryStarted && recipientName.trim().length === 0}
-                        aria-describedby={fieldDescribedBy(
-                          "checkout-recipient",
-                          "Имя, на которое оформлена доставка.",
-                        )}
+                        aria-describedby={fieldDescribedBy("checkout-recipient", recipientHint)}
                         className={fieldControlClass}
                       />
                     </FormField>
@@ -443,26 +440,26 @@ export function CheckoutPage() {
 
                   {citiesQuery.isError ? (
                     <div role="alert" className="mt-4 border-[3px] border-ink p-4">
-                      <p className="text-sm font-semibold">Не удалось загрузить города.</p>
+                      <p className="text-sm font-semibold">{t("checkout.delivery.citiesError")}</p>
                       <button
                         type="button"
                         onClick={() => void citiesQuery.refetch()}
                         className="mt-2 font-mono text-[10px] uppercase underline decoration-[3px] underline-offset-4"
                       >
-                        Повторить
+                        {t("common.retry")}
                       </button>
                     </div>
                   ) : null}
 
                   {pointsQuery.isError ? (
                     <div role="alert" className="mt-4 border-[3px] border-ink p-4">
-                      <p className="text-sm font-semibold">Не удалось загрузить пункты выдачи.</p>
+                      <p className="text-sm font-semibold">{t("checkout.delivery.pointsError")}</p>
                       <button
                         type="button"
                         onClick={() => void pointsQuery.refetch()}
                         className="mt-2 font-mono text-[10px] uppercase underline decoration-[3px] underline-offset-4"
                       >
-                        Повторить
+                        {t("common.retry")}
                       </button>
                     </div>
                   ) : null}
@@ -470,7 +467,7 @@ export function CheckoutPage() {
                   {quoteQuery.isError ? (
                     <div role="alert" className="mt-4 border-[3px] border-ink p-4">
                       <p className="text-sm font-semibold">
-                        {deliveryQuoteErrorMessage(quoteQuery.error)}
+                        {deliveryQuoteErrorMessage(quoteQuery.error, t)}
                       </p>
                     </div>
                   ) : null}
@@ -478,12 +475,12 @@ export function CheckoutPage() {
                   {quoteQuery.data ? (
                     <dl className="mt-4 flex flex-col gap-2 font-mono text-xs uppercase tracking-wide">
                       <div className="flex justify-between gap-4">
-                        <dt>Доставка</dt>
+                        <dt>{t("checkout.delivery.title")}</dt>
                         <dd>{formatRubles(kopecks(deliveryKopecks))}</dd>
                       </div>
                       <div className="flex justify-between gap-4">
-                        <dt>Срок</dt>
-                        <dd>{deliveryPeriodMax} дн.</dd>
+                        <dt>{t("checkout.delivery.period")}</dt>
+                        <dd>{t("checkout.delivery.days", { count: deliveryPeriodMax })}</dd>
                       </div>
                     </dl>
                   ) : null}
@@ -491,21 +488,21 @@ export function CheckoutPage() {
 
                 <Card as="section" aria-labelledby="checkout-contact-title">
                   <h2 id="checkout-contact-title" className="font-display text-2xl uppercase">
-                    Контакты
+                    {t("checkout.contacts.title")}
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed">
-                    Телефон для связи:{" "}
+                    {t("checkout.contacts.phoneLabel")}{" "}
                     <strong className="whitespace-nowrap font-mono font-semibold">
                       {phone ? formatPhone(phone) : "—"}
                     </strong>
-                    . Заказ привязан к вашему номеру.
+                    {t("checkout.contacts.phoneNote")}
                   </p>
 
                   <div className="mt-6">
                     <FormField
                       id="checkout-comment"
-                      label="Комментарий продавцу"
-                      hint={COMMENT_HINT}
+                      label={t("checkout.contacts.commentLabel")}
+                      hint={commentHint}
                     >
                       <textarea
                         id="checkout-comment"
@@ -514,7 +511,7 @@ export function CheckoutPage() {
                         maxLength={COMMENT_MAX_LENGTH}
                         value={comment}
                         onChange={(event) => setComment(event.target.value)}
-                        aria-describedby={fieldDescribedBy("checkout-comment", COMMENT_HINT)}
+                        aria-describedby={fieldDescribedBy("checkout-comment", commentHint)}
                         className={`${fieldControlClass} min-h-28 resize-y`}
                       />
                     </FormField>
@@ -526,21 +523,21 @@ export function CheckoutPage() {
             <Sidebar sticky aria-labelledby="checkout-total-title">
               <Card shadow>
                 <h2 id="checkout-total-title" className="font-display text-2xl uppercase">
-                  Итог
+                  {t("checkout.summary.title")}
                 </h2>
                 <dl className="mt-4 flex flex-col gap-2 font-mono text-xs uppercase tracking-wide">
                   <div className="flex justify-between gap-4">
-                    <dt>Товаров</dt>
+                    <dt>{t("checkout.summary.items")}</dt>
                     <dd>{pluralizeItems(count)}</dd>
                   </div>
                   {quoteQuery.data ? (
                     <div className="flex justify-between gap-4">
-                      <dt>Доставка</dt>
+                      <dt>{t("checkout.delivery.title")}</dt>
                       <dd>{formatRubles(kopecks(deliveryKopecks))}</dd>
                     </div>
                   ) : null}
                   <div className="flex justify-between gap-4 border-t-[3px] border-ink pt-2 text-base">
-                    <dt>Итого</dt>
+                    <dt>{t("checkout.summary.total")}</dt>
                     <dd>{formatRubles(kopecks(totalKopecks + deliveryKopecks))}</dd>
                   </div>
                 </dl>
@@ -549,13 +546,13 @@ export function CheckoutPage() {
                   {unavailable ? (
                     <div role="alert" className="border-[3px] border-ink bg-accent-orange/15 p-4">
                       <p className="text-sm font-semibold leading-relaxed">
-                        Часть товаров уже недоступна. Уберите их из корзины и попробуйте снова.
+                        {t("checkout.unavailable")}
                       </p>
                       <Link
                         to="/cart"
                         className="mt-2 inline-flex min-h-11 items-center font-mono text-[10px] uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
                       >
-                        Проверить корзину
+                        {t("checkout.unavailable.action")}
                       </Link>
                     </div>
                   ) : null}
@@ -563,12 +560,9 @@ export function CheckoutPage() {
                 </div>
 
                 <Button type="submit" size="lg" className="mt-6 w-full" disabled={pending}>
-                  {pending ? "Оформляем…" : "Оформить заказ"}
+                  {pending ? t("checkout.submitting") : t("checkout.submit")}
                 </Button>
-                <p className="mt-2 text-xs leading-relaxed">
-                  Нажимая кнопку, вы отправляете заказ продавцам. После оформления перейдёте к
-                  оплате. Если продавец не подключил приём платежей, вы увидите это в заказе.
-                </p>
+                <p className="mt-2 text-xs leading-relaxed">{t("checkout.disclaimer")}</p>
               </Card>
             </Sidebar>
           </Grid>

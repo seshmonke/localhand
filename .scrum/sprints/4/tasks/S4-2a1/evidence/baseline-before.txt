@@ -1,0 +1,15 @@
+HEAD 6773120 baseline: 752 findings, 0 deadKeys
+W1 findings: 328
+3 apps/web/src/cart/item-count.ts
+4 apps/web/src/components/ScreenState.tsx
+55 apps/web/src/components/admin/AdminDeliveryCard.tsx
+5 apps/web/src/components/admin/PaymentStatusBadge.tsx
+28 apps/web/src/components/admin/SellerPaymentsCard.tsx
+4 apps/web/src/components/admin/SessionExpiredState.tsx
+4 apps/web/src/components/admin/payment-read.tsx
+23 apps/web/src/components/orders/DeliverySummaryCard.tsx
+33 apps/web/src/pages/AdminOrderPage.tsx
+29 apps/web/src/pages/AdminOrdersPage.tsx
+56 apps/web/src/pages/CheckoutPage.tsx
+65 apps/web/src/pages/OrderPage.tsx
+19 apps/web/src/pages/OrdersPage.tsx

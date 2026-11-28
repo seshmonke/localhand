@@ -1,6 +1,7 @@
 import { Button } from "@localhand/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { authKeys, clearBuyerQueries, clearSellerQueries } from "../../lib/queries.js";
 import { ScreenState } from "../ScreenState.js";
@@ -11,6 +12,7 @@ import { ScreenState } from "../ScreenState.js";
  * session can leak into the next login.
  */
 export function SessionExpiredState({ next }: { next: string }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [pending, setPending] = useState(false);
@@ -29,11 +31,11 @@ export function SessionExpiredState({ next }: { next: string }) {
   return (
     <ScreenState
       kind="error"
-      title="Сессия истекла"
-      description="Войдите снова, чтобы продолжить."
+      title={t("common.sessionExpired.title")}
+      description={t("common.sessionExpired.description")}
       action={
         <Button type="button" onClick={() => void openLogin()} disabled={pending}>
-          {pending ? "Переходим…" : "Войти"}
+          {pending ? t("common.sessionExpired.redirecting") : t("common.sessionExpired.login")}
         </Button>
       }
     />

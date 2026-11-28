@@ -57,9 +57,5 @@
   {
     "key": "common.greeting",
     "reason": "foundation key exercised by @localhand/i18n tests; first production use in S4-2"
-  },
-  {
-    "key": "cart.item",
-    "reason": "foundation plural key exercised by @localhand/i18n tests; first production use in S4-2"
   }
 ]
