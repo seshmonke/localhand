@@ -1,7 +1,9 @@
 [
   {
     "file": "apps/api/src/db/seed.ts",
-    "kinds": ["string"],
+    "kinds": [
+      "string"
+    ],
     "texts": [
       "PDF-зин локального автора. Ссылка приходит после оплаты.",
       "Винтаж на районе",
@@ -18,7 +20,9 @@
   },
   {
     "file": "apps/api/src/delivery/fake-provider.ts",
-    "kinds": ["string"],
+    "kinds": [
+      "string"
+    ],
     "texts": [
       "Казань",
       "Казань, Баумана 1",
@@ -40,13 +44,20 @@
   },
   {
     "file": "apps/api/src/delivery/cdek-provider.ts",
-    "kinds": ["string"],
-    "texts": ["Принят", "Неизвестно"],
+    "kinds": [
+      "string"
+    ],
+    "texts": [
+      "Принят",
+      "Неизвестно"
+    ],
     "reason": "CDEK provider status payload/fallbacks, not our runtime copy"
   },
   {
     "file": "apps/web/index.html",
-    "kinds": ["html-text"],
+    "kinds": [
+      "html-text"
+    ],
     "texts": [
       "Local Hand — секонд-хенд и локальные бренды",
       "Local Hand — маркетплейс секонд-хенда, винтажа и локальных брендов. Свой магазин для продавца и общая витрина для покупателя.",
@@ -57,9 +68,5 @@
   {
     "key": "common.greeting",
     "reason": "foundation key exercised by @localhand/i18n tests; first production use in S4-2"
-  },
-  {
-    "key": "cart.item",
-    "reason": "foundation plural key exercised by @localhand/i18n tests; first production use in S4-2"
   }
 ]

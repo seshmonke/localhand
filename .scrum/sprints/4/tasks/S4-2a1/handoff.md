@@ -53,7 +53,7 @@ Durable-путь: `.scrum/sprints/4/tasks/S4-2a1/handoff.md`. Ветка
 ## Открытые треды
 
 - `#task-4`: merge A1 → A2.
-- Review: не запрошен; PR не открыт (push недоступен).
+- Review: APPROVE, PR #89; P2 закрыты.
 
 ## Doc change
 
