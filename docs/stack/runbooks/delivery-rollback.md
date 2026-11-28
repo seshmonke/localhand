@@ -28,12 +28,16 @@ DELIVERY_PROVIDER=
   snapshots остаются.
 - Вебхук можно оставить: он проверяет локальный заказ и ничего не
   создаёт. Если провайдер выключен, endpoint отвечает `502`.
-- Подписку CDEK удалять только после выключения провайдера: при
-  следующем старте с CDEK `ensureOrderStatusWebhook` создаст её снова.
-  `GET /v2/webhooks` → `DELETE /v2/webhooks/{uuid}`; CDEK допускает две
-  подписки, удалять только совпадающую с текущим `CDEK_WEBHOOK_URL` или
+- Подписку CDEK удалять только после выключения провайдера и только на
+  **собственном** аккаунте: при следующем старте с CDEK
+  `ensureOrderStatusWebhook` создаст её снова. `GET /v2/webhooks` →
+  `DELETE /v2/webhooks/{uuid}`; CDEK допускает две подписки на обычного
+  клиента, удалять только совпадающую с текущим `CDEK_WEBHOOK_URL` или
   подтверждённо чужую/устаревшую. Детали — `delivery-cdek-webhook.md`.
-  Не трогать чужие подписки тестового аккаунта.
+- **Общую тестовую учётную запись CDEK не трогать.** У неё уже четыре
+  подписки; её подписки не удалять и не изменять. На ней
+  `ensureOrderStatusWebhook` даёт `delivery_webhook_subscription_failed
+  reason=conflict`; для webhook-тестов нужен отдельный аккаунт.
 
 ## 2. Остановить фоновые процессы
 
@@ -91,9 +95,54 @@ DROP TYPE IF EXISTS delivery_status;
 COMMIT;
 ```
 
-Удалить запись миграции из журнала Drizzle, иначе повторный `db:migrate`
-не применит `0006`. Сначала найти hash последней миграции (в `_journal.json`
-hash нет, он хранится в таблице):
+Не запускать `pnpm db:migrate` после отката: он снова применит `0006`.
+Запись миграции удаляется только после проверки отката (шаг 6).
+
+## 5. Проверить откат до удаления записи миграции
+
+```sql
+SELECT to_regclass('public.order_deliveries') IS NULL AS deliveries_dropped,
+       to_regclass('public.delivery_events') IS NULL AS events_dropped;
+
+SELECT count(*) AS delivery_columns_left
+FROM information_schema.columns
+WHERE table_schema = 'public'
+  AND table_name = 'orders'
+  AND column_name = 'delivery_kopecks';
+
+SELECT count(*) AS origin_columns_left
+FROM information_schema.columns
+WHERE table_schema = 'public'
+  AND table_name = 'shops'
+  AND column_name IN ('cdek_city_code', 'cdek_city_name', 'cdek_shipment_point');
+
+SELECT count(*) AS delivery_types_left
+FROM pg_type
+WHERE typname = 'delivery_status';
+```
+
+Ожидается: `deliveries_dropped = true`, `events_dropped = true`, все
+`*_left = 0`.
+
+API smoke на откатанном окружении (предыдущий commit, доставка
+выключена):
+
+```bash
+curl -s -o /dev/null -w 'health=%{http_code}\n' "$API_URL/health"
+```
+
+- `/health` → `200`.
+- Checkout/orders работают без `delivery_kopecks`; заказ не падает на
+  отсутствующих delivery-колонках.
+- `/orders/:id/delivery` и `/seller/orders/:id/delivery` в предыдущей
+  версии API отсутствуют (`404`).
+- В логах нет PII/секретов.
+
+## 6. Удалить запись миграции
+
+Только после успешной проверки шага 5. Иначе повторный `db:migrate`
+применит `0006` заново к уже откатанной схеме. Сначала найти hash
+последней миграции (в `_journal.json` hash нет, он хранится в таблице):
 
 ```sql
 SELECT id, hash, created_at
@@ -111,7 +160,7 @@ DELETE FROM drizzle.__drizzle_migrations
    AND created_at = <when из journal>;
 ```
 
-## 5. Оплаченные заказы
+## 7. Оплаченные заказы
 
 - `orders.total_kopecks` **не пересчитывать**: деньги уже списаны с
   учётом доставки.
@@ -122,22 +171,14 @@ DELETE FROM drizzle.__drizzle_migrations
 - Возвраты/разница — только через кабинет ЮKassa и runbook
   `payments-manual-review.md`; автоматического refund нет.
 
-## 6. Проверка после отката
+## 8. Forward-fix
 
-```bash
-pnpm db:migrate
-pnpm verify
-curl -s http://localhost:3000/health
-```
-
-- Checkout без delivery работает, `delivery_kopecks` отсутствует.
-- `/delivery/*`, `/seller/orders/:id/delivery` → 404.
-- В логах нет PII/секретов.
-
-## 7. Forward-fix
+Forward-fix — отдельное решение после инцидента, не часть проверки
+отката.
 
 1. Исправить причину в ветке, тест RED→GREEN.
-2. `0006` заново, проверить на копии БД.
+2. На копии/staging применить `0006` заново (`pnpm db:migrate`) и
+   проверить миграцию/тесты.
 3. Включить `DELIVERY_PROVIDER=fake` в preview, затем `cdek` test.
 4. Live — только после договора CDEK и `DELIVERY_LIVE_PII=true`.
 

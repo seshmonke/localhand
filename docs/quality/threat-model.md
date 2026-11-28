@@ -92,8 +92,10 @@
 
 ### Остаточные риски и P3
 
-- Нет алертов и field RUM по платежам; SLO-дизайн есть, алерты — после
-  активации observability (P3, owner exception до публичного запуска).
+- Алерты и field RUM по платежам: T2-гейты по `methodologies.md`
+  активируются после merge Q1.0–Q1.6; до активации — owner exception.
+  Field RUM — owner exception до публичного запуска. SLO-дизайн и логи
+  обязательны.
 - Reconcile в процессе API; отдельный job и распределённый rate-limit —
   P3.
 - Возвраты, 54-ФЗ/ККТ и юридический контур — вне change; до реальных
@@ -140,7 +142,7 @@
 | D3 | Утечка ПII получателя | Логи, ответы, кэш, URL | `no-store`, buyer/seller authz 404, логи без имени/телефона/адреса, PII не в query, redaction-тест | Телефон/имя остаются в заказе по дизайну; удаление по runbook |
 | D4 | Поддельный webhook CDEK | Прямой POST на публичный URL | Нет подписи у CDEK: серверный `GET /v2/orders/{uuid}`, сверка `number`/`cdek_number`; неизвестный → 404; rate-limit 60/мин; no-store | DoS публичного URL; in-memory limiter |
 | D5 | Повтор/дубль события | Retry провайдера, гонка | Unique `(delivery_id,status_code,occurred_at)`; нормализация `status_date_time`; replay — no-op | Нет provider event id; два события с разным временем — два ряда (допустимо) |
-| D6 | Дубль отправления | Timeout/5xx на create, повтор, manual | `number=order-{id}`; перед retry/manual — reconcile по `im_number`; manual только если CDEK-заказа точно нет; 409 `delivery_already_created` | CDEK может принять заказ после timeout; reconcile закрывает |
+| D6 | Дубль отправления | Timeout/5xx на create, повтор, manual | `number=order-{id}`; перед retry/manual — reconcile по `im_number`; manual только если CDEK-заказа точно нет; повтор create → `201` с существующим snapshot, manual-дубль → `409 delivery_already_exists` | CDEK может принять заказ после timeout; reconcile закрывает |
 | D7 | Создание отправления без оплаты | Прямой API-вызов | `paid`-гейт на create/manual/tariffs; 409 `delivery_not_paid`; seller-scoped authz | Нет |
 | D8 | Чужой заказ/доставка | Перебор id | Buyer own order, seller own shop; чужие → 404; нет утечки существования | Нет |
 | D9 | Реальные ПДн в test/preview | Preview с реальной сессией | `DELIVERY_LIVE_PII=false` default; `DELIVERY_ENV=live` без `true` не стартует (fail-closed); live — только после юрпакета; тестовые данные; redaction-тест | Ошибка конфигурации; startup guard |
@@ -150,45 +152,54 @@
 | D13 | Расхождение `orders.delivery_kopecks` и `order_deliveries.price_kopecks` | Баг/ручная правка | Один источник — `order_deliveries.price_kopecks` на момент checkout; snapshot в заказе; invariant-тест `total = items + delivery`; manual цену не меняет | Исторические заказы с delivery 0 — допустимо |
 | D14 | История доставки раскрывает внутренние данные | Seller GET возвращает `payloadHash`, raw payload, ПДн или чужие события | `GET /seller/orders/:id/delivery` отдаёт только `statusCode/statusName/occurredAt`, newest-first, не более 50; `payloadHash` остаётся в БД; seller authz 404; `no-store`; контрактные/DB-тесты | Продавец видит ПДн своего заказа по дизайну (snapshot доставки); удаление — по retention |
 | D15 | Логи reconcile содержат ПДн | Ошибка провайдера/строка с именем, телефоном, адресом | Логи только `delivery_id/order_id/provider/status/code`; без recipient/PVZ/raw payload; `err` без тела ответа CDEK; runtime-тест redaction | Ошибка адаптера может содержать технические детали; код/статус без PII |
-| D16 | Дубли/конфликт подписки при нескольких инстансах | Два API-процесса одновременно вызывают `ensureOrderStatusWebhook` | Идемпотентность по `ORDER_STATUS + URL`; максимум две подписки; при двух чужих — ops-ошибка, третья не создаётся; v1 — один API-процесс | Гонка холодного старта может создать вторую подписку на тот же URL; распределённая блокировка — P3 |
+| D16 | Дубли/конфликт подписки при нескольких инстансах | Два API-процесса одновременно вызывают `ensureOrderStatusWebhook` | Идемпотентность по `ORDER_STATUS + URL`; максимум две подписки на обычного клиента; при двух чужих — ops-ошибка, третья не создаётся; общая тестовая учётка (4 подписки) не трогается, webhook-тесты — отдельный аккаунт; v1 — один API-процесс | Гонка холодного старта может создать вторую подписку на тот же URL; распределённая блокировка — P3 |
 
 ### Проверки (где доказано)
 
-- `apps/api/src/delivery/*.test.ts`: quote token HMAC/TTL/hash, point-city,
-  volumetric weight, stale 409, multi-shop, dimensions/city 409.
-- `apps/api/src/delivery/cdek-*.test.ts`: OAuth cache, fixture
-  contract create/quote, 202+poll, status mapping, unknown code.
-- `apps/api/src/delivery/*.flow.db.test.ts`: paid-гейт, дубль create,
-  webhook spoof/unknown/replay, reconcile `created|in_transit`, manual
-  после терминального отказа, PII redaction, no-store, authz 404.
-- `apps/api/src/delivery/shipment.db.test.ts`: seller events newest-first,
-  лимит 50, пустая история, authz 404, no-store, отсутствие
-  `payload_hash` в ответе.
 - `packages/shared/src/contracts/delivery.test.ts`: `DeliveryEvent` без
   `payloadHash`, граница 50/51 через `SELLER_DELIVERY_EVENTS_MAX`,
   `SellerDeliveryResponseSchema`.
+- `apps/api/src/delivery/delivery.quote.db.test.ts`,
+  `delivery.property.test.ts`, `quote-token.test.ts`, `packaging.test.ts`:
+  quote HMAC/TTL/hash, point-city, volumetric weight, stale 409,
+  multi-shop, dimensions/city 409.
+- `apps/api/src/delivery/cdek-provider.test.ts`,
+  `fake-provider.test.ts`: OAuth cache, fixture contract create/quote,
+  202+poll, status mapping, unknown code, подписка no-op/conflict.
+- `apps/api/src/delivery/shipment.db.test.ts`: paid-гейт, дубль create,
+  webhook spoof/unknown/replay, seller events newest-first/лимит 50,
+  пустая история, authz 404, no-store, отсутствие `payload_hash`.
+- `apps/api/src/delivery/shipment.manual.db.test.ts`: manual после
+  терминального отказа, 409 при существующем CDEK/manual, PII redaction.
+- `apps/api/src/orders/orders.delivery.db.test.ts`: checkout snapshot,
+  `delivery_kopecks`, total, старые заказы без доставки.
+- `apps/api/src/delivery/delivery.reconcile.db.test.ts`: starvation
+  51-й доставки за 50 падающими, batch/touch, `created|in_transit`.
 - `apps/api/src/delivery/delivery.reconcile.edge.db.test.ts`: PII не
   попадает в логи reconcile (`Иван Тестов`, телефон, адрес), touch при
   ошибке/`null`, прерывание по abort.
-- `apps/api/src/delivery/delivery.reconcile.db.test.ts`: starvation
-  51-й доставки за 50 падающими, batch/touch.
-- `apps/api/src/delivery/cdek-provider.test.ts`: существующая подписка —
-  no-op, одна чужая — вторая, две чужие — `DeliveryWebhookConflictError`
-  без третьей.
 - `apps/api/src/delivery/delivery.reconcile.scheduler.test.ts`: один
   таймер, нет параллельного прохода, остановка на `onClose`.
-- `apps/web/e2e/delivery-*.spec.ts`: PVZ checkout → paid → create/manual →
-  track; axe light/dark 320/1440.
 - Property: `total = items + delivery`, quote TTL, event idempotency,
   volumetric `max(weight_g, ceil(L*W*H/5))` в граммах.
+
+### Запланировано (не доказано в этом PR)
+
+- `apps/api/src/delivery/delivery.e2e.db.test.ts`: API/DB e2e
+  quote→checkout→paid→create→webhook→track — задача 3.9, ветка ещё не
+  влита.
+- `apps/web/e2e/delivery-*.spec.ts` + axe light/dark 320/1440: browser
+  e2e — задача 3.10, в этом PR не доказано.
 
 ### Инструментальные ограничения (owner exception)
 
 - **Mutation/SAST:** как в платежах — до Q1.3/Q1.4, именованное
   исключение владельца 27.11.2026; contract/property/threat model в этом
   PBI обязательны.
-- **Alert/RUM:** SLO-дизайн есть, алерты/field RUM — до публичного
-  запуска (owner exception).
+- **Alert/RUM:** T2-гейты по `methodologies.md` активируются после merge
+  Q1.0–Q1.6; до активации алерты — именованное owner-исключение. Field
+  RUM — owner-исключение до публичного запуска. SLO-дизайн и логи
+  обязательны.
 
 ### Остаточные риски
 

@@ -1,8 +1,16 @@
 # Runbook: ручной трек доставки
 
-Статус: seller/ops. Продавец вводит перевозчика и трек только для
+Статус: seller + ops. Продавец вводит перевозчика и трек только для
 оплаченного заказа и только когда CDEK-отправления точно нет. Ручной
 трек не заменяет CDEK-отправление и не меняет деньги.
+
+Роли:
+
+- **Продавец** работает только через `/admin/orders/:id` и API. У
+  продавца нет `$CDEK_ACCESS_TOKEN`; API сам проверяет отсутствие
+  CDEK-заказа.
+- **Ops** выполняет read-only проверки CDEK/SQL и разбор инцидентов.
+  Токен CDEK есть только у ops и только для собственного аккаунта.
 
 Связанные документы: `docs/stack/adr/0005-delivery.md`,
 `docs/stack/runbooks/delivery-cdek-webhook.md`,
@@ -15,7 +23,7 @@
 |---|---|
 | Заказ не оплачен | Запрещён: `409 delivery_not_paid` |
 | `DELIVERY_PROVIDER=manual` | Разрешён: API-проверка CDEK не нужна |
-| CDEK настроен, отправления нет | Разрешён после `GET /v2/orders?im_number=order-{id}`, если заказ не найден |
+| CDEK настроен, отправления нет | Разрешён после серверной проверки `GET /v2/orders?im_number=order-{id}` |
 | CDEK настроен, `GET` вернул 5xx/timeout | Запрещён до reconcile: `502 delivery_provider_error` |
 | CDEK-отправление уже есть (`provider_order_id`) | Запрещён: `409 delivery_already_exists` |
 | Уже есть manual carrier/track | Запрещён: `409 delivery_already_exists` |
@@ -23,27 +31,40 @@
 
 `number` для поиска — `order-{id}` (тот же, что в CDEK create).
 `im_number` — query-параметр `GET /v2/orders`, в теле create его нет.
+Проверку выполняет API; продавцу не нужен доступ к CDEK.
 
-## Как выполнить
+## Как выполнить (продавец)
 
 1. Открыть `/admin/orders/:id`, убедиться, что заказ `paid` и у доставки
    нет CDEK-номера/трека.
-2. Проверить CDEK (read-only):
-
-```bash
-curl -sS -H "Authorization: Bearer $CDEK_ACCESS_TOKEN" \
-  "$CDEK_API_URL/v2/orders?im_number=order-<id>"
-```
-
-Пустой список/`404` — заказа нет, manual разрешён. Заказ есть — не
-вводить manual; дождаться reconcile/webhook.
-
+2. Нажать «Ручной трек». API сам:
+   - проверяет paid-гейт;
+   - при настроенном CDEK ищет `order-{id}` через
+     `GET /v2/orders?im_number=...`;
+   - при 5xx/timeout возвращает `502`, не создавая manual;
+   - при существующем CDEK/manual возвращает `409`.
 3. Ввести carrier (`1..80` символов) и track (`1..64`, только
    `A-Za-z0-9-`). API сохранит delivery `manual`, track и событие
    `MANUAL`; цена доставки, `orders.total` и оплаченный тариф не
    меняются.
 4. Покупатель видит трек на `/orders/:id`; продавец — на
    `/admin/orders/:id`.
+
+## Проверка ops (опционально)
+
+Только для ops с доступом к **собственному** тестовому аккаунту CDEK.
+Не использовать токен/подписки общей тестовой учётной записи: у неё
+уже четыре подписки, их не трогать (`docs/stack/integrations/cdek.md`).
+
+```bash
+# read-only; только ops, только собственный аккаунт.
+curl -sS -H "Authorization: Bearer $CDEK_ACCESS_TOKEN" \
+  "$CDEK_API_URL/v2/orders?im_number=order-<id>"
+```
+
+Пустой список/`404` — заказа нет, manual разрешён. Заказ есть — не
+вводить manual; дождаться reconcile/webhook. Если проверка не нужна,
+полагаться на ответ API: продавец не обходит серверную проверку.
 
 ## Ошибки
 
@@ -67,13 +88,13 @@ curl -sS -H "Authorization: Bearer $CDEK_ACCESS_TOKEN" \
   без раскрытия существования.
 - Имя/телефон получателя и адрес ПВЗ в лог не пишутся; carrier/track
   тоже не логируются значениями — только `delivery_id`, `order_id`,
-  `status`.
+  `status`. Телефон получателя — snapshot `orders.buyer_phone`.
 - Не отправлять скриншоты с ПДн в публичные каналы; тестовые данные —
   только вымышленные.
 - `payloadHash` и raw payload остаются внутренними; в API и UI не
   выводятся.
 
-## Проверка после manual
+## Проверка после manual (ops)
 
 ```sql
 SELECT d.id, d.order_id, d.provider, d.status, d.carrier, d.track_number,

@@ -93,7 +93,8 @@
     shops:[{shopId, tariffCode, priceKopecks, periodMin, periodMax}]}`;
     один и тот же набор shopId, что в корзине; TTL 10 мин.
 - Checkout body: `delivery: { cityCode, pointCode, recipientName,
-  quoteToken }`; phone — `buyer_phone` сессии.
+  quoteToken }`; phone — snapshot `orders.buyer_phone` на checkout, не
+  сессия в момент создания отправления.
   - verify HMAC/TTL/hash/city/point и наличие ровно одного shop-entry
     на каждую группу корзины; цены берутся per-shop из подписанного
     quote, не от клиента; подмена любого shopId/цены ломает HMAC;
@@ -162,7 +163,9 @@
   GET/5xx/429 with backoff.
 - `ensureWebhook`: `GET /v2/webhooks`; if no matching `ORDER_STATUS` +
   URL and <2 subscriptions — `POST /v2/webhooks`; if 2 and no match —
-  log/ops, не создавать третий. Runbook.
+  log/ops, не создавать третий. Общая тестовая учётная запись уже имеет
+  четыре подписки: её подписки не трогать, `ensureWebhook` на ней даёт
+  conflict; для webhook-тестов нужен отдельный аккаунт. Runbook.
 - Webhook `POST /delivery/cdek/webhook`:
   - no signature; lookup `uuid`/`cdek_number`/`number`; verify via
     `GET /v2/orders/{uuid}`; неизвестный локальный заказ → 404,
@@ -175,8 +178,9 @@
   - no-store, 60/min IP.
 - Reconcile 60 s: `created|in_transit` older 2 min → `GET`; update;
   `quoted` без отправления не меняет статус автоматически (ждёт
-  действия продавца); через 24 ч — безопасный лог/бейдж «требует
-  отправки», не `failed`; shipment не создаётся автоматически.
+  действия продавца); продавец видит «требует отправки», статус не
+  становится `failed`; shipment не создаётся автоматически. Отдельное
+  24-часовое напоминание — backlog, не реализовано в этом change.
 - URL docs sync `/delivery/cdek/webhook` (not `/payments/...`).
 
 ### Manual duplicate safety
@@ -212,8 +216,9 @@
 `shop_shipment_point_missing`, `delivery_point_invalid`,
 `delivery_quote_stale`, `delivery_required`, `delivery_unavailable`,
 `delivery_not_paid`, `delivery_snapshot_missing`, `delivery_tariff_mismatch`,
-`delivery_already_created`, `delivery_provider_error`,
-`delivery_already_exists`.
+`delivery_provider_error`, `delivery_already_exists`. Повтор `POST` create
+возвращает `201` с существующим snapshot; manual-дубль — `409
+delivery_already_exists`.
 
 ## Alternatives
 

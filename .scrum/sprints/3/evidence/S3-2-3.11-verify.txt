@@ -1,5 +1,7 @@
 # Verify evidence: S3-2-3.11 ADR/runbooks/specs/contract cap
 # date: 2026-11-28; base: 7bca728; branch: task/S3-2-docs-archive-prep
+# review fixes: shared CDEK account subscriptions, rollback check,
+# actual test files, alert/RUM, 24h backlog, seller/ops split.
 
 $ DATABASE_URL_TEST=postgres://localhand:localhand@localhost:5433/localhand_s2_test \
   JWT_SECRET=… OTP_SECRET=… pnpm verify
@@ -10,7 +12,7 @@ $ pnpm typecheck && pnpm lint && pnpm format:check && pnpm check:public &&
 typecheck: shared/ui/web/api done
 $ oxlint . → clean
 $ prettier --check . → All matched files use Prettier code style
-Public repo check: 567 tracked files, no secrets/PII patterns found
+Public repo check: 575 tracked files, no secrets/PII patterns found
 
 packages/shared test:  Test Files  12 passed (12), Tests 161 passed (161)
 apps/web test:         Test Files  25 passed (25), Tests 212 passed (212)
