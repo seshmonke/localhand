@@ -1,0 +1,27 @@
+✔ scanner catches fixture kinds and ignores comments/clean source (231.54534ms)
+✔ fails closed when a project config is missing (2.939788ms)
+✔ scans packages/ui and packages/i18n outside the catalog (99.501334ms)
+✔ allowlist matches file+kind+text and index strips only html-text (201.488499ms)
+✔ new violation and count growth fail the gate (123.581411ms)
+✔ baseline init/update is idempotent, prunes, and refuses to mask (419.983427ms)
+✔ missing and dead keys fail the gate (118.53663ms)
+✔ allowlist requires texts+kinds (0.409406ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1428.745772
+ℹ start of coverage report
+ℹ --------------------------------------------------------------------------------------------------------------------------
+ℹ file            | line % | branch % | funcs % | uncovered lines
+ℹ --------------------------------------------------------------------------------------------------------------------------
+ℹ scripts         |        |          |         |
+ℹ  check-i18n.mjs |  93.54 |    84.02 |   84.38 | 83-84 101-104 128-131 163 236-237 272-274 281-284 378-379 405-407 417-418
+ℹ --------------------------------------------------------------------------------------------------------------------------
+ℹ all files       |  93.54 |    84.02 |   84.38 |
+ℹ --------------------------------------------------------------------------------------------------------------------------
+ℹ end of coverage report
+exit=0

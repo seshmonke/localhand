@@ -1,15 +1,17 @@
-✔ scanner catches cyrillic runtime strings in production-like TSX (77.548317ms)
-✔ scanner ignores comments and non-cyrillic source (112.300254ms)
-✔ scans packages/ui and packages/i18n outside the catalog (63.816364ms)
-✔ allowlist matches file+kind+text, not a whole file (115.41849ms)
-✔ index.html allowlist keeps the title but catches a new meta line (140.02724ms)
-✔ key gate reports missing and test-only dead keys (0.589381ms)
-ℹ tests 6
+✔ scanner catches fixture kinds and ignores comments/clean source (201.312342ms)
+✔ fails closed when a project config is missing (5.6481ms)
+✔ scans packages/ui and packages/i18n outside the catalog (108.977199ms)
+✔ allowlist matches file+kind+text and index strips only html-text (146.014938ms)
+✔ new violation and count growth fail the gate (176.583559ms)
+✔ baseline init/update is idempotent, prunes, and refuses to mask (498.919052ms)
+✔ missing and dead keys fail the gate (129.502734ms)
+✔ allowlist requires texts+kinds (0.282016ms)
+ℹ tests 8
 ℹ suites 0
-ℹ pass 6
+ℹ pass 8
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 646.468433
+ℹ duration_ms 1441.90959
 exit=0
