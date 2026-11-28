@@ -1,6 +1,6 @@
 $ pnpm test:e2e   # delivery-a11y inside the full B run
 exit code: 0
 
-  ✓   3 [chromium] › e2e/delivery-a11y.spec.ts:75:1 › axe has no serious or critical findings on delivery pages (32.5s)
+  ✓   3 [chromium] › e2e/delivery-a11y.spec.ts:75:1 › axe has no serious or critical findings on delivery pages (39.1s)
 
 axe: 24 scans (320/1440 x light/dark), serious/critical = 0

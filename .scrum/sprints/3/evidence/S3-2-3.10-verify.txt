@@ -1,4 +1,4 @@
-$ pnpm verify   # typecheck + lint + format + public + test + build + openspec
+$ pnpm verify   # typecheck + lint + format + public + test + build + openspec (head ceb2a0e)
 exit code: 0
 
 apps/api build: Done

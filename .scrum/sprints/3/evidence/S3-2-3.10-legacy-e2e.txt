@@ -1,7 +1,7 @@
 $ pnpm test:e2e   # buyer-flow/layout inside the full B run
 exit code: 0
 
-  ✓   2 [chromium] › e2e/buyer-flow.spec.ts:25:1 › buyer and seller see the same order end-to-end (5.9s)
-  ✓   6 [chromium] › e2e/layout.spec.ts:279:1 › layout holds at 320/768/1440 across storefront and admin (17.1s)
-  ✓   7 [chromium] › e2e/layout.spec.ts:427:1 › layout guides overlay renders 12 columns in dev (2.2s)
-  ✓   8 [chromium] › e2e/layout.spec.ts:476:1 › axe has no serious or critical findings on admin pages (15.0s)
+  ✓   2 [chromium] › e2e/buyer-flow.spec.ts:25:1 › buyer and seller see the same order end-to-end (6.7s)
+  ✓   6 [chromium] › e2e/layout.spec.ts:279:1 › layout holds at 320/768/1440 across storefront and admin (19.2s)
+  ✓   7 [chromium] › e2e/layout.spec.ts:427:1 › layout guides overlay renders 12 columns in dev (2.5s)
+  ✓   8 [chromium] › e2e/layout.spec.ts:476:1 › axe has no serious or critical findings on admin pages (21.1s)

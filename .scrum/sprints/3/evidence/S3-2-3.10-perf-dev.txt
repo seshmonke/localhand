@@ -1,6 +1,6 @@
 $ pnpm test:e2e   # dev 5173, perf info-only inside the full B run
 exit code: 0
 
-[lab-lcp-over-budget] /: lab p75 3260 ms >= 2500 ms
-[lab-lcp-over-budget] /checkout: lab p75 3560 ms >= 2500 ms
-[lab-lcp-over-budget] /orders/279: lab p75 3676 ms >= 2500 ms
+[lab-lcp-over-budget] /: lab p75 4044 ms >= 2500 ms
+[lab-lcp-over-budget] /checkout: lab p75 3788 ms >= 2500 ms
+[lab-lcp-over-budget] /orders/328: lab p75 4316 ms >= 2500 ms
