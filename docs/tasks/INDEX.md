@@ -34,8 +34,11 @@ ACCEPT, change `02-seller-onboarding` заархивирован.
   реальных денег и адресов. S3-3 lifecycle и S3-4 hardening перенесены
   в Sprint 4. Durable workspace:
   [.scrum/sprints/3/sprint.md](../../.scrum/sprints/3/sprint.md).
-- Sprint 4 — не начат. Кандидаты: `08-order-lifecycle`,
-  `09-orders-pagination`, Q1.1/Q1.2, Text review W1; live-интеграции и
+- [Спринт 4: i18n runtime copy](04-i18n.md) — BUILDING, cycle 1;
+  S4-1 foundation, затем W1/W2 migration и 100% gate. `08`/`09`,
+  Q1.1/Q1.2 — Sprint 5.
+- Sprint 5 — не начат. Кандидаты: `08-order-lifecycle`,
+  `09-orders-pagination`, Q1.1/Q1.2, Text review W3; live-интеграции и
   юрпакет — owner-гейты.
 
 ## Бэклог

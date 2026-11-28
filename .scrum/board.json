@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-28T13:55:00Z",
+  "updated_at": "2026-11-28T16:30:00Z",
   "tasks": [
     {
       "id": "S2-1",
@@ -76,6 +76,52 @@
       "change": "09-orders-pagination",
       "pr": null,
       "note": "Deferred to Sprint 4 by owner 28.11.2026"
+    },
+    {
+      "id": "S4-1",
+      "title": "i18n foundation: package, init, check gate",
+      "status": "in_progress",
+      "owner": "scrum-worker",
+      "change": null,
+      "pr": null,
+      "branch": "task/S4-1-i18n-foundation",
+      "note": "No spec change: i18n refactor"
+    },
+    {
+      "id": "S4-2",
+      "title": "Migrate W1 copy to catalog",
+      "status": "pending",
+      "owner": "scrum-worker",
+      "change": null,
+      "pr": null,
+      "note": "checkout/payment/delivery/orders"
+    },
+    {
+      "id": "S4-3",
+      "title": "Migrate W2 copy to catalog + review",
+      "status": "pending",
+      "owner": "scrum-worker",
+      "change": null,
+      "pr": null,
+      "note": "catalog/shop/product/cart/auth/admin"
+    },
+    {
+      "id": "S4-4",
+      "title": "Shared/SMS/meta + 100% gate",
+      "status": "pending",
+      "owner": "scrum-worker",
+      "change": null,
+      "pr": null,
+      "note": "labels/SMS/index allowlist; baseline empty"
+    },
+    {
+      "id": "S4-5",
+      "title": "Sprint 4 close",
+      "status": "pending",
+      "owner": "SM",
+      "change": null,
+      "pr": null,
+      "note": "e2e/axe/LCP, verify, review/retro"
     }
   ]
 }
