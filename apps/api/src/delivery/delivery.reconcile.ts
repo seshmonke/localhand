@@ -32,7 +32,20 @@ function statusEventHash(statusCode: string, occurredAt: Date): string {
   return createHash("sha256").update(`${statusCode}:${occurredAt.toISOString()}`).digest("hex");
 }
 
-const SAFE_ERROR_TOKEN = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
+/**
+ * Structured-log allowlist for provider error metadata.
+ *
+ * A value that reaches `err` must be a short ASCII identifier:
+ * - `name` is 1..32 chars and starts with a letter (`Error`, `CdekApiError`);
+ * - `code` is 1..64 chars and starts with a letter (`ECONNRESET`,
+ *   `ERR_CDEK_TIMEOUT`).
+ *
+ * Spaces, commas, `+`, `@`, Cyrillic and every other character that can carry
+ * a recipient name, phone or address are outside the allowlist. The length
+ * caps also bound the logged field.
+ */
+const SAFE_ERROR_NAME = /^[A-Za-z][A-Za-z0-9_.-]{0,31}$/;
+const SAFE_ERROR_CODE = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
 
 type SafeErrorForLog = { name: string; code?: string };
 
@@ -43,10 +56,10 @@ type SafeErrorForLog = { name: string; code?: string };
  */
 function safeErrorForLog(error: unknown): SafeErrorForLog {
   const name =
-    error instanceof Error && SAFE_ERROR_TOKEN.test(error.name) ? error.name : "UnknownError";
+    error instanceof Error && SAFE_ERROR_NAME.test(error.name) ? error.name : "UnknownError";
   const rawCode =
     typeof error === "object" && error !== null ? (error as { code?: unknown }).code : undefined;
-  if (typeof rawCode === "string" && SAFE_ERROR_TOKEN.test(rawCode)) {
+  if (typeof rawCode === "string" && SAFE_ERROR_CODE.test(rawCode)) {
     return { name, code: rawCode };
   }
   return { name };

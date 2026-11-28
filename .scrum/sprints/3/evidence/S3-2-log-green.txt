@@ -3,7 +3,7 @@
 
 
  Test Files  1 passed (1)
-      Tests  3 passed (3)
-   Start at  15:03:38
-   Duration  642ms (import 88%, transform 9%, tests 3%, worker 1%)
+      Tests  11 passed (11)
+   Start at  15:28:50
+   Duration  767ms (import 87%, transform 9%, tests 4%, worker 1%)
 

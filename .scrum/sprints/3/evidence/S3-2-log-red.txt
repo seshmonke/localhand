@@ -1,3 +1,6 @@
+# RED — runtime PII leak and allowlist mutation (REDACTED)
+# PII values are replaced with [PII_*]; absolute local paths are removed.
+
 
  RUN  v5.1.2 ./apps/api
 
@@ -86,3 +89,101 @@ Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
 
   × "pnpm recursive exec" failed in ./apps/api
 
+
+---
+
+# MUTATION RED — allowlist proof
+
+## Mutation A: remove SAFE_ERROR_NAME.test(error.name)
+```diff
+- error instanceof Error && SAFE_ERROR_NAME.test(error.name) ? error.name : "UnknownError"
++ error instanceof Error ? error.name : "UnknownError"
+```
+
+ RUN  v5.1.2 ./apps/api
+
+ ❯ src/delivery/delivery.log-redaction.test.ts (11 tests | 1 failed) 42ms
+   ❯ delivery reconcile log redaction (7)
+     × falls back to UnknownError when error.name looks like PII 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > falls back to UnknownError when error.name looks like PII
+AssertionError: expected { name: 'Иван Тестов' } to deeply equal { name: 'UnknownError' }
+
+- Expected
++ Received
+
+  {
+-   "name": "UnknownError",
++   "name": "Иван Тестов",
+  }
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:223:41
+    221|     await runDeliveryReconcile(providerThatThrows(error), log, NOW);
+    222|
+    223|     expect(providerErrorCall(log)?.err).toEqual({ name: "UnknownError"…
+       |                                         ^
+    224|     expectNoPii(log);
+    225|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  15:28:41
+   Duration  838ms (import 81%, transform 11%, tests 6%, worker 1%)
+
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in ./apps/api
+
+
+## Mutation B: remove SAFE_ERROR_CODE.test(rawCode)
+```diff
+- if (typeof rawCode === "string" && SAFE_ERROR_CODE.test(rawCode)) {
++ if (typeof rawCode === "string") {
+```
+
+ RUN  v5.1.2 ./apps/api
+
+ ❯ src/delivery/delivery.log-redaction.test.ts (11 tests | 1 failed) 41ms
+   ❯ delivery reconcile log redaction (7)
+     × drops an unsafe error.code instead of logging it 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > drops an unsafe error.code instead of logging it
+AssertionError: expected { name: 'Error', code: '[PII_PHONE]' } to deeply equal { name: 'Error' }
+
+- Expected
++ Received
+
+  {
++   "code": "[PII_PHONE]",
+    "name": "Error",
+  }
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:236:17
+    234|
+    235|     const err = providerErrorCall(log)?.err as Record<string, unknown>;
+    236|     expect(err).toEqual({ name: "Error" });
+       |                 ^
+    237|     expect(Object.keys(err)).toEqual(["name"]);
+    238|     expectNoPii(log);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  15:28:42
+   Duration  854ms (import 82%, transform 10%, tests 6%, worker 1%)
+
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in ./apps/api
+
+
+Restored: both allowlist checks are back; the file passes 11/11.
