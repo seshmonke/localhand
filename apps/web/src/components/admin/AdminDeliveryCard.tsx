@@ -29,7 +29,7 @@ const ALREADY_EXISTS_MESSAGE = "Отправление уже создано. О
 const TRACK_HINT = "Латинские буквы, цифры и дефис.";
 const CONFLICT_MESSAGES: Record<string, string> = {
   delivery_tariff_mismatch:
-    "Тариф изменился. Пересчитайте тарифы; цена доставки в заказе не меняется.",
+    "Тариф изменился. Пересчитайте тарифы. Цена доставки в заказе не изменится.",
   delivery_not_paid: "Доставка доступна после оплаты.",
   delivery_snapshot_missing: "В заказе нет данных доставки.",
   delivery_dimensions_missing:
@@ -87,7 +87,7 @@ function validateManualTrack(input: {
         ? "Только латинские буквы, цифры и дефис."
         : field === "carrier"
           ? "Укажите перевозчика."
-          : "Укажите трек-номер.";
+          : "Укажите трек.";
   }
   return { errors };
 }
@@ -237,8 +237,8 @@ export function AdminDeliveryCard({
         <>
           <p className="mt-4 text-sm leading-relaxed">Доставка не оформлена</p>
           <p className="mt-2 text-xs leading-relaxed text-ink/60">
-            Город, ПВЗ и получатель не сохранены в заказе — трек вводится вручную, покупатель увидит
-            только перевозчика и номер.
+            Город, ПВЗ и получатель не сохранены в заказе. Трек можно ввести вручную: покупатель
+            увидит перевозчика и номер.
           </p>
         </>
       ) : null}
@@ -367,7 +367,8 @@ export function AdminDeliveryCard({
             Ручной трек
           </h3>
           <p className="text-sm leading-relaxed text-ink/70">
-            Используйте, если отправление СДЭК точно не создано. После сохранения трек не меняется.
+            Если отправление СДЭК не создано, введите трек вручную. После сохранения трек не
+            изменится.
           </p>
           {manualFieldErrors.carrier !== undefined ||
           manualFieldErrors.trackNumber !== undefined ? (
@@ -404,7 +405,7 @@ export function AdminDeliveryCard({
           </FormField>
           <FormField
             id={trackFieldId}
-            label="Трек-номер"
+            label="Трек"
             hint={TRACK_HINT}
             error={manualFieldErrors.trackNumber}
           >

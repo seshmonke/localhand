@@ -152,7 +152,7 @@ describe("OrderPage", () => {
     expect(screen.getByRole("link", { name: "К заказам" })).toHaveAttribute("href", "/orders");
 
     const paymentSection = screen.getByRole("region", { name: "Оплата" });
-    expect(await within(paymentSection).findByText("Оплата не подключена")).toBeInTheDocument();
+    expect(await within(paymentSection).findByText("Оплата ещё не начата")).toBeInTheDocument();
     expect(within(paymentSection).getByRole("button", { name: "Оплатить" })).toBeInTheDocument();
   });
 

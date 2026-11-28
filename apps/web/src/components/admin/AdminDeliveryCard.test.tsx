@@ -114,7 +114,7 @@ async function fillManualTrack(
 ) {
   const browser = userEvent.setup();
   await browser.type(within(section).getByLabelText("Перевозчик"), carrier);
-  await browser.type(within(section).getByLabelText("Трек-номер"), trackNumber);
+  await browser.type(within(section).getByLabelText("Трек"), trackNumber);
   return browser;
 }
 
@@ -268,7 +268,7 @@ describe("AdminDeliveryCard", () => {
     const fetchMock = renderCard({}, { delivery: null });
     const section = screen.getByRole("region", { name: "Доставка" });
     expect(within(section).getByText("Доставка не оформлена")).toBeInTheDocument();
-    expect(within(section).getByText(/вручную/)).toBeInTheDocument();
+    expect(within(section).getByText(/Трек можно ввести вручную/)).toBeInTheDocument();
     expect(within(section).getByLabelText("Перевозчик")).toBeInTheDocument();
     expect(within(section).getByRole("button", { name: "Сохранить трек" })).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
@@ -370,7 +370,7 @@ describe("AdminDeliveryCard", () => {
       }
 
       await browser.type(within(section).getByLabelText("Перевозчик"), "Почта России");
-      await browser.type(within(section).getByLabelText("Трек-номер"), "RA123456789RU");
+      await browser.type(within(section).getByLabelText("Трек"), "RA123456789RU");
       await browser.click(within(section).getByRole("button", { name: "Сохранить трек" }));
 
       expect(await within(section).findByText("Ручной трек сохранён.")).toBeInTheDocument();
@@ -448,11 +448,11 @@ describe("AdminDeliveryCard", () => {
 
     await browser.click(within(section).getByRole("button", { name: "Сохранить трек" }));
     const carrierInput = within(section).getByLabelText("Перевозчик");
-    const trackInput = within(section).getByLabelText("Трек-номер");
+    const trackInput = within(section).getByLabelText("Трек");
     expect(carrierInput).toHaveFocus();
     expect(within(section).getByRole("alert")).toHaveTextContent("Проверьте выделенные поля.");
     expect(within(section).getByText("Укажите перевозчика.")).toBeInTheDocument();
-    expect(within(section).getByText("Укажите трек-номер.")).toBeInTheDocument();
+    expect(within(section).getByText("Укажите трек.")).toBeInTheDocument();
     expect(carrierInput).toHaveAttribute("aria-invalid", "true");
     expect(carrierInput.getAttribute("aria-describedby")).toBe(
       within(section).getByText("Укажите перевозчика.").id,

@@ -32,7 +32,7 @@ import {
 import { orderKeys, useMeQuery } from "../lib/queries.js";
 
 const COMMENT_MAX_LENGTH = 500;
-export const COMMENT_HINT = "Необязательно. До 500 символов: удобное время, вопросы по вещи.";
+export const COMMENT_HINT = "Необязательно. До 500 символов: удобное время, вопросы по товару.";
 
 function formatPhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
@@ -45,11 +45,11 @@ function formatPhone(phone: string): string {
 function checkoutErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.code === "delivery_required") {
-      return "Выберите город, пункт выдачи и имя получателя — доставка обязательна.";
+      return "Укажите город, пункт выдачи и имя получателя: без доставки заказ не оформить.";
     }
     switch (error.status) {
       case 400:
-        return "Проверьте состав корзины: в заказе от 1 до 50 уникальных товаров.";
+        return "Проверьте корзину: в одном заказе от 1 до 50 товаров.";
       case 429:
         return "Слишком много попыток оформления. Подождите минуту и попробуйте снова.";
       case 409:
@@ -80,7 +80,7 @@ function deliveryQuoteErrorMessage(error: unknown): string {
         break;
     }
   }
-  return "Не удалось рассчитать доставку. Попробуйте другой пункт выдачи.";
+  return "Не удалось рассчитать доставку. Выберите другой пункт выдачи или попробуйте снова.";
 }
 
 export function CheckoutPage() {
@@ -167,7 +167,9 @@ export function CheckoutPage() {
           return;
         }
         if (error.status === 409 && error.code === "delivery_required") {
-          setFormError("Выберите город, пункт выдачи и имя получателя — доставка обязательна.");
+          setFormError(
+            "Укажите город, пункт выдачи и имя получателя: без доставки заказ не оформить.",
+          );
           return;
         }
         if (error.status === 502 && error.code === "delivery_unavailable") {
@@ -304,7 +306,7 @@ export function CheckoutPage() {
         <PageHeader
           eyebrow="Оформление заказа"
           title="Проверьте заказ"
-          description="Заказ получит продавец каждого магазина. Цену и состав проверит сервер — оплата проходит на странице ЮKassa, деньги получает продавец."
+          description="У каждого магазина свой заказ. Оплата проходит на странице ЮKassa, деньги получает продавец."
         />
 
         <form noValidate onSubmit={handleSubmit}>
@@ -360,7 +362,8 @@ export function CheckoutPage() {
                     Доставка
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed">
-                    Выберите город и пункт выдачи СДЭК. Стоимость и срок рассчитает сервер.
+                    Выберите город и пункт выдачи СДЭК. Стоимость и срок рассчитаем после выбора
+                    ПВЗ.
                   </p>
 
                   <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -418,7 +421,7 @@ export function CheckoutPage() {
                     <FormField
                       id="checkout-recipient"
                       label="Имя получателя"
-                      hint="Имя, на которое оформлена посылка."
+                      hint="Имя, на которое оформлена доставка."
                     >
                       <input
                         id="checkout-recipient"
@@ -431,7 +434,7 @@ export function CheckoutPage() {
                         aria-invalid={deliveryStarted && recipientName.trim().length === 0}
                         aria-describedby={fieldDescribedBy(
                           "checkout-recipient",
-                          "Имя, на которое оформлена посылка.",
+                          "Имя, на которое оформлена доставка.",
                         )}
                         className={fieldControlClass}
                       />
@@ -495,7 +498,7 @@ export function CheckoutPage() {
                     <strong className="whitespace-nowrap font-mono font-semibold">
                       {phone ? formatPhone(phone) : "—"}
                     </strong>
-                    . Заказ привязан к номеру, на который вы вошли.
+                    . Заказ привязан к вашему номеру.
                   </p>
 
                   <div className="mt-6">
@@ -546,8 +549,7 @@ export function CheckoutPage() {
                   {unavailable ? (
                     <div role="alert" className="border-[3px] border-ink bg-accent-orange/15 p-4">
                       <p className="text-sm font-semibold leading-relaxed">
-                        Часть товаров стала недоступна. Корзина не изменилась — проверьте позиции и
-                        попробуйте снова.
+                        Часть товаров уже недоступна. Уберите их из корзины и попробуйте снова.
                       </p>
                       <Link
                         to="/cart"
@@ -564,8 +566,8 @@ export function CheckoutPage() {
                   {pending ? "Оформляем…" : "Оформить заказ"}
                 </Button>
                 <p className="mt-2 text-xs leading-relaxed">
-                  Нажимая кнопку, вы отправляете заявку продавцам. После оформления вы перейдёте к
-                  оплате. Если продавец не подключил приём платежей, статус заказа покажет это.
+                  Нажимая кнопку, вы отправляете заявку продавцам. После оформления перейдёте к
+                  оплате. Если продавец не подключил приём платежей, вы увидите это в заказе.
                 </p>
               </Card>
             </Sidebar>

@@ -149,10 +149,10 @@ function PaymentDetails({
     }
     return (
       <>
-        <p className="mt-4 text-sm font-semibold leading-relaxed">Оплата не подключена</p>
+        <p className="mt-4 text-sm font-semibold leading-relaxed">Оплата ещё не начата</p>
         <p className="mt-2 text-sm leading-relaxed">
-          Начните оплату — продавец получит деньги напрямую. Если продавец не подключил приём
-          платежей, мы об этом сообщим.
+          Оплатите заказ: деньги получит продавец напрямую. Если приём платежей не подключён, мы
+          сообщим об этом.
         </p>
       </>
     );
@@ -166,8 +166,7 @@ function PaymentDetails({
             Не удалось подтвердить оплату
           </p>
           <p className="mt-2 text-sm leading-relaxed">
-            Исход создания платежа неизвестен. Повторите оплату — тот же ключ не создаст второе
-            списание.
+            Исход создания платежа неизвестен. Повторите оплату — второе списание не создастся.
           </p>
           <dl className="mt-4 flex flex-col gap-2 text-sm">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -193,8 +192,8 @@ function PaymentDetails({
         </dl>
         <p className="mt-4 text-sm leading-relaxed" aria-live="polite">
           {returnedFromPayment
-            ? "Проверяем оплату… Обычно это занимает несколько секунд."
-            : "Мы проверяем оплату. Статус обновится автоматически."}
+            ? "Вы вернулись с оплаты. Проверяем платёж…"
+            : "Проверяем оплату. Статус обновится автоматически."}
         </p>
         {payment.confirmationUrl ? (
           <a
@@ -257,7 +256,8 @@ function PaymentDetails({
         {payment.status === "canceled" ? "Оплата отменена" : "Оплата не прошла"}
       </p>
       <p className="mt-2 text-sm leading-relaxed">
-        Платёж не прошёл. Можно попробовать снова или связаться с продавцом.
+        {payment.status === "canceled" ? "Платёж отменён" : "Платёж не прошёл"}. Можно попробовать
+        снова или связаться с продавцом.
       </p>
     </>
   );
@@ -613,7 +613,7 @@ function OrderNotFound() {
     <ScreenState
       kind="empty"
       title="Заказ не найден"
-      description="Проверьте ссылку: заказ мог быть удалён или оформлен с другого номера."
+      description="Проверьте ссылку. Заказ виден только тому номеру, с которого его оформили."
       action={
         <Link to="/orders" className={buttonVariants({ variant: "outline" })}>
           К списку заказов
