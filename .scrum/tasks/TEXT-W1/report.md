@@ -4,7 +4,7 @@
 > `task: Text Review W1` · `change: No spec change: copy only` ·
 > `tier: T0` · branch `task/text-review-w1` · worktree
 > `<worktree>` · base `main@041cfa0`.
-> links: [audit](../../../../reviews/text-site-audit.md) ·
+> links: [audit](../../reviews/text-site-audit.md) ·
 > [voice/glossary](../../../../../docs/design/content.md) ·
 > [program](../../../../../docs/tasks/text-review.md).
 
@@ -16,7 +16,7 @@ W1 готов к ревью. Поведение, коды, authz, API-контр
 ## Что сделано
 
 Аудит всех production-текстов сайта:
-[`.scrum/reviews/text-site-audit.md`](../../../../reviews/text-site-audit.md).
+[`.scrum/reviews/text-site-audit.md`](../../reviews/text-site-audit.md).
 
 - 33 production-файла `apps/web/src/**` + `apps/web/index.html`.
 - 405 строковых литералов с кириллицей; с JSX/шаблонами примерно 430
