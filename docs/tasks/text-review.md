@@ -65,7 +65,7 @@ Copywriter и анти-слоп в `scrum-crew` v0.6.0
    `docs/design/content.md` (voice/глоссарий) и ссылку в
    `docs/design/README.md`; контекстные шапки не переписывать массово.
 6. **Ongoing gate.** Новый/изменённый user-facing текст — Copywriter
-   review не-автора + `slop-check`; ссылка в PR или
+   review не-автора + `slop-check` + `motif-check`; ссылка в PR или
    `No text change: <причина>`.
 
 Правила PR: только текст/разметка, без изменения поведения; если текст
@@ -84,7 +84,8 @@ Copywriter и анти-слоп в `scrum-crew` v0.6.0
 - [ ] PR-шаблон и DoD содержат text gate; Copywriter review не-автора.
 - [ ] Baseline `docs/design/content.md` создан и связан из
       `docs/design/README.md`; W3 — ревизия и расширение примеров.
-- [ ] Новые тексты проходят gate; `No text change` допустим с причиной.
+- [ ] Новые тексты проходят gate `slop-check` + `motif-check`;
+      `No text change: <причина>` допустим.
 - [ ] `pnpm verify`, `openspec validate --all --strict` зелёные.
 
 ## Роли
@@ -101,6 +102,8 @@ Copywriter и анти-слоп в `scrum-crew` v0.6.0
 
 - Slop hits на новых/изменённых строках: 0; baseline существующих
   hits — в inventory, не считается регрессией.
+- Motif repeats на новых текстах: 0; общий образ не повторяется в
+  следующих трёх текстах; слова-подписи — в `docs/design/motifs.md`.
 - Ложные обещания/недоказанные факты: 0.
 - Расхождения глоссария: 0.
 - Покрытие ревью изменённых user-facing текстов: 100%.
