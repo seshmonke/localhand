@@ -1,4 +1,10 @@
-import { formatRubles, kopecks, type OrderPayment, type OrderSummary } from "@localhand/shared";
+import {
+  formatRubles,
+  kopecks,
+  type DeliverySnapshot,
+  type OrderPayment,
+  type OrderSummary,
+} from "@localhand/shared";
 import { QueryClient } from "@tanstack/react-query";
 import { cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -32,6 +38,27 @@ const order: OrderSummary = {
       quantity: 1,
     },
   ],
+};
+
+const inTransitDelivery: DeliverySnapshot = {
+  provider: "cdek",
+  status: "in_transit",
+  cityCode: 44,
+  cityName: "Москва",
+  pointCode: "MSK001",
+  pointAddress: "ул. Тестовая, 1, ПВЗ «Тестовый»",
+  recipientName: "Иван Тестов",
+  tariffCode: "136",
+  tariffName: "Посылка склад-ПВЗ",
+  priceKopecks: 45_000,
+  periodMin: 2,
+  periodMax: 5,
+  providerOrderId: "cdek-order-42",
+  providerNumber: "1234567890",
+  carrier: "СДЭК",
+  trackNumber: "1234567890",
+  lastStatusCode: "IN_TRANSIT",
+  lastStatusAt: "2026-11-27T12:00:00.000Z",
 };
 
 function payment(overrides: Partial<OrderPayment> = {}): OrderPayment {
@@ -84,6 +111,30 @@ describe("OrdersPage", () => {
     expect(screen.getAllByText(price(420_000)).length).toBeGreaterThan(0);
     expect(screen.getByText(formatOrderDate(createdAt))).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Подробнее" })).toHaveAttribute("href", "/orders/42");
+  });
+
+  it("shows a delivery line only for orders with delivery", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /orders/mine": {
+        body: {
+          orders: [
+            { ...order, totalKopecks: 465_000, delivery: inTransitDelivery },
+            { ...order, id: 43, delivery: null },
+          ],
+        },
+      },
+      "GET /orders/42/payment": { body: { payment: null } },
+      "GET /orders/43/payment": { body: { payment: null } },
+    });
+
+    renderApp(["/orders"]);
+
+    const card = await screen.findByRole("article", { name: "Заказ №42" });
+    expect(within(card).getByText(/Доставка:/)).toHaveTextContent(
+      `Доставка: ${price(45_000)} · В пути`,
+    );
+    expect(screen.getAllByText(/Доставка:/)).toHaveLength(1);
   });
 
   it("shows the active payment status on the order card", async () => {
