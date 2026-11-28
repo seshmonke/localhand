@@ -40,21 +40,21 @@ refactor. Evidence: `S3-2-tdd-a-red.txt`, `S3-2-tdd-a-green.txt`,
 
 | AC | RED-тест | Что падает |
 |----|----------|------------|
-| Seller tariffs | `delivery.shipment.db.test.ts` | нет endpoint |
-| Создание CDEK | `delivery.shipment.db.test.ts` | нет create/202 |
-| Не оплачен | `delivery.shipment.db.test.ts` | нет 409 paid-гейта |
-| Повтор create | `delivery.shipment.db.test.ts` | создаёт дубль |
-| Другой тариф | `delivery.shipment.db.test.ts` | принимает тариф вне оплаченного quote |
-| Цена тарифа изменилась | `delivery.shipment.db.test.ts` | меняет price/total |
+| Seller tariffs | `shipment.db.test.ts` | нет endpoint |
+| Создание CDEK | `shipment.db.test.ts` | нет create/202 |
+| Не оплачен | `shipment.db.test.ts` | нет 409 paid-гейта |
+| Повтор create | `shipment.db.test.ts` | создаёт дубль |
+| Другой тариф | `shipment.db.test.ts` | принимает тариф вне оплаченного quote |
+| Цена тарифа изменилась | `shipment.db.test.ts` | меняет price/total |
 | Timeout + reconcile | `delivery.duplicate.db.test.ts` | manual при живом CDEK |
 | Manual без CDEK | `delivery.manual.db.test.ts` | нет endpoint |
 | Manual при CDEK | `delivery.manual.db.test.ts` | перезаписывает |
-| Webhook verify | `delivery.webhook.db.test.ts` | доверяет телу |
-| Webhook replay | `delivery.webhook.db.test.ts` | дубль события |
+| Webhook verify | `shipment.db.test.ts` | доверяет телу |
+| Webhook replay | `shipment.db.test.ts` | дубль события |
 | Reconcile delivered | `delivery.reconcile.db.test.ts` | не обновляет `in_transit` |
 | Quoted без отправления | `delivery.reconcile.db.test.ts` | авто-`failed`/создание |
-| Webhook verify fail | `delivery.webhook.db.test.ts` | применяет статус без проверки |
-| Authz 404 | `delivery.authz.db.test.ts` | отдаёт чужое |
+| Webhook verify fail | `shipment.db.test.ts` | применяет статус без проверки |
+| Authz 404 | `shipment.db.test.ts` | отдаёт чужое |
 | PII redaction | `delivery.log-redaction.test.ts` | пишет имя/телефон |
 | Live PII gate | `apps/api/src/env.test.ts` | live стартует с `DELIVERY_LIVE_PII=false` |
 | Browser e2e | `apps/web/e2e/delivery-flow.spec.ts` | нет сценария |

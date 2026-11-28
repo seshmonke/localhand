@@ -69,3 +69,8 @@
 - 27.11.2026. LAYOUT-1: единая layout-система web (PageShell, 12 колонок,
   8pt, 44px header, overlay, screenshot-тесты 320/768/1440); PR #35,
   merge `5d91cc5`, review APPROVE. Post-sprint PBI.
+- 28.11.2026. Sprint 3 закрыт: S3-1 payments sandbox (PR #39/#41/#45) и
+  S3-2 delivery test contour (PR #47–#79); changes `06-payments`/
+  `07-delivery` заархивированы; review ACCEPT. S3-3 order lifecycle и
+  S3-4 hardening перенесены в Sprint 4; live YooKassa/CDEK, юрпакет,
+  production deploy/SMS — owner-гейты.

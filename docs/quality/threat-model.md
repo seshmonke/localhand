@@ -110,7 +110,7 @@
 Связанные документы: `docs/stack/adr/0005-delivery.md`,
 `docs/stack/integrations/cdek.md`,
 `docs/stack/runbooks/delivery-rollback.md`,
-`openspec/changes/07-delivery/design.md`.
+`openspec/changes/archive/2026-11-28-07-delivery/design.md`.
 
 ### Границы доверия
 

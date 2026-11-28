@@ -67,8 +67,10 @@
   оплаченный заказ, вебхук, идемпотентность. Источник: product.md.
   Спринт: —. Сделано: S2 checkout + S3 payments (PR #39/#41/#45),
   fake/sandbox; live smoke — после ключей.
-- [ ] Интеграция СДЭК: расчёт, отправление, трек. Критерий: заказ
-  получает трек и статус. Источник: product.md. Спринт: —.
+- [x] Интеграция СДЭК: расчёт, отправление, трек. Критерий: заказ
+  получает трек и статус. Источник: product.md. Спринт: —. Сделано:
+  S3-2 test contour/fake/live adapter, webhook/reconcile/manual (PR
+  #47–#79); live CDEK contract/keys — owner-гейт.
 - [ ] Цифровые товары: S3, защищённая ссылка, лицензия, возвраты.
   Критерий: цифровой заказ выдаётся после оплаты. Источник:
   product.md. Спринт: —.
@@ -92,6 +94,21 @@
   Источник: design review владельца 27.11.2026. Сделано: PR #35,
   merge `5d91cc5`.
 
+- [ ] P1. Дефлейк `CheckoutPage` replay-навигации: тест «clears only the
+  products returned by the checkout replay» упал в CI на main (#63,
+  run 46131945941) по таймауту `findByRole`, локально 15/15 и 8 полных
+  web-suite зелёные; rerun прошёл. Критерий: детерминированное ожидание
+  навигации/заголовка (не просто увеличенный timeout), 20 полных
+  web-suite подряд + CI зелёные, без ослабления проверок. Источник:
+  CI main 28.11.2026. Спринт: — (Sprint 4).
+
+- [ ] P1. TDD-first audit/repro delivery shipment: retrospective RED 3.1
+  (owner exception до Q1.1/Sprint 4); восстановить RED до кода на
+  изолированном repro или подтвердить mutation/e2e-покрытие и закрыть
+  исключение. Критерий: RED падает до реализации, GREEN после, evidence
+  в task-workspace; иначе исключение становится P1-долгом. Источник:
+  close review #80, owner 28.11.2026. Спринт: — (Sprint 4).
+
 ## P2
 
 - [ ] P2. Delivery webhook subscription: distributed lock для нескольких
@@ -112,8 +129,6 @@
 
 - [ ] Отзывы, рейтинги, рекомендации. Критерий: решение о скоупе и
   законности. Источник: product.md. Спринт: —.
-- [ ] Ozon Доставка как второй перевозчик. Критерий: договор/API
-  проверены. Источник: product.md. Спринт: —.
 - [ ] Managed PostgreSQL с репликой. Критерий: SLA и бэкапы. Источник:
   `docs/stack/hosting.md`. Спринт: —.
 - [ ] Ужесточить `TRUST_PROXY` в production: отклонять `false` и CIDR с
@@ -201,6 +216,11 @@
 - [ ] Добавить метрики checkout/409/429 без PII. Критерий: метрики в логах/системе, без телефона/комментария. Источник: P3 ревью S2-3a; `Cache-Control: no-store` на PII-ответах заказов уже сделан в S2-4. Спринт: —.
 - [ ] Починить test-helper `countAdvisoryWaiters` для signed bigint hash; добавить CI fail-fast для orders DB suite. Критерий: тест с отрицательным hash, skip не молчит. Источник: P3 ревью S2-3a. Спринт: — (S2-4).
 
+- [ ] P2. Ozon Доставка как второй перевозчик: отдельный adapter за
+  существующим provider seam, contract/B2B, тарифы; после стабильного
+  СДЭК. Критерий: quote/create/track на Ozon в тестовом контуре, без
+  изменения orders/UI. Источник: S3-2 task 4.2/product.md. Спринт: —.
+
 ## P3
 
 - [ ] P3. Изоляция auth DB-тестов: отдельная схема/БД на файл или
@@ -224,3 +244,35 @@
   throttling на реальном стенде); lab smoke S2-4 — owner-approved proxy v1,
   field p75 остаётся DoD для публичного запуска. Критерий: field p75 < 2,5 с на `/` и
   `/checkout`. Источник: P3 ревью S2-4. Спринт: —.
+
+- [ ] P3. Закрыть долг ревью delivery UI: переименовать `role` prop
+  `DeliverySummaryCard` → `viewer`, расширить assert raw-кодов
+  (`tariffCode/pointCode/cityCode`), согласовать `totalKopecks` с
+  доставкой в фикстурах, seller-ярлык `quoted` «Требует отправки»,
+  добавить mobile-строку доставки в `AdminOrdersPage`, axe/e2e/LCP для
+  `/orders`, `/orders/:id`, `/admin/orders/:id` 320/1440 light/dark.
+  Источник: P3 ревью #63. Спринт: — (3.10).
+- [ ] P3. Product dimensions: `aria-describedby` на fieldset подсказки,
+  единый источник лейблов/правил, boundary-тесты 100000/300 и
+  `aria-describedby`, axe для `/admin/products/new`. Источник: P3
+  ревью #64. Спринт: — (3.10).
+- [ ] P3. Уточнить в `docs/quality/methodologies.md` §2 границы путей
+  подсчёта PR: включить `.github/**` и root-конфиги (`package.json`,
+  `tsconfig*.json`, `.githooks/**`) либо явно сказать, что они не
+  считаются. Источник: P3 ревью #69. Спринт: —.
+- [ ] P3. Seller admin delivery card: скрывать sentinel-строки «Не указан»
+  для manual/legacy snapshot и добавить тест; buyer-карточка уже скрывает.
+  Источник: P3 ревью #75. Спринт: —.
+- [ ] P3. DeliverySummaryCard legacy: negative-assert, что normal snapshot
+  не показывает пояснение «город/ПВЗ/получатель не сохранены»; уйти от
+  сравнения с копирайт-строкой к data-level признаку. Источник: P3 ревью
+  #75. Спринт: —.
+- [ ] P3. Polling seller delivery: тест, что 502/network не останавливает
+  polling (только 401/404), либо убрать утверждение из evidence.
+  Источник: P3 ревью #75. Спринт: —.
+- [ ] P3. Убрать dead web-маппинг `delivery_already_created` в
+  `AdminDeliveryCard` (API больше не возвращает). Источник: P3 ревью #76.
+  Спринт: —.
+- [ ] P3. Threat model: property/DB-инварианты (event idempotency) —
+  указать fact-файл `schema.delivery.db.test.ts`, не смешивать с
+  property. Источник: P3 ревью #76. Спринт: —.

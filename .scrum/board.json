@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-27T16:18:00Z",
+  "updated_at": "2026-11-28T13:55:00Z",
   "tasks": [
     {
       "id": "S2-1",
@@ -53,26 +53,29 @@
     {
       "id": "S3-2",
       "title": "Delivery: CDEK test contour",
-      "status": "in_progress",
+      "status": "done",
       "owner": "scrum-worker",
       "change": "07-delivery",
-      "pr": null
+      "pr": 79,
+      "note": "CLOSED 28.11.2026; 07-delivery archived; live CDEK/legal/prod external"
     },
     {
       "id": "S3-3",
       "title": "Order lifecycle: paid/shipped/delivered",
-      "status": "pending",
+      "status": "deferred",
       "owner": "scrum-worker",
       "change": "08-order-lifecycle",
-      "pr": null
+      "pr": null,
+      "note": "Deferred to Sprint 4 by owner 28.11.2026"
     },
     {
       "id": "S3-4",
       "title": "Hardening: orders pagination, mobile entry",
-      "status": "pending",
+      "status": "deferred",
       "owner": "scrum-worker",
       "change": "09-orders-pagination",
-      "pr": null
+      "pr": null,
+      "note": "Deferred to Sprint 4 by owner 28.11.2026"
     }
   ]
 }

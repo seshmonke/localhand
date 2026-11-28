@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "phase": "BUILDING",
+  "phase": "CLOSED",
   "init_closed": true,
-  "sprint": 3,
-  "cycle": 5,
-  "updated_at": "2026-11-27T16:18:00Z",
+  "sprint": null,
+  "cycle": null,
+  "updated_at": "2026-11-28T13:55:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 3 cycle 5: S3-2 delivery planning/implementation. Change 07-delivery created: PVZ checkout, CDEK test platform account, manual track fallback, provider seam for Ozon later. Owner decision: platform CDEK contract. S3-1 closed."
+  "notes": "Sprint 3 closed 28.11.2026. S3-1 payments sandbox and S3-2 delivery test contour accepted; changes 06-payments and 07-delivery archived. S3-3 order lifecycle and S3-4 hardening deferred to Sprint 4 by owner. Next: upgrade scrum-crew to v0.5.0 in a separate PR, then Sprint 4 planning. Live YooKassa/CDEK, legal package, production deploy/SMS remain external owner gates."
 }
