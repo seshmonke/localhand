@@ -1,0 +1,25 @@
+# GREEN evidence: S3-2-D4a seller delivery events API + web client
+# date: 2026-11-28; minimal implementation after RED.
+
+## 1. Contract
+$ pnpm --filter @localhand/shared exec vitest run src/contracts/delivery.test.ts
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+exit=0
+
+## 2. API DB (events order/limit/empty/authz/no-store/no payload hash)
+$ DATABASE_URL_TEST=postgres://localhand:localhand@localhost:5433/localhand_s2_test \
+  JWT_SECRET=… OTP_SECRET=… pnpm --filter @localhand/api exec vitest run \
+  src/delivery/shipment.db.test.ts
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+exit=0
+
+## 3. Web client (fetch mock: paths/methods/bodies/schema/errors/keys)
+$ pnpm --filter @localhand/web exec vitest run src/lib/api.test.ts
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+exit=0

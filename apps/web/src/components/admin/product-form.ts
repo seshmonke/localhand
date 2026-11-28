@@ -1,8 +1,10 @@
 import {
   PRODUCT_DESCRIPTION_MAX_LENGTH,
+  PRODUCT_DIMENSION_MAX_CM,
   PRODUCT_IMAGE_URL_MAX_LENGTH,
   PRODUCT_NAME_MAX_LENGTH,
   PRODUCT_PRICE_MAX_KOPECKS,
+  PRODUCT_WEIGHT_MAX_G,
   rublesToKopecks,
   type CreateProduct,
   type SellerProduct,
@@ -13,6 +15,10 @@ export type ProductFormValues = {
   name: string;
   description: string;
   price: string;
+  weightG: string;
+  lengthCm: string;
+  widthCm: string;
+  heightCm: string;
   imageUrl: string;
 };
 
@@ -20,6 +26,10 @@ export type ProductFieldErrors = {
   name?: string;
   description?: string;
   price?: string;
+  weightG?: string;
+  lengthCm?: string;
+  widthCm?: string;
+  heightCm?: string;
   imageUrl?: string;
 };
 
@@ -27,6 +37,10 @@ export type NormalizedProduct = {
   name: string;
   description: string | null;
   priceKopecks: number;
+  weightG: number | null;
+  lengthCm: number | null;
+  widthCm: number | null;
+  heightCm: number | null;
   imageUrl: string | null;
 };
 
@@ -34,6 +48,10 @@ export const emptyProductForm: ProductFormValues = {
   name: "",
   description: "",
   price: "",
+  weightG: "",
+  lengthCm: "",
+  widthCm: "",
+  heightCm: "",
   imageUrl: "",
 };
 
@@ -49,8 +67,62 @@ export function productToForm(product: SellerProduct): ProductFormValues {
     name: product.name,
     description: product.description ?? "",
     price: formatPriceInput(product.priceKopecks),
+    weightG: formatDimensionInput(product.weightG),
+    lengthCm: formatDimensionInput(product.lengthCm),
+    widthCm: formatDimensionInput(product.widthCm),
+    heightCm: formatDimensionInput(product.heightCm),
     imageUrl: product.imageUrl ?? "",
   };
+}
+
+function formatDimensionInput(value: number | null): string {
+  return value === null ? "" : String(value);
+}
+
+const DIMENSION_RULES = [
+  { field: "weightG", label: "Вес", unit: "г", max: PRODUCT_WEIGHT_MAX_G },
+  { field: "lengthCm", label: "Длина", unit: "см", max: PRODUCT_DIMENSION_MAX_CM },
+  { field: "widthCm", label: "Ширина", unit: "см", max: PRODUCT_DIMENSION_MAX_CM },
+  { field: "heightCm", label: "Высота", unit: "см", max: PRODUCT_DIMENSION_MAX_CM },
+] as const;
+
+type DimensionField = (typeof DIMENSION_RULES)[number]["field"];
+type Dimensions = Record<DimensionField, number | null>;
+
+/** Empty means "not set"; `undefined` means invalid (zero, negative, fractional, too large). */
+function parseOptionalPositiveInteger(raw: string, max: number): number | null | undefined {
+  const trimmed = raw.trim();
+  if (trimmed.length === 0) {
+    return null;
+  }
+  if (!/^\d+$/.test(trimmed)) {
+    return undefined;
+  }
+  const value = Number(trimmed);
+  if (!Number.isSafeInteger(value) || value < 1 || value > max) {
+    return undefined;
+  }
+  return value;
+}
+
+function parseDimensions(values: ProductFormValues, errors: ProductFieldErrors): Dimensions {
+  const dimensions: Dimensions = {
+    weightG: null,
+    lengthCm: null,
+    widthCm: null,
+    heightCm: null,
+  };
+
+  for (const rule of DIMENSION_RULES) {
+    const parsed = parseOptionalPositiveInteger(values[rule.field], rule.max);
+    if (parsed === undefined) {
+      errors[rule.field] = `${rule.label} — целое число от 1 до ${rule.max} ${rule.unit}.`;
+    } else {
+      dimensions[rule.field] = parsed;
+    }
+  }
+
+  return dimensions;
 }
 
 export type ParsedPrice = { ok: true; priceKopecks: number } | { ok: false; error: string };
@@ -110,6 +182,8 @@ export function validateProductForm(values: ProductFormValues): {
     errors.imageUrl = `Ссылка на изображение — до ${PRODUCT_IMAGE_URL_MAX_LENGTH} символов.`;
   }
 
+  const dimensions = parseDimensions(values, errors);
+
   if (Object.keys(errors).length > 0 || !price.ok) {
     return { errors, value: null };
   }
@@ -122,6 +196,7 @@ export function validateProductForm(values: ProductFormValues): {
       name,
       description: description.length > 0 ? description : null,
       priceKopecks: price.priceKopecks,
+      ...dimensions,
       imageUrl: imageUrl.length > 0 ? imageUrl : null,
     },
   };
@@ -134,6 +209,10 @@ export function toCreateProduct(value: NormalizedProduct): CreateProduct {
     priceKopecks: value.priceKopecks,
     imageUrl: value.imageUrl,
     ...(value.description === null ? {} : { description: value.description }),
+    ...(value.weightG === null ? {} : { weightG: value.weightG }),
+    ...(value.lengthCm === null ? {} : { lengthCm: value.lengthCm }),
+    ...(value.widthCm === null ? {} : { widthCm: value.widthCm }),
+    ...(value.heightCm === null ? {} : { heightCm: value.heightCm }),
   };
 }
 
@@ -159,6 +238,18 @@ export function diffProduct(product: SellerProduct, value: NormalizedProduct): U
   if (value.priceKopecks !== product.priceKopecks) {
     changes.priceKopecks = value.priceKopecks;
   }
+  if (value.weightG !== product.weightG) {
+    changes.weightG = value.weightG;
+  }
+  if (value.lengthCm !== product.lengthCm) {
+    changes.lengthCm = value.lengthCm;
+  }
+  if (value.widthCm !== product.widthCm) {
+    changes.widthCm = value.widthCm;
+  }
+  if (value.heightCm !== product.heightCm) {
+    changes.heightCm = value.heightCm;
+  }
   if (value.imageUrl !== normalizeOptionalText(product.imageUrl)) {
     changes.imageUrl = value.imageUrl;
   }
@@ -177,6 +268,17 @@ export function isProductFormDirty(product: SellerProduct, values: ProductFormVa
 
   if (normalizeOptionalText(values.imageUrl) !== normalizeOptionalText(product.imageUrl)) {
     return true;
+  }
+
+  for (const rule of DIMENSION_RULES) {
+    const parsed = parseOptionalPositiveInteger(values[rule.field], rule.max);
+    const unchanged =
+      parsed === undefined
+        ? values[rule.field].trim() === formatDimensionInput(product[rule.field])
+        : parsed === product[rule.field];
+    if (!unchanged) {
+      return true;
+    }
   }
 
   const price = parsePriceInput(values.price);

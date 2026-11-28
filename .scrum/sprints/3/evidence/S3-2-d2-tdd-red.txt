@@ -1,0 +1,116 @@
+# RED evidence: final test suite with production code absent
+# date: 2026-11-28T09:31:49Z
+# base commit: 5ebfe9c; production changes stashed, tests kept
+
+$ DEBUG_PRINT_LIMIT=0 pnpm --filter @localhand/web exec vitest run src/components/orders/DeliverySummaryCard.test.tsx src/pages/OrderPage.test.tsx src/pages/OrdersPage.test.tsx src/pages/AdminOrdersPage.test.tsx
+
+
+ RUN  v5.1.2 <worktree>/apps/web
+
+ ❯ src/components/orders/DeliverySummaryCard.test.tsx (0 test)
+ ❯ src/pages/OrdersPage.test.tsx (9 tests | 1 failed) 1016ms
+   ❯ OrdersPage (9)
+     × shows a delivery line only for orders with delivery 193ms
+ ❯ src/pages/AdminOrdersPage.test.tsx (13 tests | 1 failed) 2118ms
+   ❯ AdminOrderPage (6)
+     × shows the delivery snapshot to the seller 1016ms
+ ❯ src/pages/OrderPage.test.tsx (19 tests | 1 failed) 2725ms
+   ❯ OrderPage (19)
+     × shows the delivery snapshot with pickup point, track and price 1039ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/orders/DeliverySummaryCard.test.tsx [ src/components/orders/DeliverySummaryCard.test.tsx ]
+Error: Failed to resolve import "./DeliverySummaryCard.js" from "src/components/orders/DeliverySummaryCard.test.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: <worktree>/apps/web/src/components/orders/DeliverySummaryCard.test.tsx:4:60
+  2  |  import { cleanup, render, screen, within } from "@testing-library/react";
+  3  |  import { afterEach, describe, expect, it } from "vitest";
+  4  |  import { DELIVERY_STATUS_LABELS, DeliverySummaryCard } from "./DeliverySummaryCard.js";
+     |                                                               ^
+  5  |  var _jsxFileName = "<worktree>/apps/web/src/components/orders/DeliverySummaryCard.test.tsx";
+  6  |  import { jsxDEV as _jsxDEV, Fragment as _Fragment } from "react/jsx-dev-runtime";
+ ❯ TransformPluginContext._formatLog ../../node_modules/.pnpm/vite@8.4.0_@types+node@26.6.11_esbuild@0.28.2_jiti@2.7.0_tsx@4.23.15_yaml@2.9.1/node_modules/vite/dist/node/chunks/node.js:8993:39
+ ❯ TransformPluginContext.error ../../node_modules/.pnpm/vite@8.4.0_@types+node@26.6.11_esbuild@0.28.2_jiti@2.7.0_tsx@4.23.15_yaml@2.9.1/node_modules/vite/dist/node/chunks/node.js:8990:14
+ ❯ resolveId ../../node_modules/.pnpm/vite@8.4.0_@types+node@26.6.11_esbuild@0.28.2_jiti@2.7.0_tsx@4.23.15_yaml@2.9.1/node_modules/vite/dist/node/chunks/node.js:27938:18
+ ❯ ../../node_modules/.pnpm/vite@8.4.0_@types+node@26.6.11_esbuild@0.28.2_jiti@2.7.0_tsx@4.23.15_yaml@2.9.1/node_modules/vite/dist/node/chunks/node.js:28037:23
+ ❯ TransformPluginContext.transform ../../node_modules/.pnpm/vite@8.4.0_@types+node@26.6.11_esbuild@0.28.2_jiti@2.7.0_tsx@4.23.15_yaml@2.9.1/node_modules/vite/dist/node/chunks/node.js:28010:4
+ ❯ EnvironmentPluginContainer.transform ../../node_modules/.pnpm/vite@8.4.0_@types+node@26.6.11_esbuild@0.28.2_jiti@2.7.0_tsx@4.23.15_yaml@2.9.1/node_modules/vite/dist/node/chunks/node.js:8764:14
+ ❯ loadAndTransform ../../node_modules/.pnpm/vite@8.4.0_@types+node@26.6.11_esbuild@0.28.2_jiti@2.7.0_tsx@4.23.15_yaml@2.9.1/node_modules/vite/dist/node/chunks/node.js:19302:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/pages/AdminOrdersPage.test.tsx > AdminOrderPage > shows the delivery snapshot to the seller
+TestingLibraryElementError: Unable to find role="region" and name "Доставка"
+
+Ignored nodes: comments, script, style
+...
+
+Ignored nodes: comments, script, style
+...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/pages/AdminOrdersPage.test.tsx:280:42
+    278|     renderApp(["/admin/orders/42"]);
+    279|
+    280|     const deliverySection = await screen.findByRole("region", { name: …
+       |                                          ^
+    281|     expect(within(deliverySection).getByText("В пути")).toBeInTheDocum…
+    282|     expect(within(deliverySection).getByText("ПВЗ получателя")).toBeIn…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/pages/OrderPage.test.tsx > OrderPage > shows the delivery snapshot with pickup point, track and price
+TestingLibraryElementError: Unable to find role="region" and name "Доставка"
+
+Ignored nodes: comments, script, style
+...
+
+Ignored nodes: comments, script, style
+...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/pages/OrderPage.test.tsx:168:42
+    166|     renderApp(["/orders/42"]);
+    167|
+    168|     const deliverySection = await screen.findByRole("region", { name: …
+       |                                          ^
+    169|     expect(within(deliverySection).getByText(deliveredDelivery.pointAd…
+    170|     expect(within(deliverySection).getByText("Иван Тестов")).toBeInThe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/pages/OrdersPage.test.tsx > OrdersPage > shows a delivery line only for orders with delivery
+TestingLibraryElementError: Unable to find an element with the text: /Доставка:/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/OrdersPage.test.tsx:134:25
+    132|
+    133|     const card = await screen.findByRole("article", { name: "Заказ №42…
+    134|     expect(within(card).getByText(/Доставка:/)).toHaveTextContent(
+       |                         ^
+    135|       `Доставка: ${price(45_000)} · В пути`,
+    136|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  4 failed (4)
+      Tests  3 failed | 38 passed (41)
+   Start at  12:31:40
+   Duration  6.30s (tests 34%, transform 24%, environment 19%, import 17%, setup 5%)
+
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in <worktree>/apps/web
+
+
+exit=1

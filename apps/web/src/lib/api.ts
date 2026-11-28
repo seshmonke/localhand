@@ -8,8 +8,12 @@ import {
   type CreateShop,
   type DeliveryQuoteRequest,
   DeliveryCityListResponseSchema,
+  type DeliveryManualTrack,
   DeliveryPointListResponseSchema,
   DeliveryQuoteResponseSchema,
+  DeliveryResponseSchema,
+  DeliveryTariffListResponseSchema,
+  SellerDeliveryResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
   MeResponseSchema,
   OrderListResponseSchema,
@@ -221,6 +225,38 @@ export function fetchDeliveryQuote(input: DeliveryQuoteRequest) {
     "/delivery/quote",
     { method: "POST", body: input },
     DeliveryQuoteResponseSchema,
+  );
+}
+
+export function fetchSellerDelivery(orderId: number) {
+  return requestJson(
+    `/seller/orders/${encodeURIComponent(String(orderId))}/delivery`,
+    {},
+    SellerDeliveryResponseSchema,
+  );
+}
+
+export function fetchSellerDeliveryTariffs(orderId: number) {
+  return requestJson(
+    `/seller/orders/${encodeURIComponent(String(orderId))}/delivery/tariffs`,
+    {},
+    DeliveryTariffListResponseSchema,
+  );
+}
+
+export function createSellerShipment(orderId: number, tariffCode: string) {
+  return requestJson(
+    `/seller/orders/${encodeURIComponent(String(orderId))}/delivery`,
+    { method: "POST", body: { tariffCode } },
+    DeliveryResponseSchema,
+  );
+}
+
+export function saveSellerManualTrack(orderId: number, input: DeliveryManualTrack) {
+  return requestJson(
+    `/seller/orders/${encodeURIComponent(String(orderId))}/delivery`,
+    { method: "PATCH", body: input },
+    DeliveryResponseSchema,
   );
 }
 

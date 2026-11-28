@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DeliveryCheckoutSchema,
   DeliveryCitySchema,
+  DeliveryEventSchema,
   DeliveryManualTrackSchema,
   DeliveryPointSchema,
   DeliveryQuoteRequestSchema,
@@ -11,6 +12,7 @@ import {
   DeliverySnapshotSchema,
   DeliveryStatusSchema,
   DeliveryTariffListResponseSchema,
+  SellerDeliveryResponseSchema,
 } from "./delivery.js";
 
 const city = { code: 44, name: "Москва" };
@@ -240,5 +242,76 @@ describe("DeliveryTariffListResponseSchema", () => {
       tariffs: [quoteShop],
     };
     expect(DeliveryTariffListResponseSchema.parse(response)).toEqual(response);
+  });
+});
+
+const deliveryEvent = {
+  statusCode: "DELIVERED",
+  statusName: "Вручён",
+  occurredAt: "2026-11-28T10:00:00.000Z",
+};
+
+const sellerSnapshot = {
+  provider: "cdek",
+  status: "in_transit",
+  cityCode: 137,
+  cityName: "Санкт-Петербург",
+  pointCode: "SPB001",
+  pointAddress: "Санкт-Петербург, Невский 1",
+  recipientName: "Иван Тестов",
+  tariffCode: "136",
+  tariffName: "Посылка склад-ПВЗ",
+  priceKopecks: 38_000,
+  periodMin: 2,
+  periodMax: 4,
+  providerOrderId: "uuid-1",
+  providerNumber: "order-7",
+  carrier: null,
+  trackNumber: null,
+  lastStatusCode: "DELIVERED",
+  lastStatusAt: "2026-11-28T10:00:00.000Z",
+};
+
+describe("DeliveryEventSchema", () => {
+  it("accepts a status event and strips the internal payload hash", () => {
+    expect(DeliveryEventSchema.parse(deliveryEvent)).toEqual(deliveryEvent);
+    const parsed = DeliveryEventSchema.parse({
+      ...deliveryEvent,
+      payloadHash: "sha256-internal",
+    });
+    expect(parsed).toEqual(deliveryEvent);
+    expect(Object.keys(parsed)).toEqual(["statusCode", "statusName", "occurredAt"]);
+  });
+
+  it("bounds status fields and requires an ISO datetime", () => {
+    expect(DeliveryEventSchema.safeParse({ ...deliveryEvent, statusCode: "" }).success).toBe(false);
+    expect(
+      DeliveryEventSchema.safeParse({ ...deliveryEvent, statusCode: "C".repeat(65) }).success,
+    ).toBe(false);
+    expect(
+      DeliveryEventSchema.safeParse({ ...deliveryEvent, statusName: "С".repeat(161) }).success,
+    ).toBe(false);
+    expect(
+      DeliveryEventSchema.safeParse({ ...deliveryEvent, occurredAt: "2026-11-28" }).success,
+    ).toBe(false);
+  });
+});
+
+describe("SellerDeliveryResponseSchema", () => {
+  it("combines the snapshot with the event timeline", () => {
+    const response = { delivery: sellerSnapshot, events: [deliveryEvent] };
+    expect(SellerDeliveryResponseSchema.parse(response)).toEqual(response);
+  });
+
+  it("requires events and rejects malformed events", () => {
+    expect(SellerDeliveryResponseSchema.safeParse({ delivery: sellerSnapshot }).success).toBe(
+      false,
+    );
+    expect(
+      SellerDeliveryResponseSchema.safeParse({
+        delivery: sellerSnapshot,
+        events: [{ statusCode: "CREATED" }],
+      }).success,
+    ).toBe(false);
   });
 });

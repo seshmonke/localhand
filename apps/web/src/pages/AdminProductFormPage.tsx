@@ -45,6 +45,10 @@ const FIELD_IDS: Array<[keyof ProductFieldErrors, string]> = [
   ["name", "product-name"],
   ["description", "product-description"],
   ["price", "product-price"],
+  ["weightG", "product-weight-g"],
+  ["lengthCm", "product-length-cm"],
+  ["widthCm", "product-width-cm"],
+  ["heightCm", "product-height-cm"],
   ["imageUrl", "product-image-url"],
 ];
 
