@@ -26,7 +26,7 @@
 | Тарифы/создание/трек | API DB + browser e2e | pass | `evidence/S3-2-browser-e2e.txt` |
 | Статус webhook/reconcile | DB e2e + mutation | pass | `../../evidence/S3-2-e2e-tdd.md` |
 | Authz/no-store/PII | DB tests + source audit | pass | `../../evidence/S3-2-log-tdd.md` |
-| Fake/e2e/axe/LCP | e2e 13 passed, axe 24×0, LCP 580/756/928 | pass | `evidence/S3-2-axe-results.json`, `evidence/S3-2-lcp-preview.json` |
+| Fake/e2e/axe/LCP | e2e 13 passed, axe 24×0, LCP 580/756/928 | pass | `evidence/S3-2-3.10-axe-results.json`, `evidence/S3-2-3.10-lcp-preview.json` |
 
 ## TDD / ATDD
 

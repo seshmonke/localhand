@@ -72,7 +72,7 @@
 - TDD/ATDD: RED/GREEN/REFACTOR, mutation/e2e; 3.1 — owner named
   exception (retrospective RED) до Q1.1/Sprint 4.
 - T2: threat model D1–D16, contract/property, SLO/логи, runbooks,
-  rollback; mutation/SAST/alert/RUM — owner-исключения до Q1.3/Q1.4.
+  rollback; mutation/SAST/alert/RUM — owner-исключения до Q1.0–Q1.6.
 - Browser: 13 passed; axe 24×0; LCP preview <2500.
 - Doc change: host-файлы обновлены; archive README.
 

@@ -16,8 +16,8 @@
 
 | Task | Change | PR | Review | Evidence | Status |
 |---|---|---|---|---|---|
-| S3-1 payments sandbox | `06-payments` → archive `2026-11-27-06-payments` | #39/#41/#45 | APPROVE | `evidence/S3-1-*` | done |
-| S3-2 delivery test contour | `07-delivery` → archive `2026-11-28-07-delivery` | #47–#79 | APPROVE | `tasks/S3-2/evidence/` | done |
+| S3-1 payments sandbox | `06-payments` → archive `2026-11-27-06-payments` | #39/#41/#45 | [review.md](review.md) | `evidence/S3-1-*` | done |
+| S3-2 delivery test contour | `07-delivery` → archive `2026-11-28-07-delivery` | #47–#79 | [review.md](review.md) | [tasks/S3-2/evidence/](tasks/S3-2/evidence/) | done |
 | S3-3 order lifecycle | `08-order-lifecycle` | — | — | — | deferred Sprint 4 |
 | S3-4 hardening | `09-orders-pagination` | — | — | — | deferred Sprint 4 |
 

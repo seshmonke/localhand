@@ -1,3 +1,7 @@
+> **Context:** `status: done` · `updated: 2026-11-28` · `owner: SM` ·
+> `sprint: 3` · `task: —` · `change: 07-delivery (archived)` ·
+> links: [INDEX](INDEX.md) · [.scrum/sprints/3/sprint.md](../../.scrum/sprints/3/sprint.md)
+
 # Спринт 3: money-path
 
 Статус: **CLOSED** 28.11.2026. S3-1 `06-payments` и S3-2 `07-delivery` в архиве. S3-3/S3-4 перенесены в Sprint 4.

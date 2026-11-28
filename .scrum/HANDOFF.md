@@ -1,3 +1,7 @@
+> **Context:** `status: done` · `updated: 2026-11-28` · `owner: SM` ·
+> `sprint: 3 (closed)` · `task: —` · `change: —` ·
+> links: [README](README.md) · [state](state.json) · [sprint](sprints/3/sprint.md)
+
 # Handoff: Sprint 3 закрыт, delivery test contour в main
 
 Дата: 28.11.2026.
@@ -19,11 +23,10 @@
 
 ## Следующий шаг
 
-1. Upgrade `scrum-crew` до released `v0.5.0` по
-   `references/upgrade.md`, отдельным PR; safe point: `sprint: null`,
-   чистое дерево.
-2. Sprint 4 planning только по команде владельца: S3-3 lifecycle,
-   S3-4 hardening, Q1.1/Q1.2; live-интеграции и юрпакет — owner-гейты.
+1. `scrum-crew` v0.6.0 установлен (PR #81); следующий шаг — Sprint 4
+   planning только по команде владельца.
+2. Sprint 4: S3-3 lifecycle, S3-4 hardening, Q1.1/Q1.2 + Text review W1;
+   live-интеграции и юрпакет — owner-гейты.
 3. Owner-gates до публичного MVP: YooKassa adapter/keys, CDEK
    contract/live PII, юрпакет, Selectel deploy/SMS.
 
