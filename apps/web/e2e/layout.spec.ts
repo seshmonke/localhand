@@ -1,15 +1,19 @@
 import { randomUUID } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 import {
   BASE_URL,
   cartStateFor,
+  createDeliveryOrder,
   createPublishedCatalog,
+  ensureCatalogDeliveryReady,
   loginViaApi,
   seedBrowserSession,
   uniquePhone,
   waitForStablePage,
+  type ApiSession,
+  type CatalogFixture,
 } from "./helpers.js";
 
 const viewports = [
@@ -29,6 +33,37 @@ type LayoutPage = {
   group: "storefront" | "admin";
   ready?: (page: Page, productName: string) => Promise<void>;
 };
+
+/**
+ * Physical checkout is delivery-aware since S3-2: fill dimensions/origin on a
+ * fixture created without them and use a real quote. On a delivery-less stack
+ * the helper keeps the old plain checkout.
+ */
+async function checkoutOrder(
+  request: APIRequestContext,
+  catalog: CatalogFixture,
+  buyer: ApiSession,
+): Promise<number> {
+  const choice = await ensureCatalogDeliveryReady(request, catalog);
+  if (choice !== null) {
+    return createDeliveryOrder(request, catalog, buyer, choice);
+  }
+
+  const response = await request.post("/api/checkout", {
+    headers: { cookie: buyer.cookie },
+    data: {
+      items: catalog.products.map((item) => ({ productId: item.id })),
+      clientCheckoutId: randomUUID(),
+    },
+  });
+  expect(response.status(), await response.text()).toBe(201);
+  const payload = (await response.json()) as { orders: Array<{ id: number }> };
+  const orderId = payload.orders[0]?.id;
+  if (!orderId) {
+    throw new Error("checkout did not return an order");
+  }
+  return orderId;
+}
 
 async function expectNoHorizontalOverflow(page: Page, label: string): Promise<void> {
   const sizes = await page.evaluate(() => ({
@@ -272,14 +307,7 @@ test("layout holds at 320/768/1440 across storefront and admin", async ({
   }
 
   const buyer = await loginViaApi(request, uniquePhone());
-  const checkoutResponse = await request.post("/api/checkout", {
-    headers: { cookie: buyer.cookie },
-    data: {
-      items: catalog.products.map((item) => ({ productId: item.id })),
-      clientCheckoutId: randomUUID(),
-    },
-  });
-  expect(checkoutResponse.status(), await checkoutResponse.text()).toBe(201);
+  await checkoutOrder(request, catalog, buyer);
 
   const screenshots: string[] = [];
   const leftEdges: Record<string, number[]> = {};
@@ -476,14 +504,7 @@ test("axe has no serious or critical findings on admin pages", async ({
   }
 
   const buyer = await loginViaApi(request, uniquePhone());
-  const checkoutResponse = await request.post("/api/checkout", {
-    headers: { cookie: buyer.cookie },
-    data: {
-      items: catalog.products.map((item) => ({ productId: item.id })),
-      clientCheckoutId: randomUUID(),
-    },
-  });
-  expect(checkoutResponse.status(), await checkoutResponse.text()).toBe(201);
+  await checkoutOrder(request, catalog, buyer);
 
   const context = await browser.newContext({
     baseURL: BASE_URL,

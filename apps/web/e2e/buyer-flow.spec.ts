@@ -2,6 +2,9 @@ import { expect, test } from "@playwright/test";
 import {
   BASE_URL,
   createPublishedCatalog,
+  DEFAULT_DIMENSIONS,
+  DEFAULT_RECIPIENT_NAME,
+  findDeliveryPoint,
   loginViaUi,
   uniquePhone,
   waitForStablePage,
@@ -23,7 +26,23 @@ test("buyer and seller see the same order end-to-end", async ({
   request,
   browser,
 }, testInfo) => {
-  const catalog = await createPublishedCatalog(request, ["E2E Куртка"]);
+  // Physical orders need dimensions and a shop origin once delivery is on.
+  // On a delivery-less stack the fixture stays as before (no dimensions).
+  const delivery = await findDeliveryPoint(request);
+  const catalog = await createPublishedCatalog(
+    request,
+    ["E2E Куртка"],
+    delivery === null
+      ? {}
+      : {
+          dimensions: DEFAULT_DIMENSIONS,
+          deliveryOrigin: {
+            cdekCityCode: delivery.cityCode,
+            cdekCityName: delivery.cityName,
+            cdekShipmentPoint: delivery.pointCode,
+          },
+        },
+  );
   const product = catalog.products[0];
   if (!product) {
     throw new Error("catalog fixture did not create a product");
@@ -66,6 +85,14 @@ test("buyer and seller see the same order end-to-end", async ({
   await page.waitForURL(/\/checkout$/);
   await expect(page.getByRole("heading", { name: "Проверьте заказ" })).toBeVisible();
   await expect(page.getByText(catalog.shop.name).first()).toBeVisible();
+  if (delivery !== null) {
+    await page.getByLabel("Город доставки").selectOption(String(delivery.cityCode));
+    const pointSelect = page.getByLabel("Пункт выдачи");
+    await expect(pointSelect.locator(`option[value="${delivery.pointCode}"]`)).toHaveCount(1);
+    await pointSelect.selectOption(delivery.pointCode);
+    await page.getByLabel("Имя получателя").fill(DEFAULT_RECIPIENT_NAME);
+    await expect(page.getByText("Срок", { exact: true })).toBeVisible();
+  }
   await page.getByLabel("Комментарий продавцу").fill(comment);
   await waitForStablePage(page);
   await page.screenshot({
