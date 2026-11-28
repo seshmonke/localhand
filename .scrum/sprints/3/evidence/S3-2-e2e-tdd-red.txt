@@ -1,0 +1,35 @@
+# Mutation/RED evidence: S3-2-E2E API/DB delivery e2e
+# date: 2026-11-28; branch task/S3-2-e2e-api; base merged main 22c6d8b.
+# No production gap found: the chain worked; mutations prove the audit catches
+# regressions. Every mutation ran on the restored tree afterwards.
+
+## 0. Baseline delivery suites
+$ DATABASE_URL_TEST=… vitest run shipment.db.test.ts shipment.manual.db.test.ts
+ Test Files  2 passed (2); Tests  17 passed (17); exit=0
+
+## 1. P2.2: err: new Error(PII) in delivery.reconcile.ts
+$ vitest run delivery.e2e.db.test.ts -t "source audit"
+ FAIL  delivery.reconcile.ts warn: args match /new\s+Error\b/ (raw error value)
+exit=1  (restored)
+
+## 2. P2.2: recipientName after Date.now() in delivery.route.ts
+$ vitest run delivery.e2e.db.test.ts -t "source audit"
+ FAIL  delivery.route.ts info: args match /recipientName|…/i
+       (depth-aware scan reaches PII past Date.now(); the old [^)]* regex did not)
+exit=1  (restored)
+
+## 3. Earlier mutations still caught
+- delete findShipmentByNumber guard: manual returns 200 instead of 502.
+- DELIVERED -> in_transit: buyer status mismatch.
+- remove providerOrderId early return: duplicate snapshot overwritten.
+- drop webhook onConflictDoNothing: replay 500 instead of 200.
+- log recipientName in checkout: PII test fails.
+
+## Runtime reconcile PII (production #77, merged)
+`delivery.log-redaction.test.ts`:
+- logs only a safe {name, code?} when the provider call fails with PII;
+- logs only a safe name when a reconcile row fails with PII.
+Both pass in targeted run and `pnpm verify`.
+
+## Result
+No production code changed; 5 e2e tests + 14 #77 audit tests green.
