@@ -1,0 +1,8 @@
+
+ RUN  v5.1.2 <tdd-worktree>/apps/web
+
+
+ Test Files  2 passed (2)
+      Tests  13 passed (13)
+   Start at  21:33:26
+   Duration  1.16s (environment 67%, setup 18%, transform 8%, tests 5%, import 2%, worker 1%)

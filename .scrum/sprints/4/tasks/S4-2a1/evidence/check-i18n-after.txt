@@ -1,0 +1,3 @@
+i18n scan: 125 production files, 86 test files; 67 keys, 62 production usages
+cyrillic: 685 baselined findings / 751 occurrences; 35 allowlisted occurrences
+i18n check passed (baseline: 685 findings)

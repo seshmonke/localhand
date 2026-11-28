@@ -1,0 +1,10 @@
+A1 checkout/shared 587cb26
+    18 +    0 -  apps/web/src/cart/item-count.test.ts
+     3 +   10 -  apps/web/src/cart/item-count.ts
+    16 +    1 -  apps/web/src/components/ScreenState.test.tsx
+    17 +    7 -  apps/web/src/components/ScreenState.tsx
+     5 +    3 -  apps/web/src/components/admin/SessionExpiredState.tsx
+     4 +    2 -  apps/web/src/pages/CheckoutPage.test.tsx
+    79 +   85 -  apps/web/src/pages/CheckoutPage.tsx
+    70 +    0 -  packages/i18n/src/resources/ru.ts
+code+tests: +212 -108 = 320 (baseline excluded)
