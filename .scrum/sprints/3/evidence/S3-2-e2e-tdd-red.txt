@@ -1,37 +1,31 @@
-# "RED" evidence: S3-2-E2E API/DB delivery e2e
-# date: 2026-11-28; branch task/S3-2-e2e-api; base 339f0c5.
-# No production gap found: the full chain already worked, so this is a
-# regression-lock, not a fake RED. Sensitivity is proven by mutations, each
-# run on the fully restored tree afterwards.
+# Mutation/RED evidence: S3-2-E2E API/DB delivery e2e
+# date: 2026-11-28; branch task/S3-2-e2e-api; base 339f0c5 (+ main merge).
+# No production gap found: the chain already worked, so this is a
+# regression-lock, not a fake RED. Each mutation ran on the restored tree.
 
-## 0. Baseline before writing (existing delivery suites)
-$ DATABASE_URL_TEST=… pnpm --filter @localhand/api exec vitest run \
-    src/delivery/shipment.db.test.ts src/delivery/shipment.manual.db.test.ts
+## 0. Baseline delivery suites before the change
+$ DATABASE_URL_TEST=… vitest run shipment.db.test.ts shipment.manual.db.test.ts
  Test Files  2 passed (2)
       Tests  17 passed (17)
 exit=0
 
-## 1. Mutation A: mapDeliveryStatus("DELIVERED") -> "in_transit"
-$ git diff --stat  => status.ts | 1 +-
-$ vitest run delivery.e2e.db.test.ts -t "runs quote"
- FAIL  runs quote -> checkout -> paid -> tariffs -> create -> webhook -> delivered
- -   "status": "delivered"
- +   "status": "in_transit"
-exit=1  (restored: git checkout -- apps/api/src/delivery/status.ts)
+## 1. Manual guard: delete the findShipmentByNumber block in saveManualTrack
+$ vitest run delivery.e2e.db.test.ts -t "blocks manual"
+ FAIL  blocks manual when the remote lookup fails or a remote shipment exists
+       expected 200 to be 502 (lookup failure no longer blocks manual)
+exit=1  (restored: git checkout -- apps/api/src/delivery/shipment.service.ts)
 
-## 2. Mutation B: remove the providerOrderId early return in createSellerShipment
- FAIL  duplicate create returns providerNumber null instead of order-N:
-       the adopt-by-number path overwrote the delivered snapshot.
-exit=1  (restored; this mutation exposed a weak assertion, now strengthened)
+## 2. PII: add recipientName to shipment.route.ts:74 error log
+$ vitest run delivery.e2e.db.test.ts -t "source audit"
+ FAIL  never logs PII fields or request bodies from delivery code…
+       args match /recipientName|recipientPhone|buyerPhone|…/i
+exit=1  (restored: git checkout -- apps/api/src/delivery/shipment.route.ts)
 
-## 3. Mutation C: drop onConflictDoNothing on the webhook event insert
- FAIL  replay ORDER_STATUS returns 500 instead of 200 (unique violation).
-exit=1  (restored)
-
-## 4. Mutation D: log recipientName in the checkout route
- FAIL  PII test: log stream contains "Иван Тестов".
-exit=1  (restored)
+## 3. Earlier cycle mutations (still caught)
+- DELIVERED -> in_transit: FAIL buyer status.
+- remove providerOrderId early return: FAIL duplicate snapshot overwritten.
+- drop webhook onConflictDoNothing: FAIL replay returns 500.
+- log recipientName in checkout: FAIL PII test.
 
 ## Result
-No production code changed; 3 new e2e tests are green on unmodified code.
-Evidence: mutation outputs transcribed here; no mutation stayed in the tree.
+No production code changed; 5 e2e tests are green on unmodified code.

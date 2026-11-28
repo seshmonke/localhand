@@ -1,52 +1,39 @@
 # S3-2-E2E: API/DB delivery end-to-end
 
-Дата: 2026-11-28. Ветка `task/S3-2-e2e-api`, база `main` @ `339f0c5`.
+Дата: 2026-11-28. Ветка `task/S3-2-e2e-api`, база `339f0c5` + merge main.
 Tier: T2 test slice (external provider, PII, order transitions). Change
-`07-delivery`, tasks 3.9. Production-код не менялся.
+`07-delivery`, task 3.9. Production-код не менялся.
 
 ## AC → тест (`apps/api/src/delivery/delivery.e2e.db.test.ts`)
 
-| AC спеки | Тест |
+| AC | Тест |
 |---|---|
-| Quote по городу/ПВЗ, тариф магазина | `runs quote -> …` → `POST /delivery/quote` 200, `price=38000`, `tariffCode=136` |
-| Checkout с подписанным quote: snapshot, `delivery_kopecks`, `total=items+delivery` | там же → 201, статус заказа `new`, snapshot `quoted`, total `458000` |
-| Оплата как предусловие | fixture `UPDATE orders SET status='paid'` (payment e2e — S3-1) |
-| Seller видит оплаченный тариф/цену | там же → GET tariffs 200, `paid={136,38000}` совпадает со snapshot |
-| Успешное создание: provider id/number, `created` | там же → POST 201, `fake-{id}`/`order-{id}`, БД `created`, событие CREATED |
-| Webhook `DELIVERED` → `delivered`, событие | там же → fake status + webhook 200, БД/snapshot `delivered`, event DELIVERED |
-| Покупатель и продавец видят один статус/трек | там же → buyer GET и seller GET: status/lastStatusCode/providerNumber/trackNumber совпадают, `no-store` |
-| Повтор вебхука идемпотентен | там же → replay 200, число событий 2 без изменений |
-| Повтор создания не создаёт второе отправление | там же → POST 201, `createShipment` не вызван, snapshot/БД не перезаписаны, `order_deliveries`=1 |
-| Провайдер отказал (definitive), manual разрешён | `falls back …` → POST 502 `delivery_provider_error`, snapshot `quoted`, provider id/событий нет |
-| Ручной трек виден покупателю/продавцу | там же → PATCH 200 `manual`, buyer/seller GET видят `MANUAL-E2E-1`, событие MANUAL |
-| Повтор manual → 409 | там же → PATCH 409 `delivery_already_exists`, трек не перезаписан |
-| Логи без PII | `keeps recipient PII …` → captured pino: нет имени, телефонов, адреса ПВЗ, комментария, `payload_hash`; id/status/URL присутствуют |
+| Quote → checkout: snapshot `quoted`, `delivery=38000`, `total=458000`, заказ `new` | `runs quote -> …` |
+| Seller: оплаченный тариф/цена = snapshot | там же |
+| Create 201: provider id/number, `created`, событие | там же |
+| Webhook `DELIVERED` → `delivered`; buyer/seller одинаковые status/track/no-store | там же |
+| Replay webhook: 200, события не растут | там же |
+| Duplicate create: провайдер не вызван, snapshot/БД не перезаписаны | там же |
+| Create definitive fail → 502, snapshot `quoted`, provider id/событий нет | `allows manual…` |
+| Ручной трек: lookup вернул явный `null` → 200 manual; buyer/seller видят трек; повтор 409 | там же |
+| Guard: lookup бросает (5xx/timeout) → manual 502, snapshot/статус не меняются | `blocks manual…` |
+| Guard: remote shipment есть, локального provider id нет → 409, без записи | там же |
+| PII: source audit `log.*` в delivery route/service/reconcile (info/warn/error) | `delivery logging source audit` |
+| PII: runtime-логи без имени/телефона/адреса/комментария/`payload_hash`; forced 500 route-а | `keeps recipient PII…` |
 
-Authz 404/401, no-store и empty events уже покрыты
-`shipment.db.test.ts`/`shipment.manual.db.test.ts`; здесь не дублируются.
+## Правки по ревью
 
-## RED / GREEN
-
-- RED: production-gap не найден. Цепочка работала, поэтому записан
-  regression-lock и 4 мутационных проверки вместо фальшивого RED:
-  маппинг `DELIVERED`, ранний return идемпотентного create, уникальность
-  события вебхука, логирование `recipientName`. Все 4 дают падение,
-  после restore — GREEN. Детали: `S3-2-e2e-tdd-red.txt`.
-- GREEN: `S3-2-e2e-tdd-green.txt`, `S3-2-e2e-verify.txt`.
-- Мутация B вскрыла слабое место самих тестов: дубликат create мог
-  перезаписать `providerNumber` через adopt-by-number, а проверка этого
-  не ловила. Добавлены assert-ы неизменности snapshot/БД; после фикса
-  мутация падает.
+- P2.1: добавлены negative-ветки manual guard (throw → 502, remote → 409) и
+  allow только на явном `null`; mutation «удалить remote lookup» падает.
+- P2.2: source audit всех лог-вызовов delivery + runtime forced 500; mutation
+  `recipientName` в `shipment.route.ts:74` падает.
+- P3: `DATABASE_URL` удаляется в `afterAll`; user-SQL помечен fixture-комментом.
+- Note (3.11 docs): tasks 3.3/спека говорят 202, route отдаёт 201 — не менялось.
 
 ## Решения
 
-- `BuildAppOptions.deliveryProvider` питает только reconcile/подписку;
-  маршруты вызывают `getDeliveryProvider()`. Поэтому отказ провайдера
-  моделируется test double на кэшированном fake-инстансе (throw в
-  `createShipment`/`getShipment`), restore — в `finally`. Прод-код не
-  трогали.
-- Payment — прямой DB fixture, не выдаётся за payment e2e (S3-1).
-- Фикстуры вымышленные: `Иван Тестов`, `+7999…`, ПВЗ СДЭК из fake.
-  Секретов в файле нет, только существующий тестовый quote-secret.
-- Fake-провайдер process-local и переживает TRUNCATE; id заказов
-  монотонны, методы восстанавливаются после каждого теста.
+- Production-gap нет: regression-lock + mutation-check, без фальшивого RED.
+- `BuildAppOptions.deliveryProvider` питает только reconcile/подписку; маршруты
+  зовут `getDeliveryProvider()`, поэтому отказ моделируется double на fake
+  (restore в `finally`).
+- Payment — прямой DB fixture, не payment e2e (S3-1). Секретов в файле нет.

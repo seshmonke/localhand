@@ -1,5 +1,5 @@
-# VERIFY evidence: S3-2-E2E API/DB delivery e2e
-# date: 2026-11-28; worktree branch task/S3-2-e2e-api; base 339f0c5.
+# VERIFY evidence: S3-2-E2E API/DB delivery e2e (review follow-up)
+# date: 2026-11-28; branch task/S3-2-e2e-api; base 339f0c5 + merge main.
 
 $ cp/env: DATABASE_URL_TEST=postgres://localhand:localhand@localhost:5433/localhand_s2_test
 $ JWT_SECRET=… OTP_SECRET=…
@@ -16,10 +16,10 @@ $ oxlint .
 $ prettier --check .
 All matched files use Prettier code style!
 $ node scripts/check-public-repo.mjs
-Public repo check: 555 tracked files, no secrets/PII patterns found
+Public repo check: 568 tracked files, no secrets/PII patterns found
 packages/shared test:  Test Files  12 passed (12), Tests  160 passed (160)
-apps/web test:         Test Files  24 passed (24), Tests  182 passed (182)
-apps/api test:         Test Files  41 passed (41), Tests  374 passed (374)
+apps/web test:         Test Files  25 passed (25), Tests  191 passed (191)
+apps/api test:         Test Files  42 passed (42), Tests  380 passed (380)
 packages/shared build: Done
 packages/ui build: Done
 apps/web build: Done
@@ -29,5 +29,5 @@ Totals: 9 passed, 0 failed (9 items)
 
 exit=0
 
-Note: check:public above ran before the new files were staged; a second
-run after `git add` was executed and returned "no secrets/PII patterns".
+Note: a second `pnpm check:public` after `git add` also passed (files
+counted with the new evidence and test).
