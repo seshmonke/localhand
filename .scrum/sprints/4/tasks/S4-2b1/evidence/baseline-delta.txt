@@ -1,0 +1,7 @@
+baseline before (main 26971a7): 583 findings / 639 occurrences
+baseline after: 502 findings / 550 occurrences
+delta: -81 findings / -89 occurrences
+baseline entries: 502 deadKeys: 0
+apps/web/src/pages/OrdersPage.tsx: 0
+apps/web/src/pages/AdminOrderPage.tsx: 0
+apps/web/src/pages/AdminOrdersPage.tsx: 0

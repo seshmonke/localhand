@@ -145,6 +145,20 @@ export const ru = {
   "order.loading.description": "Секунду — проверяем детали.",
   "order.error.title": "Заказ не загрузился",
   "order.error.description": "Проверьте соединение и попробуйте снова.",
+  "orders.title": "Мои заказы",
+  "orders.description":
+    "Заказы, оформленные с вашего номера. Продавец свяжется с вами по телефону.",
+  "orders.announcer.checkoutDone": "Заказ оформлен и передан продавцу.",
+  "orders.loading.title": "Загружаем заказы",
+  "orders.loading.description": "Секунду — собираем ваши заказы.",
+  "orders.empty.title": "Заказов пока нет",
+  "orders.empty.description":
+    "Добавьте товары в корзину и оформите первый заказ — он появится здесь.",
+  "orders.empty.action": "Перейти в каталог",
+  "orders.payment.label": "Статус оплаты",
+  "orders.payment.empty": "Оплата не начата",
+  "orders.details": "Подробнее",
+  "orders.error.title": "Заказы не загрузились",
   "payment.status.pending": "Ожидает оплаты",
   "payment.status.succeeded": "Оплачен",
   "payment.status.canceled": "Оплата отменена",
@@ -186,6 +200,43 @@ export const ru = {
     "Не удалось начать подключение. Проверьте соединение и попробуйте снова.",
   "admin.payment.error.disconnectNetwork":
     "Не удалось отключить приём платежей. Проверьте соединение и попробуйте снова.",
+  "admin.order.eyebrow": "Кабинет продавца",
+  "admin.order.buyer": "Покупатель",
+  "admin.order.payment.loading": "Загружаем оплату…",
+  "admin.order.payment.created": "Создан",
+  "admin.order.payment.notFound": "Платёж не найден. Статус взят из заказа.",
+  "admin.order.payment.notStarted": "Платёж не начат. Покупатель ещё не оплатил.",
+  "admin.order.payment.manualReview":
+    "Платёж на ручной проверке. Поддержка разберётся с платежом. Заказ не станет «Оплачен» автоматически.",
+  "admin.order.next.description":
+    "Свяжитесь с покупателем по телефону и согласуйте передачу товара. Статус оплаты показан отдельно от статуса заказа.",
+  "admin.order.notFound.description": "Заказ оформлен в другом магазине или ссылка устарела.",
+  "admin.order.list.title": "Заказы",
+  "admin.order.list.description.shop":
+    "Заказы покупателей вашего магазина, новые первыми. Статус оплаты показан отдельно от статуса заказа.",
+  "admin.order.list.description.noShop":
+    "Заказы приходят в магазин. Настройте магазин, чтобы принимать заказы.",
+  "admin.order.list.loading.title": "Загружаем заказы",
+  "admin.order.list.loading.description": "Секунду — собираем заказы магазина.",
+  "admin.order.list.empty.title": "Заказов пока нет",
+  "admin.order.list.empty.description":
+    "Когда покупатель оформит заказ, он появится здесь с составом и контактами.",
+  "admin.order.list.error.title": "Заказы не загрузились",
+  "admin.order.shop.loading.title": "Загружаем магазин",
+  "admin.order.shop.loading.description": "Секунду — проверяем кабинет.",
+  "admin.order.shop.empty.title": "Сначала создайте магазин",
+  "admin.order.shop.empty.description":
+    "Заказы приходят в магазин. Настройте витрину, опубликуйте её — и заказы покупателей появятся здесь.",
+  "admin.order.shop.empty.action": "Настроить магазин",
+  "admin.order.table.caption": "Заказы вашего магазина",
+  "admin.order.table.number": "№",
+  "admin.order.table.date": "Дата",
+  "admin.order.table.status": "Статус",
+  "admin.order.table.actions": "Действия",
+  "admin.order.comment": "Комментарий: {{comment}}",
+  "admin.order.payment.none": "Нет платежа",
+  "admin.order.open": "Открыть",
+  "admin.order.openDetail": "Открыть заказ",
 } as const;
 
 export type TranslationKey = keyof typeof ru;

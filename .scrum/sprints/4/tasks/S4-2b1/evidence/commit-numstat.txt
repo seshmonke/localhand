@@ -1,0 +1,10 @@
+commit 00e5eeb4bda132cc369662e39642bd0269ea2833
+    feat(i18n): migrate orders and admin order copy to ru catalog
+
+55	43	apps/web/src/pages/AdminOrderPage.tsx
+126	1	apps/web/src/pages/AdminOrdersPage.test.tsx
+42	33	apps/web/src/pages/AdminOrdersPage.tsx
+33	0	apps/web/src/pages/OrdersPage.test.tsx
+27	20	apps/web/src/pages/OrdersPage.tsx
+51	0	packages/i18n/src/resources/ru.ts
+0	486	scripts/i18n-baseline.json

@@ -1,6 +1,7 @@
 import { formatRubles, kopecks, type OrderSummary } from "@localhand/shared";
 import { Button, buttonVariants } from "@localhand/ui";
 import { useQueries } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { pluralizeItems } from "../cart/item-count.js";
 import { ScreenState } from "../components/ScreenState.js";
@@ -12,6 +13,7 @@ import { sellerKeys, useSellerOrdersQuery, useSellerShopQuery } from "../lib/que
 import { formatOrderDate, formatOrderPhone, OrderStatusBadge } from "./OrdersPage.js";
 
 export function AdminOrdersPage() {
+  const { t } = useTranslation();
   const shopQuery = useSellerShopQuery();
   const shop = shopQuery.data?.shop ?? null;
   const ordersQuery = useSellerOrdersQuery(shop !== null);
@@ -40,12 +42,10 @@ export function AdminOrdersPage() {
       <Stack gap={6}>
         <PageHeader
           size="admin"
-          eyebrow="Кабинет продавца"
-          title="Заказы"
+          eyebrow={t("admin.order.eyebrow")}
+          title={t("admin.order.list.title")}
           description={
-            shop
-              ? "Заказы покупателей вашего магазина, новые первыми. Статус оплаты показан отдельно от статуса заказа."
-              : "Заказы приходят в магазин. Настройте магазин, чтобы принимать заказы."
+            shop ? t("admin.order.list.description.shop") : t("admin.order.list.description.noShop")
           }
         />
 
@@ -53,8 +53,8 @@ export function AdminOrdersPage() {
           {shopQuery.isPending ? (
             <ScreenState
               kind="loading"
-              title="Загружаем магазин"
-              description="Секунду — проверяем кабинет."
+              title={t("admin.order.shop.loading.title")}
+              description={t("admin.order.shop.loading.description")}
             />
           ) : null}
 
@@ -69,11 +69,11 @@ export function AdminOrdersPage() {
           {shopQuery.isSuccess && !shop ? (
             <ScreenState
               kind="empty"
-              title="Сначала создайте магазин"
-              description="Заказы приходят в магазин. Настройте витрину, опубликуйте её — и заказы покупателей появятся здесь."
+              title={t("admin.order.shop.empty.title")}
+              description={t("admin.order.shop.empty.description")}
               action={
                 <Link to="/admin/shop" className={buttonVariants({ variant: "outline" })}>
-                  Настроить магазин
+                  {t("admin.order.shop.empty.action")}
                 </Link>
               }
             />
@@ -84,8 +84,8 @@ export function AdminOrdersPage() {
               {ordersQuery.isPending ? (
                 <ScreenState
                   kind="loading"
-                  title="Загружаем заказы"
-                  description="Секунду — собираем заказы магазина."
+                  title={t("admin.order.list.loading.title")}
+                  description={t("admin.order.list.loading.description")}
                 />
               ) : null}
 
@@ -100,8 +100,8 @@ export function AdminOrdersPage() {
               {ordersQuery.isSuccess && orders.length === 0 ? (
                 <ScreenState
                   kind="empty"
-                  title="Заказов пока нет"
-                  description="Когда покупатель оформит заказ, он появится здесь с составом и контактами."
+                  title={t("admin.order.list.empty.title")}
+                  description={t("admin.order.list.empty.description")}
                 />
               ) : null}
 
@@ -124,35 +124,36 @@ function orderItemsLabel(order: OrderSummary): string {
 }
 
 function OrdersTable({ orders, reads }: { orders: OrderSummary[]; reads: PaymentRead[] }) {
+  const { t } = useTranslation();
   return (
     <div className="hidden lg:block">
       <table className="w-full table-fixed border-collapse border-[3px] border-ink bg-paper">
-        <caption className="sr-only">Заказы вашего магазина</caption>
+        <caption className="sr-only">{t("admin.order.table.caption")}</caption>
         <thead className="sticky top-0 z-10 bg-paper">
           <tr className="border-b-[3px] border-ink text-left font-mono text-[10px] uppercase tracking-[0.18em]">
             <th scope="col" className="w-[8%] px-3 py-4">
-              №
+              {t("admin.order.table.number")}
             </th>
             <th scope="col" className="w-[15%] px-3 py-4">
-              Дата
+              {t("admin.order.table.date")}
             </th>
             <th scope="col" className="w-[17%] px-3 py-4">
-              Покупатель
+              {t("admin.order.buyer")}
             </th>
             <th scope="col" className="w-[20%] px-3 py-4">
-              Состав
+              {t("order.items.title")}
             </th>
             <th scope="col" className="w-[11%] px-3 py-4">
-              Сумма
+              {t("order.payment.amount")}
             </th>
             <th scope="col" className="w-[10%] px-3 py-4">
-              Статус
+              {t("admin.order.table.status")}
             </th>
             <th scope="col" className="w-[11%] px-3 py-4">
-              Оплата
+              {t("order.payment.title")}
             </th>
             <th scope="col" className="w-[8%] px-3 py-4">
-              Действия
+              {t("admin.order.table.actions")}
             </th>
           </tr>
         </thead>
@@ -174,7 +175,7 @@ function OrdersTable({ orders, reads }: { orders: OrderSummary[]; reads: Payment
                   <span className="line-clamp-2 break-words">{orderItemsLabel(order)}</span>
                   {order.comment ? (
                     <span className="mt-2 line-clamp-2 block break-words text-xs text-ink/60">
-                      Комментарий: {order.comment}
+                      {t("admin.order.comment", { comment: order.comment })}
                     </span>
                   ) : null}
                 </td>
@@ -188,7 +189,7 @@ function OrdersTable({ orders, reads }: { orders: OrderSummary[]; reads: Payment
                   <PaymentReadStatus
                     orderStatus={order.status}
                     read={read}
-                    emptyLabel="Нет платежа"
+                    emptyLabel={t("admin.order.payment.none")}
                   />
                 </td>
                 <td className="px-3 py-4">
@@ -196,7 +197,7 @@ function OrdersTable({ orders, reads }: { orders: OrderSummary[]; reads: Payment
                     to={`/admin/orders/${order.id}`}
                     className="inline-flex min-h-11 items-center border-[3px] border-ink px-2 font-mono text-[10px] uppercase tracking-[0.1em] whitespace-nowrap hover:bg-ink hover:text-paper"
                   >
-                    Открыть
+                    {t("admin.order.open")}
                   </Link>
                 </td>
               </tr>
@@ -209,6 +210,7 @@ function OrdersTable({ orders, reads }: { orders: OrderSummary[]; reads: Payment
 }
 
 function OrdersCards({ orders, reads }: { orders: OrderSummary[]; reads: PaymentRead[] }) {
+  const { t } = useTranslation();
   return (
     <ul className="grid gap-4 lg:hidden">
       {orders.map((order, index) => {
@@ -217,7 +219,9 @@ function OrdersCards({ orders, reads }: { orders: OrderSummary[]; reads: Payment
           <li key={order.id} className="border-[3px] border-ink bg-paper p-4 shadow-brutal-sm">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0">
-                <h2 className="font-display text-lg uppercase leading-tight">Заказ №{order.id}</h2>
+                <h2 className="font-display text-lg uppercase leading-tight">
+                  {t("order.title", { id: order.id })}
+                </h2>
                 <p className="mt-2 font-mono text-[10px] uppercase tracking-wide text-ink/60">
                   {formatOrderDate(order.createdAt)}
                 </p>
@@ -227,9 +231,13 @@ function OrdersCards({ orders, reads }: { orders: OrderSummary[]; reads: Payment
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
-                Оплата
+                {t("order.payment.title")}
               </span>
-              <PaymentReadStatus orderStatus={order.status} read={read} emptyLabel="Нет платежа" />
+              <PaymentReadStatus
+                orderStatus={order.status}
+                read={read}
+                emptyLabel={t("admin.order.payment.none")}
+              />
             </div>
 
             <p className="mt-4 font-mono text-xs">{formatOrderPhone(order.buyerPhone)}</p>
@@ -250,7 +258,7 @@ function OrdersCards({ orders, reads }: { orders: OrderSummary[]; reads: Payment
                 className: "mt-4 w-full",
               })}
             >
-              Открыть заказ
+              {t("admin.order.openDetail")}
             </Link>
           </li>
         );
@@ -268,6 +276,7 @@ function OrdersLoadError({
   onRetry: () => void;
   next: string;
 }) {
+  const { t } = useTranslation();
   if (error instanceof ApiError && error.status === 401) {
     return <SessionExpiredState next={next} />;
   }
@@ -275,9 +284,9 @@ function OrdersLoadError({
   return (
     <ScreenState
       kind="error"
-      title="Заказы не загрузились"
-      description="Проверьте соединение и попробуйте снова."
-      action={<Button onClick={onRetry}>Повторить</Button>}
+      title={t("admin.order.list.error.title")}
+      description={t("order.error.description")}
+      action={<Button onClick={onRetry}>{t("common.retry")}</Button>}
     />
   );
 }
