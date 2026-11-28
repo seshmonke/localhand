@@ -95,7 +95,8 @@ Tailwind 4.3, Fastify 5.12 + Drizzle + PostgreSQL 18, Selectel VM + S3
 - Прямой push в `main` запрещён. Только PR.
 - Squash-merge, линейная история, force push запрещён.
 - PR ≤ 600 строк кода и тестов; evidence и сырые логи не считаются.
-  Больше — разбить или owner-approved исключение.
+  Больше — разбить или owner-approved исключение с причиной, сроком и
+  артефактом (`docs/quality/methodologies.md` §2).
 - Один мерж за раз; после мержа — повторный `verify`.
 
 ## Документация
