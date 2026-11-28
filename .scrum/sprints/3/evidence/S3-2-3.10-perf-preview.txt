@@ -1,0 +1,12 @@
+$ PLAYWRIGHT_BASE_URL=http://127.0.0.1:4174 PERF_ENFORCE=1 pnpm --filter @localhand/web test:e2e e2e/perf.spec.ts
+exit code: 0
+
+
+Running 1 test using 1 worker
+
+  ✓  1 [chromium] › e2e/perf.spec.ts:116:1 › lab LCP smoke on catalog, checkout and order (23.6s)
+
+  1 passed (25.6s)
+
+preview base: http://127.0.0.1:4174 (port 4173 occupied by another session; PERF_ENFORCE=1)
+lab p75: catalog 892 ms, checkout 1296 ms, order 1124 ms; budget 2500 enforced

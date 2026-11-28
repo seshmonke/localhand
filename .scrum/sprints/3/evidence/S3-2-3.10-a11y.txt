@@ -1,0 +1,12 @@
+$ pnpm --filter @localhand/web test:e2e e2e/delivery-a11y.spec.ts
+exit code: 0
+
+$ playwright test e2e/delivery-a11y.spec.ts
+
+Running 1 test using 1 worker
+
+  ✓  1 [chromium] › e2e/delivery-a11y.spec.ts:74:1 › axe has no serious or critical findings on delivery pages (59.5s)
+
+  1 passed (1.0m)
+
+axe: 24 scans (320/1440 x light/dark), serious/critical = 0

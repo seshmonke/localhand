@@ -3,7 +3,10 @@ import { expect, test, type Page } from "@playwright/test";
 import {
   BASE_URL,
   cartStateFor,
+  createDeliveryOrder,
   createPublishedCatalog,
+  DEFAULT_DIMENSIONS,
+  findDeliveryPoint,
   loginViaApi,
   seedBrowserSession,
   uniquePhone,
@@ -110,11 +113,27 @@ async function enableLabThrottling(page: Page): Promise<void> {
  * real-device/Lighthouse field data (backlog P3, owner exception required to
  * close without it).
  */
-test("lab LCP smoke on catalog and checkout", async ({ browser, request }, testInfo) => {
+test("lab LCP smoke on catalog, checkout and order", async ({ browser, request }, testInfo) => {
   test.slow();
 
-  const catalog = await createPublishedCatalog(request);
+  const choice = await findDeliveryPoint(request);
+  const catalog = await createPublishedCatalog(
+    request,
+    undefined,
+    choice === null
+      ? {}
+      : {
+          dimensions: DEFAULT_DIMENSIONS,
+          deliveryOrigin: {
+            cdekCityCode: choice.cityCode,
+            cdekCityName: choice.cityName,
+            cdekShipmentPoint: choice.pointCode,
+          },
+        },
+  );
   const buyer = await loginViaApi(request, uniquePhone());
+  const orderId =
+    choice === null ? null : await createDeliveryOrder(request, catalog, buyer, choice);
 
   const context = await browser.newContext({
     baseURL: BASE_URL,
@@ -138,8 +157,10 @@ test("lab LCP smoke on catalog and checkout", async ({ browser, request }, testI
 
     const catalogLcp = await measureLcp(page, "/");
     const checkoutLcp = await measureLcp(page, "/checkout");
+    const orderLcp = orderId === null ? null : await measureLcp(page, `/orders/${orderId}`);
 
     const enforceBudget = isPreviewOrForced();
+    const results = [catalogLcp, checkoutLcp, ...(orderLcp === null ? [] : [orderLcp])];
 
     const budget = {
       limit_ms: LAB_LCP_BUDGET_MS,
@@ -147,12 +168,13 @@ test("lab LCP smoke on catalog and checkout", async ({ browser, request }, testI
       target: enforceBudget ? "preview-or-forced" : "dev-info",
       catalog_met: catalogLcp.labP75 < LAB_LCP_BUDGET_MS,
       checkout_met: checkoutLcp.labP75 < LAB_LCP_BUDGET_MS,
+      order_met: orderLcp !== null && orderLcp.labP75 < LAB_LCP_BUDGET_MS,
       note: enforceBudget
-        ? "Enforced on the built preview bundle (or PERF_ENFORCE=1): both pages must stay under the lab budget; a regression fails the run."
+        ? "Enforced on the built preview bundle (or PERF_ENFORCE=1): every measured page must stay under the lab budget; a regression fails the run."
         : "Information only on the unbundled dev server: exceedance is recorded as an annotation and JSON fact, not a failure. The preview gate is the reference.",
     };
 
-    for (const result of [catalogLcp, checkoutLcp]) {
+    for (const result of results) {
       if (result.labP75 >= LAB_LCP_BUDGET_MS) {
         const description = `${result.url}: lab p75 ${result.labP75} ms >= ${LAB_LCP_BUDGET_MS} ms`;
         testInfo.annotations.push({ type: "lab-lcp-over-budget", description });
@@ -176,7 +198,11 @@ test("lab LCP smoke on catalog and checkout", async ({ browser, request }, testI
         browser: "headless Chromium",
       },
       note: "Lab smoke only. Not field p75 and not the DoD average-mobile metric; field p75 requires RUM or real-device/Lighthouse field data (backlog P3).",
-      metrics: { catalog: catalogLcp, checkout: checkoutLcp },
+      metrics: {
+        catalog: catalogLcp,
+        checkout: checkoutLcp,
+        ...(orderLcp === null ? {} : { order: orderLcp }),
+      },
     };
     const body = JSON.stringify(evidence, null, 2);
     await writeFile(testInfo.outputPath("lcp-results.json"), body);
@@ -189,6 +215,9 @@ test("lab LCP smoke on catalog and checkout", async ({ browser, request }, testI
       expect(checkoutLcp.labP75, "checkout lab LCP p75 (preview gate)").toBeLessThan(
         LAB_LCP_BUDGET_MS,
       );
+      if (orderLcp !== null) {
+        expect(orderLcp.labP75, "order lab LCP p75 (preview gate)").toBeLessThan(LAB_LCP_BUDGET_MS);
+      }
     }
   } finally {
     await context.close();
