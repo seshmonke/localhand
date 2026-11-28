@@ -39,7 +39,7 @@ Tier: S4-1 T1, S4-2 T1, S4-3 T1+T0 copy, S4-4 T1, S4-5 T0.
 - `pnpm verify` + `pnpm check:i18n`; OpenSpec 9/9.
 - ADR 0006; W1/W2 Copywriter + slop/motif.
 - E2E 13, axe 0 serious/critical 320/1440 light/dark, preview LCP <2500, bundle delta в бюджете.
-- 100%: 0 кириллицы вне `packages/i18n/resources/ru.ts`; allowlist —
+- 100%: 0 кириллицы вне `packages/i18n/src/resources/ru.ts`; allowlist —
   `index.html` meta, tests, seed/provider payload.
 
 ## Rollback

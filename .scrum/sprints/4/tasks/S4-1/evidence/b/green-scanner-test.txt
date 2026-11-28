@@ -1,0 +1,15 @@
+✔ scanner catches cyrillic runtime strings in production-like TSX (77.548317ms)
+✔ scanner ignores comments and non-cyrillic source (112.300254ms)
+✔ scans packages/ui and packages/i18n outside the catalog (63.816364ms)
+✔ allowlist matches file+kind+text, not a whole file (115.41849ms)
+✔ index.html allowlist keeps the title but catches a new meta line (140.02724ms)
+✔ key gate reports missing and test-only dead keys (0.589381ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 646.468433
+exit=0
