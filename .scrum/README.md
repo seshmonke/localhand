@@ -13,7 +13,7 @@
 - Goal: покупатель оплачивает заказ продавцу в тестовом контуре ЮKassa,
   продавец оформляет СДЭК и ведёт заказ до трека/статуса.
 - Next gate: планирование Sprint 4 только по команде владельца;
-  upgrade `scrum-crew` v0.6.0 выполнен.
+  upgrade `scrum-crew` v0.6.1 выполнен (PR #84).
 - WIP: 0 (потолок 6).
 - Active tasks: нет.
 - Blocked: live YooKassa/CDEK, юрпакет, production deploy/SMS, field RUM —

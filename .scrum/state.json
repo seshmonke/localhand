@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": null,
   "cycle": null,
-  "updated_at": "2026-11-28T14:30:00Z",
+  "updated_at": "2026-11-28T16:10:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 3 closed 28.11.2026. S3-1 payments sandbox and S3-2 delivery test contour accepted; changes 06-payments and 07-delivery archived. S3-3 order lifecycle and S3-4 hardening deferred to Sprint 4 by owner. scrum-crew v0.6.0 installed in PR #81; next: Sprint 4 planning and Text review W1. Live YooKassa/CDEK, legal package, production deploy/SMS remain external owner gates."
+  "notes": "Sprint 3 closed 28.11.2026. S3-1 payments sandbox and S3-2 delivery test contour accepted; changes 06-payments and 07-delivery archived. S3-3 order lifecycle and S3-4 hardening deferred to Sprint 4 by owner. scrum-crew v0.6.1 installed in PR #84; next: Sprint 4 planning and Text review W1. Live YooKassa/CDEK, legal package, production deploy/SMS remain external owner gates."
 }

@@ -14,7 +14,7 @@
 - [ ] Threat model/SAST обновлены для T2; SLO/логи для критического пути
 - [ ] Скриншоты/видео для UI (320 и 1440), ПДн замазаны
 - [ ] Текст: пользовательские/публичные тексты — Copywriter review не-автора +
-      `slop-check`; ссылка или `No text change: <причина>`
+      `slop-check` + `motif-check`; ссылка или `No text change: <причина>`
 
 ## TDD evidence (T1/T2)
 

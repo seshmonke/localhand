@@ -3,6 +3,7 @@
 > **Context:** `status: active` · `updated: 2026-11-28` · `owner: Copywriter` ·
 > `sprint: —` · `task: —` · `change: No spec change: voice/glossary` ·
 > links: [text review](../tasks/text-review.md) ·
+> [motifs](motifs.md) ·
 > [copywriting codex](../../.opencode/skills/scrum-crew/references/copywriting.md) ·
 > [design](README.md)
 
@@ -52,6 +53,6 @@ CTA; пауза — часть текста.
 ## Text review gate
 
 - Новый/изменённый пользовательский или публичный текст: Copywriter
-  review не-автора + `slop-check`.
+  review не-автора + `slop-check` + `motif-check`.
 - В PR: ссылка на ревью или `No text change: <причина>`.
 - Полная программа: [text-review.md](../tasks/text-review.md).
