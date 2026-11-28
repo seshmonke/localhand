@@ -7,6 +7,8 @@ import {
   fetchOrder,
   fetchOrderPayment,
   fetchProduct,
+  fetchSellerDelivery,
+  fetchSellerDeliveryTariffs,
   fetchSellerOrder,
   fetchSellerOrderPayment,
   fetchSellerOrders,
@@ -140,6 +142,25 @@ export function useSellerOrderPaymentQuery(id: number, enabled = true) {
   return useQuery({
     queryKey: sellerKeys.orderPayment(id),
     queryFn: () => fetchSellerOrderPayment(id),
+    enabled: enabled && Number.isInteger(id) && id > 0,
+    retry: false,
+  });
+}
+
+export function useSellerOrderDeliveryQuery(id: number, enabled = true) {
+  return useQuery({
+    queryKey: sellerKeys.delivery(id),
+    queryFn: () => fetchSellerDelivery(id),
+    enabled: enabled && Number.isInteger(id) && id > 0,
+    staleTime: 5_000,
+    retry: false,
+  });
+}
+
+export function useSellerDeliveryTariffsQuery(id: number, enabled = false) {
+  return useQuery({
+    queryKey: sellerKeys.deliveryTariffs(id),
+    queryFn: () => fetchSellerDeliveryTariffs(id),
     enabled: enabled && Number.isInteger(id) && id > 0,
     retry: false,
   });
