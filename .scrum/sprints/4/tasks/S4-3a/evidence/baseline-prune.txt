@@ -1,0 +1,4 @@
+$ node scripts/check-i18n.mjs --update-baseline
+i18n scan: 125 production files, 90 test files; 346 keys, 341 production usages
+cyrillic: 334 baselined findings / 375 occurrences; 35 allowlisted occurrences
+baseline updated: 334 findings

@@ -1,0 +1,14 @@
+$ vitest run -- src/pages/MarketplacePage.test.tsx src/pages/ProductPage.test.tsx src/pages/ShopPage.test.tsx src/pages/NotFoundPage.test.tsx
+
+ RUN  v5.1.2 <worktree>/apps/web
+
+
+ Test Files  31 passed (31)
+      Tests  262 passed (262)
+   Start at  23:19:26
+   Duration  13.79s (tests 40%, environment 32%, import 18%, setup 8%, transform 2%)
+
+Environment  jsdom was created 31 times · 28.14s total, 32% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+

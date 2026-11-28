@@ -1,0 +1,6 @@
+{
+  literals: 88,
+  templates: 2,
+  missing: 0,
+  checks: { outOfRange: true, query: true }
+}

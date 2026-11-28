@@ -1,0 +1,10 @@
+42	0	apps/web/src/pages/MarketplacePage.test.tsx
+95	79	apps/web/src/pages/MarketplacePage.tsx
+25	0	apps/web/src/pages/NotFoundPage.test.tsx
+5	3	apps/web/src/pages/NotFoundPage.tsx
+67	0	apps/web/src/pages/ProductPage.test.tsx
+14	14	apps/web/src/pages/ProductPage.tsx
+113	0	apps/web/src/pages/ShopPage.test.tsx
+13	14	apps/web/src/pages/ShopPage.tsx
+92	0	packages/i18n/src/resources/ru.ts
+0	540	scripts/i18n-baseline.json

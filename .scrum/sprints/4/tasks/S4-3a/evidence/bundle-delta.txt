@@ -1,0 +1,4 @@
+base (main 304e3d7, #92): 684787 B raw / 191946 B gzip (S4-2b2 evidence)
+after S4-3a: 689564 B raw / 192424 B gzip
+delta: +4777 B raw (+0.698%) / +478 B gzip (+0.249%)
+budget ADR 0004: <= +10% and <= +20 KiB gzip -> pass
