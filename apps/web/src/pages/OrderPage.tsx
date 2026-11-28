@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import { FormError } from "../components/FormField.js";
+import { DeliverySummaryCard } from "../components/orders/DeliverySummaryCard.js";
 import { ScreenState } from "../components/ScreenState.js";
 import { PaymentStatusBadge } from "../components/admin/PaymentStatusBadge.js";
 import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
@@ -545,6 +546,8 @@ export function OrderPage() {
                   </>
                 ) : null}
               </Card>
+
+              <DeliverySummaryCard delivery={order.delivery} role={"buyer" as const} />
 
               <Card as="section" aria-labelledby="order-contact-title">
                 <h2
