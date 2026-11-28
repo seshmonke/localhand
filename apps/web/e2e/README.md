@@ -23,6 +23,28 @@ production-бандле их нет. На preview проверяются обы�
 (карточка продавца, заказ, списки) — `payments-a11y.spec.ts`; сам fake-флоу
 запускается против dev 5173.
 
+## Доставка (S3-2)
+
+`delivery-flow.spec.ts` проходит PVZ-checkout, fake-оплату, тарифы и
+создание отправления продавцом, ручной трек и повтор вебхука;
+`delivery-a11y.spec.ts` сканирует checkout, заказ покупателя, заказ
+продавца (`quoted`/`created`), `/admin/shop` с городом сдачи и
+`/admin/products/new`; `perf.spec.ts` добавляет LCP `/orders/:id`.
+API обязан работать с fake-доставкой:
+
+```bash
+DELIVERY_PROVIDER=fake DELIVERY_ENV=test \
+DELIVERY_QUOTE_SECRET=... DELIVERY_LIVE_PII=false
+```
+
+Ограничение fake-провайдера: его состояние отправления живёт в памяти
+процесса API, поэтому перевести отправление в `delivered` по HTTP нельзя
+(это делает только API e2e через in-process `setShipmentStatus`).
+`delivery-flow.spec.ts` проверяет создание/вебхук `created` и рендер
+`delivered` для обеих ролей через стаб ответа — это **UI-only** проверка
+карточки. Сам переход `created→delivered` покрывает API e2e
+`apps/api/src/delivery/delivery.e2e.db.test.ts`, а не браузерный flow.
+
 ## CI и границы гейта
 
 **Browser e2e не входит в CI и не запускается из `pnpm verify`.** В CI

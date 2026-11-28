@@ -1,0 +1,8 @@
+bundle (web build, production):
+apps/web build: dist/assets/index-C48YOKWW.css                                   42.12 kB │ gzip:  11.29 kB
+apps/web build: dist/assets/index-DRAucp0J.js                                   612.74 kB │ gzip: 171.55 kB
+
+previous delivery UI baseline (S3-2-d2 verify):
+apps/web build: dist/assets/index-DucB8FZq.js                                   589.97 kB │ gzip: 166.61 kB
+
+delta vs S3-2-d2: ~+22.8 kB JS / +4.9 kB gzip; includes #71/#74 seller delivery UI, no new dependencies.

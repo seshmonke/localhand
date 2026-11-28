@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { expect, type APIRequestContext } from "@playwright/test";
 import {
-  loginViaApi,
+  createDeliveryOrder,
   createPublishedCatalog,
+  ensureCatalogDeliveryReady,
+  loginViaApi,
   uniquePhone,
   type ApiSession,
   type CatalogFixture,
@@ -20,11 +22,21 @@ export type PaymentsFixture = {
   orderId: number;
 };
 
+/**
+ * Creates an order for the payments specs. When delivery is enabled on the
+ * API, the helper fills in dimensions/shop origin and uses a real quote; on a
+ * payments-only stack it falls back to the plain checkout.
+ */
 export async function createOrder(
   request: APIRequestContext,
   catalog: CatalogFixture,
   buyer: ApiSession,
 ): Promise<number> {
+  const choice = await ensureCatalogDeliveryReady(request, catalog);
+  if (choice !== null) {
+    return createDeliveryOrder(request, catalog, buyer, choice);
+  }
+
   const product = catalog.products[0];
   if (!product) {
     throw new Error("catalog fixture did not create a product");
@@ -66,11 +78,51 @@ export async function createPendingPayment(
   request: APIRequestContext,
   buyer: ApiSession,
   orderId: number,
-): Promise<void> {
+): Promise<number> {
   const response = await request.post(`/api/orders/${orderId}/payments`, {
     headers: { cookie: buyer.cookie, "Idempotency-Key": randomUUID() },
   });
   expect(response.status(), await response.text()).toBe(201);
+  const payload = (await response.json()) as { payment: { id: number } };
+  return payload.payment.id;
+}
+
+/**
+ * Marks an order paid through the fake provider and the real webhook (not a
+ * direct DB update): dev complete endpoint -> payment webhook.
+ */
+export async function payOrderViaFake(
+  request: APIRequestContext,
+  buyer: ApiSession,
+  orderId: number,
+): Promise<void> {
+  const paymentId = await createPendingPayment(request, buyer, orderId);
+  const complete = await request.post(`/api/dev/payments/${paymentId}/complete`, {
+    headers: { cookie: buyer.cookie },
+  });
+  expect(complete.status(), await complete.text()).toBe(200);
+  const { providerPaymentId } = (await complete.json()) as { providerPaymentId: string };
+
+  const webhook = await request.post("/api/payments/yookassa/webhook", {
+    data: {
+      type: "payment.succeeded",
+      event: "payment.succeeded",
+      object: { id: providerPaymentId, status: "succeeded" },
+    },
+  });
+  expect(webhook.status(), await webhook.text()).toBe(200);
+}
+
+/** Paid order with a delivery snapshot, ready for shipment/manual scenarios. */
+export async function createPaidDeliveryOrder(
+  request: APIRequestContext,
+  catalog: CatalogFixture,
+  buyer: ApiSession,
+): Promise<number> {
+  await connectPaymentsViaApi(request, catalog.seller);
+  const orderId = await createDeliveryOrder(request, catalog, buyer);
+  await payOrderViaFake(request, buyer, orderId);
+  return orderId;
 }
 
 /** A full fixture with a connected seller, a buyer, an order and a pending payment. */

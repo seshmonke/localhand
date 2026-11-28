@@ -5,7 +5,9 @@ import { expect, test, type Page } from "@playwright/test";
 import {
   BASE_URL,
   cartStateFor,
+  createDeliveryOrder,
   createPublishedCatalog,
+  ensureCatalogDeliveryReady,
   loginViaApi,
   seedBrowserSession,
   uniquePhone,
@@ -49,16 +51,23 @@ test("axe has no serious or critical findings on buyer pages in light and dark",
   const catalog = await createPublishedCatalog(request);
   const buyer = await loginViaApi(request, uniquePhone());
 
-  const checkoutResponse = await request.post("/api/checkout", {
-    headers: { cookie: buyer.cookie },
-    data: {
-      items: catalog.products.map((product) => ({ productId: product.id })),
-      clientCheckoutId: randomUUID(),
-    },
-  });
-  expect(checkoutResponse.status(), await checkoutResponse.text()).toBe(201);
-  const orderId = ((await checkoutResponse.json()) as { orders: Array<{ id: number }> }).orders[0]
-    ?.id;
+  // A physical order needs a delivery quote when delivery is enabled. The
+  // helper falls back to the plain checkout on a delivery-less stack.
+  const choice = await ensureCatalogDeliveryReady(request, catalog);
+  let orderId: number | undefined;
+  if (choice === null) {
+    const checkoutResponse = await request.post("/api/checkout", {
+      headers: { cookie: buyer.cookie },
+      data: {
+        items: catalog.products.map((product) => ({ productId: product.id })),
+        clientCheckoutId: randomUUID(),
+      },
+    });
+    expect(checkoutResponse.status(), await checkoutResponse.text()).toBe(201);
+    orderId = ((await checkoutResponse.json()) as { orders: Array<{ id: number }> }).orders[0]?.id;
+  } else {
+    orderId = await createDeliveryOrder(request, catalog, buyer, choice);
+  }
 
   const targets = [
     ...pages,
