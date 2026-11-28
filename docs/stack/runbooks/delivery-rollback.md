@@ -35,9 +35,10 @@ DELIVERY_PROVIDER=
   клиента, удалять только совпадающую с текущим `CDEK_WEBHOOK_URL` или
   подтверждённо чужую/устаревшую. Детали — `delivery-cdek-webhook.md`.
 - **Общую тестовую учётную запись CDEK не трогать.** У неё уже четыре
-  подписки; её подписки не удалять и не изменять. На ней
-  `ensureOrderStatusWebhook` даёт `delivery_webhook_subscription_failed
-  reason=conflict`; для webhook-тестов нужен отдельный аккаунт.
+  подписки; её подписки не удалять и не изменять. Если совпадения с
+  текущим URL нет, `ensureOrderStatusWebhook` даёт
+  `delivery_webhook_subscription_failed reason=conflict`; при совпадении
+  — no-op. Для webhook-тестов нужен отдельный аккаунт.
 
 ## 2. Остановить фоновые процессы
 
@@ -124,10 +125,12 @@ WHERE typname = 'delivery_status';
 Ожидается: `deliveries_dropped = true`, `events_dropped = true`, все
 `*_left = 0`.
 
-API smoke на откатанном окружении (предыдущий commit, доставка
-выключена):
+API smoke — на staging, развёрнутом с **pre-delivery SHA** (commit до
+`0006`, без delivery-роутов). SHA зафиксировать в тикете инцидента; на
+прод трафик не переключать до проверки. Доставка выключена.
 
 ```bash
+# API_URL указывает на staging с pre-delivery SHA.
 curl -s -o /dev/null -w 'health=%{http_code}\n' "$API_URL/health"
 ```
 

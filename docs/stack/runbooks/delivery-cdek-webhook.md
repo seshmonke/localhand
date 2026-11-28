@@ -62,8 +62,9 @@ localhost); в live — только `https`. Общая тестовая учё
 `docs/stack/integrations/cdek.md` фиксирует: общая тестовая учётная
 запись CDEK уже имеет **четыре** подписки (проверено 27.11.2026). Её
 подписки **не удалять, не изменять и не пересоздавать**. На ней
-`ensureOrderStatusWebhook` видит `webhooks.length >= 2`, выбрасывает
-`DeliveryWebhookConflictError`, и API пишет
+`ensureOrderStatusWebhook` сначала ищет подписку на текущий URL: при
+совпадении — no-op; если совпадения нет и `webhooks.length >= 2`,
+выбрасывается `DeliveryWebhookConflictError`, и API пишет
 `delivery_webhook_subscription_failed reason=conflict`. Это ожидаемое
 поведение, а не сбой приложения.
 

@@ -120,9 +120,12 @@
   адреса, raw payload и `payloadHash`. Ответы доставки — `no-store`,
   authz buyer/seller, чужой заказ — `404`.
 - `DELIVERY_LIVE_PII=false` — fail-closed. `DELIVERY_ENV=live` без
-  `DELIVERY_LIVE_PII=true` — startup error; `test` требует тестовый хост
-  CDEK (`api.edu.cdek.ru`); `fake` в live запрещён; production-preview
-  допускает только fake, пока live PII выключен.
+  `DELIVERY_LIVE_PII=true` — startup error; `test` требует
+  `api.edu.cdek.ru` или `localhost` (локальный стенд). В `test`
+  `CDEK_WEBHOOK_URL` может быть `http://localhost:3000/delivery/cdek/webhook`;
+  в `live` — только `https` (localhost — локальное исключение). `fake` в
+  live запрещён; production-preview допускает только fake, пока live PII
+  выключен.
 - Реальные ключи, договор, 54-ФЗ и юрпакет — внешние зависимости
   владельца. До их закрытия live-контур и реальные ПДн не включаются.
 
@@ -141,17 +144,20 @@
   чужие — не создавать третью, писать ops-ошибку. v1 — один API-процесс;
   распределённой блокировки подписки нет.
 - Общая тестовая учётная запись CDEK уже имеет четыре подписки; её
-  подписки не удалять и не изменять. На ней `ensureOrderStatusWebhook`
-  даёт `delivery_webhook_subscription_failed reason=conflict`; для
-  проверки вебхука нужен отдельный тестовый аккаунт.
+  подписки не удалять и не изменять. Конфликт возникает только если
+  среди них нет совпадения с текущим `CDEK_WEBHOOK_URL`; при совпадении
+  `ensureOrderStatusWebhook` — no-op. Иначе API пишет
+  `delivery_webhook_subscription_failed reason=conflict`; для проверки
+  вебхука нужен отдельный тестовый аккаунт.
 - Reconcile: на старте и каждые 60 секунд (константы
   `DELIVERY_RECONCILE_INTERVAL_MS`/`DELIVERY_RECONCILE_AGE_MS`, не env),
   батч 50, кандидаты `created|in_transit` с provider id и `lastStatusAt`
   старше 2 минут. Ошибка/пустой ответ/регресс/конфликт обновляют
   `updated_at` (touch), чтобы строка не застряла за батчем. `quoted` не
-  переводится в `failed` автоматически; продавец видит «требует
-  отправки». Отдельное 24-часовое напоминание — backlog, в change не
-  реализовано. Процедура — `docs/stack/runbooks/delivery-reconcile.md`.
+  переводится в `failed` автоматически; UI показывает «Ожидает
+  отправки», а создание отправления — отдельное действие продавца.
+  Отдельное 24-часовое напоминание — backlog, в change не реализовано.
+  Процедура — `docs/stack/runbooks/delivery-reconcile.md`.
 
 ### Ozon и другие перевозчики
 

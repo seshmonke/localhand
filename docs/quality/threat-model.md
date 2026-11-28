@@ -152,7 +152,7 @@
 | D13 | Расхождение `orders.delivery_kopecks` и `order_deliveries.price_kopecks` | Баг/ручная правка | Один источник — `order_deliveries.price_kopecks` на момент checkout; snapshot в заказе; invariant-тест `total = items + delivery`; manual цену не меняет | Исторические заказы с delivery 0 — допустимо |
 | D14 | История доставки раскрывает внутренние данные | Seller GET возвращает `payloadHash`, raw payload, ПДн или чужие события | `GET /seller/orders/:id/delivery` отдаёт только `statusCode/statusName/occurredAt`, newest-first, не более 50; `payloadHash` остаётся в БД; seller authz 404; `no-store`; контрактные/DB-тесты | Продавец видит ПДн своего заказа по дизайну (snapshot доставки); удаление — по retention |
 | D15 | Логи reconcile содержат ПДн | Ошибка провайдера/строка с именем, телефоном, адресом | Логи только `delivery_id/order_id/provider/status/code`; без recipient/PVZ/raw payload; `err` без тела ответа CDEK; runtime-тест redaction | Ошибка адаптера может содержать технические детали; код/статус без PII |
-| D16 | Дубли/конфликт подписки при нескольких инстансах | Два API-процесса одновременно вызывают `ensureOrderStatusWebhook` | Идемпотентность по `ORDER_STATUS + URL`; максимум две подписки на обычного клиента; при двух чужих — ops-ошибка, третья не создаётся; общая тестовая учётка (4 подписки) не трогается, webhook-тесты — отдельный аккаунт; v1 — один API-процесс | Гонка холодного старта может создать вторую подписку на тот же URL; распределённая блокировка — P3 |
+| D16 | Дубли/конфликт подписки при нескольких инстансах | Два API-процесса одновременно вызывают `ensureOrderStatusWebhook` | Идемпотентность по `ORDER_STATUS + URL`; совпадение с текущим URL — no-op; максимум две подписки на обычного клиента; при двух чужих — ops-ошибка, третья не создаётся; общая тестовая учётка (4 подписки) не трогается, webhook-тесты — отдельный аккаунт; v1 — один API-процесс | Гонка холодного старта может создать вторую подписку на тот же URL; распределённая блокировка — P3 |
 
 ### Проверки (где доказано)
 
@@ -165,19 +165,27 @@
   multi-shop, dimensions/city 409.
 - `apps/api/src/delivery/cdek-provider.test.ts`,
   `fake-provider.test.ts`: OAuth cache, fixture contract create/quote,
-  202+poll, status mapping, unknown code, подписка no-op/conflict.
-- `apps/api/src/delivery/shipment.db.test.ts`: paid-гейт, дубль create,
-  webhook spoof/unknown/replay, seller events newest-first/лимит 50,
-  пустая история, authz 404, no-store, отсутствие `payload_hash`.
-- `apps/api/src/delivery/shipment.manual.db.test.ts`: manual после
-  терминального отказа, 409 при существующем CDEK/manual, PII redaction.
+  202+poll, подписка no-op/conflict. Маппинг статусов здесь не проверяется.
+- `apps/api/src/delivery/status.test.ts`: `mapDeliveryStatus` для
+  известных/терминальных кодов и unknown code → `in_transit`.
+- `apps/api/src/delivery/shipment.db.test.ts:283,324,551`: manual после
+  CDEK, `409` CDEK create после manual, `404` legacy GET без
+  `order_deliveries`; также paid-гейт, дубль create, webhook
+  spoof/unknown-order/replay, seller events newest-first/лимит 50, authz
+  404, no-store, отсутствие `payload_hash`.
+- `apps/api/src/delivery/shipment.manual.db.test.ts:94`: manual-provider
+  сохраняет трек для paid-заказа без CDEK.
 - `apps/api/src/orders/orders.delivery.db.test.ts`: checkout snapshot,
-  `delivery_kopecks`, total, старые заказы без доставки.
+  `delivery_kopecks`, total и multi-shop; legacy/404 здесь не
+  проверяется (это `shipment.db.test.ts:551`).
 - `apps/api/src/delivery/delivery.reconcile.db.test.ts`: starvation
-  51-й доставки за 50 падающими, batch/touch, `created|in_transit`.
+  51-й доставки за 50 падающими, batch/touch, `created|in_transit`,
+  unknown code → `in_transit` + raw `last_status_code`.
 - `apps/api/src/delivery/delivery.reconcile.edge.db.test.ts`: PII не
   попадает в логи reconcile (`Иван Тестов`, телефон, адрес), touch при
   ошибке/`null`, прерывание по abort.
+- `apps/api/src/orders/orders.logs.test.ts`: orders-путь пишет только
+  `{ code }`; телефон, комментарий и тело запроса не попадают в логи.
 - `apps/api/src/delivery/delivery.reconcile.scheduler.test.ts`: один
   таймер, нет параллельного прохода, остановка на `onClose`.
 - Property: `total = items + delivery`, quote TTL, event idempotency,
@@ -186,8 +194,8 @@
 ### Запланировано (не доказано в этом PR)
 
 - `apps/api/src/delivery/delivery.e2e.db.test.ts`: API/DB e2e
-  quote→checkout→paid→create→webhook→track — задача 3.9, ветка ещё не
-  влита.
+  quote→checkout→paid→create→webhook→track, включая manual после
+  терминального отказа, — задача 3.9, ветка ещё не влита.
 - `apps/web/e2e/delivery-*.spec.ts` + axe light/dark 320/1440: browser
   e2e — задача 3.10, в этом PR не доказано.
 

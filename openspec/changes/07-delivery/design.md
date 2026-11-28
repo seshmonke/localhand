@@ -164,8 +164,9 @@
 - `ensureWebhook`: `GET /v2/webhooks`; if no matching `ORDER_STATUS` +
   URL and <2 subscriptions — `POST /v2/webhooks`; if 2 and no match —
   log/ops, не создавать третий. Общая тестовая учётная запись уже имеет
-  четыре подписки: её подписки не трогать, `ensureWebhook` на ней даёт
-  conflict; для webhook-тестов нужен отдельный аккаунт. Runbook.
+  четыре подписки: её подписки не трогать; `ensureWebhook` даёт conflict,
+  только если среди них нет совпадения с текущим URL (при совпадении —
+  no-op); для webhook-тестов нужен отдельный аккаунт. Runbook.
 - Webhook `POST /delivery/cdek/webhook`:
   - no signature; lookup `uuid`/`cdek_number`/`number`; verify via
     `GET /v2/orders/{uuid}`; неизвестный локальный заказ → 404,
@@ -178,9 +179,10 @@
   - no-store, 60/min IP.
 - Reconcile 60 s: `created|in_transit` older 2 min → `GET`; update;
   `quoted` без отправления не меняет статус автоматически (ждёт
-  действия продавца); продавец видит «требует отправки», статус не
-  становится `failed`; shipment не создаётся автоматически. Отдельное
-  24-часовое напоминание — backlog, не реализовано в этом change.
+  действия продавца); UI показывает «Ожидает отправки», статус не
+  становится `failed`; shipment не создаётся автоматически, создание —
+  отдельное действие продавца. Отдельное 24-часовое напоминание —
+  backlog, не реализовано в этом change.
 - URL docs sync `/delivery/cdek/webhook` (not `/payments/...`).
 
 ### Manual duplicate safety
