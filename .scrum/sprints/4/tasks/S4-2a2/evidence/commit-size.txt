@@ -1,0 +1,9 @@
+A2 payment/order 2b16712
+    22 +    0 -  apps/web/src/components/admin/PaymentStatusBadge.test.tsx
+    19 +    8 -  apps/web/src/components/admin/PaymentStatusBadge.tsx
+    59 +   42 -  apps/web/src/components/admin/SellerPaymentsCard.tsx
+    84 +    0 -  apps/web/src/components/admin/payment-read.test.tsx
+     7 +    4 -  apps/web/src/components/admin/payment-read.tsx
+    95 +   85 -  apps/web/src/pages/OrderPage.tsx
+   104 +    0 -  packages/i18n/src/resources/ru.ts
+code+tests: +390 -139 = 529 (baseline excluded)

@@ -1,0 +1,3 @@
+A1 baseline: 685 findings, 0 deadKeys
+A1 delta: 752 -> 685 (- 67 )
+remaining W1: 261

@@ -1,0 +1,4 @@
+$ diff <(git diff 587cb26..fec82de) <(git diff b7b30d3..2b16712)
+$ echo $?
+0
+A2 patch identical to fec82de
