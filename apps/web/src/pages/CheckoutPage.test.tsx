@@ -14,7 +14,7 @@ import { CartProvider, useCart } from "../cart/CartContext.js";
 import { authKeys, orderKeys, sellerKeys } from "../lib/queries.js";
 import { installFetchMock, type MockRoutes } from "../test/mock-api.js";
 import { renderApp } from "../test/render-app.js";
-import { CheckoutPage, COMMENT_HINT } from "./CheckoutPage.js";
+import { CheckoutPage } from "./CheckoutPage.js";
 import { formatOrderPhone } from "./OrdersPage.js";
 
 function phone(...parts: string[]): string {
@@ -238,7 +238,9 @@ describe("CheckoutPage", () => {
 
     const commentField = screen.getByLabelText("Комментарий продавцу");
     expect(commentField).toHaveAttribute("aria-describedby", "checkout-comment-hint");
-    expect(document.getElementById("checkout-comment-hint")).toHaveTextContent(COMMENT_HINT);
+    expect(document.getElementById("checkout-comment-hint")).toHaveTextContent(
+      "Необязательно. До 500 символов: удобное время, вопросы по товару.",
+    );
 
     await browser.type(commentField, "Позвоните после 18:00");
     await browser.click(screen.getByRole("button", { name: "Оформить заказ" }));

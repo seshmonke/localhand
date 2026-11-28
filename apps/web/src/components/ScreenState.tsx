@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+
+type Translate = ReturnType<typeof useTranslation>["t"];
 import type { ReactNode } from "react";
 
 type ScreenStateProps = {
@@ -7,17 +10,23 @@ type ScreenStateProps = {
   action?: ReactNode;
 };
 
-const labels = {
-  loading: "Загрузка",
-  empty: "Пусто",
-  error: "Ошибка",
-} as const;
+function stateLabel(kind: ScreenStateProps["kind"], t: Translate): string {
+  switch (kind) {
+    case "loading":
+      return t("common.state.loading");
+    case "empty":
+      return t("common.state.empty");
+    case "error":
+      return t("common.state.error");
+  }
+}
 
 export function ScreenState({ kind, title, description, action }: ScreenStateProps) {
+  const { t } = useTranslation();
   const content = (
     <>
       <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent-orange-text">
-        {labels[kind]}
+        {stateLabel(kind, t)}
       </p>
       <h2 className="mt-3 font-display text-2xl uppercase sm:text-3xl">{title}</h2>
       {description ? <p className="mt-3 max-w-xl text-sm leading-relaxed">{description}</p> : null}
@@ -44,13 +53,14 @@ export function ScreenState({ kind, title, description, action }: ScreenStatePro
 }
 
 export function ProductGridSkeleton() {
+  const { t } = useTranslation();
   return (
     <output
       aria-live="polite"
       aria-busy="true"
       className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4"
     >
-      <span className="sr-only">Загрузка товаров</span>
+      <span className="sr-only">{t("common.state.loadingProducts")}</span>
       {[0, 1, 2, 3].map((item) => (
         <div key={item} className="flex h-full flex-col border-[3px] border-ink bg-paper">
           <div className="aspect-[4/5] w-full bg-ink/10" />
