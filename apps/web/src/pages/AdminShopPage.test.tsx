@@ -21,6 +21,30 @@ const draftShop = {
   status: "draft" as const,
 };
 
+const shippingShop = {
+  ...draftShop,
+  cdekCityCode: 44,
+  cdekCityName: "Москва",
+  cdekShipmentPoint: "MSK001",
+};
+
+const moscowCity = { code: 44, name: "Москва" };
+const kazanCity = { code: 137, name: "Казань" };
+const moscowPoint = {
+  code: "MSK001",
+  name: "ПВЗ Тверская",
+  address: "ул. Тестовая, 1",
+  cityCode: 44,
+  cityName: "Москва",
+};
+const kazanPoint = {
+  code: "KZN001",
+  name: "ПВЗ Баумана",
+  address: "ул. Тестовая, 2",
+  cityCode: 137,
+  cityName: "Казань",
+};
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -170,5 +194,99 @@ describe("AdminShopPage", () => {
     expect(await screen.findByRole("heading", { level: 1, name: "Вход" })).toBeInTheDocument();
     expect(loggedIn).toBe(false);
     expect(client.getQueryCache().findAll({ queryKey: orderKeys.all })).toHaveLength(0);
+  });
+
+  it("shows the saved shipping city and PVZ and saves a new origin", async () => {
+    let current = { ...shippingShop };
+    let patchBody: unknown;
+
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": () => ({ body: { shop: current } }),
+      "GET /seller/payments/account": { body: { account: null } },
+      "GET /delivery/cities": ({ query }) => ({
+        body: { cities: query.query === "Казань" ? [kazanCity] : [moscowCity] },
+      }),
+      "GET /delivery/points": ({ query }) => ({
+        body: { points: query.cityCode === "137" ? [kazanPoint] : [moscowPoint] },
+      }),
+      "PATCH /seller/shop": ({ body }) => {
+        patchBody = body;
+        current = { ...current, ...(body as Partial<typeof current>) };
+        return { body: { shop: current } };
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/shop"]);
+
+    await screen.findByRole("heading", { level: 2, name: "Настройки магазина" });
+    const citySelect = await screen.findByLabelText("Город сдачи");
+    expect(citySelect).toHaveValue("44");
+    const pointSelect = await screen.findByLabelText("Пункт выдачи");
+    await waitFor(() => expect(pointSelect).toHaveValue("MSK001"));
+
+    await browser.type(screen.getByLabelText("Поиск города"), "Казань");
+    await waitFor(() => expect(screen.getByRole("option", { name: "Казань" })).toBeInTheDocument());
+
+    await browser.selectOptions(citySelect, "137");
+    expect(screen.getByLabelText("Пункт выдачи")).toHaveValue("");
+
+    const kazanPointOption = await screen.findByRole("option", { name: /ПВЗ Баумана/ });
+    await browser.selectOptions(screen.getByLabelText("Пункт выдачи"), kazanPointOption);
+    await browser.click(screen.getByRole("button", { name: "Сохранить доставку" }));
+
+    await waitFor(() =>
+      expect(patchBody).toEqual({
+        cdekCityCode: 137,
+        cdekCityName: "Казань",
+        cdekShipmentPoint: "KZN001",
+      }),
+    );
+    expect(await screen.findByText("Доставка сохранена.")).toBeInTheDocument();
+  });
+
+  it("requires a PVZ for a chosen city and saves the origin", async () => {
+    let patchBody: unknown;
+    const current = { ...draftShop };
+
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: current } },
+      "GET /seller/payments/account": { body: { account: null } },
+      "GET /delivery/cities": { body: { cities: [moscowCity] } },
+      "GET /delivery/points": { body: { points: [moscowPoint] } },
+      "PATCH /seller/shop": ({ body }) => {
+        patchBody = body;
+        return { body: { shop: { ...current, ...(body as Partial<typeof current>) } } };
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/shop"]);
+
+    await screen.findByRole("heading", { level: 2, name: "Настройки магазина" });
+    expect(screen.getByText(/Город сдачи не настроен/)).toBeInTheDocument();
+
+    await browser.type(screen.getByLabelText("Поиск города"), "Москва");
+    await browser.selectOptions(await screen.findByLabelText("Город сдачи"), "44");
+    await browser.click(screen.getByRole("button", { name: "Сохранить доставку" }));
+
+    expect(
+      await screen.findByText("Выберите ПВЗ: без него заказы не смогут оформить доставку."),
+    ).toBeInTheDocument();
+    expect(patchBody).toBeUndefined();
+
+    const pointOption = await screen.findByRole("option", { name: /ПВЗ Тверская/ });
+    await browser.selectOptions(screen.getByLabelText("Пункт выдачи"), pointOption);
+    await browser.click(screen.getByRole("button", { name: "Сохранить доставку" }));
+
+    await waitFor(() =>
+      expect(patchBody).toEqual({
+        cdekCityCode: 44,
+        cdekCityName: "Москва",
+        cdekShipmentPoint: "MSK001",
+      }),
+    );
   });
 });

@@ -1,6 +1,6 @@
 import { isValidShopSlug, type SellerShop, type UpdateShop } from "@localhand/shared";
 import { Button, cn } from "@localhand/ui";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
@@ -23,7 +23,13 @@ import {
   Sidebar,
   Stack,
 } from "../components/layout/index.js";
-import { ApiError, createShop, updateShop } from "../lib/api.js";
+import {
+  ApiError,
+  createShop,
+  fetchDeliveryCities,
+  fetchDeliveryPoints,
+  updateShop,
+} from "../lib/api.js";
 import { sellerKeys, useSellerShopQuery } from "../lib/queries.js";
 
 const SLUG_RULES = "Латиница в нижнем регистре, цифры и дефис, 3–40 символов; без дефиса по краям.";
@@ -400,6 +406,81 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
     },
   });
 
+  const [cityQuery, setCityQuery] = useState("");
+  const [selectedCity, setSelectedCity] = useState<{ code: number; name: string } | null>(
+    shop.cdekCityCode !== null && shop.cdekCityName !== null
+      ? { code: shop.cdekCityCode, name: shop.cdekCityName }
+      : null,
+  );
+  const [pointCode, setPointCode] = useState(shop.cdekShipmentPoint ?? "");
+  const [deliveryError, setDeliveryError] = useState<string | null>(null);
+
+  const normalizedCityQuery = cityQuery.trim();
+  const citiesQuery = useQuery({
+    queryKey: ["admin-delivery", "cities", normalizedCityQuery],
+    queryFn: () => fetchDeliveryCities(normalizedCityQuery),
+    enabled: normalizedCityQuery.length >= 2,
+    retry: false,
+  });
+  const pointsQuery = useQuery({
+    queryKey: ["admin-delivery", "points", selectedCity?.code ?? null],
+    queryFn: () => {
+      if (selectedCity === null) {
+        throw new Error("delivery origin city is required");
+      }
+      return fetchDeliveryPoints(selectedCity.code);
+    },
+    enabled: selectedCity !== null,
+    retry: false,
+  });
+
+  const cityResults = citiesQuery.data?.cities ?? [];
+  const points = pointsQuery.data?.points ?? [];
+  const selectedCityMissing =
+    selectedCity !== null && !cityResults.some((city) => city.code === selectedCity.code);
+  const nextPoint = selectedCity === null || pointCode.length === 0 ? null : pointCode;
+  const deliveryDirty =
+    (selectedCity?.code ?? null) !== shop.cdekCityCode ||
+    (selectedCity?.name ?? null) !== shop.cdekCityName ||
+    nextPoint !== shop.cdekShipmentPoint;
+
+  const deliveryMutation = useMutation({
+    mutationFn: (input: UpdateShop) => updateShop(input),
+    onSuccess: (data) => {
+      queryClient.setQueryData(sellerKeys.shop, data);
+      if (data.shop) {
+        setSelectedCity(
+          data.shop.cdekCityCode !== null && data.shop.cdekCityName !== null
+            ? { code: data.shop.cdekCityCode, name: data.shop.cdekCityName }
+            : null,
+        );
+        setPointCode(data.shop.cdekShipmentPoint ?? "");
+      }
+      setDeliveryError(null);
+      onAnnounce("Доставка сохранена.");
+    },
+  });
+
+  function handleSaveDelivery() {
+    setDeliveryError(null);
+
+    if (selectedCity !== null && pointCode.length === 0) {
+      setDeliveryError("Выберите ПВЗ: без него заказы не смогут оформить доставку.");
+      document.getElementById("shop-delivery-point")?.focus();
+      return;
+    }
+
+    deliveryMutation.mutate(
+      selectedCity !== null
+        ? {
+            cdekCityCode: selectedCity.code,
+            cdekCityName: selectedCity.name,
+            cdekShipmentPoint: pointCode,
+          }
+        : { cdekCityCode: null, cdekCityName: null, cdekShipmentPoint: null },
+    );
+  }
+
   function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedName = name.trim();
@@ -573,6 +654,138 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
               </Button>
             </Stack>
           </fieldset>
+        </Card>
+
+        <Card as="section" className="mt-6" aria-labelledby="shop-delivery-title">
+          <h2 id="shop-delivery-title" className="font-display text-2xl uppercase">
+            Доставка
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink/70">
+            Город и ПВЗ, откуда вы сдаёте посылки СДЭК. От них зависит цена доставки для
+            покупателей.
+          </p>
+
+          {selectedCity ? (
+            <p className="mt-4 border-l-[3px] border-accent-green pl-2 text-sm font-semibold">
+              Город сдачи: {selectedCity.name}
+            </p>
+          ) : (
+            <p className="mt-4 border-l-[3px] border-accent-orange pl-2 text-sm font-semibold leading-relaxed">
+              Город сдачи не настроен. Покупатели не смогут оформить доставку, пока вы не выберете
+              город и ПВЗ.
+            </p>
+          )}
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <FormField
+              id="shop-delivery-city-search"
+              label="Поиск города"
+              hint="Введите минимум два символа, затем выберите город из списка."
+            >
+              <input
+                id="shop-delivery-city-search"
+                name="cityQuery"
+                type="search"
+                autoComplete="off"
+                value={cityQuery}
+                onChange={(event) => setCityQuery(event.target.value)}
+                aria-describedby={fieldDescribedBy(
+                  "shop-delivery-city-search",
+                  "Введите минимум два символа, затем выберите город из списка.",
+                )}
+                className={fieldControlClass}
+                disabled={blocked}
+              />
+            </FormField>
+
+            <FormField
+              id="shop-delivery-city"
+              label="Город сдачи"
+              hint="Город, из которого отправляете посылки."
+            >
+              <select
+                id="shop-delivery-city"
+                name="cdekCityCode"
+                value={selectedCity === null ? "" : String(selectedCity.code)}
+                onChange={(event) => {
+                  const code = Number(event.target.value);
+                  const city = cityResults.find((item) => item.code === code);
+                  if (!city) {
+                    return;
+                  }
+                  if (city.code !== selectedCity?.code) {
+                    setPointCode("");
+                  }
+                  setSelectedCity(city);
+                  setDeliveryError(null);
+                }}
+                aria-describedby={fieldDescribedBy(
+                  "shop-delivery-city",
+                  "Город, из которого отправляете посылки.",
+                )}
+                className={fieldControlClass}
+                disabled={blocked}
+              >
+                <option value="">Выберите город</option>
+                {selectedCityMissing && selectedCity ? (
+                  <option value={selectedCity.code}>{selectedCity.name}</option>
+                ) : null}
+                {cityResults.map((city) => (
+                  <option key={city.code} value={city.code}>
+                    {city.name}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+          </div>
+
+          {selectedCity ? (
+            <div className="mt-6">
+              <FormField
+                id="shop-delivery-point"
+                label="Пункт выдачи"
+                hint="ПВЗ, куда вы сдаёте посылки."
+              >
+                <select
+                  id="shop-delivery-point"
+                  name="cdekShipmentPoint"
+                  value={pointCode}
+                  onChange={(event) => {
+                    setPointCode(event.target.value);
+                    setDeliveryError(null);
+                  }}
+                  aria-describedby={fieldDescribedBy(
+                    "shop-delivery-point",
+                    "ПВЗ, куда вы сдаёте посылки.",
+                  )}
+                  className={fieldControlClass}
+                  disabled={blocked}
+                >
+                  <option value="">Выберите ПВЗ</option>
+                  {points.map((point) => (
+                    <option key={point.code} value={point.code}>
+                      {point.name} — {point.address}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+            </div>
+          ) : null}
+
+          <div className="mt-6">
+            <Button
+              type="button"
+              size="lg"
+              onClick={handleSaveDelivery}
+              disabled={!deliveryDirty || deliveryMutation.isPending || blocked}
+            >
+              {deliveryMutation.isPending ? "Сохраняем…" : "Сохранить доставку"}
+            </Button>
+          </div>
+
+          <div className="mt-4">
+            <FormError message={deliveryError} />
+          </div>
         </Card>
       </GridColumn>
 
