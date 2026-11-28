@@ -20,24 +20,33 @@ permissions:
 
 Прочитай:
 - `AGENTS.md`
+- `.scrum/README.md`
 - `docs/quality/dod.md`
-- `.opencode/skills/sprint-crew/references/openspec.md`
-- `.opencode/skills/sprint-crew/references/git-quality.md`
-- change, `task.md`, diff, тесты
+- `.opencode/skills/scrum-crew/references/openspec.md`
+- `.opencode/skills/scrum-crew/references/git-quality.md`
+- `.scrum/sprints/NN/tasks/<id>/brief.md`, `report.md`, `evidence/`
+- change, PR, diff, тесты
 
 Проверь:
-1. Tier T0/T1/T2 и каждый AC/сценарий — есть доказательство.
-2. Для T1/T2 — RED/GREEN/REFACTOR evidence: тест падал без кода; для T2 —
-   contract/property/threat model блокируют; mutation/SAST — nightly/
-   ручной до Q1.0–Q1.6; SLO-дизайн/логи обязательны, alert/RUM —
-   исключение только до активации; после Q1.0–Q1.6 — блок.
-3. Нет ослабления тестов/CI и test-after вместо TDD.
-4. Authz, секреты, PII, ошибки, откат.
-5. A11y, состояния, perf-бюджет; field RUM/owner-исключение.
-6. Спека и код не разошлись.
+1. Каждый AC и сценарий — есть доказательство; тест падал без кода.
+2. Нет ослабления тестов/CI.
+3. Authz, секреты, PII, ошибки, откат.
+4. A11y, состояния, perf-бюджет.
+5. Спека и код не разошлись.
+6. Drift: старые имена, будущее как текущее, обещание теста без ссылки,
+   `No doc change`.
+7. Trace task → change → PR → review → evidence → status.
 
+Проектные T2-гейты (Local Hand):
+- Tier T0/T1/T2; для T2 — contract/property/threat model; mutation/SAST
+  и alert/RUM — owner-исключения до активации Q1.0–Q1.6, после — блок.
+- Test-after вместо TDD для T1/T2, ослабление тестов/CI или отсутствие
+  RED-evidence — REQUEST_CHANGES.
+
+Запиши review-артефакт в `.scrum/reviews/NN-<task>.md` с task id и PR.
 Верни:
 - вердикт APPROVE / REQUEST_CHANGES;
 - находки: severity P0–P3, файл:строка, доказательство, действие;
+- drift-проверку;
 - максимум 3 блокирующих.
 Не правь код. Не мержи.
