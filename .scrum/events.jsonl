@@ -67,3 +67,53 @@
 {"ts":"2026-11-27T16:16:00Z","type":"decision","scope":"delivery_contract","sprint":3,"task":"S3-2","owner":"human","decision":"platform_cdek_contract_one_account","ozon":"later_second_provider"}
 {"ts":"2026-11-27T16:18:00Z","type":"cycle_started","sprint":3,"cycle":5,"task":"S3-2","scope":"delivery_planning","change":"07-delivery"}
 {"ts":"2026-11-27T16:45:00Z","type":"decision","scope":"t2_exceptions","sprint":3,"task":"S3-2","change":"07-delivery","owner":"human","decision":"extend_b2_exception_scope_to_s3_2","mutation_sast":"defer_until_Q1.3_Q1.4","alert_rum":"until_public_launch","property_contract_threat_model":"required_in_s3_2"}
+{"ts":"2026-11-27T16:42:34Z","type":"merge","sprint":3,"cycle":5,"task":"S3-2","pr":47,"merge_commit":"72bfbd5","scope":"delivery_planning","status":"done"}
+{"ts":"2026-11-27T17:10:39Z","type":"merge","sprint":3,"cycle":5,"task":"S3-2","pr":48,"merge_commit":"f651e46","scope":"delivery_contracts","status":"done"}
+{"ts":"2026-11-27T17:13:01Z","type":"merge","sprint":3,"cycle":5,"task":"S3-2","pr":51,"merge_commit":"09887cf","scope":"delivery_env_quote_signing","status":"done"}
+{"ts":"2026-11-27T17:14:53Z","type":"merge","sprint":3,"cycle":5,"task":"S3-2","pr":52,"merge_commit":"a4d69b5","scope":"delivery_provider_seam","status":"done"}
+{"ts":"2026-11-27T17:16:52Z","type":"merge","sprint":3,"cycle":5,"task":"S3-2","pr":53,"merge_commit":"4ade917","scope":"delivery_schema","status":"done"}
+{"ts":"2026-11-27T18:17:57Z","type":"merge","sprint":null,"task":"Q1.0","pr":57,"merge_commit":"555f226","scope":"quality_wave_mapping","status":"done"}
+{"ts":"2026-11-27T19:10:22Z","type":"merge","sprint":3,"cycle":5,"task":"S3-2","pr":58,"merge_commit":"c21b444","scope":"delivery_quote_api","status":"done"}
+{"ts":"2026-11-27T19:12:29Z","type":"merge","sprint":3,"cycle":5,"task":"S3-2","pr":59,"merge_commit":"e5d62b3","scope":"checkout_delivery","status":"done"}
+{"ts":"2026-11-27T19:15:34Z","type":"merge","sprint":3,"cycle":5,"task":"S3-2","pr":60,"merge_commit":"518a88e","scope":"checkout_pvz_ui","status":"done"}
+{"ts":"2026-11-27T20:04:54Z","type":"merge","sprint":3,"cycle":5,"task":"S3-2","pr":61,"merge_commit":"831b2c7","scope":"cdek_adapter","status":"done"}
+{"ts":"2026-11-27T20:12:21Z","type":"merge","sprint":3,"cycle":5,"task":"S3-2","pr":62,"merge_commit":"5ebfe9c","scope":"shipment_tracking_webhook","status":"done"}
+{"ts":"2026-11-28T09:19:02Z","type":"state_reconciled","sprint":3,"cycle":5,"task":"S3-2","note":"board/state/events caught up with merged PR #47-#62; main CI green; remaining tasks 2.5/2.7/3.7/3.8/3.9/3.10/3.11/4.1"}
+{"ts":"2026-11-28T09:24:00Z","type":"phase","sprint":3,"cycle":6,"from":"cycle_5","to":"cycle_6","task":"S3-2","scope":"delivery_close","note":"D1 admin product dimensions and shop origin"}
+{"ts":"2026-11-28T09:44:00Z","type":"review","sprint":3,"cycle":6,"task":"S3-2","pr":63,"verdict":"APPROVE","reviewer":"scrum-reviewer","head":"3b1c712","note":"no blocking; P3 debt: role prop rename, raw-code assertions, test totals, quoted label, axe/e2e/LCP in 3.10"}
+{"ts":"2026-11-28T09:46:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2","pr":63,"merge_commit":"066b29b","scope":"orders_delivery_snapshot_ui","status":"done"}
+{"ts":"2026-11-28T09:53:00Z","type":"review","sprint":3,"cycle":6,"task":"S3-2","pr":64,"verdict":"APPROVE","reviewer":"scrum-reviewer","head":"2a2cacf","note":"no blocking; P3: describedby on fieldset, shared labels, boundary tests, create axe, copy"}
+{"ts":"2026-11-28T09:56:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2","pr":64,"merge_commit":"6a967a1","scope":"product_dimensions_admin","status":"done"}
+{"ts":"2026-11-28T09:58:00Z","type":"review","sprint":3,"cycle":6,"task":"S3-2","pr":65,"verdict":"REQUEST_CHANGES","reviewer":"scrum-reviewer","head":"1588e76","note":"P1 batch starvation after 50 rows; P2 idempotency test polls delivered row and proves nothing"}
+{"ts":"2026-11-28T10:08:00Z","type":"review","sprint":3,"cycle":6,"task":"S3-2","pr":66,"verdict":"APPROVE","reviewer":"scrum-reviewer","head":"b482d9c","note":"P2: events spec scenario missing, web RED evidence incomplete; P3: max(50), raw response assertions"}
+{"ts":"2026-11-28T10:09:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2","pr":66,"merge_commit":"7a9f59c","scope":"seller_delivery_events_api","status":"done"}
+{"ts":"2026-11-28T10:10:00Z","type":"review","sprint":3,"cycle":6,"task":"S3-2","pr":65,"verdict":"APPROVE_CODE_SIZE_GATE","reviewer":"scrum-reviewer","head":"d6e4e1f","note":"P1/P2 closed; 510 lines needs owner-approved PR-size exception; no split of starvation test"}
+{"ts":"2026-11-28T10:15:00Z","type":"decision","scope":"pr_size_exception","sprint":3,"task":"S3-2","pr":65,"owner":"human","decision":"approve_510_line_pr","reason":"P1 starvation/P2 idempotency correctness fix with paired tests; splitting test from fix violates TDD","scope_limit":"PR #65 only","date":"2026-11-28"}
+{"ts":"2026-11-28T10:15:00Z","type":"decision","scope":"pr_size_policy","sprint":3,"owner":"human","decision":"raise_pr_limit","new_limit":600,"counting":"code+tests, evidence excluded","reason":"400 too tight for T2 TDD PRs; evidence/raw logs inflate diff","follow_up":"update AGENTS.md, docs/quality/methodologies.md, sprint-crew git-quality","date":"2026-11-28"}
+{"ts":"2026-11-28T10:18:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2","pr":65,"merge_commit":"18b61cd","scope":"delivery_reconcile_pass","status":"done","exception":"owner-approved 510 lines"}
+{"ts":"2026-11-28T10:20:00Z","type":"pr_opened","sprint":3,"cycle":6,"task":"S3-2","pr":68,"scope":"delivery_reconcile_scheduler","size":252}
+{"ts":"2026-11-28T10:22:00Z","type":"pr_opened","sprint":null,"pr":69,"scope":"pr_size_policy","size":19,"tier":"T0"}
+{"ts":"2026-11-28T10:30:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2","pr":67,"merge_commit":"618fdda","scope":"shop_cdek_origin_happy","status":"done"}
+{"ts":"2026-11-28T10:40:00Z","type":"merge","sprint":null,"pr":69,"merge_commit":"b8a96f1","scope":"pr_size_policy","status":"done","owner_decision":"limit_600_code_tests_evidence_excluded"}
+{"ts":"2026-11-28T10:52:00Z","type":"review","sprint":3,"cycle":6,"task":"S3-2","pr":68,"verdict":"APPROVE","reviewer":"scrum-reviewer","head":"fd96b80","note":"P1 deterministic wiring closed; P2 evidence/subscription accepted; P3 counts/body"}
+{"ts":"2026-11-28T10:53:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2","pr":68,"merge_commit":"cb046e8","scope":"delivery_reconcile_scheduler","status":"done"}
+{"ts":"2026-11-28T10:55:00Z","type":"pr_opened","sprint":3,"cycle":6,"task":"S3-2","pr":71,"scope":"seller_shipment_ui","size":583}
+{"ts":"2026-11-28T10:56:00Z","type":"review","sprint":3,"cycle":6,"task":"S3-2","pr":70,"verdict":"REQUEST_CHANGES","reviewer":"scrum-reviewer","head":"1e62552","note":"P2 states not pinned by tests; saved-point fallback can save closed PVZ"}
+{"ts":"2026-11-28T11:05:00Z","type":"decision","scope":"sprint_3_close","sprint":3,"owner":"human","decision":"close_after_s3_2","defer_to_sprint_4":["S3-3","S3-4"],"next":"upgrade_scrum_crew_v0_5_0","date":"2026-11-28"}
+{"ts":"2026-11-28T11:20:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2","pr":71,"merge_commit":"a18a58a","scope":"seller_shipment_ui","status":"done"}
+{"ts":"2026-11-28T11:24:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2","pr":72,"merge_commit":"775b783","scope":"reconcile_edge_tests","status":"done"}
+{"ts":"2026-11-28T11:26:00Z","type":"pr_opened","sprint":3,"cycle":6,"task":"S3-2","pr":73,"scope":"delivery_e2e_api","size":551}
+{"ts":"2026-11-28T11:40:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2","pr":74,"merge_commit":"7bca728","scope":"seller_manual_polling","status":"done"}
+{"ts":"2026-11-28T11:42:00Z","type":"claim","sprint":3,"cycle":6,"task":"S3-2-d4d","owner":"scrum-worker","branch":"task/S3-2-d4d-delivery-polish","scope":"delivery_p3_polish"}
+{"ts":"2026-11-28T11:43:00Z","type":"claim","sprint":3,"cycle":6,"task":"S3-2-3.10","owner":"scrum-worker","branch":"task/S3-2-browser-e2e","scope":"browser_e2e_axe_lcp"}
+{"ts":"2026-11-28T11:46:00Z","type":"claim","sprint":3,"cycle":6,"task":"S3-2-3.11","owner":"architect","branch":"task/S3-2-docs-archive-prep","scope":"delivery_docs_spec_adr"}
+{"ts":"2026-11-28T11:55:00Z","type":"pr_opened","sprint":3,"cycle":6,"task":"S3-2-d4d","pr":75,"scope":"delivery_p3_polish","size":233}
+{"ts":"2026-11-28T11:57:00Z","type":"pr_opened","sprint":3,"cycle":6,"task":"S3-2-3.11","pr":76,"scope":"delivery_docs_spec_adr","size":26}
+{"ts":"2026-11-28T12:05:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2-d4d","pr":75,"merge_commit":"b6a4f71","scope":"delivery_p3_polish","status":"done"}
+{"ts":"2026-11-28T12:20:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2-3.11","pr":76,"merge_commit":"e934ced","scope":"delivery_docs_spec_adr","status":"done"}
+{"ts":"2026-11-28T12:22:00Z","type":"decision","scope":"s3_2_3_10_split","sprint":3,"task":"S3-2-3.10","owner":"orchestrator","decision":"split_a_b","delivered":"api_e2e_only","legacy_e2e_fix":"PR_B","reason":"781>600; fake delivered via HTTP not available"}
+{"ts":"2026-11-28T12:40:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2-LOG","pr":77,"merge_commit":"22c6d8b","scope":"delivery_log_redaction","status":"done"}
+{"ts":"2026-11-28T12:44:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2-E2E","pr":73,"merge_commit":"fa8eff4","scope":"delivery_api_e2e","status":"done"}
+{"ts":"2026-11-28T12:45:00Z","type":"pr_opened","sprint":3,"cycle":6,"task":"S3-2-3.10","pr":78,"scope":"delivery_browser_flow","size":564}
+{"ts":"2026-11-28T13:00:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2-3.10","pr":78,"merge_commit":"b7b5342","scope":"browser_flow_e2e","status":"done"}
+{"ts":"2026-11-28T13:05:00Z","type":"pr_opened","sprint":3,"cycle":6,"task":"S3-2-3.10","pr":79,"scope":"browser_axe_lcp_legacy","size":286}

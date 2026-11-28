@@ -23,16 +23,16 @@ A foundation, B checkout/UI, C shipment/status/e2e.
 ## 2. PR B: quote/checkout/seller data/UI
 
 - [x] 2.1 RED: quote/checkout/UI tests падают.
-- [ ] 2.2 CDEK client OAuth/cache/cities/points/calculator; point-city validation; volumetric weight; fake fixtures.
+- [x] 2.2 CDEK client OAuth/cache/cities/points/calculator; point-city validation; volumetric weight; fake fixtures.
 - [x] 2.3 `GET /delivery/cities`, `/points`, `POST /delivery/quote`; signed quoteToken TTL 10 мин/hash; 30/min; no-store.
 - [x] 2.4 Checkout schema `delivery {cityCode,pointCode,recipientName,quoteToken}`; per-shop verify; `delivery_kopecks`/total; 409 stale/invalid/shop tamper; DB tests multi-shop/dimensions/city/point/total.
 - [x] 2.5 Product dimensions API/contracts + admin product form; shop city/PVZ API + `/admin/shop`; `shop_shipment_point_missing` test.
-- [ ] 2.6 Checkout UI: city/PVZ/quote/price/period/recipient name; errors/retry; axe.
+- [x] 2.6 Checkout UI: city/PVZ/quote/price/period/recipient name; errors/retry; axe.
 - [x] 2.7 Orders API/UI delivery snapshot; old orders 0; `pnpm verify`; PR B evidence.
 
 ## 3. PR C: shipment/status/manual/e2e
 
-- [ ] 3.1 RED: shipment/webhook/manual/e2e tests падают.
+- [x] 3.1 RED: shipment/webhook/manual/e2e tests падают.
 - [x] 3.2 `GET /seller/orders/:id/delivery/tariffs` (paid, CDEK from shop city/point to buyer PVZ).
 - [x] 3.3 `POST /seller/orders/:id/delivery {tariffCode}`: paid-only, tariff must equal paid quote/price, 409 `delivery_tariff_mismatch`, idempotent `number=order-{id}`, `shipment_point`; CDEK `202` обрабатывается внутренне, локальный ответ `201`, provider id/number, `created`; reconcile before retry.
 - [x] 3.4 `PATCH /seller/orders/:id/delivery` manual carrier/track: only paid + no CDEK order; 409 if exists.
@@ -46,5 +46,5 @@ A foundation, B checkout/UI, C shipment/status/e2e.
 
 ## 4. Close
 
-- [ ] 4.1 Archive `07-delivery`; board/state/daily; owner live/CDEK contract remains external.
-- [ ] 4.2 Ozon backlog PBI (provider seam, contract/B2B; after MVP).
+- [x] 4.1 Archive `07-delivery`; board/state/daily; owner live/CDEK contract remains external.
+- [x] 4.2 Ozon backlog PBI (provider seam, contract/B2B; after MVP).

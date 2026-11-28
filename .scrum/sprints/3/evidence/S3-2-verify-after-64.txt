@@ -1,0 +1,112 @@
+$ pnpm typecheck && pnpm lint && pnpm format:check && pnpm check:public && pnpm test && pnpm build && pnpm openspec:validate
+$ pnpm --filter @localhand/shared build && pnpm -r typecheck
+$ tsc -p tsconfig.build.json
+packages/ui typecheck$ tsc --noEmit
+packages/shared typecheck$ tsc --noEmit
+packages/shared typecheck: Done
+apps/api typecheck$ tsc --noEmit
+packages/ui typecheck: Done
+apps/web typecheck$ tsc --noEmit && tsc -p tsconfig.e2e.json --noEmit
+apps/web typecheck: Done
+apps/api typecheck: Done
+$ oxlint .
+$ prettier --check .
+Checking formatting...
+All matched files use Prettier code style!
+$ node scripts/check-public-repo.mjs
+Public repo check: 536 tracked files, no secrets/PII patterns found
+$ pnpm --filter @localhand/shared build && pnpm -r test
+$ tsc -p tsconfig.build.json
+Scope: 4 of 5 workspace projects
+packages/ui test$ vitest run --passWithNoTests
+packages/shared test$ vitest run --passWithNoTests
+packages/ui test: 
+packages/ui test:  RUN  v5.1.2 <repo>/packages/ui
+packages/ui test: 
+packages/ui test: No test files found, exiting with code 0
+packages/ui test: 
+packages/ui test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+packages/ui test: exclude:  **/node_modules/**, **/.git/**
+packages/ui test: 
+packages/shared test: 
+packages/shared test:  RUN  v5.1.2 <repo>/packages/shared
+packages/shared test: 
+packages/ui test: Done
+packages/shared test: 
+packages/shared test:  Test Files  12 passed (12)
+packages/shared test:       Tests  156 passed (156)
+packages/shared test:    Start at  12:57:06
+packages/shared test:    Duration  762ms (import 67%, tests 21%, transform 8%, worker 4%)
+packages/shared test: 
+packages/shared test: Done
+apps/api test$ vitest run
+apps/web test$ vitest run
+apps/api test: 
+apps/api test:  RUN  v5.1.2 <repo>/apps/api
+apps/api test: 
+apps/web test: 
+apps/web test:  RUN  v5.1.2 <repo>/apps/web
+apps/web test: 
+apps/web test: 
+apps/web test:  Test Files  23 passed (23)
+apps/web test:       Tests  167 passed (167)
+apps/web test:    Start at  12:57:07
+apps/web test:    Duration  17.65s (tests 34%, environment 33%, import 21%, setup 8%, transform 4%)
+apps/web test: 
+apps/web test: Environment  jsdom was created 23 times · 35.68s total, 33% of tracked time
+apps/web test:              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+apps/web test:              learn more: https://vitest.dev/guide/improving-performance#test-environments
+apps/web test: 
+apps/web test: Done
+apps/api test: 
+apps/api test:  Test Files  24 passed | 14 skipped (38)
+apps/api test:       Tests  199 passed | 153 skipped (352)
+apps/api test:    Start at  12:57:07
+apps/api test:    Duration  30.87s (import 82%, tests 15%, transform 2%, worker 2%)
+apps/api test: 
+apps/api test:     Isolate  38 workers spawned · ~262ms startup each (spawn + environment, per file)
+apps/api test:              at least ~9.69s faster with isolate: false — reuses workers across files instead of one per file
+apps/api test: 
+apps/api test: Done
+$ pnpm -r build
+packages/shared build$ tsc -p tsconfig.build.json
+packages/ui build$ tsc --noEmit
+packages/shared build: Done
+apps/api build$ tsc -p tsconfig.build.json
+packages/ui build: Done
+apps/web build$ vite build
+apps/web build: vite v8.4.0 building client environment for production...
+apps/web build: transforming...
+apps/web build: ✓ 2467 modules transformed.
+apps/web build: rendering chunks...
+apps/web build: computing gzip size...
+apps/web build: dist/index.html                                                   1.16 kB │ gzip:   0.53 kB
+apps/web build: dist/assets/martian-mono-cyrillic-wght-normal-B84CD5C_.woff2     10.56 kB
+apps/web build: dist/assets/martian-mono-latin-ext-wght-normal-DlL6xMw5.woff2    15.90 kB
+apps/web build: dist/assets/golos-text-cyrillic-ext-wght-normal-hICkpzq7.woff2   17.50 kB
+apps/web build: dist/assets/golos-text-latin-ext-wght-normal-B-I5lbAQ.woff2      19.18 kB
+apps/web build: dist/assets/golos-text-cyrillic-wght-normal-mKek_fSS.woff2       22.03 kB
+apps/web build: dist/assets/martian-mono-latin-wght-normal-5W32yIyr.woff2        23.55 kB
+apps/web build: dist/assets/golos-text-latin-wght-normal-BS5oQT7X.woff2          37.91 kB
+apps/web build: dist/assets/index-C2nXrwXP.css                                   42.04 kB │ gzip:  11.27 kB
+apps/web build: dist/assets/index-C4Jy5x8J.js                                   592.52 kB │ gzip: 167.40 kB
+apps/web build: 
+apps/web build: [plugin builtin:vite-reporter] 
+apps/web build: (!) Some chunks are larger than 500 kB after minification. Consider:
+apps/web build: - Using dynamic import() to code-split the application
+apps/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+apps/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+apps/web build: ✓ built in 2.09s
+apps/web build: Done
+apps/api build: Done
+$ openspec validate --all --strict
+✓ change/07-delivery
+✓ spec/cart
+✓ spec/catalog-discovery
+✓ spec/checkout-orders
+✓ spec/payments
+✓ spec/phone-auth
+✓ spec/product-management
+✓ spec/seller-shop
+✓ spec/storefront
+Totals: 9 passed, 0 failed (9 items)
