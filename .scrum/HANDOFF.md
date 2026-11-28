@@ -4,6 +4,8 @@
 
 ## Состояние
 
+- `scrum-crew` обновлён до v0.6.0 (Copywriter, slop-check); карта входа — `.scrum/README.md`, task-workspace — `.scrum/sprints/3/tasks/S3-2/`.
+
 - `main`: после merge close PR Sprint 3.
 - Sprint 1/2/3 закрыты. Sprint 3 review ACCEPT; S3-1 payments и
   S3-2 delivery приняты, S3-3/S3-4 перенесены в Sprint 4.

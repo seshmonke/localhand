@@ -56,7 +56,7 @@ Council собирается только по триггеру: 2 раунда 
   "type": "question",
   "subject": "форма ошибки checkout",
   "body": "При пустой корзине 200 или 409? Нужен контракт для UI.",
-  "refs": {"task": "42", "pr": 118, "files": ["packages/contracts/..."]},
+  "refs": {"task": "42", "pr": 118, "artifact": ".scrum/sprints/03/tasks/42/brief.md", "files": ["packages/contracts/..."]},
   "correlation_id": "q-0017",
   "requires_response_by": "2026-11-26T10:29:00Z",
   "confidence": "high",
@@ -83,7 +83,7 @@ Council собирается только по триггеру: 2 раунда 
 | `handoff` | read-back |
 | `blocker` | немедленно |
 | `review` | по каждой находке |
-| `status` | нет, 1 строка |
+| `status` | нет, 1 строка + ссылка на report/evidence |
 
 ## Протоколы
 
@@ -100,15 +100,24 @@ Council собирается только по триггеру: 2 раунда 
    стандарт).
 3. Нет возражений — принято.
 4. Есть — решает: PO (ценность), Architect (контракт), SM (процесс),
-   DevSecOps/White Hacker (security-вето), Designer (a11y/сценарий).
+   DevSecOps/White Hacker (security-вето), Designer (a11y/сценарий),
+   Copywriter (голос/текст).
 5. Решение — в `decision` и в артефакт.
 
 Это consent, а не consensus: не «все за», а «нет обоснованных возражений».
 
 ### Handoff
 
-Owner пишет `handoff.md`: сделано, осталось, грабли, проверки, открытые
-треды. Получатель отвечает read-back. Без read-back задача не передана.
+Owner пишет `.scrum/sprints/NN/tasks/<id>/handoff.md`: сделано, осталось,
+грабли, проверки, открытые треды, ссылки на report/evidence. Получатель
+отвечает read-back. Без read-back задача не передана. Worktree/чат — не
+замена handoff-файлу.
+
+### Отчёт
+
+Worker пишет `report.md` в durable-папку и возвращает координатору резюме
+≤ 10 строк + ссылки. Пересказ всего отчёта в чат запрещён: это дублирует
+факт и раздувает контекст.
 
 ### Ревью
 
@@ -128,8 +137,8 @@ Driver пишет и коммитит; navigator читает и пишет в `
 ### Ревью-сворм
 
 На один PR параллельно: QA (тестируемость), DevSecOps (authz/секреты),
-Designer/a11y (доступность), White Hacker (abuse cases). Оркестратор
-дедуплицирует.
+Designer/a11y (доступность), Copywriter (голос/текст), White Hacker
+(abuse cases). Оркестратор дедуплицирует.
 
 ### Изменение поведения
 
@@ -165,5 +174,6 @@ Designer/a11y (доступность), White Hacker (abuse cases). Оркест
 ## Память ролей
 
 Сессия роли хранит устойчивое: конвенции, решения, открытые треды.
+Новая сессия стартует с `.scrum/README.md` + brief, а не с корня.
 На apply — только change-папка, контракты и релевантные доки.
 На archive — 5 строк в `memory/<role>.md`. Остальное — в артефакты.

@@ -32,6 +32,7 @@ docs/concept/product.md      Product Goal, пользователь, метри�
                              non-goals, ограничения, риски
 docs/concept/personas.md    1–3 персоны, если нужны
 docs/concept/journey.md     главный сценарий по шагам
+docs/design/content.md      голос, словарь, запрещённые слова (Copywriter)
 ```
 
 Правила:
@@ -40,6 +41,9 @@ docs/concept/journey.md     главный сценарий по шагам
 - Non-goals явные; иначе скоуп расползётся.
 - Гипотезы помечаются `hypothesis`, не выдаются за факты.
 - Решение фиксируется до кода: дата, обоснование, trade-off.
+- Одно обещание и голос фиксирует Copywriter до первого текста;
+  словарь — `docs/design/content.md`. Copywriter — постоянная роль: голос
+  нужен с первого экрана.
 
 **Гейт:** владелец подтвердил Product Goal, пользователя, главный сценарий,
 метрику и non-goals. Без этого — стоп.
@@ -48,7 +52,7 @@ docs/concept/journey.md     главный сценарий по шагам
 
 На определении продукта решить, нужны ли:
 
-- **Growth / Content** — запуск, лендинг, контент, SEO, кампании;
+- **Growth / Content** — запуск, каналы, SEO, кампании;
 - **Support / Community** — реальные пользователи, тикеты, сообщество;
 - **Legal / Privacy** — PII, cookies, платежи, регулируемые данные.
 
@@ -119,11 +123,14 @@ preview открывается; секретов в репозитории не�
 2. Required checks: `verify`, `review-gate`, `security`.
 3. 1 approval от не-автора; linear history; force push запрещён.
 4. Merge train (для личного приватного репо — скрипт оркестратора).
-5. `.scrum/` инициализирован: state, board, budget, events.
+5. `.scrum/` инициализирован: state, board, budget, events, `README.md`
+   по `assets/context.md` с Init-ссылками (state → board → product →
+   INDEX → DoD → openspec); sprint/brief появляются в Planning.
 6. `openspec init --tools opencode --scope project`.
 
 **Гейт:** нельзя запушить в `main` в обход PR; CI видит PR; `openspec
-validate --all --strict` проходит.
+validate --all --strict` проходит; `.scrum/README.md` существует, phase
+`INIT`, ссылки живые.
 
 ## 0.4. Первый change: walking skeleton
 
@@ -153,6 +160,7 @@ healthcheck → один экран → один API → одно чтение/�
 - [ ] CI + preview.
 - [ ] Защищённый `main` + review-gate.
 - [ ] `.scrum/` и `openspec/` инициализированы.
+- [ ] `.scrum/README.md` — карта входа, phase `INIT`, ссылки живые.
 - [ ] Первый change создан и оценён.
 - [ ] Владелец дал команду на Sprint 1.
 

@@ -32,7 +32,8 @@ ACCEPT, change `02-seller-onboarding` заархивирован.
   S3-1 payments (PR #39/#41/#45) и S3-2 delivery (PR #47–#79);
   changes `06`/`07` в архиве. ЮKassa/СДЭК — тестовый контур, без
   реальных денег и адресов. S3-3 lifecycle и S3-4 hardening перенесены
-  в Sprint 4.
+  в Sprint 4. Durable workspace:
+  [.scrum/sprints/3/sprint.md](../../.scrum/sprints/3/sprint.md).
 - Sprint 4 — не начат. Кандидаты: `08-order-lifecycle`,
   `09-orders-pagination`, Q1.1/Q1.2; live-интеграции и юрпакет —
   owner-гейты.

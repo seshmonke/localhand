@@ -25,7 +25,9 @@ openspec
 - Squash-merge, линейная история, force push запрещён.
 - Один worktree = одна задача = один агент; свой порт и БД.
 - Агент не делает `git checkout`/`switch`; мерж — из основного worktree.
-- Worktree и ветка удаляются после мержа.
+- Worktree и ветка удаляются после мержа; durable-артефакты остаются в
+  `.scrum/sprints/NN/tasks/<id>/`.
+- Brief/report/handoff/evidence не живут в worktree как в источнике истины.
 
 ```bash
 git worktree add .worktrees/task-42 -b task/42-checkout
@@ -47,24 +49,28 @@ git worktree add .worktrees/task-42 -b task/42-checkout
 ## PR
 
 - Заголовок — поведение, не файлы.
-- В описании: PBI/change, `openspec show <id> --diff`, что проверено, как
-  откатить.
-- ≤ 600 строк кода и тестов; evidence и сырые логи не считаются.
-  Больше — разбить или owner-approved исключение с причиной, сроком и
-  артефактом.
+- В описании: task id, Tier, PBI/change, `openspec show <id> --diff`,
+  ссылки на brief/report/evidence, что проверено, как откатить.
+- Doc change: правка host-файла или `No doc change: <причина>`;
+  drift-чек — `assets/review.md`.
+- < 400 строк; больше — только owner-approved исключение с причиной и
+  сроком.
 - Автор не ревьюит себя; ревьюер — другая роль/модель.
-- Ревью смотрит intent (AC, спека), не только диф.
+- Ревью смотрит intent (AC, спека), не только диф; читает durable-
+  артефакты, а не логи.
 - ≤ 3 блокирующих комментария; стиль — линтеру.
 
 ## Merge train
 
 1. PR + зелёные checks.
-2. Reviewer approved (не автор).
-3. Rebase на main.
-4. `verify` заново.
-5. Squash-merge.
-6. Следующий PR — только после зелёного main.
-7. Пакет: rebase всех → CI на пакете → мерж по одному; красный — бисекция.
+2. Reviewer approved (не автор); review-артефакт с task id и PR.
+3. Evidence: brief/report/evidence в task-папке; doc change или
+   `No doc change`.
+4. Rebase на main.
+5. `verify` заново.
+6. Squash-merge; trace/board/event обновлены.
+7. Следующий PR — только после зелёного main.
+8. Пакет: rebase всех → CI на пакете → мерж по одному; красный — бисекция.
 
 12 слотов и circuit breaker — `references/orchestrator.md`.
 
@@ -72,9 +78,9 @@ git worktree add .worktrees/task-42 -b task/42-checkout
 
 Источник — `docs/quality/dod.md`. Не дублировать здесь.
 
-Коротко: AC + e2e, тесты, typecheck/lint/build, security, a11y, perf,
-observability, docs, OpenSpec archive, rollback, preview, ревью не-автора,
-живая проверка владельца.
+Коротко: Tier, TDD/ATDD evidence, T2-артефакты по волне, AC + e2e, тесты,
+typecheck/lint/build, security, a11y, perf, observability, docs, OpenSpec
+archive, rollback, preview, ревью не-автора, живая проверка владельца.
 
 ## Безопасность
 
@@ -95,6 +101,17 @@ observability, docs, OpenSpec archive, rollback, preview, ревью не-авт
 
 ## Ревью-чеклист
 
+- [ ] Tier T0/T1/T2; T0 не требует TDD/ATDD.
+- [ ] T1/T2: ATDD happy/error и RED-evidence (тест падал без кода).
+- [ ] T2: threat model, contract/property, runbook/rollback; SLO/логи
+      обязательны.
+- [ ] T2: mutation/SAST/alert/RUM — по волне; field RUM — до публичного
+      запуска.
+- [ ] Исключение: owner/причина/срок/артефакт.
+- [ ] P3 debt owner/срок; P0/P1 postmortem.
+- [ ] Review-артефакт содержит task id и PR; brief/report/evidence
+      прочитаны, не логи.
+- [ ] Drift/doc/trace — по `assets/review.md`.
 - [ ] Соответствует AC и спеке.
 - [ ] Нет ослабления тестов/CI.
 - [ ] Нет секретов и PII в логах.
