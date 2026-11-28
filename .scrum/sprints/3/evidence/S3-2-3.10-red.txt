@@ -1,0 +1,40 @@
+RED: delivery-flow.spec.ts on pre-delivery-UI base 339f0c5 (#70)
+worktree: <red-worktree> (temporary), spec/helpers copied from PR A head
+
+$ pnpm --filter @localhand/web test:e2e e2e/delivery-flow.spec.ts
+exit code: 1
+
+$ playwright test e2e/delivery-flow.spec.ts
+
+Running 2 tests using 1 worker
+
+  ✘  1 [chromium] › e2e/delivery-flow.spec.ts:47:1 › buyer checks out to a PVZ, seller creates a shipment, webhook replay is idempotent (15.3s)
+  ✘  2 [chromium] › e2e/delivery-flow.spec.ts:237:1 › manual fallback keeps a quoted order and shows the track to buyer and seller (11.6s)
+
+
+  1) [chromium] › e2e/delivery-flow.spec.ts:47:1 › buyer checks out to a PVZ, seller creates a shipment, webhook replay is idempotent 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for getByRole('region', { name: 'Доставка' }).getByRole('button', { name: 'Рассчитать тарифы' })
+
+
+      112 |     const deliveryCard = sellerPage.getByRole("region", { name: "Доставка" });
+      113 |     await expect(deliveryCard.getByText("Ожидает отправки")).toBeVisible();
+    > 114 |     await deliveryCard.getByRole("button", { name: "Рассчитать тарифы" }).click();
+          |                                                                           ^
+      115 |     await expect(deliveryCard.getByRole("list", { name: "Доступные тарифы" })).toBeVisible();
+      116 |     await deliveryCard.getByRole("button", { name: "Создать отправление" }).click();
+      117 |     await expect(deliveryCard.getByText(/Отправление создано/).first()).toBeVisible({
+        at <red-worktree>/apps/web/e2e/delivery-flow.spec.ts:114:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/delivery-flow-buyer-checks-f463f-ebhook-replay-is-idempotent-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/delivery-flow-buyer-checks-f463f-ebhook-replay-is-idempotent-chromium/test-failed-2.png
+
+Failure reason: at 339f0c5 the seller order page has only the read-only DeliverySummaryCard;
+there is no "Рассчитать тарифы"/"Создать отправление" and no manual carrier/track form.
+This is the pre-code RED for the seller create/manual UI implemented by #71/#74.

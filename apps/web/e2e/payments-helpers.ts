@@ -23,35 +23,18 @@ export type PaymentsFixture = {
 };
 
 /**
- * Creates an order for the payments specs. When delivery is enabled on the
- * API, the helper fills in dimensions/shop origin and uses a real quote; on a
- * payments-only stack it falls back to the plain checkout.
+ * Creates an order for the payments specs. Physical checkout is
+ * delivery-aware since S3-2: the helper fills dimensions/shop origin and uses
+ * a real quote. A delivery-less stack fails loudly instead of silently
+ * switching to the old plain checkout.
  */
 export async function createOrder(
   request: APIRequestContext,
   catalog: CatalogFixture,
   buyer: ApiSession,
 ): Promise<number> {
-  const choice = await ensureCatalogDeliveryReady(request, catalog);
-  if (choice !== null) {
-    return createDeliveryOrder(request, catalog, buyer, choice);
-  }
-
-  const product = catalog.products[0];
-  if (!product) {
-    throw new Error("catalog fixture did not create a product");
-  }
-  const response = await request.post("/api/checkout", {
-    headers: { cookie: buyer.cookie },
-    data: { items: [{ productId: product.id }], clientCheckoutId: randomUUID() },
-  });
-  expect(response.status(), await response.text()).toBe(201);
-  const payload = (await response.json()) as { orders: Array<{ id: number }> };
-  const orderId = payload.orders[0]?.id;
-  if (!orderId) {
-    throw new Error("checkout did not return an order");
-  }
-  return orderId;
+  const destination = await ensureCatalogDeliveryReady(request, catalog);
+  return createDeliveryOrder(request, catalog, buyer, destination);
 }
 
 /** Connects the fake provider through the API for tests that only need state. */

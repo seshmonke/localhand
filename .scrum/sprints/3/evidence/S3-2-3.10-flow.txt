@@ -1,11 +1,11 @@
-$ pnpm --filter @localhand/web test:e2e e2e/delivery-flow.spec.ts
+$ pnpm --filter @localhand/web test:e2e e2e/delivery-flow.spec.ts   # PR A head
 exit code: 0
 
 $ playwright test e2e/delivery-flow.spec.ts
 
 Running 2 tests using 1 worker
 
-  ✓  1 [chromium] › e2e/delivery-flow.spec.ts:52:1 › buyer checks out to a PVZ, seller creates a shipment, webhook replay is idempotent (15.2s)
-  ✓  2 [chromium] › e2e/delivery-flow.spec.ts:226:1 › manual fallback keeps a quoted order and shows the track to buyer and seller (4.0s)
+  ✓  1 [chromium] › e2e/delivery-flow.spec.ts:47:1 › buyer checks out to a PVZ, seller creates a shipment, webhook replay is idempotent (14.4s)
+  ✓  2 [chromium] › e2e/delivery-flow.spec.ts:237:1 › manual fallback keeps a quoted order and shows the track to buyer and seller (3.4s)
 
-  2 passed (21.4s)
+  2 passed (20.4s)

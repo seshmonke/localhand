@@ -1,8 +1,6 @@
-bundle (web build, production):
-apps/web build: dist/assets/index-C48YOKWW.css                                   42.12 kB │ gzip:  11.29 kB
-apps/web build: dist/assets/index-DRAucp0J.js                                   612.74 kB │ gzip: 171.55 kB
+PR A changes browser tests only: no production files, so it does not change the bundle.
+Reference build on the A base (e934ced), not attributable to A:
+apps/web build: dist/assets/index-DOMfajIs.css                                   42.29 kB │ gzip:  11.30 kB
+apps/web build: dist/assets/index-BwusgA_5.js                                   613.39 kB │ gzip: 171.74 kB
 
-previous delivery UI baseline (S3-2-d2 verify):
-apps/web build: dist/assets/index-DucB8FZq.js                                   589.97 kB │ gzip: 166.61 kB
-
-delta vs S3-2-d2: ~+22.8 kB JS / +4.9 kB gzip; includes #71/#74 seller delivery UI, no new dependencies.
+Bundle size/regression is a PR B concern (axe/perf + legacy specs), reported there.

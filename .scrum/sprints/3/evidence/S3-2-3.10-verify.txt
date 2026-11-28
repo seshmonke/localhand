@@ -1,8 +1,6 @@
 $ pnpm verify   # typecheck + lint + format + public + test + build + openspec
 exit code: 0
 
-apps/web build: ✓ built in 977ms
-apps/web build: Done
 apps/api build: Done
 $ openspec validate --all --strict
 ✓ change/07-delivery

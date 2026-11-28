@@ -257,24 +257,31 @@ export async function waitForStablePage(page: Page): Promise<void> {
   await page.evaluate(() => document.fonts.ready);
 }
 
+const DELIVERY_502_MESSAGE =
+  "delivery API returned 502 delivery_unavailable: DELIVERY_PROVIDER is not configured or the provider is unavailable. " +
+  "Browser e2e needs a working delivery provider (DELIVERY_PROVIDER=fake, DELIVERY_ENV=test).";
+
 /**
- * First fake-provider city/PVZ pair. Returns null when delivery is disabled on
- * the API (502), so old specs can still run against a payments-only stack.
+ * Fake-provider city/PVZ pair. `cityOffset` picks a different city: the shop
+ * ships from one city and the buyer receives in another. A 502 is never a
+ * silent "delivery off": it fails with an explicit configuration/provider
+ * error, so a misconfigured stand cannot fall back to a delivery-less flow.
  */
 export async function findDeliveryPoint(
   request: APIRequestContext,
-): Promise<DeliveryPointChoice | null> {
+  cityOffset = 0,
+): Promise<DeliveryPointChoice> {
   const citiesResponse = await request.get("/api/delivery/cities?query=");
   if (citiesResponse.status() === 502) {
-    return null;
+    throw new Error(DELIVERY_502_MESSAGE);
   }
   expect(citiesResponse.status(), await citiesResponse.text()).toBe(200);
   const { cities } = (await citiesResponse.json()) as {
     cities: Array<{ code: number; name: string }>;
   };
-  const city = cities[0];
+  const city = cities[cityOffset];
   if (!city) {
-    throw new Error("delivery provider returned no cities");
+    throw new Error(`delivery provider returned no city at offset ${cityOffset}`);
   }
 
   const pointsResponse = await request.get(`/api/delivery/points?cityCode=${city.code}`);
@@ -295,16 +302,22 @@ export async function findDeliveryPoint(
   };
 }
 
-/** Fills in dimensions and the shop origin on a catalog created without them. */
+/** Shop origin in another city than the buyer destination. */
+export function findDeliveryOrigin(request: APIRequestContext): Promise<DeliveryPointChoice> {
+  return findDeliveryPoint(request, 1);
+}
+
+/**
+ * Fills in dimensions and the shop origin on a catalog created without them
+ * and returns the buyer destination (first city). Deliberately not nullable:
+ * a delivery-less stack fails loudly instead of silently skipping delivery.
+ */
 export async function ensureCatalogDeliveryReady(
   request: APIRequestContext,
   catalog: CatalogFixture,
-): Promise<DeliveryPointChoice | null> {
-  const choice = await findDeliveryPoint(request);
-  if (choice === null) {
-    return null;
-  }
-
+): Promise<DeliveryPointChoice> {
+  const destination = await findDeliveryPoint(request);
+  const origin = await findDeliveryOrigin(request);
   for (const product of catalog.products) {
     const response = await request.patch(`/api/seller/products/${product.id}`, {
       headers: { cookie: catalog.seller.cookie },
@@ -316,13 +329,13 @@ export async function ensureCatalogDeliveryReady(
   const shopResponse = await request.patch("/api/seller/shop", {
     headers: { cookie: catalog.seller.cookie },
     data: {
-      cdekCityCode: choice.cityCode,
-      cdekCityName: choice.cityName,
-      cdekShipmentPoint: choice.pointCode,
+      cdekCityCode: origin.cityCode,
+      cdekCityName: origin.cityName,
+      cdekShipmentPoint: origin.pointCode,
     },
   });
   expect(shopResponse.status(), await shopResponse.text()).toBe(200);
-  return choice;
+  return destination;
 }
 
 /** Creates a physical order through the real quote + checkout API. */
@@ -333,9 +346,6 @@ export async function createDeliveryOrder(
   choice?: DeliveryPointChoice,
 ): Promise<number> {
   const point = choice ?? (await findDeliveryPoint(request));
-  if (point === null) {
-    throw new Error("delivery is disabled on the API under test");
-  }
   const quoteResponse = await request.post("/api/delivery/quote", {
     data: {
       items: catalog.products.map((product) => ({ productId: product.id })),

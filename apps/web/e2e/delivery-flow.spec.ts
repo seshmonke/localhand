@@ -5,6 +5,7 @@ import {
   createPublishedCatalog,
   DEFAULT_DIMENSIONS,
   DEFAULT_RECIPIENT_NAME,
+  findDeliveryOrigin,
   findDeliveryPoint,
   loginViaApi,
   seedBrowserSession,
@@ -28,25 +29,17 @@ async function screenshot(page: Page, name: string): Promise<void> {
   await page.screenshot({ path: test.info().outputPath(name), animations: "disabled" });
 }
 
-async function preflight(request: APIRequestContext): Promise<DeliveryPointChoice> {
-  const choice = await findDeliveryPoint(request);
-  if (choice === null) {
-    throw new Error("delivery is disabled on the API under test (DELIVERY_PROVIDER is not set)");
-  }
-  return choice;
-}
-
 async function deliveryCatalog(
   request: APIRequestContext,
   name: string,
-  choice: DeliveryPointChoice,
+  origin: DeliveryPointChoice,
 ) {
   return createPublishedCatalog(request, [name], {
     dimensions: DEFAULT_DIMENSIONS,
     deliveryOrigin: {
-      cdekCityCode: choice.cityCode,
-      cdekCityName: choice.cityName,
-      cdekShipmentPoint: choice.pointCode,
+      cdekCityCode: origin.cityCode,
+      cdekCityName: origin.cityName,
+      cdekShipmentPoint: origin.pointCode,
     },
   });
 }
@@ -61,8 +54,10 @@ test("buyer checks out to a PVZ, seller creates a shipment, webhook replay is id
   );
   test.slow();
 
-  const choice = await preflight(request);
-  const catalog = await deliveryCatalog(request, "E2E Доставка", choice);
+  const destination = await findDeliveryPoint(request);
+  const origin = await findDeliveryOrigin(request);
+  expect(origin.cityCode).not.toBe(destination.cityCode);
+  const catalog = await deliveryCatalog(request, "E2E Доставка", origin);
   const buyer = await loginViaApi(request, uniquePhone());
   await connectPaymentsViaApi(request, catalog.seller);
   const buyerContext = await browser.newContext({
@@ -83,14 +78,17 @@ test("buyer checks out to a PVZ, seller creates a shipment, webhook replay is id
     const buyerPage = await buyerContext.newPage();
     await buyerPage.goto("/checkout");
     await expect(buyerPage.getByRole("heading", { name: "Проверьте заказ" })).toBeVisible();
-    await buyerPage.getByLabel("Город доставки").selectOption(String(choice.cityCode));
+    const citySelect = buyerPage.getByLabel("Город доставки");
+    await expect(citySelect.locator(`option[value="${destination.cityCode}"]`)).toHaveCount(1);
+    await citySelect.selectOption(String(destination.cityCode));
     const pointSelect = buyerPage.getByLabel("Пункт выдачи");
-    await expect(pointSelect.locator(`option[value="${choice.pointCode}"]`)).toHaveCount(1);
+    await expect(pointSelect.locator(`option[value="${destination.pointCode}"]`)).toHaveCount(1);
+    await expect(pointSelect).toBeEnabled();
     const quoteResponse = buyerPage.waitForResponse(
       (response) =>
         response.url().includes("/api/delivery/quote") && response.request().method() === "POST",
     );
-    await pointSelect.selectOption(choice.pointCode);
+    await pointSelect.selectOption(destination.pointCode);
     expect((await quoteResponse).status()).toBe(200);
     await buyerPage.getByLabel("Имя получателя").fill(DEFAULT_RECIPIENT_NAME);
     await expect(buyerPage.getByText("Срок", { exact: true })).toBeVisible();
@@ -126,10 +124,18 @@ test("buyer checks out to a PVZ, seller creates a shipment, webhook replay is id
     });
     expect(deliveryResponse.status(), await deliveryResponse.text()).toBe(200);
     const deliveryBody = (await deliveryResponse.json()) as {
-      delivery: Record<string, unknown> & { providerOrderId: string; status: string };
+      delivery: Record<string, unknown> & {
+        providerOrderId: string;
+        providerNumber: string | null;
+        status: string;
+      };
       events: Array<{ statusCode: string }>;
     };
     expect(deliveryBody.delivery.status).toBe("created");
+    const rawProviderIds = [
+      deliveryBody.delivery.providerOrderId,
+      deliveryBody.delivery.providerNumber,
+    ].filter((value): value is string => typeof value === "string" && value.length > 0);
     const webhook = {
       type: "ORDER_STATUS",
       uuid: deliveryBody.delivery.providerOrderId,
@@ -153,12 +159,14 @@ test("buyer checks out to a PVZ, seller creates a shipment, webhook replay is id
     ).toBeVisible();
     await sellerPage.reload();
     await expect(deliveryCard.getByText("Создан", { exact: true })).toBeVisible();
+    expect(rawProviderIds.length).toBeGreaterThan(0);
     for (const text of [
       await buyerPage.locator("body").innerText(),
       await sellerPage.locator("body").innerText(),
     ]) {
-      expect(text).not.toContain(`fake-${orderId}`);
-      expect(text).not.toContain(`order-${orderId}`);
+      for (const rawId of rawProviderIds) {
+        expect(text).not.toContain(rawId);
+      }
       expect(text).not.toMatch(/[0-9a-f]{64}/);
     }
 
@@ -232,8 +240,10 @@ test("manual fallback keeps a quoted order and shows the track to buyer and sell
 }) => {
   test.slow();
 
-  const choice = await preflight(request);
-  const catalog = await deliveryCatalog(request, "E2E Ручной трек", choice);
+  const destination = await findDeliveryPoint(request);
+  const origin = await findDeliveryOrigin(request);
+  expect(origin.cityCode).not.toBe(destination.cityCode);
+  const catalog = await deliveryCatalog(request, "E2E Ручной трек", origin);
   const buyer = await loginViaApi(request, uniquePhone());
   const orderId = await createPaidDeliveryOrder(request, catalog, buyer);
   const sellerContext = await browser.newContext({
@@ -285,6 +295,7 @@ test("manual fallback keeps a quoted order and shows the track to buyer and sell
       data: { tariffCode: "136" },
     });
     expect(createAfterManual.status()).toBe(409);
+    expect(await createAfterManual.json()).toEqual({ error: "delivery_already_exists" });
 
     const buyerPage = await buyerContext.newPage();
     await buyerPage.goto(`/orders/${orderId}`);
