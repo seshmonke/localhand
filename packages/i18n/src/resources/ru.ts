@@ -82,6 +82,110 @@ export const ru = {
   "checkout.quoteError.pointInvalid": "Этот пункт выдачи не подходит для выбранного города.",
   "checkout.quoteError.generic":
     "Не удалось рассчитать доставку. Выберите другой пункт выдачи или попробуйте снова.",
+  "order.back": "К заказам",
+  "order.eyebrow": "Заказ",
+  "order.title": "Заказ №{{id}}",
+  "order.created": "Создан {{date}}",
+  "order.items.title": "Состав",
+  "order.shopPrefix": "Магазин:",
+  "order.items.label": "Состав заказа №{{id}}",
+  "order.total": "Итого",
+  "order.payment.title": "Оплата",
+  "order.payment.loading": "Проверяем оплату…",
+  "order.payment.readError": "Не удалось загрузить статус оплаты.",
+  "order.payment.paid": "Заказ оплачен.",
+  "order.payment.creating":
+    "Платёж создаётся. Обновите страницу через минуту — статус появится здесь.",
+  "order.payment.notStarted.title": "Оплата ещё не начата",
+  "order.payment.notStarted.description":
+    "Оплатите заказ: деньги получит продавец напрямую. Если приём платежей не подключён, мы сообщим об этом.",
+  "order.payment.confirmFailed.title": "Не удалось подтвердить оплату",
+  "order.payment.confirmFailed.description":
+    "Исход создания платежа неизвестен. Повторите оплату: тот же ключ не создаст второе списание.",
+  "order.payment.amount": "Сумма",
+  "order.payment.returned": "Вы вернулись с оплаты. Проверяем платёж…",
+  "order.payment.checking": "Проверяем оплату. Статус обновится автоматически.",
+  "order.payment.continue": "Продолжить оплату",
+  "order.payment.recheck": "Проверить ещё раз",
+  "order.payment.rechecking": "Проверяем…",
+  "order.payment.manualReview.description":
+    "Поддержка разберётся с платежом. Не оплачивайте заказ повторно — новый платёж заблокирован до решения.",
+  "order.payment.paidAt": "Оплачен {{date}}",
+  "order.payment.retryHint": "Можно попробовать снова или связаться с продавцом.",
+  "order.payment.unavailable.title": "Оплата не подключена",
+  "order.payment.unavailable.description":
+    "Продавец не подключил приём платежей. Свяжитесь с продавцом или попробуйте позже.",
+  "order.payment.pay": "Оплатить",
+  "order.payment.payAgain": "Оплатить снова",
+  "order.payment.retryPay": "Повторить оплату",
+  "order.payment.creatingPayment": "Создаём платёж…",
+  "order.payment.error.inProgress": "Оплата уже создана. Обновите статус.",
+  "order.payment.error.requiresReview": "Платёж уже на проверке. Повторная оплата недоступна.",
+  "order.payment.error.alreadyPaid": "Заказ уже оплачен.",
+  "order.payment.error.zeroAmount": "Сумма заказа нулевая — онлайн-оплата недоступна.",
+  "order.payment.error.invalidTransition": "Заказ уже нельзя оплатить онлайн.",
+  "order.payment.error.rateLimited":
+    "Слишком много попыток оплаты. Подождите минуту и попробуйте снова.",
+  "order.payment.error.generic": "Не удалось начать оплату. Попробуйте ещё раз.",
+  "order.payment.error.network":
+    "Не удалось начать оплату. Проверьте соединение и попробуйте снова.",
+  "order.contacts.title": "Контакты",
+  "order.contacts.phone": "Телефон",
+  "order.contacts.comment": "Комментарий",
+  "order.contacts.noComment": "Без комментария",
+  "order.next.title": "Что дальше",
+  "order.next.description":
+    "Продавец увидит заказ и свяжется с вами по телефону. Оплата проходит на странице ЮKassa, деньги поступают напрямую продавцу.",
+  "order.all": "Все заказы",
+  "order.notFound.title": "Заказ не найден",
+  "order.notFound.description":
+    "Проверьте ссылку. Заказ виден только тому номеру, с которого его оформили.",
+  "order.notFound.action": "К списку заказов",
+  "order.loading.title": "Загружаем заказ",
+  "order.loading.description": "Секунду — проверяем детали.",
+  "order.error.title": "Заказ не загрузился",
+  "order.error.description": "Проверьте соединение и попробуйте снова.",
+  "payment.status.pending": "Ожидает оплаты",
+  "payment.status.succeeded": "Оплачен",
+  "payment.status.canceled": "Оплата отменена",
+  "payment.status.failed": "Оплата не прошла",
+  "payment.status.manualReview": "Требует проверки",
+  "payment.read.loading": "Загружаем статус оплаты…",
+  "payment.read.error": "Статус оплаты недоступен",
+  "payment.error.providerUnavailable": "Платёжный сервис недоступен. Попробуйте ещё раз.",
+  "admin.payment.title": "Приём платежей",
+  "admin.payment.loading": "Загружаем приём платежей…",
+  "admin.payment.loadError": "Не удалось загрузить приём платежей.",
+  "admin.payment.notConnected": "Не подключено",
+  "admin.payment.connectDescription":
+    "Подключите ЮKassa, чтобы покупатели могли оплачивать заказы. Деньги поступают напрямую на ваш счёт.",
+  "admin.payment.connect": "Подключить ЮKassa",
+  "admin.payment.connecting": "Подключаем…",
+  "admin.payment.statusLabel": "Статус",
+  "admin.payment.status.active": "Подключено",
+  "admin.payment.status.error": "Ошибка подключения",
+  "admin.payment.status.disabled": "Отключено",
+  "admin.payment.testShop": "Тестовый магазин",
+  "admin.payment.account": "Счёт ЮKassa",
+  "admin.payment.activeHint":
+    "Покупатели видят кнопку оплаты в заказе. Чтобы отключить приём, сначала завершите активные платежи.",
+  "admin.payment.disconnect": "Отключить приём платежей",
+  "admin.payment.disconnecting": "Отключаем…",
+  "admin.payment.errorHint":
+    "Подключение не завершилось. Повторите попытку или проверьте доступ в кабинете ЮKassa.",
+  "admin.payment.reconnect": "Повторить подключение",
+  "admin.payment.disabledHint":
+    "Приём платежей отключён. Покупатели не смогут оплатить новые заказы.",
+  "admin.payment.reconnectShort": "Подключить снова",
+  "admin.payment.error.connect": "Не удалось начать подключение. Попробуйте ещё раз.",
+  "admin.payment.error.disconnectReview":
+    "Нельзя отключить: платёж на ручной проверке. Обратитесь в поддержку — она разберётся с платежом.",
+  "admin.payment.error.disconnectPending":
+    "Нельзя отключить: есть незавершённые платежи. Дождитесь их завершения и попробуйте снова.",
+  "admin.payment.error.connectNetwork":
+    "Не удалось начать подключение. Проверьте соединение и попробуйте снова.",
+  "admin.payment.error.disconnectNetwork":
+    "Не удалось отключить приём платежей. Проверьте соединение и попробуйте снова.",
 } as const;
 
 export type TranslationKey = keyof typeof ru;

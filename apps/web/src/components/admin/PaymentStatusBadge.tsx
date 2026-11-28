@@ -1,13 +1,23 @@
 import type { PaymentStatus } from "@localhand/shared";
 import { cn } from "@localhand/ui";
+import { useTranslation } from "react-i18next";
 
-export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
-  pending: "Ожидает оплаты",
-  succeeded: "Оплачен",
-  canceled: "Оплата отменена",
-  failed: "Оплата не прошла",
-  manual_review: "Требует проверки",
-};
+type Translate = ReturnType<typeof useTranslation>["t"];
+
+function paymentStatusLabel(status: PaymentStatus, t: Translate): string {
+  switch (status) {
+    case "pending":
+      return t("payment.status.pending");
+    case "succeeded":
+      return t("payment.status.succeeded");
+    case "canceled":
+      return t("payment.status.canceled");
+    case "failed":
+      return t("payment.status.failed");
+    case "manual_review":
+      return t("payment.status.manualReview");
+  }
+}
 
 const statusDot: Record<PaymentStatus, string> = {
   pending: "bg-accent-orange",
@@ -28,6 +38,7 @@ export function PaymentStatusBadge({
   status: PaymentStatus;
   className?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <span
       className={cn(
@@ -36,7 +47,7 @@ export function PaymentStatusBadge({
       )}
     >
       <span aria-hidden="true" className={cn("size-2.5", statusDot[status])} />
-      {PAYMENT_STATUS_LABELS[status]}
+      {paymentStatusLabel(status, t)}
     </span>
   );
 }
