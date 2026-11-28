@@ -102,6 +102,11 @@ describe("AdminOrdersPage", () => {
     renderApp(["/admin/orders"]);
 
     expect(await screen.findByRole("heading", { level: 1, name: "Заказы" })).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        "Заказы покупателей вашего магазина, новые первыми. Статус оплаты показан отдельно от статуса заказа.",
+      ),
+    ).toBeInTheDocument();
 
     const nav = screen.getByRole("navigation", { name: "Разделы админки" });
     expect(within(nav).getByRole("link", { name: "Заказы" })).toHaveAttribute(
@@ -110,7 +115,18 @@ describe("AdminOrdersPage", () => {
     );
 
     const table = await screen.findByRole("table", { name: "Заказы вашего магазина" });
-    expect(within(table).getByRole("columnheader", { name: "Покупатель" })).toBeInTheDocument();
+    for (const header of [
+      "№",
+      "Дата",
+      "Покупатель",
+      "Состав",
+      "Сумма",
+      "Статус",
+      "Оплата",
+      "Действия",
+    ]) {
+      expect(within(table).getByRole("columnheader", { name: header })).toBeInTheDocument();
+    }
     expect(within(table).getByRole("rowheader", { name: "42" })).toBeInTheDocument();
     expect(within(table).getByRole("rowheader", { name: "43" })).toBeInTheDocument();
     expect(within(table).getAllByText(formatOrderPhone(firstBuyerPhone)).length).toBeGreaterThan(0);
@@ -181,6 +197,9 @@ describe("AdminOrdersPage", () => {
     expect(
       await screen.findByRole("heading", { level: 2, name: "Сначала создайте магазин" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText("Заказы приходят в магазин. Настройте магазин, чтобы принимать заказы."),
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Настроить магазин" })).toHaveAttribute(
       "href",
       "/admin/shop",
@@ -202,7 +221,56 @@ describe("AdminOrdersPage", () => {
     expect(
       await screen.findByRole("heading", { level: 2, name: "Заказов пока нет" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Когда покупатель оформит заказ, он появится здесь с составом и контактами.",
+      ),
+    ).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it("shows the shop loading state while the seller shop is fetched", async () => {
+    let resolveShop!: (value: { body: { shop: typeof publishedShop } }) => void;
+    const shopResponse = new Promise<{ body: { shop: typeof publishedShop } }>((resolve) => {
+      resolveShop = resolve;
+    });
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": () => shopResponse,
+      "GET /seller/orders": { body: { orders: [] } },
+    });
+
+    renderApp(["/admin/orders"]);
+
+    expect(await screen.findByText("Загружаем магазин")).toBeInTheDocument();
+    expect(screen.getByText("Секунду — проверяем кабинет.")).toBeInTheDocument();
+
+    resolveShop({ body: { shop: publishedShop } });
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Заказов пока нет" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the orders loading state after the shop is known", async () => {
+    let resolveOrders!: (value: { body: { orders: OrderSummary[] } }) => void;
+    const ordersResponse = new Promise<{ body: { orders: OrderSummary[] } }>((resolve) => {
+      resolveOrders = resolve;
+    });
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "GET /seller/orders": () => ordersResponse,
+    });
+
+    renderApp(["/admin/orders"]);
+
+    expect(await screen.findByText("Загружаем заказы")).toBeInTheDocument();
+    expect(screen.getByText("Секунду — собираем заказы магазина.")).toBeInTheDocument();
+
+    resolveOrders({ body: { orders: [] } });
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Заказов пока нет" }),
+    ).toBeInTheDocument();
   });
 
   it("shows a retryable error state", async () => {
@@ -217,6 +285,7 @@ describe("AdminOrdersPage", () => {
     expect(
       await screen.findByRole("heading", { level: 2, name: "Заказы не загрузились" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Проверьте соединение и попробуйте снова.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Повторить" })).toBeInTheDocument();
   });
 
@@ -295,6 +364,28 @@ describe("AdminOrderPage", () => {
 
     expect(await screen.findByRole("heading", { level: 1, name: "Заказ №42" })).toBeInTheDocument();
     expect(await screen.findByText("Новый")).toBeInTheDocument();
+    const pageHeader = screen
+      .getByRole("heading", { level: 1, name: "Заказ №42" })
+      .closest("header");
+    expect(pageHeader).not.toBeNull();
+    expect(within(pageHeader as HTMLElement).getByText("Кабинет продавца")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Состав" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Покупатель" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Что дальше" })).toBeInTheDocument();
+    expect(screen.getByText("Магазин:")).toBeInTheDocument();
+    expect(screen.getByText("Итого")).toBeInTheDocument();
+    expect(screen.getByText("Телефон")).toBeInTheDocument();
+    expect(screen.getByText("Комментарий")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Состав заказа №42" })).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Свяжитесь с покупателем по телефону и согласуйте передачу товара. Статус оплаты показан отдельно от статуса заказа.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Все заказы" })).toHaveAttribute(
+      "href",
+      "/admin/orders",
+    );
     expect(screen.getByText(`Создан ${formatOrderDate(createdAt)}`)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: formatOrderPhone(firstBuyerPhone) })).toHaveAttribute(
       "href",
@@ -335,12 +426,40 @@ describe("AdminOrderPage", () => {
     const paymentSection = screen.getByRole("region", { name: "Оплата" });
     expect(await within(paymentSection).findByText("Требует проверки")).toBeInTheDocument();
     expect(
+      within(paymentSection).getByText(
+        "Платёж на ручной проверке. Поддержка разберётся с платежом. Заказ не станет «Оплачен» автоматически.",
+      ),
+    ).toBeInTheDocument();
+    expect(
       within(paymentSection).getByText(/поддержка разберётся|ручной проверке/i),
     ).toBeInTheDocument();
     expect(within(paymentSection).queryByText(/runbook|ops/i)).not.toBeInTheDocument();
     expect(
       within(paymentSection).queryByRole("button", { name: /Оплатить/ }),
     ).not.toBeInTheDocument();
+  });
+
+  it("shows a retryable payment read error on the seller order", async () => {
+    let fail = true;
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/orders/42": { body: { order: firstOrder } },
+      "GET /seller/orders/42/payment": () =>
+        fail ? { status: 500, body: { error: "internal_error" } } : { body: { payment: null } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/orders/42"]);
+
+    const paymentSection = await screen.findByRole("region", { name: "Оплата" });
+    expect(
+      await within(paymentSection).findByText("Статус оплаты недоступен."),
+    ).toBeInTheDocument();
+
+    fail = false;
+    await browser.click(within(paymentSection).getByRole("button", { name: "Повторить" }));
+
+    expect(await within(paymentSection).findByText(/Платёж не начат/)).toBeInTheDocument();
   });
 
   it("shows the paid order status when no payment row exists", async () => {
@@ -354,6 +473,9 @@ describe("AdminOrderPage", () => {
 
     const paymentSection = await screen.findByRole("region", { name: "Оплата" });
     expect(await within(paymentSection).findByText("Оплачен")).toBeInTheDocument();
+    expect(
+      within(paymentSection).getByText("Платёж не найден. Статус взят из заказа."),
+    ).toBeInTheDocument();
     expect(within(paymentSection).queryByText(/Платёж не начат/)).not.toBeInTheDocument();
   });
 
@@ -385,6 +507,9 @@ describe("AdminOrderPage", () => {
 
     expect(
       await screen.findByRole("heading", { level: 2, name: "Заказ не найден" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Заказ оформлен в другом магазине или ссылка устарела."),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "К списку заказов" })).toHaveAttribute(
       "href",

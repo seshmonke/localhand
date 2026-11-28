@@ -8,6 +8,7 @@ import {
 } from "@localhand/shared";
 import { Button, buttonVariants } from "@localhand/ui";
 import { useQueries } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
 import { Announcer } from "../components/FormField.js";
 import { DeliveryListLine } from "../components/orders/DeliverySummaryCard.js";
@@ -51,11 +52,11 @@ export function OrderStatusBadge({ status }: { status: OrderStatus }) {
 export function OrderItemsList({
   items,
   links = true,
-  label = "Состав заказа",
+  label,
 }: {
   items: OrderItem[];
   links?: boolean;
-  label?: string;
+  label: string;
 }) {
   return (
     <ul aria-label={label} className="mt-2 flex flex-col gap-2">
@@ -88,6 +89,7 @@ type OrdersLocationState = {
 };
 
 export function OrdersPage() {
+  const { t } = useTranslation();
   const ordersQuery = useMyOrdersQuery();
   const location = useLocation();
   const state = location.state as OrdersLocationState | null;
@@ -99,18 +101,18 @@ export function OrdersPage() {
       <Stack gap={6}>
         <PageHeader
           eyebrow="Local Hand"
-          title="Мои заказы"
-          description="Заказы, оформленные с вашего номера. Продавец свяжется с вами по телефону."
+          title={t("orders.title")}
+          description={t("orders.description")}
         />
 
-        <Announcer message={checkoutDone ? "Заказ оформлен и передан продавцу." : ""} />
+        <Announcer message={checkoutDone ? t("orders.announcer.checkoutDone") : ""} />
 
         <div>
           {ordersQuery.isPending ? (
             <ScreenState
               kind="loading"
-              title="Загружаем заказы"
-              description="Секунду — собираем ваши заказы."
+              title={t("orders.loading.title")}
+              description={t("orders.loading.description")}
             />
           ) : null}
 
@@ -121,11 +123,11 @@ export function OrdersPage() {
           {ordersQuery.isSuccess && orders.length === 0 ? (
             <ScreenState
               kind="empty"
-              title="Заказов пока нет"
-              description="Добавьте товары в корзину и оформите первый заказ — он появится здесь."
+              title={t("orders.empty.title")}
+              description={t("orders.empty.description")}
               action={
                 <Link to="/" className={buttonVariants({ variant: "outline" })}>
-                  Перейти в каталог
+                  {t("orders.empty.action")}
                 </Link>
               }
             />
@@ -176,6 +178,7 @@ function OrdersList({ orders }: { orders: OrderSummary[] }) {
 }
 
 function OrderCard({ order, read }: { order: OrderSummary; read: PaymentRead }) {
+  const { t } = useTranslation();
   const headingId = `order-card-${order.id}`;
 
   return (
@@ -186,7 +189,7 @@ function OrderCard({ order, read }: { order: OrderSummary; read: PaymentRead }) 
       <header className="flex flex-wrap items-center justify-between gap-4 border-b-[3px] border-ink p-4">
         <div className="min-w-0">
           <h2 id={headingId} className="font-display text-xl uppercase">
-            Заказ №{order.id}
+            {t("order.title", { id: order.id })}
           </h2>
           <time
             dateTime={order.createdAt}
@@ -201,7 +204,7 @@ function OrderCard({ order, read }: { order: OrderSummary; read: PaymentRead }) 
       <div className="grid gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div className="min-w-0">
           <p className="text-sm leading-relaxed">
-            Магазин:{" "}
+            {t("order.shopPrefix")}{" "}
             <Link
               to={`/shops/${order.shop.slug}`}
               className="break-words font-semibold underline-offset-4 hover:underline"
@@ -209,21 +212,24 @@ function OrderCard({ order, read }: { order: OrderSummary; read: PaymentRead }) 
               {order.shop.name}
             </Link>
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="Статус оплаты">
+          <div
+            className="mt-3 flex flex-wrap items-center gap-2"
+            aria-label={t("orders.payment.label")}
+          >
             <span className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
-              Оплата
+              {t("order.payment.title")}
             </span>
             <PaymentReadStatus
               orderStatus={order.status}
               read={read}
-              emptyLabel="Оплата не начата"
+              emptyLabel={t("orders.payment.empty")}
             />
           </div>
           {order.delivery !== null ? <DeliveryListLine delivery={order.delivery} /> : null}
           <p className="mt-2 font-mono text-[10px] uppercase tracking-wide text-ink/60">
             {pluralizeItems(order.items.length)}
           </p>
-          <OrderItemsList items={order.items} label={`Состав заказа №${order.id}`} />
+          <OrderItemsList items={order.items} label={t("order.items.label", { id: order.id })} />
         </div>
 
         <div className="flex flex-col items-start gap-4 sm:items-end">
@@ -234,7 +240,7 @@ function OrderCard({ order, read }: { order: OrderSummary; read: PaymentRead }) 
             to={`/orders/${order.id}`}
             className={buttonVariants({ variant: "outline", size: "md" })}
           >
-            Подробнее
+            {t("orders.details")}
           </Link>
         </div>
       </div>
@@ -243,6 +249,7 @@ function OrderCard({ order, read }: { order: OrderSummary; read: PaymentRead }) 
 }
 
 function OrdersLoadError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
+  const { t } = useTranslation();
   if (error instanceof ApiError && error.status === 401) {
     return <SessionExpiredState next="/orders" />;
   }
@@ -250,9 +257,9 @@ function OrdersLoadError({ error, onRetry }: { error: unknown; onRetry: () => vo
   return (
     <ScreenState
       kind="error"
-      title="Заказы не загрузились"
-      description="Проверьте соединение и попробуйте снова."
-      action={<Button onClick={onRetry}>Повторить</Button>}
+      title={t("orders.error.title")}
+      description={t("order.error.description")}
+      action={<Button onClick={onRetry}>{t("common.retry")}</Button>}
     />
   );
 }

@@ -96,8 +96,16 @@ describe("OrdersPage", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Мои заказы" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Заказы, оформленные с вашего номера. Продавец свяжется с вами по телефону.",
+      ),
+    ).toBeInTheDocument();
 
     expect(await screen.findByRole("heading", { level: 2, name: "Заказ №42" })).toBeInTheDocument();
+    expect(document.querySelector('[aria-label="Статус оплаты"]')).not.toBeNull();
+    expect(screen.getByText(/Магазин:/)).toBeInTheDocument();
+    expect(screen.getByText("Оплата")).toBeInTheDocument();
     expect(screen.getByText("Новый")).toBeInTheDocument();
     expect(await screen.findByText("Оплата не начата")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Винтаж на районе" })).toHaveAttribute(
@@ -209,6 +217,27 @@ describe("OrdersPage", () => {
     expect(within(card).queryByText("Оплата не начата")).not.toBeInTheDocument();
   });
 
+  it("shows the loading state while buyer orders are fetched", async () => {
+    let resolveOrders!: (value: { body: { orders: OrderSummary[] } }) => void;
+    const ordersResponse = new Promise<{ body: { orders: OrderSummary[] } }>((resolve) => {
+      resolveOrders = resolve;
+    });
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /orders/mine": () => ordersResponse,
+    });
+
+    renderApp(["/orders"]);
+
+    expect(await screen.findByText("Загружаем заказы")).toBeInTheDocument();
+    expect(screen.getByText("Секунду — собираем ваши заказы.")).toBeInTheDocument();
+
+    resolveOrders({ body: { orders: [] } });
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Заказов пока нет" }),
+    ).toBeInTheDocument();
+  });
+
   it("shows an empty state with a catalog link", async () => {
     installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
@@ -219,6 +248,9 @@ describe("OrdersPage", () => {
 
     expect(
       await screen.findByRole("heading", { level: 2, name: "Заказов пока нет" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Добавьте товары в корзину и оформите первый заказ — он появится здесь."),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Перейти в каталог" })).toHaveAttribute("href", "/");
   });
@@ -234,6 +266,7 @@ describe("OrdersPage", () => {
     expect(
       await screen.findByRole("heading", { level: 2, name: "Заказы не загрузились" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Проверьте соединение и попробуйте снова.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Повторить" })).toBeInTheDocument();
   });
 
