@@ -74,3 +74,7 @@
   `07-delivery` заархивированы; review ACCEPT. S3-3 order lifecycle и
   S3-4 hardening перенесены в Sprint 4; live YooKassa/CDEK, юрпакет,
   production deploy/SMS — owner-гейты.
+
+- 28.11.2026. Тексты: программа Text review (voice/anti-slop, W1–W3,
+  PR-гейт) добавлена в `docs/tasks/text-review.md`; W1 — Sprint 4,
+  W2/W3 — Sprint 4–5. Sprint 3.

@@ -44,6 +44,8 @@ ACCEPT, change `02-seller-onboarding` заархивирован.
 [Quality wave 1](quality-wave-1.md) — программа Q1.1–Q1.6:
 TDD/ATDD/contract/mutation/threat model/SLO; Q1.1/Q1.2 — Sprint 4,
 Q1.3–Q1.6 — Sprint 5–6.
+[Text review](text-review.md) — W1–W3: все пользовательские и публичные
+тексты, voice/anti-slop, PR-гейт; W1 — Sprint 4, W2/W3 — Sprint 4–5.
 
 ## Milestones
 
