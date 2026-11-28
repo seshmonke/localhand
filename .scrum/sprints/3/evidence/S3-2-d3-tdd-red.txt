@@ -1,0 +1,99 @@
+
+ RUN  v5.1.2 ./apps/api
+
+ ❯ src/delivery/delivery.reconcile.db.test.ts (0 test)
+ ❯ src/app.test.ts (5 tests | 2 failed) 102ms
+   ❯ delivery reconcile wiring (3)
+     × runs a reconcile pass and one subscription check when enabled 30ms
+     × logs a safe code when the webhook subscription conflicts 1ms
+ ❯ src/delivery/cdek-provider.test.ts (10 tests | 1 failed) 56ms
+   ❯ CDEK delivery provider (10)
+     × throws a conflict and does not create a third webhook when two foreign subscriptions exist 9ms
+ ❯ src/delivery/delivery.reconcile.scheduler.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/delivery/delivery.reconcile.db.test.ts [ src/delivery/delivery.reconcile.db.test.ts ]
+Error: Cannot find module './delivery.reconcile.js' imported from ./apps/api/src/delivery/delivery.reconcile.db.test.ts
+ ❯ src/delivery/delivery.reconcile.db.test.ts:4:1
+      2| import type { DeliveryStatus } from "@localhand/shared";
+      3| import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } f…
+      4| import { runDeliveryReconcile, type DeliveryReconcileLogger } from "./…
+       | ^
+      5| import type { DeliveryProvider, ShipmentState } from "./provider.js";
+      6|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/delivery/delivery.reconcile.scheduler.test.ts [ src/delivery/delivery.reconcile.scheduler.test.ts ]
+Error: Cannot find module './delivery.reconcile.scheduler.js' imported from ./apps/api/src/delivery/delivery.reconcile.scheduler.test.ts
+ ❯ src/delivery/delivery.reconcile.scheduler.test.ts:3:1
+      1| import type { FastifyInstance } from "fastify";
+      2| import { describe, expect, it, vi } from "vitest";
+      3| import { startDeliveryReconcile } from "./delivery.reconcile.scheduler…
+       | ^
+      4| import { createFakeDeliveryProvider } from "./fake-provider.js";
+      5|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app.test.ts > delivery reconcile wiring > runs a reconcile pass and one subscription check when enabled
+AssertionError: expected "ensureOrderStatusWebhook" to be called 1 times, but got 0 times
+ ❯ src/app.test.ts:55:20
+     53|
+     54|     await wired.ready();
+     55|     expect(ensure).toHaveBeenCalledTimes(1);
+       |                    ^
+     56|     // runNow executes without DATABASE_URL and reports the safe code …
+     57|     // of crashing the process.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/app.test.ts > delivery reconcile wiring > logs a safe code when the webhook subscription conflicts
+TypeError: DeliveryWebhookConflictError is not a constructor
+ ❯ src/app.test.ts:66:7
+     64|     const provider = createFakeDeliveryProvider();
+     65|     vi.spyOn(provider, "ensureOrderStatusWebhook").mockRejectedValueOn…
+     66|       new DeliveryWebhookConflictError(),
+       |       ^
+     67|     );
+     68|     const { lines, logger } = logLines();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/delivery/cdek-provider.test.ts > CDEK delivery provider > throws a conflict and does not create a third webhook when two foreign subscriptions exist
+AssertionError: promise resolved "undefined" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+undefined
+
+ ❯ src/delivery/cdek-provider.test.ts:307:54
+    305|
+    306|     const provider = createCdekDeliveryProvider(CONFIG, { fetch: fetch…
+    307|     await expect(provider.ensureOrderStatusWebhook()).rejects.toBeInst…
+       |                                                      ^
+    308|       DeliveryWebhookConflictError,
+    309|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  4 failed (4)
+      Tests  3 failed | 12 passed (15)
+   Start at  12:26:23
+   Duration  1.75s (import 65%, transform 20%, tests 13%, worker 1%)
+
+    Isolate  4 workers spawned · ~103ms startup each (spawn + environment, per file)
+             at least ~309ms faster with isolate: false — reuses workers across files instead of one per file
+
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in ./apps/api

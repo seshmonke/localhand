@@ -1,0 +1,11 @@
+
+ RUN  v5.1.2 ./apps/api
+
+
+ Test Files  4 passed (4)
+      Tests  24 passed (24)
+   Start at  12:31:44
+   Duration  4.28s (tests 48%, import 47%, transform 4%, worker 1%)
+
+    Isolate  4 workers spawned · ~185ms startup each (spawn + environment, per file)
+             at least ~555ms faster with isolate: false — reuses workers across files instead of one per file
