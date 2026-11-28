@@ -1,0 +1,12 @@
+$ pnpm check:i18n
+$ node scripts/check-i18n.mjs
+i18n scan: 125 production files, 88 test files; 263 keys, 258 production usages
+cyrillic: 424 baselined findings / 466 occurrences; 35 allowlisted occurrences
+i18n check passed (baseline: 424 findings)
+
+$ baseline per file
+MarketplacePage.tsx 64 findings 64 occurrences
+ShopPage.tsx 12 findings 12 occurrences
+ProductPage.tsx 11 findings 12 occurrences
+NotFoundPage.tsx 3 findings 3 occurrences
+sum 90 baseline 424 deadKeys 0

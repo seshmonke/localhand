@@ -1,0 +1,2550 @@
+{
+  "version": 1,
+  "cyrillic": [
+    {
+      "file": "apps/api/src/auth/sms/smsru.provider.ts",
+      "kind": "template",
+      "text": "Local Hand: код подтверждения ${…}. Никому не сообщайте.",
+      "count": 1
+    },
+    {
+      "file": "apps/api/src/delivery/shipment.service.ts",
+      "kind": "string",
+      "text": "Не указан",
+      "count": 3
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "jsx-attribute",
+      "text": "Меню",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "jsx-attribute",
+      "text": "Поиск",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "jsx-text",
+      "text": "Как это работает",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "jsx-text",
+      "text": "Каталог",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "jsx-text",
+      "text": "Не удалось проверить сессию",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "jsx-text",
+      "text": "Открыть магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "jsx-text",
+      "text": "Ошибка",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "jsx-text",
+      "text": "Повторить",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "jsx-text",
+      "text": "Проверьте соединение и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "jsx-text",
+      "text": "Проверяем сессию…",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "jsx-text",
+      "text": "Продавцам",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "jsx-text",
+      "text": "Секонд-хенд · Локальные бренды · Цифровое",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "string",
+      "text": "Корзина",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/App.tsx",
+      "kind": "template",
+      "text": "Корзина, ${…}",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/cart/AddToCartButton.tsx",
+      "kind": "string",
+      "text": "В корзине",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/cart/AddToCartButton.tsx",
+      "kind": "string",
+      "text": "В корзину",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/cart/AddToCartButton.tsx",
+      "kind": "template",
+      "text": "В корзине не может быть больше ${…} товаров.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/cart/AddToCartButton.tsx",
+      "kind": "template",
+      "text": "В корзине: ${…}",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/cart/AddToCartButton.tsx",
+      "kind": "template",
+      "text": "В корзину: ${…}",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/cart/CartContext.tsx",
+      "kind": "string",
+      "text": "Корзина очищена.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/cart/CartContext.tsx",
+      "kind": "template",
+      "text": "Корзина заполнена: не больше ${…} товаров.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/cart/CartContext.tsx",
+      "kind": "template",
+      "text": "Товар «${…}» добавлен в корзину.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/cart/CartContext.tsx",
+      "kind": "template",
+      "text": "Товар «${…}» удалён из корзины.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/cart/CartContext.tsx",
+      "kind": "template",
+      "text": "Товар «${…}» уже в корзине.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminGuard.tsx",
+      "kind": "jsx-text",
+      "text": "Не удалось проверить сессию",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminGuard.tsx",
+      "kind": "jsx-text",
+      "text": "Ошибка",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminGuard.tsx",
+      "kind": "jsx-text",
+      "text": "Повторить",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminGuard.tsx",
+      "kind": "jsx-text",
+      "text": "Проверьте соединение и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminGuard.tsx",
+      "kind": "jsx-text",
+      "text": "Проверяем сессию…",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminShell.tsx",
+      "kind": "jsx-attribute",
+      "text": "Разделы админки",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminShell.tsx",
+      "kind": "jsx-text",
+      "text": "Вы вошли как",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminShell.tsx",
+      "kind": "jsx-text",
+      "text": "Заказы",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminShell.tsx",
+      "kind": "jsx-text",
+      "text": "К содержимому",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminShell.tsx",
+      "kind": "jsx-text",
+      "text": "Кабинет продавца",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminShell.tsx",
+      "kind": "jsx-text",
+      "text": "Магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminShell.tsx",
+      "kind": "jsx-text",
+      "text": "Не удалось выйти. Попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminShell.tsx",
+      "kind": "jsx-text",
+      "text": "Товары",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminShell.tsx",
+      "kind": "string",
+      "text": "Выйти",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/AdminShell.tsx",
+      "kind": "string",
+      "text": "Выходим…",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductCards.tsx",
+      "kind": "jsx-text",
+      "text": "Редактировать",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "jsx-attribute",
+      "text": "Название",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "jsx-attribute",
+      "text": "Описание",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "jsx-attribute",
+      "text": "Ссылка на изображение",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "jsx-attribute",
+      "text": "Цена, ₽",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "jsx-text",
+      "text": "Габариты для доставки",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "jsx-text",
+      "text": "Необязательно. Без веса и габаритов покупатель не сможет оформить доставку СДЭК.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "string",
+      "text": "В рублях, например 1234,50. Ноль разрешён: товар будет бесплатным.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "string",
+      "text": "Вес, г",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "string",
+      "text": "Высота, см",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "string",
+      "text": "Длина, см",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "string",
+      "text": "Необязательно. Прямая ссылка на изображение; загрузка файлов появится позже.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "string",
+      "text": "Ширина, см",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "template",
+      "text": "Необязательно. До ${…} символов.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductFormFields.tsx",
+      "kind": "template",
+      "text": "Так товар увидят покупатели. До ${…} символов.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductStatusBadge.tsx",
+      "kind": "string",
+      "text": "Опубликован",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductStatusBadge.tsx",
+      "kind": "string",
+      "text": "Скрыт",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductStatusBadge.tsx",
+      "kind": "string",
+      "text": "Товар виден покупателям на витрине магазина.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductStatusBadge.tsx",
+      "kind": "string",
+      "text": "Товар скрыт с витрины, но остаётся в кабинете.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductStatusBadge.tsx",
+      "kind": "string",
+      "text": "Черновик",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductStatusBadge.tsx",
+      "kind": "string",
+      "text": "Черновик виден только вам. Опубликуйте товар, чтобы он появился на витрине.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductTable.tsx",
+      "kind": "jsx-text",
+      "text": "Действия",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductTable.tsx",
+      "kind": "jsx-text",
+      "text": "Изменить",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductTable.tsx",
+      "kind": "jsx-text",
+      "text": "Название",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductTable.tsx",
+      "kind": "jsx-text",
+      "text": "Статус",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductTable.tsx",
+      "kind": "jsx-text",
+      "text": "Товары вашего магазина",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/ProductTable.tsx",
+      "kind": "jsx-text",
+      "text": "Цена",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-errors.ts",
+      "kind": "string",
+      "text": "Магазин ещё не опубликован. Опубликуйте магазин, чтобы публиковать товары.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-errors.ts",
+      "kind": "string",
+      "text": "Магазин не опубликован. Опубликуйте магазин, чтобы публиковать товары.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-errors.ts",
+      "kind": "string",
+      "text": "Не удалось сохранить товар. Проверьте соединение и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-errors.ts",
+      "kind": "string",
+      "text": "Проверьте поля: название, цену, описание и ссылку на изображение.",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/components/admin/product-errors.ts",
+      "kind": "string",
+      "text": "Сейчас товар нельзя изменить. Обновите страницу и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-errors.ts",
+      "kind": "string",
+      "text": "Сервис временно недоступен. Попробуйте ещё раз.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-errors.ts",
+      "kind": "string",
+      "text": "Сессия истекла. Войдите снова.",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/components/admin/product-errors.ts",
+      "kind": "string",
+      "text": "Сначала создайте магазин: товары хранятся внутри магазина.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-errors.ts",
+      "kind": "string",
+      "text": "Товар не найден. Возможно, он был удалён.",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "string",
+      "text": "Введите название товара.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "string",
+      "text": "Введите цену.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "string",
+      "text": "Вес",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "string",
+      "text": "Высота",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "string",
+      "text": "Длина",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "string",
+      "text": "Слишком большая цена.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "string",
+      "text": "Цена — число в рублях, до двух знаков после запятой, без минуса.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "string",
+      "text": "Цена — число в рублях.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "string",
+      "text": "Ширина",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "string",
+      "text": "г",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "string",
+      "text": "см",
+      "count": 3
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "template",
+      "text": "${…} — целое число от 1 до ${…} ${…}.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "template",
+      "text": "Название — до ${…} символов.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "template",
+      "text": "Описание — до ${…} символов.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/components/admin/product-form.ts",
+      "kind": "template",
+      "text": "Ссылка на изображение — до ${…} символов.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Возможно, карточку удалили или ссылка устарела. Откройте список товаров магазина.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Загружаем магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Загружаем товар",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Кабинет продавца",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Карточка сохранится черновиком. Опубликовать её можно, когда магазин опубликован.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Новый товар",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Проверьте соединение и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Редактирование товара",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Секунду — ищем карточку в вашем магазине.",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Секунду — проверяем, готов ли кабинет к товарам.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Сначала создайте магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Товар не найден",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Товары не загрузились",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Товары хранятся внутри магазина. Настройте магазин, а затем добавьте товар.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Данные товара",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Заполните название, цену и описание.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Изменений нет",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "К списку",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "К списку товаров",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "К товарам",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "На витрине",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Название и цена обязательны. Описание и ссылка на изображение — по желанию.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Настроить магазин",
+      "count": 3
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Открыть настройки магазина",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Отмена",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Отправятся только поля, которые вы изменили.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Повторить",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Публикация доступна после публикации магазина.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Сначала сохраните изменения.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Сохраните карточку: она станет черновиком.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Сохраняются только изменённые поля. Публикация и скрытие — отдельными действиями.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Статус",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "jsx-text",
+      "text": "Что дальше",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Вернуть в черновик",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Возвращаем…",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Изменений нет.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Изменения сохранены.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Опубликовать",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Опубликуйте магазин, затем товар.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Опубликуйте товар — он появится на витрине.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Публикуем…",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Скрываем…",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Скрыть",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Создать товар",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Создаём…",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Сохранить изменения",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Сохраняем…",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Товар виден покупателям в вашем магазине.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Товар возвращён в черновик.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Товар не показывается покупателям, пока не опубликованы и магазин, и товар.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Товар опубликован.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductFormPage.tsx",
+      "kind": "string",
+      "text": "Товар скрыт.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Загружаем товары",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Кабинет продавца",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Проверьте соединение и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Секунду — проверяем магазин и карточки.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Секунду — собираем карточки магазина.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Сначала создайте магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Создайте первую карточку. Она сохранится черновиком — опубликовать её можно после публикации магазина.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Товаров пока нет",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Товары",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Товары не загрузились",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Товары публикуются внутри магазина. Настройте магазин, а затем добавьте первую карточку.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-text",
+      "text": "Настроить магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-text",
+      "text": "Новый товар",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "jsx-text",
+      "text": "Повторить",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "string",
+      "text": "Все товары магазина: черновики, опубликованные и скрытые. Создайте карточку и управляйте публикацией.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "string",
+      "text": "Товары живут внутри магазина. Сначала настройте магазин — потом добавляйте товары.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminProductsPage.tsx",
+      "kind": "template",
+      "text": "Товар «${…}» создан как черновик.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Ваш магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Введите минимум два символа, затем выберите город из списка.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Город сдачи",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Город, из которого отправляете посылки.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Загружаем магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Кабинет продавца",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Магазин не загрузился",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Название",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Необязательно. До 2000 символов.",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Описание",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "ПВЗ, куда вы сдаёте посылки.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Поиск города",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Проверьте соединение и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Пункт выдачи",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Секунду — проверяем данные кабинета.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Так магазин увидят покупатели. До 80 символов.",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Slug закрепляется за магазином в публичной ссылке",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Город и ПВЗ, откуда вы сдаёте посылки СДЭК. От них зависит цена доставки для покупателей.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Город сдачи не настроен. Покупатели не смогут оформить доставку, пока вы не выберете город и ПВЗ.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Город сдачи:",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Добавьте описание: что продаёте и чем отличаетесь.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Доставка",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Заполните название и slug — это адрес витрины.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Как это работает",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Название и адрес витрины можно изменить позже.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Настройки магазина",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Опубликуйте магазин — и он появится на витрине.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Открыть витрину",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Платформа заблокировала магазин: изменения недоступны.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Повторить",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Повторить загрузку ПВЗ",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Повторить поиск городов",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Публичная ссылка",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Смена slug ломает старые ссылки на витрину.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Сначала сохраните изменения.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Создать магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Сохранённый ПВЗ",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Ссылка станет публичной после публикации магазина.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Статус",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Убрать город сдачи",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "больше не доступен. Выберите другой пункт выдачи.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "В этом городе нет ПВЗ. Выберите другой город.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Введите минимум два символа, затем выберите город из списка.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Введите название магазина.",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Выберите ПВЗ",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Выберите ПВЗ: без него заказы не смогут оформить доставку.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Выберите город",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Город, из которого отправляете посылки.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Города не найдены. Уточните запрос.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Доставка сохранена.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Заблокирован",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Загружаем ПВЗ…",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Изменения сохранены.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Ищем города…",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Латиница в нижнем регистре, цифры и дефис, 3–40 символов; без дефиса по краям.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Магазин виден покупателям и доступен по публичной ссылке.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Магазин заблокирован платформой: правки и публикация недоступны.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Магазин не виден покупателям. Опубликуйте его, чтобы открыть витрину.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Магазин не найден. Обновите страницу.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Магазин опубликован.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Магазин снят с публикации.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Магазин создан. Проверьте настройки и опубликуйте его.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Название — до 80 символов.",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Начните вводить город: минимум два символа.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Не удалось сохранить доставку. Проверьте соединение и повторите попытку.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Не удалось сохранить изменения. Попробуйте ещё раз.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Не удалось сохранить изменения. Проверьте соединение и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Необязательно. До 2000 символов.",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Обновите данные, опубликуйте магазин и проверьте, как он выглядит на витрине.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Один магазин на продавца. Заполните три поля, чтобы открыть витрину.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Описание — до 2000 символов.",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Опубликован",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Опубликовать",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "ПВЗ",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Платформа заблокировала магазин: правки и публикация недоступны.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Проверьте город и ПВЗ: сервер не принял данные доставки.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Проверьте поля: название до 80 символов, slug 3–40, описание до 2000.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Публикуем…",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Сервис доставки временно недоступен. Повторите попытку.",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Сессия истекла. Войдите снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Слишком много запросов. Подождите минуту и повторите.",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Слишком много запросов. Подождите минуту.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Снимаем…",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Снять с публикации",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Создать магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Создаём…",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Сохранить доставку",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Сохранить изменения",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Сохраняем…",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Так магазин увидят покупатели. До 80 символов.",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "У вас уже есть магазин. Обновите страницу, чтобы открыть настройки.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Черновик",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "Этот slug уже занят. Выберите другой.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "string",
+      "text": "города",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "template",
+      "text": "Адрес витрины: /shops/${…}. ${…}",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "template",
+      "text": "Адрес витрины: /shops/your-shop. ${…}",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "template",
+      "text": "Доступно ПВЗ: ${…}.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "template",
+      "text": "Найдено городов: ${…}. Выберите город в списке.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/AdminShopPage.tsx",
+      "kind": "template",
+      "text": "Не удалось загрузить ${…}. Проверьте соединение и повторите попытку.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Добавьте товары из каталога — корзина сохранится на этом устройстве.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Загружаем корзину",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Корзина",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Корзина пуста",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Товары восстанавливаются с этого устройства.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-text",
+      "text": "Войдите по телефону и проверьте состав — цену и наличие подтвердит продавец.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-text",
+      "text": "Итог",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-text",
+      "text": "Итого",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-text",
+      "text": "Итого:",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-text",
+      "text": "Корзина",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-text",
+      "text": "Оформить",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-text",
+      "text": "Очистить корзину",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-text",
+      "text": "Перейти в каталог",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-text",
+      "text": "Товаров",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "jsx-text",
+      "text": "Удалить",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/CartPage.tsx",
+      "kind": "template",
+      "text": "Удалить «${…}» из корзины",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentCompletePage.tsx",
+      "kind": "jsx-text",
+      "text": "Вернуться к заказам",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentCompletePage.tsx",
+      "kind": "jsx-text",
+      "text": "Вернуться к заказу",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentCompletePage.tsx",
+      "kind": "jsx-text",
+      "text": "К заказам",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentCompletePage.tsx",
+      "kind": "jsx-text",
+      "text": "Платёж проведён, но статус не обновился. Вернитесь в заказ и нажмите «Проверить ещё раз».",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentCompletePage.tsx",
+      "kind": "jsx-text",
+      "text": "Платёж №",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentCompletePage.tsx",
+      "kind": "jsx-text",
+      "text": "Реальные деньги не списываются. Нажмите кнопку, чтобы завершить тестовый платёж и отправить вебхук — заказ перейдёт в «Оплачен».",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentCompletePage.tsx",
+      "kind": "jsx-text",
+      "text": "Тестовая оплата",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentCompletePage.tsx",
+      "kind": "jsx-text",
+      "text": "Тестовый режим (fake)",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentCompletePage.tsx",
+      "kind": "string",
+      "text": "Не удалось завершить тестовую оплату. Попробуйте ещё раз.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentCompletePage.tsx",
+      "kind": "string",
+      "text": "Оплатить тестовым платежом",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentCompletePage.tsx",
+      "kind": "string",
+      "text": "Платёж уже завершён или недоступен.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentCompletePage.tsx",
+      "kind": "string",
+      "text": "Проводим платёж…",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentCompletePage.tsx",
+      "kind": "string",
+      "text": "Сессия истекла. Войдите снова и откройте заказ.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentsConnectPage.tsx",
+      "kind": "jsx-text",
+      "text": "Вернуться в кабинет",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentsConnectPage.tsx",
+      "kind": "jsx-text",
+      "text": "Нет параметра state. Начните подключение заново из кабинета.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentsConnectPage.tsx",
+      "kind": "jsx-text",
+      "text": "Подключение ЮKassa",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentsConnectPage.tsx",
+      "kind": "jsx-text",
+      "text": "Тестовый режим (fake)",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentsConnectPage.tsx",
+      "kind": "jsx-text",
+      "text": "Это страница тестового провайдера. Реальная ЮKassa здесь не участвует, ключи и деньги не используются.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentsConnectPage.tsx",
+      "kind": "string",
+      "text": "Не удалось подключить приём платежей. Вернитесь в кабинет и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentsConnectPage.tsx",
+      "kind": "string",
+      "text": "Не удалось подключить приём платежей. Проверьте соединение и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentsConnectPage.tsx",
+      "kind": "string",
+      "text": "Подключаем…",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentsConnectPage.tsx",
+      "kind": "string",
+      "text": "Подтвердить подключение",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentsConnectPage.tsx",
+      "kind": "string",
+      "text": "Сессия истекла. Войдите снова, чтобы подключить приём платежей.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/DevPaymentsConnectPage.tsx",
+      "kind": "string",
+      "text": "Ссылка устарела — начните подключение заново из кабинета.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Код из сообщения",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Телефон",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Шесть цифр, действуют 5 минут.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-text",
+      "text": "В каталог",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-text",
+      "text": "Вход",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-text",
+      "text": "Дев-режим",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-text",
+      "text": "Изменить номер",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-text",
+      "text": "Код действует 5 минут. Введите его на следующем шаге.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-text",
+      "text": "Код из SMS:",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-text",
+      "text": "Код отправлен на",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-text",
+      "text": "Один вход для покупателей и продавцов. Введите номер телефона — пришлём код, пароль не нужен.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-text",
+      "text": "Один магазин на продавца: имя, адрес и описание.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-text",
+      "text": "Публикация — в один клик, снять с витрины можно в любой момент.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-text",
+      "text": "Свой магазин в общей витрине",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "jsx-text",
+      "text": "Товары появятся в следующем обновлении кабинета.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Введите российский мобильный номер: 10 цифр после +7.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Введите шесть цифр из сообщения.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Войти",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Код неверный или истёк. Запросите новый код.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Код состоит из шести цифр.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Не удалось отправить код. Проверьте соединение и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Не удалось проверить код. Проверьте соединение и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Отправить код ещё раз",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Отправляем…",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Получить код",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Проверьте номер телефона — нужен российский мобильный.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Проверяем…",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Российский мобильный: 10 цифр после +7. Пароль не нужен.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Сервис временно недоступен. Попробуйте ещё раз.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Слишком много запросов. Подождите минуту и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/LoginPage.tsx",
+      "kind": "string",
+      "text": "Шесть цифр, действуют 5 минут.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Каталог не загрузился",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-attribute",
+      "text": "На этой странице товаров нет",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Название товара или магазина",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Проверьте соединение и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Страницы каталога",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Local Hand даёт продавцу свой магазин и общую витрину, а покупателю — один вход к винтажу, локальным дизайнерам и цифровым авторам.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Local Hand приведёт покупателей и покажет заказы в одной админке.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Без комиссии с продаж.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Вещи",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Вещи, которые стоит найти",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Все",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Все товары",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Города РФ",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Дальше",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Как это работает",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Каталог",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Категории",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Магазины",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Маркетплейс нового типа",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "На первую страницу",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Назад",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Найдено товаров:",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Найти",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Общая витрина",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Общая витрина.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Открыть демо-магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Открыть магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Повторить",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Подключите ЮKassa, загрузите товары и получите ссылку на магазин.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Поиск по каталогу",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Продавцам",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Сбросить поиск",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Свой магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Свой магазин.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Секонд-хенд и локальные бренды в одном месте",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Скоро: стать продавцом",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Смотреть каталог",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Сортировка",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Страница",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Товары",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Физические",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "Цифровые",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "из",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "историей",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "jsx-text",
+      "text": "с",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Аксессуары",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Винтаж",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Дом",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Каталог маркетплейса: поиск по названию, сортировка и страницы с товарами.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Купите у продавца",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Локальные бренды",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Найдите вещь",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Ничего не найдено",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Оплата на сайте, деньги уходят продавцу. Заказ и доставка видны в кабинете.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Первые товары появятся здесь, когда продавцы опубликуют магазины.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Пока пусто",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Получите заказ",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "СДЭК или мгновенная ссылка для цифрового товара. Статус — в личном кабинете.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Сначала дешёвые",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Сначала дорогие",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Сначала новые",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "string",
+      "text": "Цифровое",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "template",
+      "text": "Всего найдено товаров: ${…}. Вернитесь на первую страницу.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/MarketplacePage.tsx",
+      "kind": "template",
+      "text": "По запросу «${…}» нет опубликованных товаров. Попробуйте другое название.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/NotFoundPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Страница не найдена",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/NotFoundPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Такой страницы нет. Вернитесь в каталог и начните оттуда.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/NotFoundPage.tsx",
+      "kind": "jsx-text",
+      "text": "В каталог",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ProductPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Ссылка на товар выглядит некорректной.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ProductPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Товар не найден",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ProductPage.tsx",
+      "kind": "jsx-text",
+      "text": "В магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ProductPage.tsx",
+      "kind": "jsx-text",
+      "text": "Вернуться в каталог",
+      "count": 2
+    },
+    {
+      "file": "apps/web/src/pages/ProductPage.tsx",
+      "kind": "jsx-text",
+      "text": "Оплата и доставка появятся в следующем change.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ProductPage.tsx",
+      "kind": "jsx-text",
+      "text": "Повторить",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ProductPage.tsx",
+      "kind": "jsx-text",
+      "text": "Товар",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ProductPage.tsx",
+      "kind": "string",
+      "text": "Возможно, товар снят с публикации или ссылка устарела.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ProductPage.tsx",
+      "kind": "string",
+      "text": "Проверьте соединение и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ProductPage.tsx",
+      "kind": "string",
+      "text": "Товар не загрузился",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ProductPage.tsx",
+      "kind": "string",
+      "text": "Товар не найден",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "В магазине пока нет товаров",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Магазин",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ShopPage.tsx",
+      "kind": "jsx-attribute",
+      "text": "Продавец ещё не опубликовал ни одной вещи.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "В каталог",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Вернуться в каталог",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Повторить",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Смотреть другие магазины",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ShopPage.tsx",
+      "kind": "jsx-text",
+      "text": "Товары магазина",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ShopPage.tsx",
+      "kind": "string",
+      "text": "Возможно, магазин ещё не опубликован или ссылка устарела.",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ShopPage.tsx",
+      "kind": "string",
+      "text": "Магазин не загрузился",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ShopPage.tsx",
+      "kind": "string",
+      "text": "Магазин не найден",
+      "count": 1
+    },
+    {
+      "file": "apps/web/src/pages/ShopPage.tsx",
+      "kind": "string",
+      "text": "Проверьте соединение и попробуйте снова.",
+      "count": 1
+    },
+    {
+      "file": "packages/shared/src/contracts/order.ts",
+      "kind": "string",
+      "text": "Новый",
+      "count": 1
+    },
+    {
+      "file": "packages/shared/src/contracts/order.ts",
+      "kind": "string",
+      "text": "Ожидает оплаты",
+      "count": 1
+    },
+    {
+      "file": "packages/shared/src/contracts/order.ts",
+      "kind": "string",
+      "text": "Оплачен",
+      "count": 1
+    }
+  ],
+  "deadKeys": []
+}

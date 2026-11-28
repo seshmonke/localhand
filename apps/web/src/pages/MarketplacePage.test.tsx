@@ -44,6 +44,48 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe("MarketplacePage storefront copy", () => {
+  it("renders the hero, categories, steps and seller sections", async () => {
+    installFetchMock({
+      "GET /catalog/products": {
+        body: { products: [], page: 1, pageSize: 12, total: 0, hasMore: false },
+      },
+    });
+
+    renderApp(["/"]);
+
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: "Секонд-хенд и локальные бренды в одном месте",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Маркетплейс нового типа")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        (_, element) => element?.tagName === "P" && element.textContent === "Вещисисторией",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Категории" })).toBeInTheDocument();
+    expect(screen.getByText("Винтаж")).toBeInTheDocument();
+    expect(screen.getByText("Локальные бренды")).toBeInTheDocument();
+    expect(screen.getByText("Цифровое")).toBeInTheDocument();
+    expect(screen.getByText("Дом")).toBeInTheDocument();
+    expect(screen.getByText("Аксессуары")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Как это работает" })).toBeInTheDocument();
+    expect(screen.getByText("Найдите вещь")).toBeInTheDocument();
+    expect(screen.getByText("Купите у продавца")).toBeInTheDocument();
+    expect(screen.getByText("Получите заказ")).toBeInTheDocument();
+    expect(screen.getByText("Свой магазин.")).toBeInTheDocument();
+    expect(screen.getByText("Общая витрина.")).toBeInTheDocument();
+    expect(screen.getByText("Без комиссии с продаж.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Открыть демо-магазин" })).toHaveAttribute(
+      "href",
+      "/shops/local-hand-demo",
+    );
+  });
+});
+
 describe("MarketplacePage catalog discovery", () => {
   it("restores search, sort and page from a shareable URL", async () => {
     const fetchMock = installFetchMock({

@@ -1,6 +1,7 @@
 import { formatRubles, kopecks } from "@localhand/shared";
 import { Button, buttonVariants } from "@localhand/ui";
 import { ArrowLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
 import { AddToCartButton } from "../cart/AddToCartButton.js";
 import { cartItemFromProduct } from "../cart/cart-item.js";
@@ -12,6 +13,7 @@ import { useProductQuery } from "../lib/queries.js";
 const tones = ["bg-accent-red", "bg-accent-orange", "bg-accent-green", "bg-ink"];
 
 export function ProductPage() {
+  const { t } = useTranslation();
   const { id: idParam = "" } = useParams();
   const id = Number(idParam);
   const product = useProductQuery(id);
@@ -21,11 +23,11 @@ export function ProductPage() {
       <PageShell className="py-10 sm:py-12">
         <ScreenState
           kind="empty"
-          title="Товар не найден"
-          description="Ссылка на товар выглядит некорректной."
+          title={t("product.notFound.title")}
+          description={t("product.invalidLink")}
           action={
             <Link to="/" className={buttonVariants({ variant: "outline" })}>
-              Вернуться в каталог
+              {t("common.backToCatalog")}
             </Link>
           }
         />
@@ -58,19 +60,15 @@ export function ProductPage() {
       <PageShell className="py-10 sm:py-12">
         <ScreenState
           kind={notFound ? "empty" : "error"}
-          title={notFound ? "Товар не найден" : "Товар не загрузился"}
-          description={
-            notFound
-              ? "Возможно, товар снят с публикации или ссылка устарела."
-              : "Проверьте соединение и попробуйте снова."
-          }
+          title={notFound ? t("product.notFound.title") : t("product.error.title")}
+          description={notFound ? t("product.notFound.description") : t("common.connectionError")}
           action={
             notFound ? (
               <Link to="/" className={buttonVariants({ variant: "outline" })}>
-                Вернуться в каталог
+                {t("common.backToCatalog")}
               </Link>
             ) : (
-              <Button onClick={() => void product.refetch()}>Повторить</Button>
+              <Button onClick={() => void product.refetch()}>{t("common.retry")}</Button>
             )
           }
         />
@@ -105,7 +103,9 @@ export function ProductPage() {
         </GridColumn>
 
         <GridColumn span={6}>
-          <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red">Товар</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red">
+            {t("product.eyebrow")}
+          </p>
           <h1 className="mt-4 font-display text-4xl uppercase leading-none sm:text-5xl">
             {item.name}
           </h1>
@@ -126,12 +126,12 @@ export function ProductPage() {
               to={`/shops/${item.shop.slug}`}
               className={buttonVariants({ variant: "outline", size: "lg" })}
             >
-              В магазин
+              {t("product.toShop")}
             </Link>
           </div>
 
           <p className="mt-4 font-mono text-[10px] uppercase tracking-wide">
-            Оплата и доставка появятся в следующем change.
+            {t("product.deliveryNote")}
           </p>
         </GridColumn>
       </Grid>
