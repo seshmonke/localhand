@@ -110,8 +110,15 @@
 
 - **WHEN** продавец создаёт отправление с оплаченным `tariffCode`
 - **THEN** система вызывает CDEK с `number=order-{id}` и
-  `shipment_point`, сохраняет provider order id/номер, ставит delivery
-  `created`, а `202` не считает успешным заказом
+  `shipment_point`, сохраняет provider order id/номер и ставит delivery
+  `created`
+
+#### Scenario: Локальный ответ на создание
+
+- **WHEN** CDEK принимает `POST /v2/orders` асинхронно и отвечает `202`
+- **THEN** API обрабатывает `202` внутри, сохраняет provider id/номер и
+  отвечает продавцу `201` со snapshot; `202` — ответ провайдера, а не
+  статус локального API
 
 #### Scenario: Другой тариф
 
@@ -133,6 +140,13 @@
   `order_deliveries`/ПВЗ получателя
 - **THEN** CDEK create возвращает 409 `delivery_snapshot_missing`;
   доступен только manual carrier/track
+
+#### Scenario: Чтение старого заказа без snapshot
+
+- **WHEN** продавец запрашивает `GET /seller/orders/:id/delivery` для
+  paid-заказа без `order_deliveries`
+- **THEN** система возвращает 404 и не раскрывает чужую/несуществующую
+  доставку; manual carrier/track остаётся доступен через PATCH
 
 #### Scenario: Повтор
 
@@ -206,6 +220,30 @@
   `/delivery/cdek/webhook`; при наличии двух чужих подписок не создаёт
   третью и пишет ops-ошибку
 
+#### Scenario: Повторный старт и один инстанс
+
+- **WHEN** API стартует повторно и подписка `ORDER_STATUS` на тот же URL
+  уже существует
+- **THEN** система не создаёт вторую подписку; v1 работает с одним
+  API-процессом, распределённой блокировки подписки нет
+
+#### Scenario: Общая тестовая учётная запись
+
+- **WHEN** API запускается с общей тестовой учётной записью CDEK, у
+  которой уже четыре подписки
+- **THEN** `ensureOrderStatusWebhook` не изменяет и не удаляет их; при
+  совпадении с текущим URL — no-op, иначе пишет
+  `delivery_webhook_subscription_failed reason=conflict`; для проверки
+  вебхука используется отдельный тестовый аккаунт
+
+#### Scenario: История событий продавцу
+
+- **WHEN** продавец запрашивает `GET /seller/orders/:id/delivery`
+- **THEN** ответ `{delivery, events}` содержит не более 50 событий в
+  порядке `occurred_at DESC, id DESC`, только `statusCode`,
+  `statusName` и `occurredAt`; `payloadHash`, raw payload и чужие ПДн
+  не возвращаются
+
 #### Scenario: Потерянный вебхук
 
 - **WHEN** delivery остаётся `created`/`in_transit` > 2 минут
@@ -215,8 +253,9 @@
 #### Scenario: Нет отправления
 
 - **WHEN** delivery остаётся `quoted` без отправления
-- **THEN** статус не меняется автоматически; продавец видит «требует
-  отправки», через 24 ч — безопасный лог/бейдж
+- **THEN** статус не меняется автоматически; UI показывает «Ожидает
+  отправки», система не переводит delivery в `failed`; создание
+  отправления — отдельное действие продавца (см. сценарии выше)
 
 #### Scenario: Неизвестный статус
 

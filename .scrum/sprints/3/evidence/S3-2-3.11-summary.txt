@@ -1,0 +1,40 @@
+# S3-2-3.11 summary: docs/spec/ADR/runbooks before archive
+
+Status: review fixes done for 3.11; change `07-delivery` not archived.
+No merge.
+
+Branch: task/S3-2-docs-archive-prep, base main @ b6a4f71.
+Files: ADR 0005; runbooks delivery-cdek-webhook/reconcile/manual-track;
+delivery-rollback updated; delivery + seller-shop spec deltas; design;
+tasks 3.11; threat model D14-D16; shared event cap; service events limit;
+web RED evidence.
+
+Review fixes (P2/P3):
+- Shared CDEK test account: 4 subscriptions, never touch; conflict only
+  if no match with current URL; webhook tests need a separate account.
+- Rollback: no `pnpm db:migrate` check; psql/API verification before
+  deleting the drizzle row; API smoke on staging pre-delivery SHA.
+- Threat model: actual test files and lines; manual after terminal failure
+  is planned 3.9 only; reconcile logs/orders logs for PII; status mapping
+  in status.test.ts/reconcile.
+- 24h log/badge removed from spec, marked backlog in ADR/design.
+- UI/spec label unified to «Ожидает отправки»; seller action separate.
+- `ShipmentError` dead `delivery_already_created` removed; service imports
+  `SELLER_DELIVERY_EVENTS_MAX` instead of a duplicate 50.
+- Reconcile interval is a code constant, not env.
+- Manual track split seller/ops; seller has no CDEK token.
+- Legacy GET 404 scenario; Alert/RUM aligned with methodologies.md.
+- ADR: test host allows localhost for `DELIVERY_ENV=test`.
+
+Checks:
+- Contract RED: 18 tests, 1 failed (51 events accepted), exit=1.
+- Contract GREEN: 18/18, exit=0.
+- Web RED (D4a reproduction on base 066b29b + D4a tests): 6 failed,
+  exit=1.
+- `openspec validate --all --strict`: 9 passed, 0 failed, exit=0.
+- `pnpm verify`: shared 161, web 220, api 375, build ok, exit=0.
+- `check:public`: 579 tracked, no secrets/PII, exit=0.
+
+Tasks: 3.11 [x]; 3.9/3.10/4.1 [ ].
+Blockers: 3.9 branch not merged; 3.10 browser e2e; owner live/CDEK
+contract. Archive 4.1 waits for them.

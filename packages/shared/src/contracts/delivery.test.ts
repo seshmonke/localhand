@@ -12,6 +12,7 @@ import {
   DeliverySnapshotSchema,
   DeliveryStatusSchema,
   DeliveryTariffListResponseSchema,
+  SELLER_DELIVERY_EVENTS_MAX,
   SellerDeliveryResponseSchema,
 } from "./delivery.js";
 
@@ -311,6 +312,28 @@ describe("SellerDeliveryResponseSchema", () => {
       SellerDeliveryResponseSchema.safeParse({
         delivery: sellerSnapshot,
         events: [{ statusCode: "CREATED" }],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("caps the event timeline at 50 entries", () => {
+    const events = (count: number) =>
+      Array.from({ length: count }, (_, index) => ({
+        ...deliveryEvent,
+        statusCode: `EVT-${index + 1}`,
+      }));
+
+    expect(SELLER_DELIVERY_EVENTS_MAX).toBe(50);
+    expect(
+      SellerDeliveryResponseSchema.safeParse({
+        delivery: sellerSnapshot,
+        events: events(SELLER_DELIVERY_EVENTS_MAX),
+      }).success,
+    ).toBe(true);
+    expect(
+      SellerDeliveryResponseSchema.safeParse({
+        delivery: sellerSnapshot,
+        events: events(SELLER_DELIVERY_EVENTS_MAX + 1),
       }).success,
     ).toBe(false);
   });

@@ -1,0 +1,28 @@
+# Verify evidence: S3-2-3.11 ADR/runbooks/specs/contract cap
+# date: 2026-11-28; base: b6a4f71; branch: task/S3-2-docs-archive-prep
+# review fixes: shared CDEK account subscriptions, rollback check,
+# actual test files, alert/RUM, 24h backlog, seller/ops split,
+# service dead code, shared event cap, pre-delivery staging smoke.
+
+$ DATABASE_URL_TEST=postgres://localhand:localhand@localhost:5433/localhand_s2_test \
+  JWT_SECRET=… OTP_SECRET=… pnpm verify
+
+$ pnpm typecheck && pnpm lint && pnpm format:check && pnpm check:public &&
+  pnpm test && pnpm build && pnpm openspec:validate
+
+typecheck: shared/ui/web/api done
+$ oxlint . → clean
+$ prettier --check . → All matched files use Prettier code style
+Public repo check: 579 tracked files, no secrets/PII patterns found
+
+packages/shared test:  Test Files  12 passed (12), Tests 161 passed (161)
+apps/web test:         Test Files  25 passed (25), Tests 220 passed (220)
+apps/api test:         Test Files  41 passed (41), Tests 375 passed (375)
+build: shared/ui/web/api done
+openspec validate --all --strict:
+  ✓ change/07-delivery
+  ✓ spec/cart, catalog-discovery, checkout-orders, payments,
+    phone-auth, product-management, seller-shop, storefront
+  Totals: 9 passed, 0 failed (9 items)
+
+exit=0
