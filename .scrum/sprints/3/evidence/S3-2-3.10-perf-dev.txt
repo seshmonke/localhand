@@ -1,7 +1,6 @@
-$ pnpm --filter @localhand/web test:e2e e2e/perf.spec.ts   # dev 5173, info-only
+$ pnpm test:e2e   # dev 5173, perf info-only inside the full B run
 exit code: 0
 
-[lab-lcp-over-budget] /: lab p75 4124 ms >= 2500 ms
-[lab-lcp-over-budget] /checkout: lab p75 4000 ms >= 2500 ms
-[lab-lcp-over-budget] /orders/132: lab p75 4000 ms >= 2500 ms
-  1 passed (1.2m)
+[lab-lcp-over-budget] /: lab p75 3416 ms >= 2500 ms
+[lab-lcp-over-budget] /checkout: lab p75 3776 ms >= 2500 ms
+[lab-lcp-over-budget] /orders/239: lab p75 3904 ms >= 2500 ms
