@@ -69,7 +69,7 @@ merge. Не выдавать локальный прогон за CI.
 ## Предусловия
 
 1. `pnpm dev` — web на `http://localhost:5173`, API на `:3000` с
-   миграцией `0003`.
+   миграцией `0006`.
 2. API обязан работать с `SMS_PROVIDER=dev`: e2e preflight делает
    `GET /api/health` и требует `smsProvider: "dev"` **до** первого
    `request-code`. Иначе прогон падает с понятной ошибкой: иначе тест
