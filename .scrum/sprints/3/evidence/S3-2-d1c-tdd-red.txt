@@ -1,0 +1,15 @@
+# S3-2-D1c RED — review P2 (after merge with main 618fdda)
+# Command: pnpm --filter @localhand/web exec vitest run src/pages/AdminShopPage.test.tsx
+# Exit: 1 | Tests 2 failed | 13 passed (15)
+FAIL AdminShopPage > requires a PVZ and reports a save error
+  expect(point).not.toHaveAttribute("aria-invalid") — received aria-invalid="true"
+  (502 save error incorrectly marked the PVZ invalid)
+FAIL AdminShopPage > warns when the saved PVZ disappears and blocks saving it
+  Unable to find: "Сохранённый ПВЗ MSK001 больше не доступен. Выберите другой пункт выдачи."
+  (stale saved point kept as fallback option and could be saved)
+
+Already implemented, now locked by regression tests:
+- generic city 500 -> alert + retry;
+- city/points status `aria-live="polite"`;
+- empty PVZ text;
+- no PATCH when PVZ is missing (`patchCalls === 0`).
