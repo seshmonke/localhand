@@ -1,0 +1,11 @@
+$ grep -rn "err: error\|error: error\|err: err\|error: err" apps/api/src/delivery --include="*.ts"
+apps/api/src/delivery/delivery.log-redaction.test.ts:8: * message or response body. A raw `err: error` makes pino serialize
+
+$ grep -rn "log\.\(info\|warn\|error\)" apps/api/src/delivery --include="*.ts" | grep -v test
+apps/api/src/delivery/delivery.reconcile.ts:101:      log.warn(
+apps/api/src/delivery/delivery.reconcile.ts:130:    log.warn(
+apps/api/src/delivery/delivery.reconcile.ts:212:    log.info(
+apps/api/src/delivery/shipment.route.ts:74:    request.log.error({ code: error.code ?? "internal_error" }, "delivery shipment failed");
+apps/api/src/delivery/delivery.route.ts:48:    request.log.error({ code: error.code ?? "internal_error" }, "delivery request failed");
+apps/api/src/delivery/delivery.route.ts:116:      request.log.info(
+apps/api/src/delivery/delivery.reconcile.scheduler.ts:35:        app.log.error({ code: "delivery_reconcile_failed" }, "delivery reconcile pass failed");

@@ -1,0 +1,88 @@
+
+ RUN  v5.1.2 ./apps/api
+
+ ❯ src/delivery/delivery.log-redaction.test.ts (3 tests | 3 failed) 17ms
+   ❯ delivery reconcile log redaction (3)
+     × logs only a safe name and code when the provider call fails with PII 12ms
+     × logs only a safe name when a reconcile row fails with PII 2ms
+     × does not log a thrown non-Error value 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > logs only a safe name and code when the provider call fails with PII
+AssertionError: expected Error: Иван Тестов, [PII_PHONE], Невский… { code: '…' } to deeply equal { name: 'Error', code: 'ECONNRESET' }
+
+- Expected
++ Received
+
+- {
++ Error {
++   "message": "Иван Тестов, [PII_PHONE], Невский проспект, 1",
+    "code": "ECONNRESET",
+-   "name": "Error",
+  }
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:132:27
+    130|       provider: "fake",
+    131|     });
+    132|     expect(call?.[0].err).toEqual({ name: "Error", code: "ECONNRESET" …
+       |                           ^
+    133|     expect(Object.keys(call?.[0].err as object).sort()).toEqual(["code…
+    134|     expectNoPii(log);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > logs only a safe name when a reconcile row fails with PII
+AssertionError: expected Error: Иван Тестов, [PII_PHONE], Невский… { code: '…' } to deeply equal { name: 'Error', code: 'ECONNRESET' }
+
+- Expected
++ Received
+
+- {
++ Error {
++   "message": "Иван Тестов, [PII_PHONE], Невский проспект, 1",
+    "code": "ECONNRESET",
+-   "name": "Error",
+  }
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:164:27
+    162|       provider: "fake",
+    163|     });
+    164|     expect(call?.[0].err).toEqual({ name: "Error", code: "ECONNRESET" …
+       |                           ^
+    165|     expectNoPii(log);
+    166|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > does not log a thrown non-Error value
+AssertionError: expected 'Иван Тестов [PII_PHONE]' to deeply equal { name: 'UnknownError' }
+
+- Expected:
+{
+  "name": "UnknownError",
+}
+
++ Received:
+"Иван Тестов [PII_PHONE]"
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:180:27
+    178|       ([payload]) => payload.code === "delivery_reconcile_provider_err…
+    179|     );
+    180|     expect(call?.[0].err).toEqual({ name: "UnknownError" });
+       |                           ^
+    181|     expectNoPii(log);
+    182|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  15:03:35
+   Duration  689ms (import 87%, transform 9%, tests 3%, worker 1%)
+
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in ./apps/api
+

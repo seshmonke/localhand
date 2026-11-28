@@ -32,6 +32,26 @@ function statusEventHash(statusCode: string, occurredAt: Date): string {
   return createHash("sha256").update(`${statusCode}:${occurredAt.toISOString()}`).digest("hex");
 }
 
+const SAFE_ERROR_TOKEN = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
+
+type SafeErrorForLog = { name: string; code?: string };
+
+/**
+ * Pino serializes a raw `Error` into `message` and `stack`, and either may
+ * contain a provider response body with recipient PII. Log only a bounded
+ * error name and code instead of the whole error.
+ */
+function safeErrorForLog(error: unknown): SafeErrorForLog {
+  const name =
+    error instanceof Error && SAFE_ERROR_TOKEN.test(error.name) ? error.name : "UnknownError";
+  const rawCode =
+    typeof error === "object" && error !== null ? (error as { code?: unknown }).code : undefined;
+  if (typeof rawCode === "string" && SAFE_ERROR_TOKEN.test(rawCode)) {
+    return { name, code: rawCode };
+  }
+  return { name };
+}
+
 /**
  * One reconcile pass for deliveries whose `ORDER_STATUS` webhook was lost.
  * The provider call happens before the short transaction: a slow CDEK must
@@ -84,7 +104,7 @@ export async function runDeliveryReconcile(
           delivery_id: candidate.id,
           order_id: candidate.orderId,
           provider: provider.name,
-          err: error,
+          err: safeErrorForLog(error),
         },
         "delivery reconcile row failed",
       );
@@ -113,7 +133,7 @@ async function reconcileOne(
         delivery_id: candidate.id,
         order_id: candidate.orderId,
         provider: provider.name,
-        err: error,
+        err: safeErrorForLog(error),
       },
       "delivery reconcile status lookup failed",
     );
