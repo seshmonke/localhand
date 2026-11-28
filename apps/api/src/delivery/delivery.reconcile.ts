@@ -33,6 +33,39 @@ function statusEventHash(statusCode: string, occurredAt: Date): string {
 }
 
 /**
+ * Structured-log allowlist for provider error metadata.
+ *
+ * A value that reaches `err` must be a short ASCII identifier:
+ * - `name` is 1..32 chars and starts with a letter (`Error`, `CdekApiError`);
+ * - `code` is 1..64 chars and starts with a letter (`ECONNRESET`,
+ *   `ERR_CDEK_TIMEOUT`).
+ *
+ * Spaces, commas, `+`, `@`, Cyrillic and every other character that can carry
+ * a recipient name, phone or address are outside the allowlist. The length
+ * caps also bound the logged field.
+ */
+const SAFE_ERROR_NAME = /^[A-Za-z][A-Za-z0-9_.-]{0,31}$/;
+const SAFE_ERROR_CODE = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
+
+type SafeErrorForLog = { name: string; code?: string };
+
+/**
+ * Pino serializes a raw `Error` into `message` and `stack`, and either may
+ * contain a provider response body with recipient PII. Log only a bounded
+ * error name and code instead of the whole error.
+ */
+function safeErrorForLog(error: unknown): SafeErrorForLog {
+  const name =
+    error instanceof Error && SAFE_ERROR_NAME.test(error.name) ? error.name : "UnknownError";
+  const rawCode =
+    typeof error === "object" && error !== null ? (error as { code?: unknown }).code : undefined;
+  if (typeof rawCode === "string" && SAFE_ERROR_CODE.test(rawCode)) {
+    return { name, code: rawCode };
+  }
+  return { name };
+}
+
+/**
  * One reconcile pass for deliveries whose `ORDER_STATUS` webhook was lost.
  * The provider call happens before the short transaction: a slow CDEK must
  * not hold a row lock, and one failed shipment never blocks the rest.
@@ -84,7 +117,7 @@ export async function runDeliveryReconcile(
           delivery_id: candidate.id,
           order_id: candidate.orderId,
           provider: provider.name,
-          err: error,
+          err: safeErrorForLog(error),
         },
         "delivery reconcile row failed",
       );
@@ -113,7 +146,7 @@ async function reconcileOne(
         delivery_id: candidate.id,
         order_id: candidate.orderId,
         provider: provider.name,
-        err: error,
+        err: safeErrorForLog(error),
       },
       "delivery reconcile status lookup failed",
     );
