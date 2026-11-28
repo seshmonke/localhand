@@ -2,7 +2,7 @@ import { isValidShopSlug, type SellerShop, type UpdateShop } from "@localhand/sh
 import { Button, cn } from "@localhand/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import {
   Announcer,
@@ -96,6 +96,12 @@ function shopErrorMessage(error: unknown): string {
 
   return "Не удалось сохранить изменения. Проверьте соединение и попробуйте снова.";
 }
+
+const DELIVERY_SAVE_ERRORS: Record<string, string> = {
+  invalid_request: "Проверьте город и ПВЗ: сервер не принял данные доставки.",
+  rate_limited: "Слишком много запросов. Подождите минуту и повторите.",
+  delivery_unavailable: "Сервис доставки временно недоступен. Повторите попытку.",
+};
 
 export function AdminShopPage() {
   const shopQuery = useSellerShopQuery();
@@ -416,10 +422,21 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
   const [deliveryError, setDeliveryError] = useState<string | null>(null);
 
   const normalizedCityQuery = cityQuery.trim();
+  const [debouncedCityQuery, setDebouncedCityQuery] = useState("");
+
+  useEffect(() => {
+    const enabled = normalizedCityQuery.length >= 2;
+    const timer = setTimeout(
+      () => setDebouncedCityQuery(enabled ? normalizedCityQuery : ""),
+      enabled ? 300 : 0,
+    );
+    return () => clearTimeout(timer);
+  }, [normalizedCityQuery]);
+
   const citiesQuery = useQuery({
-    queryKey: ["admin-delivery", "cities", normalizedCityQuery],
-    queryFn: () => fetchDeliveryCities(normalizedCityQuery),
-    enabled: normalizedCityQuery.length >= 2,
+    queryKey: ["admin-delivery", "cities", debouncedCityQuery],
+    queryFn: () => fetchDeliveryCities(debouncedCityQuery),
+    enabled: debouncedCityQuery.length >= 2,
     retry: false,
   });
   const pointsQuery = useQuery({
@@ -459,6 +476,12 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
       setDeliveryError(null);
       onAnnounce("Доставка сохранена.");
     },
+    onError: (error) => {
+      setDeliveryError(
+        (error instanceof ApiError && DELIVERY_SAVE_ERRORS[error.code]) ||
+          "Не удалось сохранить доставку. Проверьте соединение и повторите попытку.",
+      );
+    },
   });
 
   function handleSaveDelivery() {
@@ -470,15 +493,13 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
       return;
     }
 
-    deliveryMutation.mutate(
-      selectedCity !== null
-        ? {
-            cdekCityCode: selectedCity.code,
-            cdekCityName: selectedCity.name,
-            cdekShipmentPoint: pointCode,
-          }
-        : { cdekCityCode: null, cdekCityName: null, cdekShipmentPoint: null },
-    );
+    if (selectedCity === null) return;
+
+    deliveryMutation.mutate({
+      cdekCityCode: selectedCity.code,
+      cdekCityName: selectedCity.name,
+      cdekShipmentPoint: pointCode,
+    });
   }
 
   function handleSave(event: FormEvent<HTMLFormElement>) {
@@ -724,9 +745,9 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
                   "Город, из которого отправляете посылки.",
                 )}
                 className={fieldControlClass}
-                disabled={blocked}
+                disabled={blocked || (selectedCity === null && cityResults.length === 0)}
               >
-                <option value="">Выберите город</option>
+                {selectedCity === null ? <option value="">Выберите город</option> : null}
                 {selectedCityMissing && selectedCity ? (
                   <option value={selectedCity.code}>{selectedCity.name}</option>
                 ) : null}
@@ -754,10 +775,8 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
                     setPointCode(event.target.value);
                     setDeliveryError(null);
                   }}
-                  aria-describedby={fieldDescribedBy(
-                    "shop-delivery-point",
-                    "ПВЗ, куда вы сдаёте посылки.",
-                  )}
+                  aria-invalid={deliveryError ? true : undefined}
+                  aria-describedby="shop-delivery-point-hint shop-delivery-error"
                   className={fieldControlClass}
                   disabled={blocked}
                 >
@@ -783,7 +802,7 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
             </Button>
           </div>
 
-          <div className="mt-4">
+          <div id="shop-delivery-error" className="mt-4">
             <FormError message={deliveryError} />
           </div>
         </Card>
