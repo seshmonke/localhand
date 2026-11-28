@@ -16,9 +16,9 @@ const quoted: DeliverySnapshot = {
   pointCode: "MSK001",
   pointAddress: "ул. Тестовая, 1, ПВЗ «Тестовый»",
   recipientName: "Иван Тестов",
-  tariffCode: "136",
-  tariffName: "Посылка склад-ПВЗ",
-  priceKopecks: 45_000,
+  tariffCode: "137",
+  tariffName: "Посылка склад-склад",
+  priceKopecks: 41_000,
   periodMin: 2,
   periodMax: 5,
   providerOrderId: null,
@@ -32,7 +32,8 @@ const created: DeliverySnapshot = {
   ...quoted,
   status: "created",
   providerOrderId: "cdek-order-42",
-  providerNumber: "1234567890",
+  providerNumber: "CDEK-00042",
+  trackNumber: "1234567890",
   lastStatusCode: "CREATED",
   lastStatusAt: createdAt,
 };
@@ -47,10 +48,10 @@ function tariff(code: string, name: string, price: number, min: number, max: num
   };
 }
 const tariffs: DeliveryTariffListResponse = {
-  paid: { tariffCode: "136", priceKopecks: 45_000 },
+  paid: { tariffCode: "137", priceKopecks: 45_000 },
   tariffs: [
     tariff("136", "Посылка склад-ПВЗ", 45_000, 2, 5),
-    tariff("137", "Посылка склад-склад", 41_000, 1, 4),
+    tariff("137", "Посылка склад-склад", 45_000, 1, 4),
   ],
 };
 
@@ -100,22 +101,25 @@ describe("AdminDeliveryCard", () => {
     expect(await within(section).findByText("Ожидает отправки")).toBeInTheDocument();
 
     await browser.click(within(section).getByRole("button", { name: "Рассчитать тарифы" }));
-    expect(await within(section).findByText("Посылка склад-склад")).toBeInTheDocument();
-    expect(within(section).getByText(/Оплаченный тариф/)).toBeInTheDocument();
+    const paidLabel = await within(section).findByText(/Оплаченный тариф/);
+    expect(paidLabel).toHaveTextContent("Посылка склад-склад");
+    expect(paidLabel).toHaveTextContent("410");
+    const list = within(section).getByRole("list", { name: "Доступные тарифы" });
+    expect(within(list).getByText("Посылка склад-склад").closest("li")).toHaveTextContent("450");
     await browser.click(within(section).getByRole("button", { name: "Создать отправление" }));
 
     expect(
       await within(section).findByText(/Отправление создано\. Трек: 1234567890/),
     ).toBeInTheDocument();
     expect(await within(section).findByText("Создано")).toBeInTheDocument();
-    expect(within(section).getByText("СДЭК · 1234567890")).toBeInTheDocument();
+    expect(within(section).getByText("Перевозчик · 1234567890")).toBeInTheDocument();
     expect(within(section).queryByRole("button", { name: "Создать отправление" })).toBeNull();
 
     const post = fetchMock.mock.calls.find(
       ([url, init]) =>
         String(url).endsWith("/api/seller/orders/42/delivery") && init?.method === "POST",
     );
-    expect(JSON.parse(String(post?.[1]?.body))).toEqual({ tariffCode: "136" });
+    expect(JSON.parse(String(post?.[1]?.body))).toEqual({ tariffCode: "137" });
   });
 
   it("explains a tariff mismatch and keeps the quoted snapshot", async () => {
@@ -172,11 +176,10 @@ describe("AdminDeliveryCard", () => {
       "GET /seller/orders/42/delivery": { status: 401, body: { error: "unauthorized" } },
     });
     const section = screen.getByRole("region", { name: "Доставка" });
-    expect(await within(section).findByText(/Сессия истекла/)).toBeInTheDocument();
-    expect(within(section).getByRole("link", { name: "Войдите снова" })).toHaveAttribute(
-      "href",
-      "/login?next=%2Fadmin%2Forders%2F42",
-    );
+    expect(
+      await within(section).findByRole("heading", { name: "Сессия истекла" }),
+    ).toBeInTheDocument();
+    expect(within(section).getByRole("button", { name: "Войти" })).toBeInTheDocument();
     expect(within(section).getByText("Иван Тестов")).toBeInTheDocument();
   });
 
@@ -237,19 +240,23 @@ describe("AdminDeliveryCard", () => {
         .getAllByRole("listitem")
         .map((item) => item.textContent),
     ).toEqual([expect.stringContaining("В пути"), expect.stringContaining("Создано")]);
+    expect(within(section).getByRole("button", { name: "Обновить" })).toHaveClass("h-11");
     await browser.click(within(section).getByRole("button", { name: "Обновить" }));
     await waitFor(() => expect(gets).toBe(2));
   });
 
   it("renders a single empty-history line and never exposes raw ids or codes", async () => {
     renderCard({
-      "GET /seller/orders/42/delivery": { body: { delivery: created, events: [] } },
+      "GET /seller/orders/42/delivery": {
+        body: { delivery: { ...created, trackNumber: null }, events: [] },
+      },
     });
     const section = screen.getByRole("region", { name: "Доставка" });
     expect(await within(section).findByText("Событий пока нет.")).toBeInTheDocument();
-    expect(within(section).getByText("Посылка склад-ПВЗ")).toBeInTheDocument();
-    for (const raw of ["cdek-order-42", "MSK001", "CREATED", "136"]) {
-      expect(within(section).queryByText(raw)).toBeNull();
+    expect(within(section).getByText("Посылка склад-склад")).toBeInTheDocument();
+    expect(within(section).queryByText("Трек")).toBeNull();
+    for (const raw of ["cdek-order-42", "MSK001", "CREATED", "137", "CDEK-00042"]) {
+      expect(within(section).queryByText(new RegExp(raw))).toBeNull();
     }
   });
 });

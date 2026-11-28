@@ -7,8 +7,7 @@ import {
 } from "@localhand/shared";
 import { Button } from "@localhand/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
-import { Link } from "react-router";
+import { useId, useState, type ReactNode } from "react";
 import { ApiError, createSellerShipment } from "../../lib/api.js";
 import {
   sellerKeys,
@@ -18,8 +17,9 @@ import {
 import { FormError } from "../FormField.js";
 import { Card } from "../layout/index.js";
 import { DELIVERY_STATUS_LABELS } from "../orders/DeliverySummaryCard.js";
+import { SessionExpiredState } from "./SessionExpiredState.js";
 
-const PROVIDER_UNAVAILABLE = "СДЭК временно недоступен. Повторите позже или оформите ручной трек.";
+const PROVIDER_UNAVAILABLE = "СДЭК временно недоступен. Повторите позже.";
 const SESSION_MESSAGE = "Сессия истекла. Войдите снова.";
 const CONFLICT_MESSAGES: Record<string, string> = {
   delivery_tariff_mismatch:
@@ -73,6 +73,7 @@ export function AdminDeliveryCard({
   delivery: DeliverySnapshot | null;
 }) {
   const queryClient = useQueryClient();
+  const headingId = useId();
   const paid = orderStatus === "paid";
   const deliveryQuery = useSellerOrderDeliveryQuery(orderId, paid && delivery !== null);
   const [tariffsRequested, setTariffsRequested] = useState(false);
@@ -90,7 +91,6 @@ export function AdminDeliveryCard({
     actionError === SESSION_MESSAGE ||
     (tariffsQuery.error instanceof ApiError && tariffsQuery.error.status === 401);
   const notFound = queryError instanceof ApiError && queryError.status === 404;
-  const loginHref = `/login?next=${encodeURIComponent(`/admin/orders/${orderId}`)}`;
   const quota = tariffsQuery.data;
   const paidName = quota?.tariffs.find(
     (tariff) => tariff.tariffCode === quota.paid.tariffCode,
@@ -104,8 +104,8 @@ export function AdminDeliveryCard({
         sellerKeys.delivery(orderId),
         (previous) => ({ delivery: data.delivery, events: previous?.events ?? [] }),
       );
-      const track = data.delivery.trackNumber ?? data.delivery.providerNumber;
-      setNotice(track ? `Отправление создано. Трек: ${track}.` : "Отправление создано.");
+      const track = data.delivery.trackNumber;
+      setNotice(track === null ? "Отправление создано." : `Отправление создано. Трек: ${track}.`);
       void deliveryQuery.refetch();
     },
     onError: (error) => {
@@ -123,13 +123,9 @@ export function AdminDeliveryCard({
   });
 
   const track =
-    current === null
-      ? null
-      : current.trackNumber !== null
-        ? `${current.carrier ?? "Перевозчик"} · ${current.trackNumber}`
-        : current.providerNumber !== null
-          ? `${current.provider === "cdek" ? "СДЭК" : "Перевозчик"} · ${current.providerNumber}`
-          : null;
+    current !== null && current.trackNumber !== null
+      ? `${current.carrier ?? "Перевозчик"} · ${current.trackNumber}`
+      : null;
   const showQuoted = paid && current?.status === "quoted" && !sessionExpired && !notFound;
   const showEvents = paid && current !== null && current.status !== "quoted";
   const canRefresh = current?.status === "created" || current?.status === "in_transit";
@@ -138,11 +134,8 @@ export function AdminDeliveryCard({
     tariffsRequested ? void tariffsQuery.refetch() : setTariffsRequested(true);
 
   return (
-    <Card as="section" aria-labelledby="admin-order-delivery-title">
-      <h2
-        id="admin-order-delivery-title"
-        className="font-mono text-[10px] uppercase tracking-[0.2em]"
-      >
+    <Card as="section" aria-labelledby={headingId}>
+      <h2 id={headingId} className="font-mono text-[10px] uppercase tracking-[0.2em]">
         Доставка
       </h2>
 
@@ -184,15 +177,7 @@ export function AdminDeliveryCard({
         <p className="mt-4 text-sm leading-relaxed">Доставка доступна после оплаты.</p>
       )}
 
-      {sessionExpired ? (
-        <p role="alert" className="mt-4 border-l-[3px] border-accent-red pl-2 text-sm">
-          Сессия истекла.{" "}
-          <Link to={loginHref} className="font-semibold underline">
-            Войдите снова
-          </Link>
-          .
-        </p>
-      ) : null}
+      {sessionExpired ? <SessionExpiredState next={`/admin/orders/${orderId}`} /> : null}
       {queryError !== null && !sessionExpired ? (
         <div className="mt-4">
           <FormError message={errorMessage(queryError, "Не удалось загрузить доставку.")} />
@@ -225,7 +210,7 @@ export function AdminDeliveryCard({
             <>
               <p className="text-sm leading-relaxed">
                 Оплаченный тариф: {paidName ?? "тариф заказа"} ·{" "}
-                {formatRubles(kopecks(quota.paid.priceKopecks))}
+                {formatRubles(kopecks(delivery?.priceKopecks ?? quota.paid.priceKopecks))}
               </p>
               <ul aria-label="Доступные тарифы" className="flex flex-col gap-2 text-sm">
                 {quota.tariffs.map((tariff) => (
@@ -258,6 +243,7 @@ export function AdminDeliveryCard({
               <Button
                 size="sm"
                 variant="outline"
+                className="h-11"
                 onClick={() => void deliveryQuery.refetch()}
                 disabled={deliveryQuery.isFetching}
               >
