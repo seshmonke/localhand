@@ -111,6 +111,7 @@ function expectNoPii(log: CapturedLogger): void {
     expect(record).not.toHaveProperty("err.message");
     expect(record).not.toHaveProperty("err.stack");
     expect(record).not.toHaveProperty("err.cause");
+    expect(record).not.toHaveProperty("err.body");
   }
 }
 
@@ -133,6 +134,13 @@ function providerErrorCall(log: CapturedLogger): Record<string, unknown> | undef
   return log.warn.mock.calls.find(
     ([payload]) => payload.code === "delivery_reconcile_provider_error",
   )?.[0];
+}
+
+async function errFor(error: unknown, id: number, orderId: number) {
+  state.candidates = [{ id, orderId, providerOrderId: `remote-${id}` }];
+  const log = captureLogger();
+  await runDeliveryReconcile(providerThatThrows(error), log, NOW);
+  return providerErrorCall(log)?.err;
 }
 
 const delivered: ShipmentState = {
@@ -261,6 +269,44 @@ describe("delivery reconcile log redaction", () => {
     expect(Object.keys(err)).toEqual(["name"]);
     expectNoPii(log);
   });
+
+  it("does not copy error.body", async () => {
+    state.candidates = [{ id: 47, orderId: 13, providerOrderId: "remote-body" }];
+    const log = captureLogger();
+    const error = new Error("provider failed");
+    (error as Error & { body?: unknown }).body = PII_ADDRESS;
+
+    await runDeliveryReconcile(providerThatThrows(error), log, NOW);
+
+    const err = providerErrorCall(log)?.err as Record<string, unknown>;
+    expect(err).toEqual({ name: "Error" });
+    expect(err).not.toHaveProperty("body");
+    expect(Object.keys(err)).toEqual(["name"]);
+    expectNoPii(log);
+  });
+
+  it("bounds error.name to 32 chars and error.code to 64 chars", async () => {
+    const name32 = `E${"x".repeat(31)}`;
+    const name33 = `E${"x".repeat(32)}`;
+    const code64 = `C${"x".repeat(63)}`;
+    const code65 = `C${"x".repeat(64)}`;
+
+    const longName = new Error("provider failed");
+    longName.name = name32;
+    expect(await errFor(longName, 48, 14)).toEqual({ name: name32 });
+
+    const tooLongName = new Error("provider failed");
+    tooLongName.name = name33;
+    expect(await errFor(tooLongName, 49, 15)).toEqual({ name: "UnknownError" });
+
+    const codeOk = new Error("provider failed") as Error & { code: string };
+    codeOk.code = code64;
+    expect(await errFor(codeOk, 50, 16)).toEqual({ name: "Error", code: code64 });
+
+    const codeTooLong = new Error("provider failed") as Error & { code: string };
+    codeTooLong.code = code65;
+    expect(await errFor(codeTooLong, 51, 17)).toEqual({ name: "Error" });
+  });
 });
 
 const DELIVERY_SOURCES = {
@@ -332,19 +378,63 @@ function topLevelKeys(args: string): string[] {
   );
 }
 
-describe("delivery log source audit", () => {
-  it("never passes a raw Error or an err/error shorthand to a logger", () => {
-    const rawAnyArg = /(?:^|,)\s*(?:error|err|cause)\s*(?:,|\)|$)/;
-    const rawPair = /(?:^|[,{]\s*)(?:err|error)\s*:\s*(?:error|err|cause)\s*(?=[,}])/;
-    const rawShorthand = /(?:^|[,{]\s*)(?:err|error|cause)\s*(?=[,}])/;
+/**
+ * Source-audit rules for production delivery logger calls. They are stricter
+ * than the runtime guard: any payload key whose value is a raw error token
+ * (`error`, `err`, `cause`) or `new Error(...)` is rejected, including
+ * nested objects and arrays. `error.code` property access is not a raw error
+ * value and remains allowed; `code: error` is not.
+ */
+const RAW_ERROR_ARGUMENT = /(?:^|,)\s*(?:error|err|cause)\s*(?:,|\)|$)/;
+const NEW_ERROR_ARGUMENT = /(?:^|,)\s*new\s+Error\b/;
+const RAW_ERROR_VALUE = /(?:^|[,{]\s*)[A-Za-z_$][\w$]*\s*:\s*(?:error|err|cause)\s*(?=[,}])/;
+const NEW_ERROR_VALUE = /(?:^|[,{]\s*)[A-Za-z_$][\w$]*\s*:\s*new\s+Error\b/;
+const RAW_ERROR_SHORTHAND = /(?:^|[,{]\s*)(?:err|error|cause)\s*(?=[,}])/;
+const RAW_ERROR_ARRAY = /(?:^|\[|,)\s*(?:error|err|cause)\s*(?=[,\]])/;
+const NEW_ERROR_ARRAY = /(?:^|\[|,)\s*new\s+Error\b/;
 
-    for (const [file, source] of Object.entries(DELIVERY_SOURCES)) {
-      for (const call of logCalls(file, source)) {
-        const where = `${file} log.${call.method}`;
-        expect(call.args, where).not.toMatch(rawAnyArg);
-        expect(call.args, where).not.toMatch(rawPair);
-        expect(call.args, where).not.toMatch(rawShorthand);
+const SOURCE_AUDIT_RULES: Array<[RegExp, string]> = [
+  [RAW_ERROR_ARGUMENT, "raw error argument"],
+  [NEW_ERROR_ARGUMENT, "new Error argument"],
+  [RAW_ERROR_VALUE, "raw error value"],
+  [NEW_ERROR_VALUE, "new Error value"],
+  [RAW_ERROR_SHORTHAND, "error shorthand"],
+  [RAW_ERROR_ARRAY, "raw error array item"],
+  [NEW_ERROR_ARRAY, "new Error array item"],
+];
+
+/** Returns every unsafe logger-call finding in a source string. */
+function sourceViolations(file: string, source: string): string[] {
+  const violations: string[] = [];
+  for (const call of logCalls(file, source)) {
+    for (const [pattern, reason] of SOURCE_AUDIT_RULES) {
+      if (pattern.test(call.args)) {
+        violations.push(`${file} log.${call.method}: ${reason}`);
       }
+    }
+  }
+  return violations;
+}
+
+describe("delivery log source audit", () => {
+  it("self-test: flags { code: error } and nested raw error values", () => {
+    expect(sourceViolations("fixture.ts", 'log.warn({ code: error }, "failed");')).toEqual([
+      "fixture.ts log.warn: raw error value",
+    ]);
+    expect(
+      sourceViolations("fixture.ts", 'log.warn({ nested: { code: cause } }, "failed");'),
+    ).toContain("fixture.ts log.warn: raw error value");
+    expect(
+      sourceViolations("fixture.ts", 'log.warn({ code: new Error("x") }, "failed");'),
+    ).toContain("fixture.ts log.warn: new Error value");
+    expect(sourceViolations("fixture.ts", 'log.warn({ code: [err] }, "failed");')).toContain(
+      "fixture.ts log.warn: raw error array item",
+    );
+  });
+
+  it("never passes a raw Error value for any logger payload key", () => {
+    for (const [file, source] of Object.entries(DELIVERY_SOURCES)) {
+      expect(sourceViolations(file, source), file).toEqual([]);
     }
   });
 
@@ -366,25 +456,25 @@ describe("delivery log source audit", () => {
     expect(values).toEqual(["safeErrorForLog(error)", "safeErrorForLog(error)"]);
   });
 
-  it("allows route error.code as a machine code, not a raw Error", () => {
+  it("allows only error.code property access in route log payloads", () => {
     /**
      * Route logs have used `error.code ?? "internal_error"` since before this
      * fix. It is a machine code, not an Error object, so it stays
-     * allowlisted; every other `error:` value fails the audit. The quote log
-     * carries the same kind of string code via `result.error`.
+     * allowlisted; `code: error` (and every other raw error value) fails the
+     * source audit above. The quote log carries the same kind of string code
+     * via `result.error`.
      */
-    const allowedErrorValues = new Set([
-      'error.code ?? "internal_error"',
-      "result.ok ? undefined : result.error",
-    ]);
-
-    for (const [file, source] of Object.entries(DELIVERY_SOURCES)) {
-      for (const call of logCalls(file, source)) {
-        for (const match of call.args.matchAll(/(?:^|[,{]\s*)error\s*:\s*([^,}\n]+)/g)) {
-          const value = match[1]?.trim() ?? "";
-          expect(allowedErrorValues.has(value), `${file} error value ${value}`).toBe(true);
-        }
-      }
+    for (const file of ["delivery.route.ts", "shipment.route.ts"] as const) {
+      const codeValues = logCalls(file, DELIVERY_SOURCES[file]).flatMap((call) =>
+        [...call.args.matchAll(/(?:^|[,{]\s*)code\s*:\s*([^,}\n]+)/g)].map((match) =>
+          match[1]?.trim(),
+        ),
+      );
+      expect(codeValues).toEqual(['error.code ?? "internal_error"']);
     }
+
+    expect(DELIVERY_SOURCES["delivery.route.ts"]).toContain(
+      "error: result.ok ? undefined : result.error",
+    );
   });
 });

@@ -1,5 +1,272 @@
-# RED — runtime PII leak and allowlist mutation (REDACTED)
+# RED — runtime PII leak, allowlist and source-audit mutations (REDACTED)
 # PII values are replaced with [PII_*]; absolute local paths are removed.
+
+## Current RED — base implementation 7bca728 vs current test file (actual line numbers)
+
+```
+$ git show 7bca728:apps/api/src/delivery/delivery.reconcile.ts > ...
+$ pnpm --filter @localhand/api exec vitest run src/delivery/delivery.log-redaction.test.ts
+```
+
+
+ RUN  v5.1.2 ./apps/api
+
+ ❯ src/delivery/delivery.log-redaction.test.ts (14 tests | 10 failed) 26ms
+   ❯ delivery reconcile log redaction (9)
+     × logs only a safe name and code when the provider call fails with PII 10ms
+     × logs only a safe name when a reconcile row fails with PII 2ms
+     × does not log a thrown non-Error value 1ms
+     × falls back to UnknownError when error.name looks like PII 1ms
+     × drops an unsafe error.code instead of logging it 1ms
+     × does not copy error.cause 1ms
+     × does not copy error.body 1ms
+     × bounds error.name to 32 chars and error.code to 64 chars 1ms
+   ❯ delivery log source audit (5)
+     × never passes a raw Error value for any logger payload key 1ms
+     × writes reconcile errors only through safeErrorForLog 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > logs only a safe name and code when the provider call fails with PII
+AssertionError: expected Error: Иван Тестов, [PII_PHONE], Невский… { code: '…' } to deeply equal { name: 'Error', code: 'ECONNRESET' }
+
+- Expected
++ Received
+
+- {
++ Error {
++   "message": "Иван Тестов, [PII_PHONE], Невский проспект, 1",
+    "code": "ECONNRESET",
+-   "name": "Error",
+  }
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:174:26
+    172|       provider: "fake",
+    173|     });
+    174|     expect(payload?.err).toEqual({ name: "Error", code: "ECONNRESET" }…
+       |                          ^
+    175|     expect(Object.keys(payload?.err as object).sort()).toEqual(["code"…
+    176|     expectNoPii(log);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > logs only a safe name when a reconcile row fails with PII
+AssertionError: expected Error: Иван Тестов, [PII_PHONE], Невский… { code: '…' } to deeply equal { name: 'Error', code: 'ECONNRESET' }
+
+- Expected
++ Received
+
+- {
++ Error {
++   "message": "Иван Тестов, [PII_PHONE], Невский проспект, 1",
+    "code": "ECONNRESET",
+-   "name": "Error",
+  }
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:206:27
+    204|       provider: "fake",
+    205|     });
+    206|     expect(call?.[0].err).toEqual({ name: "Error", code: "ECONNRESET" …
+       |                           ^
+    207|     expectNoPii(log);
+    208|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > does not log a thrown non-Error value
+AssertionError: expected 'Иван Тестов [PII_PHONE]' to deeply equal { name: 'UnknownError' }
+
+- Expected:
+{
+  "name": "UnknownError",
+}
+
++ Received:
+"Иван Тестов [PII_PHONE]"
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:219:41
+    217|     await runDeliveryReconcile(providerThatThrows(`${PII_NAME} ${PII_P…
+    218|
+    219|     expect(providerErrorCall(log)?.err).toEqual({ name: "UnknownError"…
+       |                                         ^
+    220|     expectNoPii(log);
+    221|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > falls back to UnknownError when error.name looks like PII
+AssertionError: expected Иван Тестов: provider failed to deeply equal { name: 'UnknownError' }
+
+- Expected
++ Received
+
+- {
+-   "name": "UnknownError",
++ Иван Тестов {
++   "message": "provider failed",
++   "name": "Иван Тестов",
+  }
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:231:41
+    229|     await runDeliveryReconcile(providerThatThrows(error), log, NOW);
+    230|
+    231|     expect(providerErrorCall(log)?.err).toEqual({ name: "UnknownError"…
+       |                                         ^
+    232|     expectNoPii(log);
+    233|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > drops an unsafe error.code instead of logging it
+AssertionError: expected Error: provider failed { code: '+799…' } to deeply equal { name: 'Error' }
+
+- Expected
++ Received
+
+- {
+-   "name": "Error",
++ Error {
++   "message": "provider failed",
++   "code": "[PII_PHONE]",
+  }
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:244:17
+    242|
+    243|     const err = providerErrorCall(log)?.err as Record<string, unknown>;
+    244|     expect(err).toEqual({ name: "Error" });
+       |                 ^
+    245|     expect(Object.keys(err)).toEqual(["name"]);
+    246|     expectNoPii(log);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > does not copy error.cause
+AssertionError: expected Error: provider failed to deeply equal { name: 'Error' }
+
+- Expected
++ Received
+
+- {
+-   "name": "Error",
++ Error {
++   "message": "provider failed",
++   "cause": Error {
++     "message": "Иван Тестов, [PII_PHONE], Невский проспект, 1",
++   },
+  }
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:267:17
+    265|
+    266|     const err = providerErrorCall(log)?.err as Record<string, unknown>;
+    267|     expect(err).toEqual({ name: "Error" });
+       |                 ^
+    268|     expect(err).not.toHaveProperty("cause");
+    269|     expect(Object.keys(err)).toEqual(["name"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > does not copy error.body
+AssertionError: expected Error: provider failed { body: 'Невс…' } to deeply equal { name: 'Error' }
+
+- Expected
++ Received
+
+- {
+-   "name": "Error",
++ Error {
++   "message": "provider failed",
++   "body": "Невский проспект, 1",
+  }
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:282:17
+    280|
+    281|     const err = providerErrorCall(log)?.err as Record<string, unknown>;
+    282|     expect(err).toEqual({ name: "Error" });
+       |                 ^
+    283|     expect(err).not.toHaveProperty("body");
+    284|     expect(Object.keys(err)).toEqual(["name"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > bounds error.name to 32 chars and error.code to 64 chars
+AssertionError: expected Exxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx: provide… to deeply equal { Object (name) }
+
+- Expected
++ Received
+
+- {
++ Exxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx {
++   "message": "provider failed",
+    "name": "Exxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  }
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:296:44
+    294|     const longName = new Error("provider failed");
+    295|     longName.name = name32;
+    296|     expect(await errFor(longName, 48, 14)).toEqual({ name: name32 });
+       |                                            ^
+    297|
+    298|     const tooLongName = new Error("provider failed");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery log source audit > never passes a raw Error value for any logger payload key
+AssertionError: delivery.reconcile.ts: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "delivery.reconcile.ts log.warn: raw error value",
++   "delivery.reconcile.ts log.warn: raw error value",
++ ]
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:437:52
+    435|   it("never passes a raw Error value for any logger payload key", () =…
+    436|     for (const [file, source] of Object.entries(DELIVERY_SOURCES)) {
+    437|       expect(sourceViolations(file, source), file).toEqual([]);
+       |                                                    ^
+    438|     }
+    439|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery log source audit > writes reconcile errors only through safeErrorForLog
+AssertionError: expected [ 'error', 'error' ] to deeply equal [ 'safeErrorForLog(error)', …(1) ]
+
+- Expected
++ Received
+
+  [
+-   "safeErrorForLog(error)",
+-   "safeErrorForLog(error)",
++   "error",
++   "error",
+  ]
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:456:20
+    454|       ...DELIVERY_SOURCES["delivery.reconcile.ts"].matchAll(/\berr\s*:…
+    455|     ].map((match) => match[1]?.trim());
+    456|     expect(values).toEqual(["safeErrorForLog(error)", "safeErrorForLog…
+       |                    ^
+    457|   });
+    458|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 4 passed (14)
+   Start at  15:45:02
+   Duration  615ms (import 84%, transform 9%, tests 6%, worker 2%)
+
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in ./apps/api
+
+
+## Historical RED — commit c20c634, 3 tests (line numbers are historical)
 
 
  RUN  v5.1.2 ./apps/api
@@ -91,99 +358,328 @@ Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
 
 
 ---
+# MUTATION RED
 
-# MUTATION RED — allowlist proof
-
-## Mutation A: remove SAFE_ERROR_NAME.test(error.name)
+## M1: code: error in delivery.route.ts:48
 ```diff
-- error instanceof Error && SAFE_ERROR_NAME.test(error.name) ? error.name : "UnknownError"
-+ error instanceof Error ? error.name : "UnknownError"
+- request.log.error({ code: error.code ?? "internal_error" }, "delivery request failed");
++ request.log.error({ code: error }, "delivery request failed");
 ```
 
  RUN  v5.1.2 ./apps/api
 
- ❯ src/delivery/delivery.log-redaction.test.ts (11 tests | 1 failed) 42ms
-   ❯ delivery reconcile log redaction (7)
-     × falls back to UnknownError when error.name looks like PII 12ms
+ ❯ src/delivery/delivery.log-redaction.test.ts (14 tests | 2 failed) 26ms
+   ❯ delivery log source audit (5)
+     × never passes a raw Error value for any logger payload key 6ms
+     × allows only error.code property access in route log payloads 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery log source audit > never passes a raw Error value for any logger payload key
+AssertionError: delivery.route.ts: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "delivery.route.ts log.error: raw error value",
++ ]
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:437:52
+    435|   it("never passes a raw Error value for any logger payload key", () =…
+    436|     for (const [file, source] of Object.entries(DELIVERY_SOURCES)) {
+    437|       expect(sourceViolations(file, source), file).toEqual([]);
+       |                                                    ^
+    438|     }
+    439|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery log source audit > allows only error.code property access in route log payloads
+AssertionError: expected [ 'error' ] to deeply equal [ 'error.code ?? "internal_error"' ]
+
+- Expected
++ Received
+
+  [
+-   "error.code ?? \"internal_error\"",
++   "error",
+  ]
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:473:26
+    471|         ),
+    472|       );
+    473|       expect(codeValues).toEqual(['error.code ?? "internal_error"']);
+       |                          ^
+    474|     }
+    475|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 12 passed (14)
+   Start at  15:44:36
+   Duration  607ms (import 83%, transform 10%, tests 5%, worker 1%)
+
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in ./apps/api
+
+
+## M2: code: error in shipment.route.ts:74
+```diff
+- request.log.error({ code: error.code ?? "internal_error" }, "delivery shipment failed");
++ request.log.error({ code: error }, "delivery shipment failed");
+```
+
+ RUN  v5.1.2 ./apps/api
+
+ ❯ src/delivery/delivery.log-redaction.test.ts (14 tests | 2 failed) 28ms
+   ❯ delivery log source audit (5)
+     × never passes a raw Error value for any logger payload key 6ms
+     × allows only error.code property access in route log payloads 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery log source audit > never passes a raw Error value for any logger payload key
+AssertionError: shipment.route.ts: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "shipment.route.ts log.error: raw error value",
++ ]
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:437:52
+    435|   it("never passes a raw Error value for any logger payload key", () =…
+    436|     for (const [file, source] of Object.entries(DELIVERY_SOURCES)) {
+    437|       expect(sourceViolations(file, source), file).toEqual([]);
+       |                                                    ^
+    438|     }
+    439|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery log source audit > allows only error.code property access in route log payloads
+AssertionError: expected [ 'error' ] to deeply equal [ 'error.code ?? "internal_error"' ]
+
+- Expected
++ Received
+
+  [
+-   "error.code ?? \"internal_error\"",
++   "error",
+  ]
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:473:26
+    471|         ),
+    472|       );
+    473|       expect(codeValues).toEqual(['error.code ?? "internal_error"']);
+       |                          ^
+    474|     }
+    475|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 12 passed (14)
+   Start at  15:44:37
+   Duration  594ms (import 84%, transform 9%, tests 6%, worker 1%)
+
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in ./apps/api
+
+
+## M3: copy error.body
+```diff
++ const rawBody = typeof error === "object" && error !== null ? error.body : undefined;
++ if (rawBody !== undefined) return { name, body: rawBody } as SafeErrorForLog;
+```
+
+ RUN  v5.1.2 ./apps/api
+
+ ❯ src/delivery/delivery.log-redaction.test.ts (14 tests | 1 failed) 25ms
+   ❯ delivery reconcile log redaction (9)
+     × does not copy error.body 7ms
 
 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
 
- FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > falls back to UnknownError when error.name looks like PII
-AssertionError: expected { name: 'Иван Тестов' } to deeply equal { name: 'UnknownError' }
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > does not copy error.body
+AssertionError: expected { name: 'Error', …(1) } to deeply equal { name: 'Error' }
+
+- Expected
++ Received
+
+  {
++   "body": "Невский проспект, 1",
+    "name": "Error",
+  }
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:282:17
+    280|
+    281|     const err = providerErrorCall(log)?.err as Record<string, unknown>;
+    282|     expect(err).toEqual({ name: "Error" });
+       |                 ^
+    283|     expect(err).not.toHaveProperty("body");
+    284|     expect(Object.keys(err)).toEqual(["name"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 passed (14)
+   Start at  15:44:44
+   Duration  638ms (import 80%, transform 15%, tests 5%, worker 1%)
+
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in ./apps/api
+
+
+## M4: copy error.cause
+```diff
++ const rawCause = typeof error === "object" && error !== null ? error.cause : undefined;
++ if (rawCause !== undefined) return { name, cause: rawCause } as SafeErrorForLog;
+```
+
+ RUN  v5.1.2 ./apps/api
+
+ ❯ src/delivery/delivery.log-redaction.test.ts (14 tests | 1 failed) 25ms
+   ❯ delivery reconcile log redaction (9)
+     × does not copy error.cause 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > does not copy error.cause
+AssertionError: expected { name: 'Error', …(1) } to deeply equal { name: 'Error' }
+
+- Expected
++ Received
+
+  {
++   "cause": Error {
++     "message": "Иван Тестов, [PII_PHONE], Невский проспект, 1",
++   },
+    "name": "Error",
+  }
+
+ ❯ src/delivery/delivery.log-redaction.test.ts:267:17
+    265|
+    266|     const err = providerErrorCall(log)?.err as Record<string, unknown>;
+    267|     expect(err).toEqual({ name: "Error" });
+       |                 ^
+    268|     expect(err).not.toHaveProperty("cause");
+    269|     expect(Object.keys(err)).toEqual(["name"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 passed (14)
+   Start at  15:44:49
+   Duration  627ms (import 79%, transform 15%, tests 5%, worker 1%)
+
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in ./apps/api
+
+
+## M5: SAFE_ERROR_NAME {0,31} -> {0,32}
+```diff
+- const SAFE_ERROR_NAME = /^[A-Za-z][A-Za-z0-9_.-]{0,31}$/;
++ const SAFE_ERROR_NAME = /^[A-Za-z][A-Za-z0-9_.-]{0,32}$/;
+```
+
+ RUN  v5.1.2 ./apps/api
+
+ ❯ src/delivery/delivery.log-redaction.test.ts (14 tests | 1 failed) 24ms
+   ❯ delivery reconcile log redaction (9)
+     × bounds error.name to 32 chars and error.code to 64 chars 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > bounds error.name to 32 chars and error.code to 64 chars
+AssertionError: expected { Object (name) } to deeply equal { name: 'UnknownError' }
 
 - Expected
 + Received
 
   {
 -   "name": "UnknownError",
-+   "name": "Иван Тестов",
++   "name": "Exxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
   }
 
- ❯ src/delivery/delivery.log-redaction.test.ts:223:41
-    221|     await runDeliveryReconcile(providerThatThrows(error), log, NOW);
-    222|
-    223|     expect(providerErrorCall(log)?.err).toEqual({ name: "UnknownError"…
-       |                                         ^
-    224|     expectNoPii(log);
-    225|   });
+ ❯ src/delivery/delivery.log-redaction.test.ts:300:47
+    298|     const tooLongName = new Error("provider failed");
+    299|     tooLongName.name = name33;
+    300|     expect(await errFor(tooLongName, 49, 15)).toEqual({ name: "Unknown…
+       |                                               ^
+    301|
+    302|     const codeOk = new Error("provider failed") as Error & { code: str…
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
 
 
  Test Files  1 failed (1)
-      Tests  1 failed | 10 passed (11)
-   Start at  15:28:41
-   Duration  838ms (import 81%, transform 11%, tests 6%, worker 1%)
+      Tests  1 failed | 13 passed (14)
+   Start at  15:44:57
+   Duration  632ms (import 78%, transform 16%, tests 5%, worker 1%)
 
 Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
 
   × "pnpm recursive exec" failed in ./apps/api
 
 
-## Mutation B: remove SAFE_ERROR_CODE.test(rawCode)
+## M6: SAFE_ERROR_CODE {0,63} -> {0,64}
 ```diff
-- if (typeof rawCode === "string" && SAFE_ERROR_CODE.test(rawCode)) {
-+ if (typeof rawCode === "string") {
+- const SAFE_ERROR_CODE = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
++ const SAFE_ERROR_CODE = /^[A-Za-z][A-Za-z0-9_.-]{0,64}$/;
 ```
 
  RUN  v5.1.2 ./apps/api
 
- ❯ src/delivery/delivery.log-redaction.test.ts (11 tests | 1 failed) 41ms
-   ❯ delivery reconcile log redaction (7)
-     × drops an unsafe error.code instead of logging it 11ms
+ ❯ src/delivery/delivery.log-redaction.test.ts (14 tests | 1 failed) 27ms
+   ❯ delivery reconcile log redaction (9)
+     × bounds error.name to 32 chars and error.code to 64 chars 8ms
 
 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
 
- FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > drops an unsafe error.code instead of logging it
-AssertionError: expected { name: 'Error', code: '[PII_PHONE]' } to deeply equal { name: 'Error' }
+ FAIL  src/delivery/delivery.log-redaction.test.ts > delivery reconcile log redaction > bounds error.name to 32 chars and error.code to 64 chars
+AssertionError: expected { name: 'Error', …(1) } to deeply equal { name: 'Error' }
 
 - Expected
 + Received
 
   {
-+   "code": "[PII_PHONE]",
++   "code": "Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     "name": "Error",
   }
 
- ❯ src/delivery/delivery.log-redaction.test.ts:236:17
-    234|
-    235|     const err = providerErrorCall(log)?.err as Record<string, unknown>;
-    236|     expect(err).toEqual({ name: "Error" });
-       |                 ^
-    237|     expect(Object.keys(err)).toEqual(["name"]);
-    238|     expectNoPii(log);
+ ❯ src/delivery/delivery.log-redaction.test.ts:308:47
+    306|     const codeTooLong = new Error("provider failed") as Error & { code…
+    307|     codeTooLong.code = code65;
+    308|     expect(await errFor(codeTooLong, 51, 17)).toEqual({ name: "Error" …
+       |                                               ^
+    309|   });
+    310| });
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
 
 
  Test Files  1 failed (1)
-      Tests  1 failed | 10 passed (11)
-   Start at  15:28:42
-   Duration  854ms (import 82%, transform 10%, tests 6%, worker 1%)
+      Tests  1 failed | 13 passed (14)
+   Start at  15:44:58
+   Duration  647ms (import 79%, transform 15%, tests 5%, worker 1%)
 
 Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
 
   × "pnpm recursive exec" failed in ./apps/api
 
 
-Restored: both allowlist checks are back; the file passes 11/11.
+Restored: all allowlist/bound checks are back; the file passes 14/14.

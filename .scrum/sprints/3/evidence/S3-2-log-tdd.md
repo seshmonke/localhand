@@ -1,7 +1,7 @@
 # S3-2-LOG — PII redaction in delivery reconcile logs
 
-Tier T2. Ветка `task/S3-2-log-redaction`, база `7bca728`, head после
-merge `main` — `131ac2c` + этот коммит.
+Tier T2. Ветка `task/S3-2-log-redaction`. Head до этого фикса:
+`fcf96c5` (merge `e934ced`), база PR — `7bca728`.
 
 ## Дефект
 
@@ -9,70 +9,81 @@ merge `main` — `131ac2c` + этот коммит.
 `message`/`stack`, поэтому ответ провайдера с ФИО, телефоном или адресом
 попадал в логи. Source-audit #73 это не ловил.
 
+Дополнительно source audit пропускал `code: error`: `code` входит в
+allowlist ключей, а значение не проверялось. Мутация `code: error` в
+`delivery.route.ts:48` / `shipment.route.ts:74` давала 11/11.
+
 ## Фикс
 
 `apps/api/src/delivery/delivery.reconcile.ts`:
 
 - `safeErrorForLog(error): { name; code? }`.
-- `SAFE_ERROR_NAME` — 1..32 символа, начинает с латинской буквы:
-  `Error`, `CdekApiError`.
-- `SAFE_ERROR_CODE` — 1..64 символа, начинает с латинской буквы:
-  `ECONNRESET`, `ERR_CDEK_TIMEOUT`. Ограничение длины задокументировано в
-  коде.
+- `SAFE_ERROR_NAME` — 1..32 символа, начинает с латинской буквы.
+- `SAFE_ERROR_CODE` — 1..64 символа, начинает с латинской буквы.
 - Пробелы, запятые, `+`, `@`, кириллица и прочие символы, которыми можно
   передать ФИО/телефон/адрес, в allowlist не входят.
 - `message`, `stack`, `body`, `cause` не копируются.
-- Оба `err: error` заменены на `err: safeErrorForLog(error)`
-  (`delivery_reconcile_failed`, `delivery_reconcile_provider_error`).
+- Оба `err: error` заменены на `err: safeErrorForLog(error)`.
 - Логика reconcile, статусы, `touchAttempt`, порядок строк не менялись.
 
 ## AC и тесты
 
-`apps/api/src/delivery/delivery.log-redaction.test.ts` — 11 тестов.
+`apps/api/src/delivery/delivery.log-redaction.test.ts` — 14 тестов.
 
 | AC | Проверка |
 |----|----------|
-| Провайдер бросает `Error` с ФИО/телефоном/адресом | `pinoOutput()` сериализует `Error` как pino (`message`/`stack`); PII нет |
+| Провайдер бросает `Error` с ФИО/телефоном/адресом | `pinoOutput()` сериализует `Error` как pino; PII нет |
 | `err` только `name`/`code` | `{ name: "Error", code: "ECONNRESET" }`, ключи `["code","name"]` |
-| Оба catch-места reconcile | provider error и row/transaction error дают одинаково безопасный `err` |
+| Оба catch-места reconcile | provider error и row/transaction error дают безопасный `err` |
 | Non-Error throw | `{ name: "UnknownError" }`, PII нет |
 | `error.name = "Иван Тестов"` | `{ name: "UnknownError" }`, PII нет |
 | `error.code = "[PII_PHONE]"` | `{ name: "Error" }` без `code`, PII нет |
 | `error.cause = new Error(PII)` | `cause` не копируется, raw Error не логируется |
-| Аудит второго аргумента pino | `loggedPayloads()` включает payload и message; `pinoOutput()` сканирует оба |
-| Вложенный raw Error | `rawErrorPaths()` рекурсивно ищет `Error` в payload, включая `cause` |
-| Source audit | в production-файлах delivery нет `err: error`, `error: err`, `log.error(error)`, `{ error }`, `{ err }`, `{ cause }`; ключи payload в allowlist; `err:` только `safeErrorForLog(error)` |
+| `error.body = "[PII_ADDRESS]"` | `body` не копируется, PII нет |
+| Границы allowlist | name 32 проходит, 33 → `UnknownError`; code 64 проходит, 65 → без `code` |
+| Второй аргумент pino | `loggedPayloads()` включает payload и message; `pinoOutput()` сканирует оба |
+| Вложенный raw Error | `rawErrorPaths()` рекурсивно ищет `Error`, включая `cause` |
+| Source audit: значение любого ключа | `code: error`, `err`, `cause`, `new Error` запрещены, включая nested objects/arrays; self-test fixture `{ code: error }` |
+| Source audit: `err:` | только `safeErrorForLog(error)` |
+| Source audit: route `error.code` | явно разрешено только `error.code ?? "internal_error"`; `code: error` падает |
 
 ## RED
 
-RED-вывод обезличен: телефон заменён на `[PII_PHONE]`, абсолютные
-локальные пути убраны. Полный вывод — `S3-2-log-red.txt`.
+`S3-2-log-red.txt`:
+
+- **Current RED** — base-реализация `7bca728` против текущего тестового
+  файла, актуальные номера строк: 10 failed / 4 passed (14).
+- **Historical RED** — commit `c20c634`, 3 теста, старые номера строк
+  помечены как historical.
+- Выводы обезличены: PII заменён на `[PII_*]`, абсолютные пути убраны.
 
 ```
 $ pnpm --filter @localhand/api exec vitest run src/delivery/delivery.log-redaction.test.ts
  Test Files  1 failed (1)
-      Tests  3 failed (3)
+      Tests  10 failed | 4 passed (14)
 ```
 
-Причина: `err: error` — `err` равен `Error` с
-`message: "Иван Тестов, [PII_PHONE], Невский проспект, 1"`.
+## Mutation RED
 
-## Mutation RED (доказательство allowlist)
+Все мутации прогнаны на текущем тестовом файле, затем исходники
+восстановлены. Полные выводы — `S3-2-log-red.txt`.
 
-`S3-2-log-red.txt`, секции Mutation A/B:
+| Мутация | RED |
+|---------|-----|
+| M1: `delivery.route.ts:48` → `code: error` | source audit: `delivery.route.ts expected [Array(1)] to deeply equal []`; route allowlist: `[ 'error' ]` vs `[ 'error.code ?? "internal_error"' ]`; 2 failed / 12 passed |
+| M2: `shipment.route.ts:74` → `code: error` | то же для `shipment.route.ts`; 2 failed / 12 passed |
+| M3: копировать `error.body` | `does not copy error.body`: `expected { name: 'Error', …(1) } to deeply equal { name: 'Error' }`; 1 failed / 13 passed |
+| M4: копировать `error.cause` | `does not copy error.cause`: `expected { name: 'Error', …(1) } to deeply equal { name: 'Error' }`; 1 failed / 13 passed |
+| M5: `SAFE_ERROR_NAME {0,31}` → `{0,32}` | bounds: 33-символьное имя проходит, `expected { Object (name) } to deeply equal { name: 'UnknownError' }`; 1 failed / 13 passed |
+| M6: `SAFE_ERROR_CODE {0,63}` → `{0,64}` | bounds: 65-символьный code проходит, `expected { name: 'Error', …(1) } to deeply equal { name: 'Error' }`; 1 failed / 13 passed |
 
-| Мутация | Результат |
-|---------|-----------|
-| Убрать `SAFE_ERROR_NAME.test(error.name)` | падает `falls back to UnknownError when error.name looks like PII`: `expected { name: 'Иван Тестов' } to deeply equal { name: 'UnknownError' }`; 1 failed / 10 passed |
-| Убрать `SAFE_ERROR_CODE.test(rawCode)` | падает `drops an unsafe error.code instead of logging it`: `expected { name: 'Error', code: '...' } to deeply equal { name: 'Error' }`; 1 failed / 10 passed |
-
-После мутаций обе проверки восстановлены, файл снова зелёный 11/11.
+После восстановления — **14/14 green**.
 
 ## GREEN
 
 ```
  Test Files  1 passed (1)
-      Tests  11 passed (11)
+      Tests  14 passed (14)
 ```
 
 ## Targeted
@@ -85,44 +96,45 @@ $ DATABASE_URL=...localhand_s3_2_log_test \
     src/delivery/delivery.reconcile.db.test.ts \
     src/delivery/delivery.reconcile.edge.db.test.ts
  Test Files  3 passed (3)
-      Tests  20 passed (20)
+      Tests  23 passed (23)
 ```
 
 ## REFACTOR
 
-- `safeErrorForLog` вынесен отдельно; allowlist разделён на
-  `SAFE_ERROR_NAME` (32) и `SAFE_ERROR_CODE` (64) с контрактом в
-  комментарии.
-- `loggedPayloads` теперь включает оба аргумента pino (payload + message),
-  `rawErrorPaths` рекурсивно ловит raw `Error`, включая `cause`.
-- Добавлен source audit: raw `err`/`error` пары, `log.error(error)`,
-  shorthand `{ error }`/`{ err }`/`{ cause }`, allowlist ключей payload.
-- Route `error.code` — pre-existing machine code, не объект ошибки:
-  зафиксирован allowlist в source audit (комментарий в тесте).
-- Поведение reconcile не менялось; 11/11 green.
+- Source audit вынесен в `sourceViolations()`: проверяет не только ключи,
+  но и значения любого ключа, включая nested objects/arrays; self-test
+  `{ code: error }` доказывает, что ложное пропускание закрыто.
+- `error.code` разрешён только как property access; `code: error`
+  отклоняется.
+- `loggedPayloads` включает оба аргумента pino; `rawErrorPaths`
+  рекурсивно ловит raw `Error`, включая `cause`.
+- Allowlist разделён на `SAFE_ERROR_NAME` (32) и `SAFE_ERROR_CODE` (64),
+  границы покрыты тестом и mutation RED.
+- Поведение reconcile не менялось; 14/14 green.
 
 ## Остальные delivery-логи
 
 `S3-2-log-grep.txt`: в production-файлах delivery нет raw `err`/`error`,
-`log.error(error)` и shorthand. `delivery.route.ts`/`shipment.route.ts`
-логируют только `error.code`; scheduler — фиксированный `code`;
-`delivery.route.ts:116` — строковый код quote-ошибки, не объект ошибки.
+`code: error`, `new Error`-значений и shorthand. Route-логи используют
+только `error.code`; scheduler — фиксированный `code`;
+`delivery.route.ts:116` — строковый код quote-ошибки.
 
 ## Verify
 
 ```
 $ DATABASE_URL=... DATABASE_URL_TEST=... JWT_SECRET=... OTP_SECRET=... pnpm verify
  EXIT: 0
- Public repo check: 578 tracked files, no secrets/PII patterns found
- shared: 12 files / 160 tests passed
+ Public repo check: 586 tracked files, no secrets/PII patterns found
+ shared: 12 files / 161 tests passed
  web:    25 files / 220 tests passed
- api:    42 files / 386 tests passed
+ api:    42 files / 389 tests passed
  build:  web + api done
  openspec validate --all --strict: 9 passed, 0 failed
 ```
 
-Счётчики на базе `7bca728`: shared 160, web 212, api 378, public 567.
-На текущем head: shared 160, web 220, api 386, public 578. Полный вывод —
+Счётчики на head до фикса (`fcf96c5` / merge `e934ced`): shared 161,
+web 220, api 386, public 586; targeted 20; code+tests 425.
+После этого фикса: api 389, targeted 23, code+tests 515. Полный вывод —
 `S3-2-log-verify.txt`.
 
 ## Границы

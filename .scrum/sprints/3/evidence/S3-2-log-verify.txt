@@ -14,15 +14,12 @@ $ prettier --check .
 Checking formatting...
 All matched files use Prettier code style!
 $ node scripts/check-public-repo.mjs
-Public repo check: 578 tracked files, no secrets/PII patterns found
+Public repo check: 586 tracked files, no secrets/PII patterns found
 $ pnpm --filter @localhand/shared build && pnpm -r test
 $ tsc -p tsconfig.build.json
 Scope: 4 of 5 workspace projects
 packages/shared test$ vitest run --passWithNoTests
 packages/ui test$ vitest run --passWithNoTests
-packages/shared test:
-packages/shared test:  RUN  v5.1.2 ./packages/shared
-packages/shared test:
 packages/ui test:
 packages/ui test:  RUN  v5.1.2 ./packages/ui
 packages/ui test:
@@ -31,16 +28,19 @@ packages/ui test:
 packages/ui test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
 packages/ui test: exclude:  **/node_modules/**, **/.git/**
 packages/ui test:
+packages/shared test:
+packages/shared test:  RUN  v5.1.2 ./packages/shared
+packages/shared test:
 packages/ui test: Done
 packages/shared test:
 packages/shared test:  Test Files  12 passed (12)
-packages/shared test:       Tests  160 passed (160)
-packages/shared test:    Start at  15:31:08
-packages/shared test:    Duration  914ms (import 68%, tests 20%, transform 8%, worker 4%)
+packages/shared test:       Tests  161 passed (161)
+packages/shared test:    Start at  15:45:38
+packages/shared test:    Duration  878ms (import 67%, tests 22%, transform 7%, worker 4%)
 packages/shared test:
 packages/shared test: Done
-apps/web test$ vitest run
 apps/api test$ vitest run
+apps/web test$ vitest run
 apps/api test:
 apps/api test:  RUN  v5.1.2 ./apps/api
 apps/api test:
@@ -50,22 +50,22 @@ apps/web test:
 apps/web test:
 apps/web test:  Test Files  25 passed (25)
 apps/web test:       Tests  220 passed (220)
-apps/web test:    Start at  15:31:10
-apps/web test:    Duration  17.46s (tests 42%, environment 30%, import 19%, setup 6%, transform 2%)
+apps/web test:    Start at  15:45:39
+apps/web test:    Duration  14.69s (tests 42%, environment 30%, import 20%, setup 6%, transform 2%)
 apps/web test:
-apps/web test: Environment  jsdom was created 25 times · 32.84s total, 30% of tracked time
+apps/web test: Environment  jsdom was created 25 times · 28.27s total, 30% of tracked time
 apps/web test:              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
 apps/web test:              learn more: https://vitest.dev/guide/improving-performance#test-environments
 apps/web test:
 apps/web test: Done
 apps/api test:
 apps/api test:  Test Files  42 passed (42)
-apps/api test:       Tests  386 passed (386)
-apps/api test:    Start at  15:31:10
-apps/api test:    Duration  49.44s (tests 83%, import 16%, worker 1%)
+apps/api test:       Tests  389 passed (389)
+apps/api test:    Start at  15:45:39
+apps/api test:    Duration  45.90s (tests 83%, import 17%)
 apps/api test:
-apps/api test:     Isolate  42 workers spawned · ~113ms startup each (spawn + environment, per file)
-apps/api test:              at least ~4.63s faster with isolate: false — reuses workers across files instead of one per file
+apps/api test:     Isolate  42 workers spawned · ~108ms startup each (spawn + environment, per file)
+apps/api test:              at least ~4.44s faster with isolate: false — reuses workers across files instead of one per file
 apps/api test:
 apps/api test: Done
 $ pnpm -r build
@@ -89,14 +89,14 @@ apps/web build: dist/assets/golos-text-cyrillic-wght-normal-mKek_fSS.woff2      
 apps/web build: dist/assets/martian-mono-latin-wght-normal-5W32yIyr.woff2        23.55 kB
 apps/web build: dist/assets/golos-text-latin-wght-normal-BS5oQT7X.woff2          37.91 kB
 apps/web build: dist/assets/index-DOMfajIs.css                                   42.29 kB │ gzip:  11.30 kB
-apps/web build: dist/assets/index-DLoeIfGk.js                                   613.38 kB │ gzip: 171.73 kB
+apps/web build: dist/assets/index-BwusgA_5.js                                   613.39 kB │ gzip: 171.74 kB
 apps/web build:
 apps/web build: [plugin builtin:vite-reporter]
 apps/web build: (!) Some chunks are larger than 500 kB after minification. Consider:
 apps/web build: - Using dynamic import() to code-split the application
 apps/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 apps/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-apps/web build: ✓ built in 723ms
+apps/web build: ✓ built in 639ms
 apps/web build: Done
 apps/api build: Done
 $ openspec validate --all --strict
