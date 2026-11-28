@@ -56,7 +56,7 @@ Durable-путь: `.scrum/sprints/4/tasks/S4-2a2/handoff.md`. Ветка
 - `#task-4`: merge A1 → A2.
 - `#spec`: namespace `DeliverySummaryCard` (`delivery.*` vs
   `orders.delivery.*`).
-- Review: не запрошен; PR не открыт (push недоступен).
+- Review: APPROVE, PR #90 (push недоступен).
 
 ## Doc change
 

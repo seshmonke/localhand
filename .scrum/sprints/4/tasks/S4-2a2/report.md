@@ -122,7 +122,7 @@ baseline = 0, остаётся W2 (424) для S4-3.
 ## Doc change и drift
 
 - `No doc change: i18n refactor`; ADR 0006 и план спринта актуальны.
-- Stale claims: none.
+- Stale claims: none; bundle +0.56% gzip (в бюджете ADR 0004).
 - Обещание теста: ссылки в TDD/AC.
 - Будущее как текущее: S4-2b помечен «не реализован».
 
@@ -134,7 +134,7 @@ baseline = 0, остаётся W2 (424) для S4-3.
   Architect до B2.
 - Открытые треды: `#task-4` (merge A1/A2), `#spec` (namespace
   `delivery.*`).
-- PR не открыт: push в окружении недоступен, передан SHA.
+- PR #90 открыт; review APPROVE, передан SHA.
 
 ## Блокеры
 
