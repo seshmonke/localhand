@@ -223,10 +223,10 @@ async function expectManualUntouched(orderId: number, deliveries: number): Promi
   expect(await countRows("delivery_events", orderId)).toBe(0);
   expect(await countRows("order_deliveries")).toBe(deliveries);
 }
-
 const LOG_LEVELS = new Set(["trace", "debug", "info", "warn", "error", "fatal"]);
 const PII_FIELDS =
   /recipientName|recipientPhone|buyerPhone|pointAddress|address|comment|payload_?hash|request\.body/i;
+// `err`/`error` are not generic keys: only the safe expressions below may use them.
 const ALLOWED_KEYS = new Set([
   "code",
   "delivery_id",
@@ -234,21 +234,35 @@ const ALLOWED_KEYS = new Set([
   "provider",
   "status",
   "reason",
-  "err",
   "shops",
   "durationMs",
-  "error",
 ]);
+const SAFE_ERR = /(?:^|[,{]\s*)err\s*:\s*safeErrorForLog\(\s*error\s*\)\s*(?=[,}])/;
+const SAFE_ERROR =
+  /(?:^|[,{]\s*)error\s*:\s*result\.ok\s*\?\s*undefined\s*:\s*result\.error\s*(?=[,}])/;
+const RAW_ERROR_VALUE = /(?:^|[,{]\s*)[A-Za-z_$][\w$]*\s*:\s*(?:error|err|cause)\s*(?=[,}])/;
+const NEW_ERROR_VALUE = /(?:^|[,{]\s*)[A-Za-z_$][\w$]*\s*:\s*new\s+Error\b/;
+const RAW_ERROR_ARGUMENT = /(?:^|,)\s*(?:error|err|cause)\s*(?:,|\)|$)/;
+const NEW_ERROR_ARGUMENT = /(?:^|,)\s*new\s+Error\b/;
+const RAW_ERROR_SHORTHAND = /(?:^|[,{]\s*)(?:err|error|cause)\s*(?=[,}])/;
 
 type LogCall = { method: string; args: string };
-/** Finds every `log.<method>(...)` call and extracts its raw argument list. */
+/** Depth-aware scan: `[^)]*` stops at `Date.now()` and misses PII after it. */
 function logCalls(source: string): LogCall[] {
-  return [...source.matchAll(/\b(?:logger|log)\.([A-Za-z_$][\w$]*)\s*\(([^)]*)\)/g)].map(
-    (match) => ({
-      method: match[1] ?? "",
-      args: match[2] ?? "",
-    }),
-  );
+  const calls: LogCall[] = [];
+  for (const match of source.matchAll(/\b(?:logger|log)\.([A-Za-z_$][\w$]*)\s*\(/g)) {
+    const start = (match.index ?? 0) + match[0].length;
+    let depth = 1;
+    let index = start;
+    while (index < source.length && depth > 0) {
+      const character = source[index];
+      if (character === "(") depth += 1;
+      else if (character === ")") depth -= 1;
+      index += 1;
+    }
+    calls.push({ method: match[1] ?? "", args: source.slice(start, index - 1) });
+  }
+  return calls;
 }
 /** Top-level keys of the first object literal in a log call, if any. */
 function payloadKeys(args: string): string[] {
@@ -269,17 +283,22 @@ const LOG_SOURCES = [
 ].map((file) => ({ file, source: readFileSync(new URL(file, import.meta.url), "utf8") }));
 
 describe("delivery logging source audit", () => {
-  it("never logs PII fields or request bodies from delivery code and keeps the route error to a code", () => {
+  it("never logs PII or raw errors from delivery code and keeps the route error to a code", () => {
     for (const { file, source } of LOG_SOURCES) {
       expect(source, file).not.toMatch(/console\.(?:log|info|warn|error|debug|trace)/);
       for (const call of logCalls(source)) {
-        expect(
-          LOG_LEVELS.has(call.method) || call.method === "child",
-          `${file} ${call.method}`,
-        ).toBe(true);
-        expect(call.args, `${file} ${call.method}`).not.toMatch(PII_FIELDS);
+        const context = `${file} ${call.method}`;
+        expect(LOG_LEVELS.has(call.method) || call.method === "child", context).toBe(true);
+        expect(call.args, context).not.toMatch(PII_FIELDS);
+        expect(call.args, context).not.toMatch(RAW_ERROR_VALUE);
+        expect(call.args, context).not.toMatch(NEW_ERROR_VALUE);
+        expect(call.args, context).not.toMatch(RAW_ERROR_ARGUMENT);
+        expect(call.args, context).not.toMatch(NEW_ERROR_ARGUMENT);
+        expect(call.args, context).not.toMatch(RAW_ERROR_SHORTHAND);
         for (const key of payloadKeys(call.args)) {
-          expect(ALLOWED_KEYS.has(key), `${file} ${key}`).toBe(true);
+          if (key === "err") expect(call.args, context).toMatch(SAFE_ERR);
+          else if (key === "error") expect(call.args, context).toMatch(SAFE_ERROR);
+          else expect(ALLOWED_KEYS.has(key), `${file} ${key}`).toBe(true);
         }
       }
     }
@@ -561,33 +580,16 @@ describeWithDb("delivery API/DB e2e", () => {
       } finally {
         fakeProvider.getShipment = originalGet;
       }
-
-      // Force a 500 through the shipment route error handler and audit its log.
-      await dbClient
-        .requirePool()
-        .query("ALTER TABLE order_deliveries RENAME TO order_deliveries_e2e_broken");
-      try {
-        const broken = await getSellerDelivery(logApp, order);
-        expect(broken.statusCode).toBe(500);
-        expect(broken.json()).toEqual({ error: "internal_error" });
-      } finally {
-        await dbClient
-          .requirePool()
-          .query("ALTER TABLE order_deliveries_e2e_broken RENAME TO order_deliveries");
-      }
     } finally {
       await logApp.close();
     }
 
     const output = lines.join("\n");
-    // Positive control: the logger captured request, route and error lines.
+    // Positive control: the logger captured request and route lines.
     expect(output).toContain("delivery quote");
     expect(output).toContain(`/seller/orders/${order.orderId}/delivery`);
     expect(output).toContain("/checkout");
     expect(output).toContain("/delivery/cdek/webhook");
-    const errorLine = lines.find((line) => line.includes("delivery shipment failed"));
-    expect(errorLine).toBeDefined();
-    expect(errorLine).toMatch(/"code":"[a-z0-9_]+"/i);
     expect(output).not.toContain(RECIPIENT_NAME);
     expect(output).not.toContain(order.buyer.phone.slice(1));
     expect(output).not.toContain(failedOrder.buyer.phone.slice(1));

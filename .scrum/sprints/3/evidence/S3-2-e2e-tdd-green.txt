@@ -1,25 +1,29 @@
 # GREEN evidence: S3-2-E2E API/DB delivery e2e
-# date: 2026-11-28; branch task/S3-2-e2e-api; base 339f0c5 (+ main merge).
+# date: 2026-11-28; branch task/S3-2-e2e-api; base merged main 22c6d8b.
 
-## 1. New e2e + existing delivery DB suites
+## 1. New e2e + delivery log-redaction + existing DB suites
 $ DATABASE_URL_TEST=postgres://localhand:localhand@localhost:5433/localhand_s2_test \
   JWT_SECRET=… OTP_SECRET=… pnpm --filter @localhand/api exec vitest run \
   src/delivery/delivery.e2e.db.test.ts \
+  src/delivery/delivery.log-redaction.test.ts \
   src/delivery/shipment.db.test.ts \
   src/delivery/shipment.manual.db.test.ts
 
- Test Files  3 passed (3)
-      Tests  22 passed (22)
+ Test Files  4 passed (4)
+      Tests  36 passed (36)
 exit=0
 
-New file, 5 tests:
-  - delivery logging source audit (no PII fields/request bodies in log calls)
+New e2e file, 5 tests (600 lines):
+  - delivery logging source audit (depth-aware, no raw err/error, no PII)
   - runs quote -> checkout -> paid -> tariffs -> create -> webhook -> delivered
   - allows manual after a definitive create failure when the remote lookup is null
   - blocks manual when the remote lookup fails or a remote shipment exists
   - keeps recipient PII and payload hashes out of info/warn/error logs
 
+#77 log-redaction, 14 tests: runtime reconcile provider/row PII redaction
+(safe {name, code?}), no raw Error/cause/body, safeErrorForLog audit.
+
 ## 2. Full API suite (inside pnpm verify)
-apps/api test:  Test Files  42 passed (42)
-apps/api test:       Tests  380 passed (380)
+apps/api test:  Test Files  43 passed (43)
+apps/api test:       Tests  394 passed (394)
 exit=0

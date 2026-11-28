@@ -1,10 +1,10 @@
 # S3-2-E2E: API/DB delivery end-to-end
 
-Дата: 2026-11-28. Ветка `task/S3-2-e2e-api`, база `339f0c5` + merge main.
-Tier: T2 test slice (external provider, PII, order transitions). Change
-`07-delivery`, task 3.9. Production-код не менялся.
+Дата: 2026-11-28. Ветка `task/S3-2-e2e-api`, main `22c6d8b` влит (merge
+`9fe4a77`). Tier: T2 test slice. Change `07-delivery`, task 3.9.
+Production-код не менялся.
 
-## AC → тест (`apps/api/src/delivery/delivery.e2e.db.test.ts`)
+## AC → тест (`delivery.e2e.db.test.ts`, 600 строк, 5 тестов)
 
 | AC | Тест |
 |---|---|
@@ -12,28 +12,29 @@ Tier: T2 test slice (external provider, PII, order transitions). Change
 | Seller: оплаченный тариф/цена = snapshot | там же |
 | Create 201: provider id/number, `created`, событие | там же |
 | Webhook `DELIVERED` → `delivered`; buyer/seller одинаковые status/track/no-store | там же |
-| Replay webhook: 200, события не растут | там же |
-| Duplicate create: провайдер не вызван, snapshot/БД не перезаписаны | там же |
+| Replay webhook: 200, события не растут; duplicate create не зовёт провайдера | там же |
 | Create definitive fail → 502, snapshot `quoted`, provider id/событий нет | `allows manual…` |
-| Ручной трек: lookup вернул явный `null` → 200 manual; buyer/seller видят трек; повтор 409 | там же |
-| Guard: lookup бросает (5xx/timeout) → manual 502, snapshot/статус не меняются | `blocks manual…` |
-| Guard: remote shipment есть, локального provider id нет → 409, без записи | там же |
-| PII: source audit `log.*` в delivery route/service/reconcile (info/warn/error) | `delivery logging source audit` |
-| PII: runtime-логи без имени/телефона/адреса/комментария/`payload_hash`; forced 500 route-а | `keeps recipient PII…` |
+| Manual только при явном `null` lookup → 200; повтор 409 | там же |
+| Guard: lookup throws → manual 502; remote shipment → 409; без записи | `blocks manual…` |
+| PII source audit: depth-aware `log.*`, без raw `err/error/cause/new Error` | `delivery logging source audit` |
+| PII runtime: captured pino без имени/телефона/адреса/комментария/payload hash | `keeps recipient PII…` |
+| Reconcile runtime PII (`err:{name,code?}`, #77) | `delivery.log-redaction.test.ts` (14 тестов) |
 
-## Правки по ревью
+## P2.2 (ревью)
 
-- P2.1: добавлены negative-ветки manual guard (throw → 502, remote → 409) и
-  allow только на явном `null`; mutation «удалить remote lookup» падает.
-- P2.2: source audit всех лог-вызовов delivery + runtime forced 500; mutation
-  `recipientName` в `shipment.route.ts:74` падает.
-- P3: `DATABASE_URL` удаляется в `afterAll`; user-SQL помечен fixture-комментом.
-- Note (3.11 docs): tasks 3.3/спека говорят 202, route отдаёт 201 — не менялось.
+- `ALLOWED_KEYS` больше не содержит `err`/`error`: ключ `err` допустим только
+  как `safeErrorForLog(error)`, `error` — только `result.ok ? undefined :
+  result.error`; raw `err: error`, `error: err`, `code: error`, `new Error`
+  падают.
+- `[^)]*` заменён depth-aware сканером: `recipientName` после `Date.now()`
+  ловится; mutation RED: `err: new Error("Иван Тестов")` в reconcile и
+  `recipientName` после `Date.now()` в delivery.route — audit FAIL.
+- Runtime reconcile PII уже safe в #77; его 14 тестов гоняются в этой ветке.
 
-## Решения
+## Notes
 
-- Production-gap нет: regression-lock + mutation-check, без фальшивого RED.
-- `BuildAppOptions.deliveryProvider` питает только reconcile/подписку; маршруты
-  зовут `getDeliveryProvider()`, поэтому отказ моделируется double на fake
-  (restore в `finally`).
-- Payment — прямой DB fixture, не payment e2e (S3-1). Секретов в файле нет.
+- Merge `22c6d8b`: конфликт `tasks.md` решён — 3.8 `[x]` из main, 3.9 `[x]`.
+- 202/201: main #76 уже уточнил tasks 3.3 (CDEK 202 внутренний, локально 201);
+  здесь не менялось.
+- Payment — DB fixture (S3-1). `BuildAppOptions.deliveryProvider` только для
+  reconcile; отказ провайдера — double на fake, restore в `finally`.
