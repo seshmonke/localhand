@@ -77,4 +77,4 @@
 
 - 28.11.2026. Тексты: программа Text review (voice/anti-slop, W1–W3,
   PR-гейт) добавлена в `docs/tasks/text-review.md`; W1 — Sprint 4,
-  W2/W3 — Sprint 4–5. Sprint 3.
+  W2/W3 — Sprint 4–5. Sprint 4 planning.

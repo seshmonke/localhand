@@ -1,7 +1,12 @@
+> **Context:** `status: plan` · `updated: 2026-11-28` · `owner: Copywriter + SM` ·
+> `sprint: —` · `task: —` · `change: No spec change: process/voice` ·
+> links: [INDEX](INDEX.md) · [content](../design/content.md) ·
+> [copywriting codex](../../.opencode/skills/scrum-crew/references/copywriting.md)
+
 # Text review wave
 
 Статус: **программа**. W1 — Sprint 4, W2/W3 — Sprint 4–5.
-Владелец: Copywriter + SM. Дата: 28.11.2026.
+Владельцы: Copywriter (voice), SM (процесс/волны). Дата: 28.11.2026.
 Источник: решение владельца «добавить ревью всех текстов» + роль
 Copywriter и анти-слоп в `scrum-crew` v0.6.0
 (`.opencode/skills/scrum-crew/references/copywriting.md`).
@@ -19,8 +24,8 @@ Copywriter и анти-слоп в `scrum-crew` v0.6.0
 | UI P0 | checkout, оплата, доставка, статусы заказа, ошибки/пустые/loading, 401/404/409/502 | W1 |
 | UI P1 | витрина, магазин, карточка, корзина, заказы buyer/seller, админка, auth | W2 |
 | Системные тексты | SMS/email (когда появятся), validation, dev-страницы, 404 | W1–W2 |
-| Публичные docs | README, `docs/concept`, `docs/design`, `docs/quality`, `docs/stack`, ADR/runbooks | W3 |
-| Процессные docs | `AGENTS.md`, `docs/tasks`, `.scrum/README.md`, task brief/report | W2–W3 |
+| Публичные docs | корневой `README.md`, `docs/concept`, `docs/design`, `docs/quality`, `docs/stack`, ADR/runbooks | W3 |
+| Процессные docs | `AGENTS.md`, `docs/tasks`, `.scrum/README.md`, `.scrum/sprints/**/tasks/**`, `openspec/specs` (user-facing формулировки) | W2–W3 |
 
 Вне скоупа: юридические тексты (владелец/юрист), архивные changes и
 старые спринты, имена кода/API/БД, переводы.
@@ -40,22 +45,28 @@ Copywriter и анти-слоп в `scrum-crew` v0.6.0
 
 ## Метод
 
-1. **Inventory.** `rg` по `apps/web/src`, `docs`, `openspec/specs`,
-   `.github`, `AGENTS.md`; таблица `surface → files → owner → priority`.
-   Строки в коде — через компоненты/константы, не по одному файлу.
+1. **Inventory.** `grep -RIn` по `README.md`, `AGENTS.md`, `apps/web/src`,
+   `apps/web/index.html`, `docs`, `openspec/specs`, `.github`, `.scrum`;
+   таблица `surface → files → owner → priority → wave`. Строки в коде —
+   через компоненты/константы, не по одному файлу. `rg` не требуется.
+   Маппинг: checkout/payment/delivery/errors → W1; витрина/заказы/
+   админка/auth → W2; docs/README/content → W3.
 2. **Baseline.** `slop-check` по текстовым файлам; ручное чтение
    Copywriter; список ложных обещаний и расхождений глоссария.
 3. **W1 P0.** Checkout/оплата/доставка/статусы/ошибки; сначала
    ошибки и деньги, потом остальное. Малые PR по поверхности.
 4. **W2 P1.** Витрина/карточка/корзина/заказы/админка/auth.
-5. **W3 P2.** Публичные и процессные docs; контекстные шапки не
-   переписывать массово.
+5. **W3 P2.** Публичные и процессные docs; создать/обновить
+   `docs/design/content.md` (voice/глоссарий) и ссылку в
+   `docs/design/README.md`; контекстные шапки не переписывать массово.
 6. **Ongoing gate.** Новый/изменённый user-facing текст — Copywriter
    review не-автора + `slop-check`; ссылка в PR или `No text change`.
 
 Правила PR: только текст/разметка, без изменения поведения; если текст
 меняет смысл статуса/ошибки — сверить спеку и тесты; скриншоты 320/1440
-для UI; ПДн не в примерах.
+для UI; axe/клавиатура для error/empty/loading; ПДн не в примерах.
+`No text change: <причина>` — допустимый маркер для PR без текста;
+`No doc change` остаётся для host-doc.
 
 ## AC программы
 
@@ -65,21 +76,25 @@ Copywriter и анти-слоп в `scrum-crew` v0.6.0
 - [ ] W2: витрина/карточка/корзина/заказы/админка/auth — 100%.
 - [ ] W3: публичные и процессные docs — 100%, архивы не переписаны.
 - [ ] PR-шаблон и DoD содержат text gate; Copywriter review не-автора.
-- [ ] Глоссарий и voice зафиксированы в `docs/design/content.md`.
+- [ ] Глоссарий и voice зафиксированы в `docs/design/content.md` +
+      ссылка из `docs/design/README.md` (W3).
 - [ ] Новые тексты проходят gate; `No text change` допустим с причиной.
 - [ ] `pnpm verify`, `openspec validate --all --strict` зелёные.
 
 ## Роли
 
-- **Copywriter** — голос, глоссарий, ревью, anti-slop, финальный текст.
-- **PO/owner** — обещания, цены, сроки, юридические формулировки.
+- **Copywriter** — голос, глоссарий, ревью, anti-slop; не переписывает
+  чужие task/state, правки вносит host owner.
+- **PO/owner** — обещания, цены, сроки; **Legal** — допустимость claims
+  и приватность, вето на релиз.
 - **SM** — план волн, WIP, evidence, ретро.
 - **Reviewer не-автора** — проверяет text review и drift.
-- **Frontend/Backend** — выносит строки, не меняет поведение.
+- **Frontend/Backend/Worker** — выносит строки, не меняет поведение.
 
 ## Метрики
 
-- Slop hits на изменённых файлах: 0.
+- Slop hits на новых/изменённых строках: 0; baseline существующих
+  hits — в inventory, не считается регрессией.
 - Ложные обещания/недоказанные факты: 0.
 - Расхождения глоссария: 0.
 - Покрытие ревью изменённых user-facing текстов: 100%.
@@ -96,5 +111,5 @@ Copywriter и анти-слоп в `scrum-crew` v0.6.0
 
 - Inventory и baseline-отчёт.
 - PR по волнам с `slop-check` и ссылками на ревью.
-- Обновлённые `docs/design/content.md`, PR-шаблон, DoD.
+- `docs/design/content.md` (создан baseline), PR-шаблон, DoD.
 - Итоговый отчёт: метрики, остатки, owner.

@@ -35,8 +35,8 @@ ACCEPT, change `02-seller-onboarding` заархивирован.
   в Sprint 4. Durable workspace:
   [.scrum/sprints/3/sprint.md](../../.scrum/sprints/3/sprint.md).
 - Sprint 4 — не начат. Кандидаты: `08-order-lifecycle`,
-  `09-orders-pagination`, Q1.1/Q1.2; live-интеграции и юрпакет —
-  owner-гейты.
+  `09-orders-pagination`, Q1.1/Q1.2, Text review W1; live-интеграции и
+  юрпакет — owner-гейты.
 
 ## Бэклог
 

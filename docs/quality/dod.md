@@ -6,9 +6,10 @@ T1 — обычная фича, T2 — деньги, authz, PII/адреса, к
 заказов, миграции, платёжные/внешние провайдеры.
 
 **T0:** DoR — ссылки/факты проверяемы, `No spec change`; DoD —
-`verify`, prettier/check:public, ревью; a11y обязателен, если UI. TDD,
-e2e, proposal/spec, preview, smoke, rollback и OpenSpec archive не
-требуются. Для T0 общий чеклист ниже не применяется.
+`verify`, prettier/check:public, ревью; a11y обязателен, если UI;
+Copywriter review + `slop-check` для пользовательских/публичных текстов.
+TDD, e2e, proposal/spec, preview, smoke, rollback и OpenSpec archive не
+требуются. Для T0 общий чеклист ниже не применяется, кроме text gate.
 
 ## Definition of Ready (PBI)
 
