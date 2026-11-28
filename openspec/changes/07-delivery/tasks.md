@@ -26,7 +26,7 @@ A foundation, B checkout/UI, C shipment/status/e2e.
 - [ ] 2.2 CDEK client OAuth/cache/cities/points/calculator; point-city validation; volumetric weight; fake fixtures.
 - [x] 2.3 `GET /delivery/cities`, `/points`, `POST /delivery/quote`; signed quoteToken TTL 10 мин/hash; 30/min; no-store.
 - [x] 2.4 Checkout schema `delivery {cityCode,pointCode,recipientName,quoteToken}`; per-shop verify; `delivery_kopecks`/total; 409 stale/invalid/shop tamper; DB tests multi-shop/dimensions/city/point/total.
-- [ ] 2.5 Product dimensions API/contracts + admin product form; shop city/PVZ API + `/admin/shop`; `shop_shipment_point_missing` test.
+- [x] 2.5 Product dimensions API/contracts + admin product form; shop city/PVZ API + `/admin/shop`; `shop_shipment_point_missing` test.
 - [ ] 2.6 Checkout UI: city/PVZ/quote/price/period/recipient name; errors/retry; axe.
 - [ ] 2.7 Orders API/UI delivery snapshot; old orders 0; `pnpm verify`; PR B evidence.
 
