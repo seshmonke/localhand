@@ -99,7 +99,7 @@ describe("OrdersPage", () => {
 
     expect(await screen.findByRole("heading", { level: 2, name: "Заказ №42" })).toBeInTheDocument();
     expect(screen.getByText("Новый")).toBeInTheDocument();
-    expect(await screen.findByText("Оплата не подключена")).toBeInTheDocument();
+    expect(await screen.findByText("Оплата не начата")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Винтаж на районе" })).toHaveAttribute(
       "href",
       "/shops/vintage-shop",
@@ -148,7 +148,7 @@ describe("OrdersPage", () => {
 
     const card = await screen.findByRole("article", { name: "Заказ №42" });
     expect(await within(card).findByText("Ожидает оплаты")).toBeInTheDocument();
-    expect(within(card).queryByText("Оплата не подключена")).not.toBeInTheDocument();
+    expect(within(card).queryByText("Оплата не начата")).not.toBeInTheDocument();
   });
 
   it("shows a paid payment status on the order card", async () => {
@@ -170,10 +170,10 @@ describe("OrdersPage", () => {
 
     const card = await screen.findByRole("article", { name: "Заказ №42" });
     expect(await within(card).findByText("Оплачен")).toBeInTheDocument();
-    expect(within(card).queryByText("Оплата не подключена")).not.toBeInTheDocument();
+    expect(within(card).queryByText("Оплата не начата")).not.toBeInTheDocument();
   });
 
-  it("does not turn a payment read error into 'payment not connected'", async () => {
+  it("does not turn a payment read error into 'payment not started'", async () => {
     let fail = true;
     installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
@@ -187,12 +187,12 @@ describe("OrdersPage", () => {
 
     const card = await screen.findByRole("article", { name: "Заказ №42" });
     expect(await within(card).findByText("Статус оплаты недоступен")).toBeInTheDocument();
-    expect(within(card).queryByText("Оплата не подключена")).not.toBeInTheDocument();
+    expect(within(card).queryByText("Оплата не начата")).not.toBeInTheDocument();
 
     fail = false;
     await browser.click(within(card).getByRole("button", { name: "Повторить" }));
 
-    expect(await within(card).findByText("Оплата не подключена")).toBeInTheDocument();
+    expect(await within(card).findByText("Оплата не начата")).toBeInTheDocument();
   });
 
   it("falls back to the paid order status when no payment row exists", async () => {
@@ -206,7 +206,7 @@ describe("OrdersPage", () => {
 
     const card = await screen.findByRole("article", { name: "Заказ №42" });
     expect((await within(card).findAllByText("Оплачен")).length).toBeGreaterThan(0);
-    expect(within(card).queryByText("Оплата не подключена")).not.toBeInTheDocument();
+    expect(within(card).queryByText("Оплата не начата")).not.toBeInTheDocument();
   });
 
   it("shows an empty state with a catalog link", async () => {

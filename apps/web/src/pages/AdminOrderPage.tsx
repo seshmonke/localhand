@@ -191,8 +191,8 @@ export function AdminOrderPage() {
                   Что дальше
                 </h2>
                 <p className="mt-4 text-sm leading-relaxed text-inverse-text/85">
-                  Свяжитесь с покупателем по телефону и согласуйте передачу вещи. Статус оплаты
-                  показывается отдельно от статуса заказа.
+                  Свяжитесь с покупателем по телефону и согласуйте передачу товара. Статус оплаты
+                  показан отдельно от статуса заказа.
                 </p>
               </Card>
 
@@ -256,7 +256,7 @@ function AdminOrderPaymentCard({
           <>
             <p className="mt-4 text-sm font-semibold leading-relaxed">Оплачен</p>
             <p className="mt-2 text-xs leading-relaxed text-ink/60">
-              Платёж не найден; статус взят из заказа.
+              Платёж не найден. Статус взят из заказа.
             </p>
           </>
         ) : (
@@ -293,8 +293,8 @@ function AdminOrderPaymentCard({
           </dl>
           {payment.status === "manual_review" ? (
             <p className="mt-4 border-l-[3px] border-accent-red pl-2 text-sm font-semibold leading-relaxed">
-              Платёж на ручной проверке. Поддержка разберётся с платежом; заказ не переводится в
-              «Оплачен» автоматически.
+              Платёж на ручной проверке. Поддержка разберётся с платежом. Заказ не станет «Оплачен»
+              автоматически.
             </p>
           ) : null}
         </>
@@ -308,7 +308,7 @@ function AdminOrderNotFound() {
     <ScreenState
       kind="empty"
       title="Заказ не найден"
-      description="Заказ мог быть удалён или оформлен в другом магазине."
+      description="Заказ оформлен в другом магазине или ссылка устарела."
       action={
         <Link to="/admin/orders" className={buttonVariants({ variant: "outline" })}>
           К списку заказов

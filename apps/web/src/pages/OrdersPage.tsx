@@ -100,7 +100,7 @@ export function OrdersPage() {
         <PageHeader
           eyebrow="Local Hand"
           title="Мои заказы"
-          description="Заказы, оформленные с вашего номера. Продавец свяжется по указанному телефону."
+          description="Заказы, оформленные с вашего номера. Продавец свяжется с вами по телефону."
         />
 
         <Announcer message={checkoutDone ? "Заказ оформлен и передан продавцу." : ""} />
@@ -110,7 +110,7 @@ export function OrdersPage() {
             <ScreenState
               kind="loading"
               title="Загружаем заказы"
-              description="Секунду — собираем ваши заявки."
+              description="Секунду — собираем ваши заказы."
             />
           ) : null}
 
@@ -216,7 +216,7 @@ function OrderCard({ order, read }: { order: OrderSummary; read: PaymentRead }) 
             <PaymentReadStatus
               orderStatus={order.status}
               read={read}
-              emptyLabel="Оплата не подключена"
+              emptyLabel="Оплата не начата"
             />
           </div>
           {order.delivery !== null ? <DeliveryListLine delivery={order.delivery} /> : null}

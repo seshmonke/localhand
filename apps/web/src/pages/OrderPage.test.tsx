@@ -152,7 +152,7 @@ describe("OrderPage", () => {
     expect(screen.getByRole("link", { name: "К заказам" })).toHaveAttribute("href", "/orders");
 
     const paymentSection = screen.getByRole("region", { name: "Оплата" });
-    expect(await within(paymentSection).findByText("Оплата не подключена")).toBeInTheDocument();
+    expect(await within(paymentSection).findByText("Оплата ещё не начата")).toBeInTheDocument();
     expect(within(paymentSection).getByRole("button", { name: "Оплатить" })).toBeInTheDocument();
   });
 
@@ -312,6 +312,11 @@ describe("OrderPage", () => {
     const paymentSection = await screen.findByRole("region", { name: "Оплата" });
     expect(
       await within(paymentSection).findByText("Не удалось подтвердить оплату"),
+    ).toBeInTheDocument();
+    expect(
+      within(paymentSection).getByText(
+        "Исход создания платежа неизвестен. Повторите оплату: тот же ключ не создаст второе списание.",
+      ),
     ).toBeInTheDocument();
     expect(within(paymentSection).queryByText(/Проверяем оплату/)).not.toBeInTheDocument();
 
