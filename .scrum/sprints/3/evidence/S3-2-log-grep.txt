@@ -1,0 +1,26 @@
+# DELIVERY LOG SOURCE AUDIT (production files, no *.test.ts)
+
+## 1. Raw error value for any payload key: code: error / nested: { code: cause } / new Error
+$ grep -rnE "(^|[,{])[[:space:]]*[A-Za-z_$][A-Za-z0-9_$]*[[:space:]]*:[[:space:]]*(error|err|cause)[[:space:]]*[,}]" apps/api/src/delivery --include="*.ts" --exclude="*.test.ts"
+exit 1: no matches
+
+$ grep -rnE "[,{][[:space:]]*[A-Za-z_$][A-Za-z0-9_$]*[[:space:]]*:[[:space:]]*new[[:space:]]+Error" apps/api/src/delivery --include="*.ts" --exclude="*.test.ts"
+exit 1: no matches
+
+## 2. Raw first argument: log.error(error) / log.warn(err) / log.error(new Error(...))
+$ grep -rnE "log\.(error|warn|info|debug|trace|fatal)\([[:space:]]*(error|err|cause|new[[:space:]]+Error)\b" apps/api/src/delivery --include="*.ts" --exclude="*.test.ts"
+exit 1: no matches
+
+## 3. Shorthand { error } / { err } / { cause } in log payloads
+$ grep -rnE "\{[[:space:]]*(err|error|cause)[[:space:]]*[,}]|,[[:space:]]*(err|error|cause)[[:space:]]*[,}]" apps/api/src/delivery --include="*.ts" --exclude="*.test.ts"
+exit 1: no matches
+
+## 4. Reconcile err fields go through the helper
+$ grep -rn "err:" apps/api/src/delivery/delivery.reconcile.ts
+120:          err: safeErrorForLog(error),
+149:        err: safeErrorForLog(error),
+
+## 5. Pre-existing route error.code (machine code, explicitly allowlisted by the source audit)
+$ grep -rn "code: error.code" apps/api/src/delivery/delivery.route.ts apps/api/src/delivery/shipment.route.ts
+apps/api/src/delivery/delivery.route.ts:48:    request.log.error({ code: error.code ?? "internal_error" }, "delivery request failed");
+apps/api/src/delivery/shipment.route.ts:74:    request.log.error({ code: error.code ?? "internal_error" }, "delivery shipment failed");
