@@ -3,7 +3,7 @@
 Статус: **обязательно** с 27.11.2026.
 Владелец: Local Hand. Исполняют все агенты и роли.
 Связанные документы: `docs/quality/dod.md`, `AGENTS.md`,
-`.opencode/skills/sprint-crew/references/roles.md`.
+`.opencode/skills/scrum-crew/references/roles.md`.
 
 Документ фиксирует не «идеальный процесс», а минимальный набор практик,
 без которых инкремент не считается качественным. Правило простое:
