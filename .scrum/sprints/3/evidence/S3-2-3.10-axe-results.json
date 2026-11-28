@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-28T13:03:19.389Z",
+  "generated_at": "2026-11-28T13:09:47.413Z",
   "base": "http://localhost:5173",
   "tags": [
     "wcag2a",
@@ -10,8 +10,8 @@
     "wcag22aa"
   ],
   "orderIds": {
-    "quoted": 243,
-    "created": 244
+    "quoted": 256,
+    "created": 257
   },
   "scans": {
     "checkout-320-light": {
@@ -23,7 +23,7 @@
       "violations": []
     },
     "order-320-light": {
-      "url": "http://localhost:5173/orders/244",
+      "url": "http://localhost:5173/orders/257",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -39,7 +39,7 @@
       "violations": []
     },
     "admin-order-quoted-320-light": {
-      "url": "http://localhost:5173/admin/orders/243",
+      "url": "http://localhost:5173/admin/orders/256",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -47,7 +47,7 @@
       "violations": []
     },
     "admin-order-created-320-light": {
-      "url": "http://localhost:5173/admin/orders/244",
+      "url": "http://localhost:5173/admin/orders/257",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -71,7 +71,7 @@
       "violations": []
     },
     "order-320-dark": {
-      "url": "http://localhost:5173/orders/244",
+      "url": "http://localhost:5173/orders/257",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -87,7 +87,7 @@
       "violations": []
     },
     "admin-order-quoted-320-dark": {
-      "url": "http://localhost:5173/admin/orders/243",
+      "url": "http://localhost:5173/admin/orders/256",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -95,7 +95,7 @@
       "violations": []
     },
     "admin-order-created-320-dark": {
-      "url": "http://localhost:5173/admin/orders/244",
+      "url": "http://localhost:5173/admin/orders/257",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -119,7 +119,7 @@
       "violations": []
     },
     "order-1440-light": {
-      "url": "http://localhost:5173/orders/244",
+      "url": "http://localhost:5173/orders/257",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -135,7 +135,7 @@
       "violations": []
     },
     "admin-order-quoted-1440-light": {
-      "url": "http://localhost:5173/admin/orders/243",
+      "url": "http://localhost:5173/admin/orders/256",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -143,7 +143,7 @@
       "violations": []
     },
     "admin-order-created-1440-light": {
-      "url": "http://localhost:5173/admin/orders/244",
+      "url": "http://localhost:5173/admin/orders/257",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -167,7 +167,7 @@
       "violations": []
     },
     "order-1440-dark": {
-      "url": "http://localhost:5173/orders/244",
+      "url": "http://localhost:5173/orders/257",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -183,7 +183,7 @@
       "violations": []
     },
     "admin-order-quoted-1440-dark": {
-      "url": "http://localhost:5173/admin/orders/243",
+      "url": "http://localhost:5173/admin/orders/256",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
@@ -191,7 +191,7 @@
       "violations": []
     },
     "admin-order-created-1440-dark": {
-      "url": "http://localhost:5173/admin/orders/244",
+      "url": "http://localhost:5173/admin/orders/257",
       "testEngine": {
         "name": "axe-core",
         "version": "4.14.1"
