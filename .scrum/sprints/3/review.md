@@ -81,3 +81,12 @@ production-деплой остаются внешними гейтами вла�
 
 Live YooKassa/CDEK, юрпакет, `DELIVERY_LIVE_PII=true`, production
 deploy/SMS — внешние гейты; в спринте не проверялись.
+
+## Исключение TDD 3.1
+
+- Owner 28.11.2026: named exception для retrospective RED shipment.
+- Причина: реализация shipment существовала до тестов (handoff); RED
+  записан ретроспективно, поведение покрыто mutation/e2e.
+- Срок: Q1.1 / Sprint 4. Артефакт: `S3-2-tdd-c-precode-red.txt`,
+  `S3-2-e2e-tdd-red.txt`, mutation checks PR #73.
+- Follow-up: TDD-first audit/repro PBI в Sprint 4.

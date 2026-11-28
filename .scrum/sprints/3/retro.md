@@ -27,7 +27,8 @@
 - Слишком много параллельных PR в конце спринта: merge train и
   evidence-конфликты (A/B, D3).
 - 3.1 shipment RED был retrospective: код существовал до тестов
-  (наследие handoff). TDD-first долг записан, но не переделан.
+  (наследие handoff). Owner 28.11.2026 дал named exception до Q1.1/
+  Sprint 4; TDD-first audit/repro — PBI Sprint 4.
 
 ## Действия
 

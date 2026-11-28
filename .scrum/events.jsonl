@@ -121,3 +121,4 @@
 {"ts":"2026-11-28T13:55:00Z","type":"sprint_closed","sprint":3,"status":"accepted","goal_achieved":true,"deferred":["S3-3","S3-4"],"review":".scrum/sprints/3/review.md","retro":".scrum/sprints/3/retro.md"}
 {"ts":"2026-11-28T13:55:00Z","type":"pr_opened","sprint":null,"pr":80,"scope":"sprint_3_close","size":"docs/state"}
 {"ts":"2026-11-28T13:55:00Z","type":"leases_released","tasks":["S3-1","S3-2"]}
+{"ts":"2026-11-28T14:10:00Z","type":"decision","scope":"tdd_exception","sprint":3,"task":"S3-2","change":"07-delivery","owner":"human","decision":"approve_retrospective_red_for_delivery_shipment","reason":"shipment implementation predates tests in handoff; retrospective RED + mutation/e2e evidence, not test-first","deadline":"Q1.1 / Sprint 4","artifact":".scrum/sprints/3/evidence/S3-2-tdd-c-precode-red.txt; .scrum/sprints/3/evidence/S3-2-e2e-tdd-red.txt; PR #73 mutation checks","follow_up":"TDD-first audit/repro PBI in Sprint 4","date":"2026-11-28"}

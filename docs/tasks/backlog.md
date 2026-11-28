@@ -102,6 +102,13 @@
   web-suite подряд + CI зелёные, без ослабления проверок. Источник:
   CI main 28.11.2026. Спринт: — (Sprint 4).
 
+- [ ] P1. TDD-first audit/repro delivery shipment: retrospective RED 3.1
+  (owner exception до Q1.1/Sprint 4); восстановить RED до кода на
+  изолированном repro или подтвердить mutation/e2e-покрытие и закрыть
+  исключение. Критерий: RED падает до реализации, GREEN после, evidence
+  в task-workspace; иначе исключение становится P1-долгом. Источник:
+  close review #80, owner 28.11.2026. Спринт: — (Sprint 4).
+
 ## P2
 
 - [ ] P2. Delivery webhook subscription: distributed lock для нескольких
