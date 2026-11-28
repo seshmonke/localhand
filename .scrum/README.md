@@ -41,6 +41,10 @@
 | Что было раньше? | `sprints/`, `openspec/changes/archive/` |
 | Что считается Done? | [DoD](../docs/quality/dod.md) |
 | Почему так решили? | `docs/stack/adr/`, `openspec/specs/` |
+| Где Text Review W1 вне спринта? | [report](tasks/TEXT-W1/report.md), [audit](reviews/text-site-audit.md) |
+
+Задачи вне спринта живут в `.scrum/tasks/<ID>/`; board/state их не
+знают, пока задача не взята в спринт.
 
 ## Что не читать
 

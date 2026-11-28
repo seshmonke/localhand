@@ -1,0 +1,8 @@
+PUNCT: apps/web/src/pages/CheckoutPage.tsx: восклицательный знак
+PUNCT: apps/web/src/pages/OrderPage.tsx: восклицательный знак
+PUNCT: apps/web/src/pages/OrdersPage.tsx: восклицательный знак
+PUNCT: apps/web/src/pages/AdminOrderPage.tsx: восклицательный знак
+PUNCT: apps/web/src/pages/AdminOrdersPage.tsx: восклицательный знак
+PUNCT: apps/web/src/components/admin/AdminDeliveryCard.tsx: восклицательный знак
+PUNCT: apps/web/src/components/orders/DeliverySummaryCard.tsx: восклицательный знак
+exit=1

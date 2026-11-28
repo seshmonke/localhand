@@ -1,0 +1,7 @@
+Link check: relative markdown links in
+  .scrum/reviews/text-site-audit.md
+  .scrum/tasks/TEXT-W1/report.md
+  .scrum/tasks/TEXT-W1/handoff.md
+  .scrum/README.md
+Result: checked 29, broken 0.
+exit=0

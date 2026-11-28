@@ -79,7 +79,7 @@ test("seller connects fake payments, buyer pays, seller sees paid", async ({
     const buyerPage = await buyerContext.newPage();
     await buyerPage.goto(`/orders/${orderId}`);
     const paySection = buyerPage.getByRole("region", { name: "Оплата" });
-    await expect(paySection.getByText("Оплата не подключена")).toBeVisible();
+    await expect(paySection.getByText("Оплата ещё не начата")).toBeVisible();
     await paySection.getByRole("button", { name: "Оплатить" }).click();
 
     await buyerPage.waitForURL(/\/dev\/payments\/\d+\/complete/);
