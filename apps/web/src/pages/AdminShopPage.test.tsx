@@ -1,8 +1,8 @@
-import { cleanup, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { orderKeys } from "../lib/queries.js";
-import { installFetchMock } from "../test/mock-api.js";
+import { installFetchMock, type MockResult } from "../test/mock-api.js";
 import { renderApp } from "../test/render-app.js";
 
 function phone(...parts: string[]): string {
@@ -288,5 +288,139 @@ describe("AdminShopPage", () => {
         cdekShipmentPoint: "MSK001",
       }),
     );
+  });
+
+  it("shows an empty city result and a rate-limit error with retry", async () => {
+    let rateLimited = true;
+
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: draftShop } },
+      "GET /seller/payments/account": { body: { account: null } },
+      "GET /delivery/cities": ({ query }) => {
+        if (query.query === "Неттакого") {
+          return { body: { cities: [] } };
+        }
+        if (query.query === "Москва" && rateLimited) {
+          rateLimited = false;
+          return { status: 429, body: { error: "rate_limited" } };
+        }
+        return { body: { cities: [moscowCity] } };
+      },
+      "GET /delivery/points": { body: { points: [moscowPoint] } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/shop"]);
+
+    await screen.findByRole("heading", { level: 2, name: "Настройки магазина" });
+    expect(screen.getByText(/Город сдачи не настроен/)).toBeInTheDocument();
+
+    const search = screen.getByLabelText("Поиск города");
+    await browser.type(search, "Неттакого");
+    expect(await screen.findByText("Города не найдены. Уточните запрос.")).toBeInTheDocument();
+
+    await browser.clear(search);
+    await browser.type(search, "Москва");
+
+    expect(
+      await screen.findByText("Слишком много запросов. Подождите минуту и повторите."),
+    ).toBeInTheDocument();
+    await browser.click(screen.getByRole("button", { name: "Повторить поиск городов" }));
+
+    expect(await screen.findByRole("option", { name: "Москва" })).toBeInTheDocument();
+  });
+
+  it("shows PVZ loading, maps delivery_unavailable and retries", async () => {
+    let pointsAttempt = 0;
+    let resolvePoints: ((result: MockResult) => void) | undefined;
+    let patchBody: unknown;
+    const current = { ...draftShop };
+
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: current } },
+      "GET /seller/payments/account": { body: { account: null } },
+      "GET /delivery/cities": { body: { cities: [moscowCity] } },
+      "GET /delivery/points": () => {
+        pointsAttempt += 1;
+        if (pointsAttempt === 1) {
+          return new Promise<MockResult>((resolve) => {
+            resolvePoints = resolve;
+          });
+        }
+        return { body: { points: [moscowPoint] } };
+      },
+      "PATCH /seller/shop": ({ body }) => {
+        patchBody = body;
+        return { body: { shop: { ...current, ...(body as Partial<typeof current>) } } };
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/shop"]);
+
+    await screen.findByRole("heading", { level: 2, name: "Настройки магазина" });
+    await browser.type(screen.getByLabelText("Поиск города"), "Москва");
+    await browser.selectOptions(await screen.findByLabelText("Город сдачи"), "44");
+
+    expect(await screen.findByText("Загружаем ПВЗ…", { selector: "p" })).toBeInTheDocument();
+
+    await act(async () => {
+      resolvePoints?.({ status: 502, body: { error: "delivery_unavailable" } });
+    });
+
+    expect(
+      await screen.findByText("Сервис доставки временно недоступен. Повторите попытку."),
+    ).toBeInTheDocument();
+
+    await browser.click(screen.getByRole("button", { name: "Повторить загрузку ПВЗ" }));
+    const pointOption = await screen.findByRole("option", { name: /ПВЗ Тверская/ });
+    await browser.selectOptions(screen.getByLabelText("Пункт выдачи"), pointOption);
+    await browser.click(screen.getByRole("button", { name: "Сохранить доставку" }));
+
+    await waitFor(() =>
+      expect(patchBody).toEqual({
+        cdekCityCode: 44,
+        cdekCityName: "Москва",
+        cdekShipmentPoint: "MSK001",
+      }),
+    );
+  });
+
+  it("clears the shipping origin and sends nulls", async () => {
+    let current = { ...shippingShop };
+    let patchBody: unknown;
+
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": () => ({ body: { shop: current } }),
+      "GET /seller/payments/account": { body: { account: null } },
+      "GET /delivery/points": { body: { points: [moscowPoint] } },
+      "PATCH /seller/shop": ({ body }) => {
+        patchBody = body;
+        current = { ...current, ...(body as Partial<typeof current>) };
+        return { body: { shop: current } };
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/shop"]);
+
+    await screen.findByRole("heading", { level: 2, name: "Настройки магазина" });
+    await waitFor(() => expect(screen.getByLabelText("Пункт выдачи")).toHaveValue("MSK001"));
+
+    await browser.click(screen.getByRole("button", { name: "Убрать город сдачи" }));
+    expect(screen.getByText(/Город сдачи не настроен/)).toBeInTheDocument();
+
+    await browser.click(screen.getByRole("button", { name: "Сохранить доставку" }));
+    await waitFor(() =>
+      expect(patchBody).toEqual({
+        cdekCityCode: null,
+        cdekCityName: null,
+        cdekShipmentPoint: null,
+      }),
+    );
+    expect(await screen.findByText("Доставка сохранена.")).toBeInTheDocument();
   });
 });
