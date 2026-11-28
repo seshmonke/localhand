@@ -183,6 +183,75 @@ describe("AdminProductNewPage", () => {
       "/admin/shop",
     );
   });
+
+  it("sends weight and dimensions as integer grams and centimeters", async () => {
+    let postBody: unknown;
+
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "POST /seller/products": ({ body }) => {
+        postBody = body;
+        return { status: 201, body: { product: { ...draftProduct, id: 101 } } };
+      },
+      "GET /seller/products": { body: { products: [] } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/products/new"]);
+
+    await screen.findByRole("heading", { level: 1, name: "Новый товар" });
+    await browser.type(await screen.findByLabelText("Название"), "Термос");
+    await browser.type(screen.getByLabelText("Цена, ₽"), "1500");
+    await browser.type(screen.getByLabelText("Вес, г"), "1200");
+    await browser.type(screen.getByLabelText("Длина, см"), "40");
+    await browser.type(screen.getByLabelText("Ширина, см"), "30");
+    await browser.type(screen.getByLabelText("Высота, см"), "20");
+    await browser.click(screen.getByRole("button", { name: "Создать товар" }));
+
+    await waitFor(() =>
+      expect(postBody).toEqual({
+        name: "Термос",
+        priceKopecks: 150_000,
+        imageUrl: null,
+        weightG: 1200,
+        lengthCm: 40,
+        widthCm: 30,
+        heightCm: 20,
+      }),
+    );
+  });
+
+  it("rejects zero, fractional and too large dimensions with field errors", async () => {
+    let posts = 0;
+
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "POST /seller/products": () => {
+        posts += 1;
+        return { status: 201, body: { product: draftProduct } };
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/products/new"]);
+
+    await screen.findByRole("heading", { level: 1, name: "Новый товар" });
+    await browser.type(await screen.findByLabelText("Название"), "Термос");
+    await browser.type(screen.getByLabelText("Цена, ₽"), "1500");
+    await browser.type(screen.getByLabelText("Вес, г"), "0");
+    await browser.type(screen.getByLabelText("Длина, см"), "2,5");
+    await browser.type(screen.getByLabelText("Ширина, см"), "301");
+    await browser.click(screen.getByRole("button", { name: "Создать товар" }));
+
+    expect(await screen.findByText("Вес — целое число от 1 до 100000 г.")).toBeInTheDocument();
+    expect(screen.getByText("Длина — целое число от 1 до 300 см.")).toBeInTheDocument();
+    expect(screen.getByText("Ширина — целое число от 1 до 300 см.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Вес, г")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByLabelText("Вес, г")).toHaveFocus();
+    expect(posts).toBe(0);
+  });
 });
 
 describe("AdminProductEditPage", () => {
@@ -394,5 +463,37 @@ describe("AdminProductEditPage", () => {
       "href",
       "/admin/shop",
     );
+  });
+
+  it("prefills dimensions, PATCHes changed values and sends null when a field is cleared", async () => {
+    let current = { ...draftProduct, weightG: 800, lengthCm: 20, widthCm: 15, heightCm: 10 };
+    let patchBody: unknown;
+
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: publishedShop } },
+      "GET /seller/products": () => ({ body: { products: [current] } }),
+      "PATCH /seller/products/11": ({ body }) => {
+        patchBody = body;
+        current = { ...current, ...(body as Partial<typeof current>) };
+        return { body: { product: current } };
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/products/11"]);
+
+    const weightInput = await screen.findByLabelText("Вес, г");
+    expect(weightInput).toHaveValue("800");
+    expect(screen.getByLabelText("Длина, см")).toHaveValue("20");
+    expect(screen.getByLabelText("Ширина, см")).toHaveValue("15");
+    expect(screen.getByLabelText("Высота, см")).toHaveValue("10");
+
+    await browser.clear(weightInput);
+    await browser.type(weightInput, "1200");
+    await browser.clear(screen.getByLabelText("Длина, см"));
+    await browser.click(screen.getByRole("button", { name: "Сохранить изменения" }));
+
+    await waitFor(() => expect(patchBody).toEqual({ weightG: 1200, lengthCm: null }));
   });
 });

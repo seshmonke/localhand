@@ -1,0 +1,8 @@
+# Command: pnpm --filter @localhand/web exec vitest run src/pages/AdminProductFormPage.test.tsx
+# Exit: 0 (GREEN)
+# Summary: Test Files 1 passed (1) | Tests 15 passed (15)
+
+RUN v5.1.2
+
+Test Files  1 passed (1)
+     Tests  15 passed (15)

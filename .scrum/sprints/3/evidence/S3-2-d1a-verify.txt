@@ -1,0 +1,24 @@
+# Command: pnpm verify (DATABASE_URL/DATABASE_URL_TEST -> disposable local test DB)
+# Exit: 0
+$ pnpm typecheck && pnpm lint && pnpm format:check && pnpm check:public && pnpm test && pnpm build && pnpm openspec:validate
+packages/ui typecheck: Done
+packages/shared typecheck: Done
+apps/web typecheck: Done
+apps/api typecheck: Done
+$ oxlint .
+$ prettier --check .
+All matched files use Prettier code style!
+$ node scripts/check-public-repo.mjs
+Public repo check: 526 tracked files, no secrets/PII patterns found
+packages/shared test:  Test Files  12 passed (12)
+packages/shared test:       Tests  156 passed (156)
+apps/web test:  Test Files  22 passed (22)
+apps/web test:       Tests  160 passed (160)
+apps/api test:  Test Files  38 passed (38)
+apps/api test:       Tests  352 passed (352)
+packages/shared build: Done
+packages/ui build: Done
+apps/web build: Done
+apps/api build: Done
+$ openspec validate --all --strict
+Totals: 9 passed, 0 failed (9 items)
