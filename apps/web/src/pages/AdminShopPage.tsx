@@ -433,6 +433,7 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
   );
   const [pointCode, setPointCode] = useState(shop.cdekShipmentPoint ?? "");
   const [deliveryError, setDeliveryError] = useState<string | null>(null);
+  const [pointInvalid, setPointInvalid] = useState(false);
 
   const normalizedCityQuery = cityQuery.trim();
   const [debouncedCityQuery, setDebouncedCityQuery] = useState("");
@@ -468,12 +469,20 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
   const points = pointsQuery.data?.points ?? [];
   const selectedCityMissing =
     selectedCity !== null && !cityResults.some((city) => city.code === selectedCity.code);
-  const savedPointMissing =
+  const savedPointFallback =
     selectedCity !== null &&
     selectedCity.code === shop.cdekCityCode &&
     pointCode.length > 0 &&
+    (pointsQuery.isPending || pointsQuery.isError);
+  const savedPointUnavailable =
+    selectedCity !== null &&
+    selectedCity.code === shop.cdekCityCode &&
+    pointCode.length > 0 &&
+    pointsQuery.isSuccess &&
     !points.some((point) => point.code === pointCode);
-  const nextPoint = selectedCity === null || pointCode.length === 0 ? null : pointCode;
+  const effectivePointCode = savedPointUnavailable ? "" : pointCode;
+  const nextPoint =
+    selectedCity === null || effectivePointCode.length === 0 ? null : effectivePointCode;
   const deliveryDirty =
     (selectedCity?.code ?? null) !== shop.cdekCityCode ||
     (selectedCity?.name ?? null) !== shop.cdekCityName ||
@@ -521,9 +530,11 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
 
   function handleSaveDelivery() {
     setDeliveryError(null);
+    setPointInvalid(false);
 
-    if (selectedCity !== null && pointCode.length === 0) {
+    if (selectedCity !== null && effectivePointCode.length === 0) {
       setDeliveryError("Выберите ПВЗ: без него заказы не смогут оформить доставку.");
+      setPointInvalid(true);
       document.getElementById("shop-delivery-point")?.focus();
       return;
     }
@@ -533,7 +544,7 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
         ? {
             cdekCityCode: selectedCity.code,
             cdekCityName: selectedCity.name,
-            cdekShipmentPoint: pointCode,
+            cdekShipmentPoint: effectivePointCode,
           }
         : { cdekCityCode: null, cdekCityName: null, cdekShipmentPoint: null },
     );
@@ -776,6 +787,7 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
                   }
                   setSelectedCity(city);
                   setDeliveryError(null);
+                  setPointInvalid(false);
                 }}
                 aria-describedby={fieldDescribedBy(
                   "shop-delivery-city",
@@ -830,12 +842,13 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
                 <select
                   id="shop-delivery-point"
                   name="cdekShipmentPoint"
-                  value={pointCode}
+                  value={effectivePointCode}
                   onChange={(event) => {
                     setPointCode(event.target.value);
+                    setPointInvalid(false);
                     setDeliveryError(null);
                   }}
-                  aria-invalid={deliveryError ? true : undefined}
+                  aria-invalid={pointInvalid ? true : undefined}
                   aria-describedby="shop-delivery-point-hint shop-delivery-error"
                   className={fieldControlClass}
                   disabled={blocked || pointsQuery.isPending || pointsQuery.isError}
@@ -843,7 +856,7 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
                   <option value="">
                     {pointsQuery.isFetching ? "Загружаем ПВЗ…" : "Выберите ПВЗ"}
                   </option>
-                  {savedPointMissing ? (
+                  {savedPointFallback ? (
                     <option value={pointCode}>Сохранённый ПВЗ {pointCode}</option>
                   ) : null}
                   {points.map((point) => (
@@ -853,6 +866,15 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
                   ))}
                 </select>
               </FormField>
+
+              {savedPointUnavailable ? (
+                <p
+                  role="alert"
+                  className="mt-3 border-l-[3px] border-accent-orange pl-2 text-sm font-semibold leading-relaxed"
+                >
+                  Сохранённый ПВЗ {pointCode} больше не доступен. Выберите другой пункт выдачи.
+                </p>
+              ) : null}
 
               <p aria-live="polite" className="mt-3 text-sm leading-relaxed text-ink/70">
                 {pointsStatus}
@@ -892,6 +914,7 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
                 onClick={() => {
                   setSelectedCity(null);
                   setPointCode("");
+                  setPointInvalid(false);
                   setDeliveryError(null);
                 }}
                 disabled={deliveryMutation.isPending || blocked}

@@ -1,4 +1,4 @@
-# Command: pnpm verify (disposable local test DB), after merge with main 618fdda
+# Command: pnpm verify (disposable local test DB), after review P2 fixes
 # Exit: 0
 packages/ui typecheck: Done
 packages/shared typecheck: Done
@@ -9,7 +9,7 @@ Public repo check: 552 tracked files, no secrets/PII patterns found
 packages/shared test:  Test Files  12 passed (12)
 packages/shared test:       Tests  160 passed (160)
 apps/web test:  Test Files  24 passed (24)
-apps/web test:       Tests  179 passed (179)
+apps/web test:       Tests  182 passed (182)
 apps/api test:  Test Files  39 passed (39)
 apps/api test:       Tests  361 passed (361)
 packages/shared build: Done

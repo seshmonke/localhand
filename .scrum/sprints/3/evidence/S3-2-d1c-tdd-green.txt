@@ -1,3 +1,3 @@
-# S3-2-D1c GREEN evidence after merge with main 618fdda
+# S3-2-D1c GREEN — after review P2 fixes
 # Command: pnpm --filter @localhand/web exec vitest run src/pages/AdminShopPage.test.tsx
-# Exit: 0 | Test Files 1 passed (1) | Tests 12 passed (12)
+# Exit: 0 | Test Files 1 passed (1) | Tests 15 passed (15)

@@ -38,6 +38,13 @@ const moscowPoint = {
   cityCode: 44,
   cityName: "Москва",
 };
+const moscowPointAlt = {
+  code: "MSK002",
+  name: "ПВЗ Арбат",
+  address: "ул. Тестовая, 3",
+  cityCode: 44,
+  cityName: "Москва",
+};
 const kazanPoint = {
   code: "KZN001",
   name: "ПВЗ Баумана",
@@ -249,13 +256,17 @@ describe("AdminShopPage", () => {
   });
 
   it("requires a PVZ and reports a save error", async () => {
+    let patchCalls = 0;
     installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },
       "GET /seller/shop": { body: { shop: draftShop } },
       "GET /seller/payments/account": { body: { account: null } },
       "GET /delivery/cities": { body: { cities: [moscowCity] } },
       "GET /delivery/points": { body: { points: [moscowPoint] } },
-      "PATCH /seller/shop": { status: 502, body: { error: "delivery_unavailable" } },
+      "PATCH /seller/shop": () => {
+        patchCalls += 1;
+        return { status: 502, body: { error: "delivery_unavailable" } };
+      },
     });
 
     const browser = userEvent.setup();
@@ -272,6 +283,8 @@ describe("AdminShopPage", () => {
     expect(
       await screen.findByText("Выберите ПВЗ: без него заказы не смогут оформить доставку."),
     ).toBeInTheDocument();
+    expect(patchCalls).toBe(0);
+    expect(screen.getByLabelText("Пункт выдачи")).toHaveAttribute("aria-invalid", "true");
 
     const pointOption = await screen.findByRole("option", { name: /ПВЗ Тверская/ });
     await browser.selectOptions(screen.getByLabelText("Пункт выдачи"), pointOption);
@@ -280,6 +293,8 @@ describe("AdminShopPage", () => {
     expect(
       await screen.findByText("Сервис доставки временно недоступен. Повторите попытку."),
     ).toBeInTheDocument();
+    expect(patchCalls).toBe(1);
+    expect(screen.getByLabelText("Пункт выдачи")).not.toHaveAttribute("aria-invalid");
     expect(screen.getByLabelText("Город сдачи")).toHaveValue("44");
     expect(screen.getByLabelText("Пункт выдачи")).toHaveValue("MSK001");
   });
@@ -464,5 +479,104 @@ describe("AdminShopPage", () => {
       }),
     );
     expect(await screen.findByText("Доставка сохранена.")).toBeInTheDocument();
+  });
+
+  it("shows live city status and a generic city error with retry", async () => {
+    let fail = true;
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: draftShop } },
+      "GET /seller/payments/account": { body: { account: null } },
+      "GET /delivery/cities": () => {
+        if (fail) {
+          fail = false;
+          return { status: 500, body: { error: "internal_error" } };
+        }
+        return { body: { cities: [moscowCity] } };
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/shop"]);
+    await screen.findByRole("heading", { level: 2, name: "Настройки магазина" });
+
+    expect(screen.getByText("Начните вводить город: минимум два символа.")).toHaveAttribute(
+      "aria-live",
+      "polite",
+    );
+
+    await browser.type(screen.getByLabelText("Поиск города"), "Москва");
+    expect(
+      await screen.findByText(
+        "Не удалось загрузить города. Проверьте соединение и повторите попытку.",
+      ),
+    ).toBeInTheDocument();
+    await browser.click(screen.getByRole("button", { name: "Повторить поиск городов" }));
+
+    expect(await screen.findByRole("option", { name: "Москва" })).toBeInTheDocument();
+  });
+
+  it("shows an empty PVZ status", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: draftShop } },
+      "GET /seller/payments/account": { body: { account: null } },
+      "GET /delivery/cities": { body: { cities: [moscowCity] } },
+      "GET /delivery/points": { body: { points: [] } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/shop"]);
+    await screen.findByRole("heading", { level: 2, name: "Настройки магазина" });
+    await browser.type(screen.getByLabelText("Поиск города"), "Москва");
+    await screen.findByRole("option", { name: "Москва" });
+    await browser.selectOptions(screen.getByLabelText("Город сдачи"), "44");
+
+    expect(
+      await screen.findByText("В этом городе нет ПВЗ. Выберите другой город."),
+    ).toHaveAttribute("aria-live", "polite");
+  });
+
+  it("warns when the saved PVZ disappears and blocks saving it", async () => {
+    let resolvePoints: ((result: MockResult) => void) | undefined;
+    let patchCalls = 0;
+
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: shippingShop } },
+      "GET /seller/payments/account": { body: { account: null } },
+      "GET /delivery/points": () =>
+        new Promise<MockResult>((resolve) => {
+          resolvePoints = resolve;
+        }),
+      "PATCH /seller/shop": () => {
+        patchCalls += 1;
+        return { body: { shop: shippingShop } };
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/shop"]);
+    await screen.findByRole("heading", { level: 2, name: "Настройки магазина" });
+
+    expect(await screen.findByText("Сохранённый ПВЗ MSK001")).toBeInTheDocument();
+
+    await act(async () => {
+      resolvePoints?.({ body: { points: [moscowPointAlt] } });
+    });
+
+    expect(
+      await screen.findByText(
+        "Сохранённый ПВЗ MSK001 больше не доступен. Выберите другой пункт выдачи.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Сохранённый ПВЗ MSK001")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Пункт выдачи")).toHaveValue("");
+
+    await browser.click(screen.getByRole("button", { name: "Сохранить доставку" }));
+    expect(
+      await screen.findByText("Выберите ПВЗ: без него заказы не смогут оформить доставку."),
+    ).toBeInTheDocument();
+    expect(patchCalls).toBe(0);
   });
 });
