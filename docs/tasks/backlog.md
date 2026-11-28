@@ -38,7 +38,7 @@
 - [ ] P1. Text review wave: инвентаризация и ревью всех пользовательских/
   публичных текстов по `docs/tasks/text-review.md`; W1 checkout/payment/
   delivery/errors, W2 catalog/orders/admin, W3 docs. Критерий: inventory,
-  Copywriter + non-author review, `slop-check` 0 на изменённых, ложных
+  Copywriter + non-author review, `slop-check` 0 на новых/изменённых строках (baseline отдельно), ложных
   обещаний 0, PR-гейт. Источник: owner 28.11.2026 + scrum-crew v0.6.
   Спринт: — (Sprint 4–5).
 - [ ] P1. Q1.1 TDD/ATDD enforcement: RED/GREEN evidence, QA-аудит,

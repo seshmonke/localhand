@@ -13,7 +13,7 @@
 - [ ] Contract-тесты при изменении API/shared; T2: TDD/contract/property/threat model блокируют; mutation/SAST — nightly/ручной до Q1.0–Q1.6; SLO-дизайн/логи обязательны, alert/RUM — именованное owner-исключение до активации; после Q1.0–Q1.6 — блок (field RUM — до публичного запуска)
 - [ ] Threat model/SAST обновлены для T2; SLO/логи для критического пути
 - [ ] Скриншоты/видео для UI (320 и 1440), ПДн замазаны
-- [ ] Текст: пользовательские/публичные тексты — Copywriter review +
+- [ ] Текст: пользовательские/публичные тексты — Copywriter review не-автора +
       `slop-check`; ссылка или `No text change: <причина>`
 
 ## TDD evidence (T1/T2)
