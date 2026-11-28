@@ -1,7 +1,8 @@
 # Quality wave 1: TDD + gates
 
 Статус: **программа**. Q1.0 done (PR #42, `91bd8a8`);
-Q1.1/Q1.2 — Sprint 4, Q1.3/Q1.4 — Sprint 5, Q1.5/Q1.6 — Sprint 6.
+Q1.1/Q1.2 — Sprint 5, Q1.3/Q1.4 — Sprint 6, Q1.5/Q1.6 — Sprint 7
+(сдвиг на один спринт после i18n в Sprint 4).
 Каждый пункт — отдельный PBI.
 Дата: 27.11.2026.
 Источник: решение владельца «TDD внедрить обязательно» + quality-план
@@ -39,12 +40,12 @@ SLO/RUM обязательными для критических путей. Н�
 | PBI | Что | Owner | Sprint | Evidence / гейт |
 |---|---|---|---|---|
 | **Q1.0** | TDD/DoD/roles/PR-шаблон | orchestrator | 3 | PR #42, `91bd8a8` |
-| **Q1.1** | TDD/ATDD enforcement | QA + orchestrator | 4 | QA-аудит RED/GREEN, 3 PR без test-after |
-| **Q1.2** | Contract tests web↔API | Backend + Frontend | 4 | shared-схемы, negative/edge, CI gate |
-| **Q1.3** | Property/mutation | Backend + QA | 5 | fast-check payments/authz, Stryker 70% changed |
-| **Q1.4** | Security | DevSecOps + Architect | 5 | threat model, Semgrep PR, CodeQL/SBOM nightly |
-| **Q1.5** | Observability | DevSecOps + Backend | 6 | SLO 99,5%/p95<500ms/error<1%, logs/metrics/alert/RUM |
-| **Q1.6** | Performance | Backend + QA | 6 | API p95 бюджеты, k6/autocannon checkout/payments |
+| **Q1.1** | TDD/ATDD enforcement | QA + orchestrator | 5 | QA-аудит RED/GREEN, 3 PR без test-after |
+| **Q1.2** | Contract tests web↔API | Backend + Frontend | 5 | shared-схемы, negative/edge, CI gate |
+| **Q1.3** | Property/mutation | Backend + QA | 6 | fast-check payments/authz, Stryker 70% changed |
+| **Q1.4** | Security | DevSecOps + Architect | 6 | threat model, Semgrep PR, CodeQL/SBOM nightly |
+| **Q1.5** | Observability | DevSecOps + Backend | 7 | SLO 99,5%/p95<500ms/error<1%, logs/metrics/alert/RUM |
+| **Q1.6** | Performance | Backend + QA | 7 | API p95 бюджеты, k6/autocannon checkout/payments |
 
 Порядок: Q1.1 → Q1.2 → Q1.3/Q1.4 → Q1.5/Q1.6. T2-гейты блокирующие
 после merge Q1.0–Q1.6. До этого блокируют TDD/contract/property/threat
