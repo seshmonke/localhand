@@ -120,4 +120,37 @@ describe("DeliverySummaryCard", () => {
     expect(screen.getByText("Перевозчик · 9876543210")).toBeInTheDocument();
     expect(screen.getByText("Почта России · RA123456789RU")).toBeInTheDocument();
   });
+
+  it("hides placeholder city, PVZ and recipient rows for a legacy manual snapshot", () => {
+    render(
+      <DeliverySummaryCard
+        delivery={delivery({
+          provider: "manual",
+          status: "manual",
+          cityCode: 0,
+          cityName: "Не указан",
+          pointCode: "manual",
+          pointAddress: "Не указан",
+          recipientName: "Не указан",
+          tariffCode: null,
+          tariffName: null,
+          priceKopecks: 0,
+          periodMin: null,
+          periodMax: null,
+          providerOrderId: null,
+          providerNumber: null,
+          carrier: "Почта России",
+          trackNumber: "RA123456789RU",
+          lastStatusCode: "MANUAL",
+        })}
+        role={buyerRole}
+      />,
+    );
+
+    const region = screen.getByRole("region", { name: "Доставка" });
+    expect(within(region).getByText("Ручной трек")).toBeInTheDocument();
+    expect(within(region).getByText(/Город, ПВЗ и получатель не сохранены/)).toBeInTheDocument();
+    expect(within(region).queryByText("Не указан")).toBeNull();
+    expect(within(region).getByText("Почта России · RA123456789RU")).toBeInTheDocument();
+  });
 });

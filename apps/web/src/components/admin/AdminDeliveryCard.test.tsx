@@ -216,6 +216,33 @@ describe("AdminDeliveryCard", () => {
     await waitFor(() => expect(attempts).toBe(2));
   });
 
+  it("refreshes data when create reports delivery_already_exists", async () => {
+    let gets = 0;
+    renderCard({
+      "GET /seller/orders/42/delivery": () => {
+        gets += 1;
+        return { body: { delivery: quoted, events: [] } };
+      },
+      "GET /seller/orders/42/delivery/tariffs": { body: tariffs },
+      "POST /seller/orders/42/delivery": {
+        status: 409,
+        body: { error: "delivery_already_exists" },
+      },
+    });
+    const browser = userEvent.setup();
+    const section = screen.getByRole("region", { name: "Доставка" });
+    await browser.click(await within(section).findByRole("button", { name: "Рассчитать тарифы" }));
+    await browser.click(
+      await within(section).findByRole("button", { name: "Создать отправление" }),
+    );
+
+    expect(
+      await within(section).findByText("Отправление уже создано. Обновляем данные."),
+    ).toBeInTheDocument();
+    expect(within(section).queryByText(/delivery_already_exists|409/)).toBeNull();
+    expect(gets).toBe(2);
+  });
+
   it("shows an expired session for a 401 without hiding the snapshot", async () => {
     renderCard({
       "GET /seller/orders/42/delivery": { status: 401, body: { error: "unauthorized" } },
@@ -368,6 +395,11 @@ describe("AdminDeliveryCard", () => {
 
   it.each([
     ["a CDEK order exists", created, "Отправление создано"],
+    [
+      "a provider order exists without a track",
+      { ...created, trackNumber: null },
+      "Отправление создано",
+    ],
     ["the delivery is already manual", manual, "Ручной трек"],
     [
       "a track number already exists",
@@ -387,6 +419,25 @@ describe("AdminDeliveryCard", () => {
     },
   );
 
+  it.each([
+    [401, "unauthorized"],
+    [404, "not_found"],
+  ])(
+    "does not offer the manual form when the delivery request fails with %i",
+    async (status, error) => {
+      renderCard({ "GET /seller/orders/42/delivery": { status, body: { error } } });
+      const section = screen.getByRole("region", { name: "Доставка" });
+      if (status === 401) {
+        expect(
+          await within(section).findByRole("heading", { name: "Сессия истекла" }),
+        ).toBeInTheDocument();
+      } else {
+        expect(await within(section).findByText("Заказ не найден.")).toBeInTheDocument();
+      }
+      expect(within(section).queryByRole("button", { name: "Сохранить трек" })).toBeNull();
+    },
+  );
+
   it("validates carrier and track on the client before sending", async () => {
     const fetchMock = renderCard({
       "GET /seller/orders/42/delivery": { body: { delivery: quoted, events: [] } },
@@ -396,20 +447,29 @@ describe("AdminDeliveryCard", () => {
     await within(section).findByText("Ожидает отправки");
 
     await browser.click(within(section).getByRole("button", { name: "Сохранить трек" }));
+    const carrierInput = within(section).getByLabelText("Перевозчик");
+    const trackInput = within(section).getByLabelText("Трек-номер");
+    expect(carrierInput).toHaveFocus();
+    expect(within(section).getByRole("alert")).toHaveTextContent("Проверьте выделенные поля.");
     expect(within(section).getByText("Укажите перевозчика.")).toBeInTheDocument();
     expect(within(section).getByText("Укажите трек-номер.")).toBeInTheDocument();
-    const carrierInput = within(section).getByLabelText("Перевозчик");
     expect(carrierInput).toHaveAttribute("aria-invalid", "true");
-    expect(carrierInput).toHaveAttribute("aria-describedby", "manual-carrier-error");
-    expect(within(section).getByLabelText("Трек-номер")).toHaveAttribute("aria-invalid", "true");
+    expect(carrierInput.getAttribute("aria-describedby")).toBe(
+      within(section).getByText("Укажите перевозчика.").id,
+    );
+    expect(trackInput).toHaveAttribute("aria-invalid", "true");
     expect(fetchMock.mock.calls.some(([, init]) => init?.method === "PATCH")).toBe(false);
 
     await browser.type(carrierInput, "СДЭК");
-    await browser.type(within(section).getByLabelText("Трек-номер"), "AB C");
+    await browser.tab();
+    expect(trackInput).toHaveFocus();
+    await browser.type(trackInput, "AB C");
     await browser.click(within(section).getByRole("button", { name: "Сохранить трек" }));
     expect(
       await within(section).findByText("Только латинские буквы, цифры и дефис."),
     ).toBeInTheDocument();
+    expect(trackInput).toHaveFocus();
+    expect(within(section).getByRole("alert")).toHaveTextContent("Проверьте выделенные поля.");
     expect(fetchMock.mock.calls.some(([, init]) => init?.method === "PATCH")).toBe(false);
   });
 
@@ -487,6 +547,29 @@ describe("AdminDeliveryCard", () => {
     await browser.click(within(section).getByRole("button", { name: "Повторить" }));
     await waitFor(() => expect(gets).toBe(2));
     await waitFor(() => expect(within(section).queryByText(/СДЭК временно недоступен/)).toBeNull());
+  });
+
+  it("retries a delivery request after a network error", async () => {
+    let gets = 0;
+    renderCard({
+      "GET /seller/orders/42/delivery": () => {
+        gets += 1;
+        if (gets === 1) {
+          throw new TypeError("Failed to fetch");
+        }
+        return { body: { delivery: quoted, events: [] } };
+      },
+    });
+    const browser = userEvent.setup();
+    const section = screen.getByRole("region", { name: "Доставка" });
+    expect(await within(section).findByText("Не удалось загрузить доставку.")).toBeInTheDocument();
+    expect(within(section).getByText("Иван Тестов")).toBeInTheDocument();
+
+    await browser.click(within(section).getByRole("button", { name: "Повторить" }));
+    await waitFor(() => expect(gets).toBe(2));
+    await waitFor(() =>
+      expect(within(section).queryByText("Не удалось загрузить доставку.")).toBeNull(),
+    );
   });
 
   it("retries tariffs after a transient provider error", async () => {
@@ -597,6 +680,36 @@ describe("AdminDeliveryCard", () => {
         unmount();
         await advance(30_000);
         expect(gets).toBe(3);
+      } finally {
+        vi.useRealTimers();
+      }
+    },
+  );
+
+  it.each([
+    [401, "unauthorized"],
+    [404, "not_found"],
+  ] as Array<[number, string]>)(
+    "stops polling when the delivery request fails with %i",
+    async (status, error) => {
+      vi.useFakeTimers();
+      try {
+        let gets = 0;
+        setupCard({
+          "GET /seller/orders/42/delivery": () => {
+            gets += 1;
+            if (gets === 1) {
+              return { body: { delivery: created, events: [] } };
+            }
+            return { status, body: { error } };
+          },
+        });
+        await advance(0);
+        expect(gets).toBe(1);
+        await advance(15_000);
+        expect(gets).toBe(2);
+        await advance(30_000);
+        expect(gets).toBe(2);
       } finally {
         vi.useRealTimers();
       }

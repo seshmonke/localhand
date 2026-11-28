@@ -1,6 +1,7 @@
 import { useQuery, type QueryClient } from "@tanstack/react-query";
 import type { CatalogQuery, DeliveryStatus } from "@localhand/shared";
 import {
+  ApiError,
   fetchCatalog,
   fetchMe,
   fetchMyOrders,
@@ -158,6 +159,10 @@ export function useSellerOrderDeliveryQuery(id: number, enabled = true) {
     staleTime: 5_000,
     retry: false,
     refetchInterval: (query) => {
+      const error = query.state.error;
+      if (error instanceof ApiError && (error.status === 401 || error.status === 404)) {
+        return false;
+      }
       const status = query.state.data?.delivery.status;
       return status !== undefined && LIVE_DELIVERY_STATUSES.has(status)
         ? DELIVERY_POLL_INTERVAL_MS
