@@ -1,5 +1,6 @@
 import { Button, buttonVariants } from "@localhand/ui";
 import { ArrowLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
 import { ProductCard } from "../components/ProductCard.js";
 import { ProductGridSkeleton, ScreenState } from "../components/ScreenState.js";
@@ -8,6 +9,7 @@ import { ApiNotFoundError } from "../lib/api.js";
 import { useShopQuery } from "../lib/queries.js";
 
 export function ShopPage() {
+  const { t } = useTranslation();
   const { slug = "" } = useParams();
   const shop = useShopQuery(slug);
 
@@ -25,19 +27,15 @@ export function ShopPage() {
       <PageShell className="py-10 sm:py-12">
         <ScreenState
           kind={notFound ? "empty" : "error"}
-          title={notFound ? "Магазин не найден" : "Магазин не загрузился"}
-          description={
-            notFound
-              ? "Возможно, магазин ещё не опубликован или ссылка устарела."
-              : "Проверьте соединение и попробуйте снова."
-          }
+          title={notFound ? t("shop.notFound.title") : t("shop.error.title")}
+          description={notFound ? t("shop.notFound.description") : t("common.connectionError")}
           action={
             notFound ? (
               <Link to="/" className={buttonVariants({ variant: "outline" })}>
-                Вернуться в каталог
+                {t("common.backToCatalog")}
               </Link>
             ) : (
-              <Button onClick={() => void shop.refetch()}>Повторить</Button>
+              <Button onClick={() => void shop.refetch()}>{t("common.retry")}</Button>
             )
           }
         />
@@ -51,11 +49,12 @@ export function ShopPage() {
         to="/"
         className="inline-flex min-h-11 items-center gap-2 font-mono text-xs uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red"
       >
-        <ArrowLeft aria-hidden="true" className="size-4" />В каталог
+        <ArrowLeft aria-hidden="true" className="size-4" />
+        {t("shop.back")}
       </Link>
 
       <PageHeader
-        eyebrow="Магазин"
+        eyebrow={t("shop.eyebrow")}
         title={shop.data.name}
         description={shop.data.description ?? undefined}
         className="border-b-[3px]"
@@ -64,17 +63,17 @@ export function ShopPage() {
       <section aria-labelledby="shop-products-title">
         <Stack gap={6}>
           <h2 id="shop-products-title" className="font-display text-2xl uppercase sm:text-3xl">
-            Товары магазина
+            {t("shop.productsTitle")}
           </h2>
 
           {shop.data.products.length === 0 ? (
             <ScreenState
               kind="empty"
-              title="В магазине пока нет товаров"
-              description="Продавец ещё не опубликовал ни одной вещи."
+              title={t("shop.empty.title")}
+              description={t("shop.empty.description")}
               action={
                 <Link to="/" className={buttonVariants({ variant: "outline" })}>
-                  Смотреть другие магазины
+                  {t("shop.empty.action")}
                 </Link>
               }
             />

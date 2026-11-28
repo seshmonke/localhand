@@ -2,39 +2,14 @@ import { type CatalogQuery, CatalogSortSchema, type CatalogSort } from "@localha
 import { Button, buttonVariants } from "@localhand/ui";
 import { ArrowRight } from "lucide-react";
 import { useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
 import { ProductCard } from "../components/ProductCard.js";
 import { ProductGridSkeleton, ScreenState } from "../components/ScreenState.js";
 import { Card, PageShell, Stack } from "../components/layout/index.js";
 import { useCatalogQuery } from "../lib/queries.js";
 
-const categories = ["Винтаж", "Локальные бренды", "Цифровое", "Дом", "Аксессуары"];
-
-const steps = [
-  {
-    number: "01",
-    title: "Найдите вещь",
-    text: "Каталог маркетплейса: поиск по названию, сортировка и страницы с товарами.",
-  },
-  {
-    number: "02",
-    title: "Купите у продавца",
-    text: "Оплата на сайте, деньги уходят продавцу. Заказ и доставка видны в кабинете.",
-  },
-  {
-    number: "03",
-    title: "Получите заказ",
-    text: "СДЭК или мгновенная ссылка для цифрового товара. Статус — в личном кабинете.",
-  },
-];
-
 const CATALOG_PAGE_SIZE = 12;
-
-const sortOptions: Array<{ value: CatalogSort; label: string }> = [
-  { value: "newest", label: "Сначала новые" },
-  { value: "price_asc", label: "Сначала дешёвые" },
-  { value: "price_desc", label: "Сначала дорогие" },
-];
 
 type CatalogState = {
   q: string;
@@ -57,10 +32,43 @@ function readCatalogState(params: URLSearchParams): CatalogState {
 }
 
 export function MarketplacePage() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { q, sort, page } = readCatalogState(searchParams);
   const [searchText, setSearchText] = useState(q);
   const [syncedQuery, setSyncedQuery] = useState(q);
+
+  const categories = [
+    t("marketplace.categories.vintage"),
+    t("marketplace.categories.localBrands"),
+    t("marketplace.categories.digital"),
+    t("marketplace.categories.home"),
+    t("marketplace.categories.accessories"),
+  ];
+
+  const steps = [
+    {
+      number: "01",
+      title: t("marketplace.steps.step1.title"),
+      text: t("marketplace.steps.step1.text"),
+    },
+    {
+      number: "02",
+      title: t("marketplace.steps.step2.title"),
+      text: t("marketplace.steps.step2.text"),
+    },
+    {
+      number: "03",
+      title: t("marketplace.steps.step3.title"),
+      text: t("marketplace.steps.step3.text"),
+    },
+  ];
+
+  const sortOptions: Array<{ value: CatalogSort; label: string }> = [
+    { value: "newest", label: t("marketplace.sort.newest") },
+    { value: "price_asc", label: t("marketplace.sort.priceAsc") },
+    { value: "price_desc", label: t("marketplace.sort.priceDesc") },
+  ];
 
   if (q !== syncedQuery) {
     setSyncedQuery(q);
@@ -110,36 +118,41 @@ export function MarketplacePage() {
         <PageShell className="grid gap-8 py-10 sm:py-12 lg:grid-cols-12 lg:gap-x-6">
           <div className="col-span-4 flex flex-col justify-center md:col-span-8 lg:col-span-7">
             <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text sm:text-xs">
-              Маркетплейс нового типа
+              {t("marketplace.hero.eyebrow")}
             </p>
             <h1 className="mt-4 max-w-4xl text-balance font-display text-4xl uppercase leading-[0.95] sm:text-6xl lg:text-7xl">
-              Секонд-хенд и локальные бренды в одном месте
+              {t("marketplace.hero.title")}
             </h1>
             <p className="mt-6 max-w-xl text-pretty text-base leading-relaxed sm:text-lg">
-              Local Hand даёт продавцу свой магазин и общую витрину, а покупателю — один вход к
-              винтажу, локальным дизайнерам и цифровым авторам.
+              {t("marketplace.hero.lead")}
             </p>
             <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:gap-4">
               <a href="#catalog" className={buttonVariants({ size: "lg" })}>
-                Смотреть каталог
+                {t("marketplace.hero.viewCatalog")}
                 <ArrowRight aria-hidden="true" className="size-5" />
               </a>
               <a href="#sellers" className={buttonVariants({ variant: "outline", size: "lg" })}>
-                Открыть магазин
+                {t("marketplace.hero.openShop")}
               </a>
             </div>
             <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4 border-t-[3px] border-ink pt-4">
               <div>
-                <dt className="font-mono text-[10px] uppercase tracking-wide">Магазины</dt>
+                <dt className="font-mono text-[10px] uppercase tracking-wide">
+                  {t("marketplace.stats.shops")}
+                </dt>
                 <dd className="mt-2 font-display text-2xl">1</dd>
               </div>
               <div>
-                <dt className="font-mono text-[10px] uppercase tracking-wide">Товары</dt>
+                <dt className="font-mono text-[10px] uppercase tracking-wide">
+                  {t("marketplace.stats.products")}
+                </dt>
                 <dd className="mt-2 font-display text-2xl">{catalog.data ? total : "—"}</dd>
               </div>
               <div>
-                <dt className="font-mono text-[10px] uppercase tracking-wide">Города РФ</dt>
-                <dd className="mt-2 font-display text-2xl">Все</dd>
+                <dt className="font-mono text-[10px] uppercase tracking-wide">
+                  {t("marketplace.stats.cities")}
+                </dt>
+                <dd className="mt-2 font-display text-2xl">{t("marketplace.stats.citiesValue")}</dd>
               </div>
             </dl>
           </div>
@@ -150,17 +163,21 @@ export function MarketplacePage() {
                 Local Hand / v1
               </p>
               <p className="mt-8 font-display text-6xl font-extrabold uppercase leading-[0.9]">
-                Вещи
+                {t("marketplace.poster.word1")}
                 <br />
-                с
+                {t("marketplace.poster.word2")}
                 <br />
-                историей
+                {t("marketplace.poster.word3")}
               </p>
               <div className="mt-10 grid grid-cols-2 gap-4 border-t-[3px] border-inverse-text/40 pt-4 font-mono text-[10px] uppercase tracking-wide">
-                <span>Свой магазин</span>
-                <span className="text-right text-accent-orange">Общая витрина</span>
-                <span>Физические</span>
-                <span className="text-right text-accent-green">Цифровые</span>
+                <span>{t("marketplace.poster.tag1")}</span>
+                <span className="text-right text-accent-orange">
+                  {t("marketplace.poster.tag2")}
+                </span>
+                <span>{t("marketplace.poster.physical")}</span>
+                <span className="text-right text-accent-green">
+                  {t("marketplace.poster.digital")}
+                </span>
               </div>
             </div>
           </div>
@@ -171,7 +188,7 @@ export function MarketplacePage() {
         <PageShell className="py-8">
           <Stack gap={4}>
             <h2 id="categories-title" className="font-mono text-xs uppercase tracking-[0.2em]">
-              Категории
+              {t("marketplace.categories.title")}
             </h2>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {categories.map((category) => (
@@ -194,10 +211,10 @@ export function MarketplacePage() {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-red-text">
-                  Каталог
+                  {t("marketplace.catalog.eyebrow")}
                 </p>
                 <h2 id="catalog-title" className="mt-2 font-display text-3xl uppercase sm:text-4xl">
-                  Вещи, которые стоит найти
+                  {t("marketplace.catalog.title")}
                 </h2>
               </div>
               <button
@@ -205,7 +222,7 @@ export function MarketplacePage() {
                 onClick={() => applyState({ q: "", sort: "newest", page: 1 })}
                 className="inline-flex min-h-11 items-center font-mono text-xs uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
               >
-                Все товары
+                {t("marketplace.allProducts")}
               </button>
             </div>
 
@@ -216,7 +233,7 @@ export function MarketplacePage() {
                     htmlFor="catalog-search"
                     className="font-mono text-[10px] uppercase tracking-[0.2em]"
                   >
-                    Поиск по каталогу
+                    {t("marketplace.search.label")}
                   </label>
                   <div className="mt-2 flex gap-2">
                     <input
@@ -226,11 +243,11 @@ export function MarketplacePage() {
                       value={searchText}
                       onChange={(event) => setSearchText(event.target.value)}
                       maxLength={100}
-                      placeholder="Название товара или магазина"
+                      placeholder={t("marketplace.search.placeholder")}
                       className="h-12 min-w-0 flex-1 border-[3px] border-ink bg-paper px-3 font-body text-base"
                     />
                     <Button type="submit" className="shrink-0">
-                      Найти
+                      {t("marketplace.search.submit")}
                     </Button>
                   </div>
                 </form>
@@ -241,7 +258,7 @@ export function MarketplacePage() {
                   htmlFor="catalog-sort"
                   className="font-mono text-[10px] uppercase tracking-[0.2em]"
                 >
-                  Сортировка
+                  {t("marketplace.sort.label")}
                 </label>
                 <select
                   id="catalog-sort"
@@ -268,7 +285,7 @@ export function MarketplacePage() {
             <Stack gap={4}>
               {catalog.isSuccess ? (
                 <output className="block font-mono text-[10px] uppercase tracking-[0.2em]">
-                  Найдено товаров: {total}
+                  {t("marketplace.found")} {total}
                 </output>
               ) : null}
 
@@ -277,20 +294,22 @@ export function MarketplacePage() {
               {catalog.isError ? (
                 <ScreenState
                   kind="error"
-                  title="Каталог не загрузился"
-                  description="Проверьте соединение и попробуйте снова."
-                  action={<Button onClick={() => void catalog.refetch()}>Повторить</Button>}
+                  title={t("marketplace.error.title")}
+                  description={t("common.connectionError")}
+                  action={
+                    <Button onClick={() => void catalog.refetch()}>{t("common.retry")}</Button>
+                  }
                 />
               ) : null}
 
               {catalog.isSuccess && products.length === 0 && !pageOutOfRange ? (
                 <ScreenState
                   kind="empty"
-                  title={q ? "Ничего не найдено" : "Пока пусто"}
+                  title={q ? t("marketplace.empty.title") : t("marketplace.emptyNoQuery.title")}
                   description={
                     q
-                      ? `По запросу «${q}» нет опубликованных товаров. Попробуйте другое название.`
-                      : "Первые товары появятся здесь, когда продавцы опубликуют магазины."
+                      ? t("marketplace.empty.queryDescription", { query: q })
+                      : t("marketplace.emptyNoQuery.description")
                   }
                   action={
                     q ? (
@@ -298,7 +317,7 @@ export function MarketplacePage() {
                         variant="outline"
                         onClick={() => applyState({ q: "", sort, page: 1 })}
                       >
-                        Сбросить поиск
+                        {t("marketplace.empty.action")}
                       </Button>
                     ) : undefined
                   }
@@ -308,11 +327,11 @@ export function MarketplacePage() {
               {pageOutOfRange ? (
                 <ScreenState
                   kind="empty"
-                  title="На этой странице товаров нет"
-                  description={`Всего найдено товаров: ${total}. Вернитесь на первую страницу.`}
+                  title={t("marketplace.outOfRange.title")}
+                  description={t("marketplace.outOfRange.description", { total })}
                   action={
                     <Button variant="outline" onClick={() => applyState({ q, sort, page: 1 })}>
-                      На первую страницу
+                      {t("marketplace.outOfRange.action")}
                     </Button>
                   }
                 />
@@ -329,7 +348,7 @@ export function MarketplacePage() {
 
             {catalog.isSuccess && total > CATALOG_PAGE_SIZE && !pageOutOfRange ? (
               <nav
-                aria-label="Страницы каталога"
+                aria-label={t("marketplace.pagination.label")}
                 className="flex flex-wrap items-center justify-between gap-4 border-t-[3px] border-ink pt-4"
               >
                 <Button
@@ -337,17 +356,18 @@ export function MarketplacePage() {
                   disabled={page <= 1}
                   onClick={() => applyState({ q, sort, page: page - 1 })}
                 >
-                  Назад
+                  {t("marketplace.pagination.prev")}
                 </Button>
                 <p aria-live="polite" className="font-mono text-xs uppercase tracking-wide">
-                  Страница {page} из {totalPages}
+                  {t("marketplace.pagination.page")} {page} {t("marketplace.pagination.of")}{" "}
+                  {totalPages}
                 </p>
                 <Button
                   variant="outline"
                   disabled={!catalog.data.hasMore}
                   onClick={() => applyState({ q, sort, page: page + 1 })}
                 >
-                  Дальше
+                  {t("marketplace.pagination.next")}
                 </Button>
               </nav>
             ) : null}
@@ -359,7 +379,7 @@ export function MarketplacePage() {
         <PageShell className="py-10 sm:py-12">
           <Stack gap={8}>
             <h2 id="how-title" className="font-display text-3xl uppercase sm:text-4xl">
-              Как это работает
+              {t("marketplace.how.title")}
             </h2>
             <div className="grid gap-4 md:grid-cols-3">
               {steps.map((step) => (
@@ -380,25 +400,21 @@ export function MarketplacePage() {
         <PageShell className="grid gap-8 py-10 sm:py-12 lg:grid-cols-12 lg:items-center">
           <div className="col-span-4 md:col-span-8 lg:col-span-8">
             <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent-green">
-              Продавцам
+              {t("marketplace.sellers.eyebrow")}
             </p>
             <h2 className="mt-4 max-w-2xl text-balance font-display text-3xl uppercase sm:text-5xl">
-              <span className="block">Свой магазин.</span>
-              <span className="block">Общая витрина.</span>
-              <span className="block">Без комиссии с продаж.</span>
+              <span className="block">{t("marketplace.sellers.point1")}</span>
+              <span className="block">{t("marketplace.sellers.point2")}</span>
+              <span className="block">{t("marketplace.sellers.point3")}</span>
             </h2>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-inverse-text/80 sm:text-base">
-              <span className="block">
-                Подключите ЮKassa, загрузите товары и получите ссылку на магазин.
-              </span>
-              <span className="block">
-                Local Hand приведёт покупателей и покажет заказы в одной админке.
-              </span>
+              <span className="block">{t("marketplace.sellers.descriptionFirst")}</span>
+              <span className="block">{t("marketplace.sellers.descriptionSecond")}</span>
             </p>
           </div>
           <div className="col-span-4 md:col-span-8 lg:col-span-4 lg:justify-self-end">
             <Button variant="accent" size="lg" className="w-full sm:w-auto" disabled>
-              Скоро: стать продавцом
+              {t("marketplace.sellers.cta")}
             </Button>
           </div>
         </PageShell>
@@ -409,7 +425,7 @@ export function MarketplacePage() {
           to="/shops/local-hand-demo"
           className="inline-flex min-h-11 items-center font-mono text-xs uppercase underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
         >
-          Открыть демо-магазин
+          {t("marketplace.demo")}
         </Link>
       </PageShell>
     </>
