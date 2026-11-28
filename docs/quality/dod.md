@@ -6,9 +6,10 @@ T1 — обычная фича, T2 — деньги, authz, PII/адреса, к
 заказов, миграции, платёжные/внешние провайдеры.
 
 **T0:** DoR — ссылки/факты проверяемы, `No spec change`; DoD —
-`verify`, prettier/check:public, ревью; a11y обязателен, если UI. TDD,
-e2e, proposal/spec, preview, smoke, rollback и OpenSpec archive не
-требуются. Для T0 общий чеклист ниже не применяется.
+`verify`, prettier/check:public, ревью; a11y обязателен, если UI;
+Copywriter review не-автора + `slop-check` для пользовательских/публичных текстов.
+TDD, e2e, proposal/spec, preview, smoke, rollback и OpenSpec archive не
+требуются. Для T0 общий чеклист ниже не применяется, кроме text gate.
 
 ## Definition of Ready (PBI)
 
@@ -49,6 +50,8 @@ PBI Done, только если:
       (до merge Q1.0–Q1.6 — ручной прогон или owner-исключение).
 - [ ] A11y: клавиатура, фокус, labels, контраст; axe чист на изменённых
       страницах.
+- [ ] Тексты: user-facing/публичные тексты прошли Copywriter review и
+      `slop-check`; нет ложных обещаний; глоссарий соблюдён.
 - [ ] Perf-бюджет: preview lab LCP < 2500 ms (owner-approved DoD-прокси
       v1) и дельта бандла в бюджете; field p75 — до публичного запуска.
 - [ ] Наблюдаемость: логи/метрики/трейсы для нового пути; для T2 —
