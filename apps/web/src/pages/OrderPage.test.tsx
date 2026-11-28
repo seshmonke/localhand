@@ -1,4 +1,10 @@
-import { formatRubles, kopecks, type OrderPayment, type OrderSummary } from "@localhand/shared";
+import {
+  formatRubles,
+  kopecks,
+  type DeliverySnapshot,
+  type OrderPayment,
+  type OrderSummary,
+} from "@localhand/shared";
 import { act, cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -44,6 +50,27 @@ const order: OrderSummary = {
       quantity: 1,
     },
   ],
+};
+
+const deliveredDelivery: DeliverySnapshot = {
+  provider: "cdek",
+  status: "delivered",
+  cityCode: 44,
+  cityName: "Москва",
+  pointCode: "MSK001",
+  pointAddress: "ул. Тестовая, 1, ПВЗ «Тестовый»",
+  recipientName: "Иван Тестов",
+  tariffCode: "136",
+  tariffName: "Посылка склад-ПВЗ",
+  priceKopecks: 45_000,
+  periodMin: 2,
+  periodMax: 5,
+  providerOrderId: "cdek-order-42",
+  providerNumber: "1234567890",
+  carrier: "СДЭК",
+  trackNumber: "1234567890",
+  lastStatusCode: "DELIVERED",
+  lastStatusAt: createdAt,
 };
 
 function payment(overrides: Partial<OrderPayment> = {}): OrderPayment {
@@ -127,6 +154,22 @@ describe("OrderPage", () => {
     const paymentSection = screen.getByRole("region", { name: "Оплата" });
     expect(await within(paymentSection).findByText("Оплата не подключена")).toBeInTheDocument();
     expect(within(paymentSection).getByRole("button", { name: "Оплатить" })).toBeInTheDocument();
+  });
+
+  it("shows the delivery snapshot with pickup point, track and price", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /orders/42": { body: { order: { ...order, delivery: deliveredDelivery } } },
+      "GET /orders/42/payment": { body: { payment: null } },
+    });
+
+    renderApp(["/orders/42"]);
+
+    const deliverySection = await screen.findByRole("region", { name: "Доставка" });
+    expect(within(deliverySection).getByText(deliveredDelivery.pointAddress)).toBeInTheDocument();
+    expect(within(deliverySection).getByText("Иван Тестов")).toBeInTheDocument();
+    expect(within(deliverySection).getByText(price(45_000))).toBeInTheDocument();
+    expect(within(deliverySection).getByText("СДЭК · 1234567890")).toBeInTheDocument();
   });
 
   it("creates a payment with an idempotency key and opens the confirmation page", async () => {

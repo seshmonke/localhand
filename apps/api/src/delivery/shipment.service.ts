@@ -1,10 +1,12 @@
 import { createHash } from "node:crypto";
 import type {
+  DeliveryEvent,
   DeliveryManualTrack,
   DeliverySnapshot,
   DeliveryTariffListResponse,
+  SellerDeliveryResponse,
 } from "@localhand/shared";
-import { and, eq, inArray, isNull, lte, or } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lte, or } from "drizzle-orm";
 import { requireDb } from "../db/client.js";
 import {
   deliveryEvents,
@@ -65,6 +67,8 @@ type DeliveryContext = {
     lastStatusAt: Date | null;
   } | null;
 };
+
+const SELLER_DELIVERY_EVENTS_LIMIT = 50;
 
 const deliverySelect = {
   id: orderDeliveries.id,
@@ -230,9 +234,32 @@ export async function getBuyerDelivery(
 export async function getSellerDelivery(
   userId: number,
   orderId: number,
-): Promise<DeliverySnapshot | null> {
+): Promise<SellerDeliveryResponse | null> {
   const context = await loadContext(orderId, { sellerUserId: userId });
-  return context ? toSnapshot(context) : null;
+  const deliveryRow = context?.delivery;
+  const delivery = context ? toSnapshot(context) : null;
+  if (!context || !deliveryRow || !delivery) {
+    return null;
+  }
+
+  const rows = await requireDb()
+    .select({
+      statusCode: deliveryEvents.statusCode,
+      statusName: deliveryEvents.statusName,
+      occurredAt: deliveryEvents.occurredAt,
+    })
+    .from(deliveryEvents)
+    .where(eq(deliveryEvents.deliveryId, deliveryRow.id))
+    .orderBy(desc(deliveryEvents.occurredAt), desc(deliveryEvents.id))
+    .limit(SELLER_DELIVERY_EVENTS_LIMIT);
+
+  const events: DeliveryEvent[] = rows.map((row) => ({
+    statusCode: row.statusCode,
+    statusName: row.statusName,
+    occurredAt: row.occurredAt.toISOString(),
+  }));
+
+  return { delivery, events };
 }
 
 export type TariffResult =

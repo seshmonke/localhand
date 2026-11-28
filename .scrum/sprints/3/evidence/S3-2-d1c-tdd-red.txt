@@ -1,15 +1,10 @@
+# S3-2-D1c RED evidence after merge with main 618fdda
 # Command: pnpm --filter @localhand/web exec vitest run src/pages/AdminShopPage.test.tsx
-# Setup: state/error/loading/clear tests on top of D1b happy-path UI (RED).
-# Exit: 1
-# Summary: Test Files 1 failed (1) | Tests 3 failed | 8 passed (11)
-
-FAIL src/pages/AdminShopPage.test.tsx > AdminShopPage > shows an empty city result and a rate-limit error with retry
+# Setup: B-fix page from main (debounce/onError/aria/placeholder), C state code removed.
+# Exit: 1 | Tests 3 failed | 9 passed (12)
+FAIL AdminShopPage > shows an empty city result and a rate-limit error with retry
 TestingLibraryElementError: Unable to find an element with the text: Города не найдены. Уточните запрос.
-
-FAIL src/pages/AdminShopPage.test.tsx > AdminShopPage > shows PVZ loading, maps delivery_unavailable and retries
+FAIL AdminShopPage > shows PVZ loading, maps delivery_unavailable and retries
 TestingLibraryElementError: Unable to find an element with the text: Загружаем ПВЗ…
-
-FAIL src/pages/AdminShopPage.test.tsx > AdminShopPage > clears the shipping origin and sends nulls
+FAIL AdminShopPage > clears the shipping origin and sends nulls
 TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Убрать город сдачи"
-
-Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL

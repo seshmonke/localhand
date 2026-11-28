@@ -1,6 +1,8 @@
-# Command: pnpm --filter @localhand/web exec vitest run src/pages/AdminShopPage.test.tsx
-# Exit: 0 (GREEN)
-# Summary: Test Files 1 passed (1) | Tests 8 passed (8)
+# S3-2-D1b GREEN evidence
 
-Test Files  1 passed (1)
-     Tests  8 passed (8)
+## Original slice
+# Exit: 0 | Tests 8 passed (8)
+
+## Review fix (debounce, onError, fixtures, aria)
+# Command: pnpm --filter @localhand/web exec vitest run src/pages/AdminShopPage.test.tsx
+# Exit: 0 | Test Files 1 passed (1) | Tests 9 passed (9)
