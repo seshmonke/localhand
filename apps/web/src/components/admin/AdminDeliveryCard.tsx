@@ -10,7 +10,7 @@ import {
 } from "@localhand/shared";
 import { Button } from "@localhand/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useId, useState, type ReactNode } from "react";
+import { useId, useRef, useState, type ReactNode } from "react";
 import { ApiError, createSellerShipment, saveSellerManualTrack } from "../../lib/api.js";
 import {
   sellerKeys,
@@ -82,19 +82,12 @@ function validateManualTrack(input: {
     if ((field !== "carrier" && field !== "trackNumber") || errors[field] !== undefined) {
       continue;
     }
-    if (issue.code === "too_big") {
-      errors[field] =
-        field === "carrier"
-          ? `Не больше ${DELIVERY_CARRIER_MAX_LENGTH} символов.`
-          : `Не больше ${DELIVERY_TRACK_NUMBER_MAX_LENGTH} символов.`;
-    } else {
-      errors[field] =
-        issue.message === "invalid_track_number"
-          ? "Только латинские буквы, цифры и дефис."
-          : field === "carrier"
-            ? "Укажите перевозчика."
-            : "Укажите трек-номер.";
-    }
+    errors[field] =
+      issue.message === "invalid_track_number"
+        ? "Только латинские буквы, цифры и дефис."
+        : field === "carrier"
+          ? "Укажите перевозчика."
+          : "Укажите трек-номер.";
   }
   return { errors };
 }
@@ -120,6 +113,10 @@ export function AdminDeliveryCard({
   const queryClient = useQueryClient();
   const headingId = useId();
   const manualHeadingId = useId();
+  const carrierFieldId = useId();
+  const trackFieldId = useId();
+  const carrierInputRef = useRef<HTMLInputElement>(null);
+  const trackInputRef = useRef<HTMLInputElement>(null);
   const paid = orderStatus === "paid";
   const deliveryQuery = useSellerOrderDeliveryQuery(orderId, paid && delivery !== null);
   const [tariffsRequested, setTariffsRequested] = useState(false);
@@ -279,7 +276,7 @@ export function AdminDeliveryCard({
       {queryError !== null && !sessionExpired ? (
         <div className="mt-4 flex flex-col gap-3">
           <FormError message={errorMessage(queryError, "Не удалось загрузить доставку.")} />
-          {queryError instanceof ApiError && queryError.status !== 404 ? (
+          {!(queryError instanceof ApiError && queryError.status === 404) ? (
             <Button
               variant="outline"
               className="w-full"
@@ -358,6 +355,7 @@ export function AdminDeliveryCard({
               setManualFieldErrors(result.errors);
               setActionError(null);
               setNotice(null);
+              (result.errors.carrier ? carrierInputRef : trackInputRef).current?.focus();
               return;
             }
             setManualFieldErrors({});
@@ -371,9 +369,16 @@ export function AdminDeliveryCard({
           <p className="text-sm leading-relaxed text-ink/70">
             Используйте, если отправление СДЭК точно не создано. После сохранения трек не меняется.
           </p>
-          <FormField id="manual-carrier" label="Перевозчик" error={manualFieldErrors.carrier}>
+          {manualFieldErrors.carrier !== undefined ||
+          manualFieldErrors.trackNumber !== undefined ? (
+            <p role="alert" className="text-sm font-semibold">
+              Проверьте выделенные поля.
+            </p>
+          ) : null}
+          <FormField id={carrierFieldId} label="Перевозчик" error={manualFieldErrors.carrier}>
             <input
-              id="manual-carrier"
+              ref={carrierInputRef}
+              id={carrierFieldId}
               name="carrier"
               type="text"
               autoComplete="organization"
@@ -390,7 +395,7 @@ export function AdminDeliveryCard({
               }}
               aria-invalid={manualFieldErrors.carrier ? true : undefined}
               aria-describedby={fieldDescribedBy(
-                "manual-carrier",
+                carrierFieldId,
                 undefined,
                 manualFieldErrors.carrier,
               )}
@@ -398,13 +403,14 @@ export function AdminDeliveryCard({
             />
           </FormField>
           <FormField
-            id="manual-track"
+            id={trackFieldId}
             label="Трек-номер"
             hint={TRACK_HINT}
             error={manualFieldErrors.trackNumber}
           >
             <input
-              id="manual-track"
+              ref={trackInputRef}
+              id={trackFieldId}
               name="trackNumber"
               type="text"
               autoCapitalize="none"
@@ -423,7 +429,7 @@ export function AdminDeliveryCard({
               }}
               aria-invalid={manualFieldErrors.trackNumber ? true : undefined}
               aria-describedby={fieldDescribedBy(
-                "manual-track",
+                trackFieldId,
                 TRACK_HINT,
                 manualFieldErrors.trackNumber,
               )}
