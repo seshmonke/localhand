@@ -40,7 +40,7 @@
 | Baseline −78/0 added, deadKeys 0 | `check:i18n` | pass: 502 → 424, −84 occurrences, 0 added, 0 dead | [check](evidence/check-i18n-after.txt), [delta](evidence/baseline-delta.txt) |
 | `pnpm verify` 0; `check:i18n` 0 | команды | pass, exit 0 | [verify](evidence/verify.txt) |
 | Web/e2e/axe | vitest + playwright | pass: 252, 13/13, 72/0 | [web](evidence/web-tests.txt), [e2e](evidence/e2e.txt), [axe](evidence/axe-summary.txt) |
-| No shared labels/SMS/index/W2; no behavior changes | diff | pass: только 2 компонента, их тесты, каталог, baseline | [numstat](evidence/commit-numstat.txt) |
+| No shared ORDER_STATUS_LABELS/SMS/index/W2; DELIVERY_STATUS_LABELS local | diff | pass: 2 компонента, тесты, каталог, baseline | [numstat](evidence/commit-numstat.txt) |
 | Размер < 600 | numstat | pass: 428 code+tests | [numstat](evidence/commit-numstat.txt) |
 
 ## TDD / characterization
@@ -95,12 +95,12 @@ info-only (`lab-lcp-over-budget`), не gate.
 
 ## Границы и риски
 
-- Scope только delivery UI (B2); W2, shared labels/SMS/index, `order.*`
+- Scope только delivery UI (B2); W2, shared `ORDER_STATUS_LABELS`/SMS/index, `order.*`
   не мигрировались. `openspec/specs/`, state/board/README не менялись.
 - Значения совпадают с PR #83: e2e-локаторы (`Доставка`,
   `Ожидает отправки`, `Создать отправление`, `Перевозчик`, `Трек`,
   `Ручной трек`) прошли без правок.
-- `DELIVERY_STATUS_LABELS` не перемещён в shared; его литералы теперь в
+- `DELIVERY_STATUS_LABELS` остаётся локальным web-контрактом; литералы в
   каталоге, публичный тип/значения прежние. S4-4 остаётся владельцем
   переноса shared-лейблов/SMS/meta.
 - Baseline уменьшился ровно на 78 findings, новых/dead keys нет; split
@@ -116,7 +116,7 @@ info-only (`lab-lcp-over-budget`), не gate.
   Vite proxy-патч не коммитить.
 - Открытые треды: `#task-4` (review/merge B2), `#spec` (namespace
   `delivery.*`).
-- PR не открыт: push отклонён средой; SHA для PR — `201d607`.
+- PR #92 открыт; review APPROVE; bundle +0.367% gzip (в бюджете).
 
 ## Блокеры
 

@@ -24,7 +24,7 @@ Durable-путь: `.scrum/sprints/4/tasks/S4-2b2/handoff.md`. Worktree, ветк
 - Следующий шаг: push `task/S4-2b2-delivery-catalog`, открыть PR с SHA
   `201d607`, ревью, merge; после merge — S4-3 W2.
 - Что не делать: не менять `DELIVERY_STATUS_LABELS`-контракт
-  (имя/тип/значения), не переносить shared labels/SMS/index в этом PR,
+  (имя/тип/значения); shared ORDER_STATUS_LABELS/SMS/index — не в этом PR,
   не трогать `openspec/specs/`, state/board/README.
 - Зависимости/блокеры: push/PR недоступны исполнителю; других нет.
 
@@ -37,7 +37,7 @@ Durable-путь: `.scrum/sprints/4/tasks/S4-2b2/handoff.md`. Worktree, ветк
   `WEB_ORIGIN=http://localhost:5273`, web `:5273`; Vite proxy на `:3100`
   патчится временно и возвращается к `:3000` до коммита. `pnpm ... dev --
   --port` не переопределяет порт Vite; использовать `vite --port 5273`.
-- `DELIVERY_STATUS_LABELS` сохранён как публичный контракт, но его
+- `DELIVERY_STATUS_LABELS` сохранён как локальный web-контракт, его
   значения читаются из `ru.ts` — иначе 7 findings не дают baseline 424.
 
 ## Проверки
@@ -63,4 +63,4 @@ Durable-путь: `.scrum/sprints/4/tasks/S4-2b2/handoff.md`. Worktree, ветк
 
 «Понял: delivery UI в `ru.ts` без смены значений/поведения; SHA
 `201d607`; baseline 424; verify/e2e/axe зелёные. Делаю: push + PR.
-Не трогаю: shared labels/SMS/index, specs, state/board.»
+Не трогаю: shared ORDER_STATUS_LABELS/SMS/index, specs, state/board.»

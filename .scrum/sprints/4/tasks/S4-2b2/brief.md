@@ -19,7 +19,8 @@ Delivery UI W1-строки → `packages/i18n/src/resources/ru.ts`:
   Переиспользуй `common.*`/`order.*`, где уместно.
 - [ ] Значения ровно как в main (copy PR #83); тесты/e2e 13/axe 72/0.
 - [ ] `pnpm verify` 0; `check:i18n` 0; baseline −78/0 added, deadKeys 0.
-- [ ] No shared labels/SMS/index/W2; no behavior changes.
+- [ ] No shared `ORDER_STATUS_LABELS`/SMS/index/W2; `DELIVERY_STATUS_LABELS`
+  (local web labels) moves with B2; values preserved.
 
 ## Tier/change
 
@@ -39,7 +40,8 @@ T1, `No spec change: i18n refactor`; ADR 0006.
 - `admin.delivery.*` — seller controls/events.
 - `delivery.*` — shared buyer/seller snapshot card.
 - `t("key", { count })`; значения — текущие.
-- Не менять `DELIVERY_STATUS_LABELS`/shared labels (S4-4).
+- `DELIVERY_STATUS_LABELS` (local web) мигрирует в B2 с сохранением
+  имён/значений; shared `ORDER_STATUS_LABELS`/SMS — S4-4.
 
 ## Non-goals
 
