@@ -1,5 +1,5 @@
 import { useQuery, type QueryClient } from "@tanstack/react-query";
-import type { CatalogQuery } from "@localhand/shared";
+import type { CatalogQuery, DeliveryStatus } from "@localhand/shared";
 import {
   fetchCatalog,
   fetchMe,
@@ -147,6 +147,9 @@ export function useSellerOrderPaymentQuery(id: number, enabled = true) {
   });
 }
 
+const DELIVERY_POLL_INTERVAL_MS = 15_000;
+const LIVE_DELIVERY_STATUSES: ReadonlySet<DeliveryStatus> = new Set(["created", "in_transit"]);
+
 export function useSellerOrderDeliveryQuery(id: number, enabled = true) {
   return useQuery({
     queryKey: sellerKeys.delivery(id),
@@ -154,6 +157,12 @@ export function useSellerOrderDeliveryQuery(id: number, enabled = true) {
     enabled: enabled && Number.isInteger(id) && id > 0,
     staleTime: 5_000,
     retry: false,
+    refetchInterval: (query) => {
+      const status = query.state.data?.delivery.status;
+      return status !== undefined && LIVE_DELIVERY_STATUSES.has(status)
+        ? DELIVERY_POLL_INTERVAL_MS
+        : false;
+    },
   });
 }
 
