@@ -1,0 +1,29 @@
+# S3-2-D4b RED — seller shipment UI
+
+Date: 2026-11-28. Branch `task/S3-2-d4b-seller-shipment-ui`.
+Command: pnpm --filter @localhand/web exec vitest run \
+  src/components/admin/AdminDeliveryCard.test.tsx src/pages/AdminOrdersPage.test.tsx
+Exit: 1
+Setup: AdminDeliveryCard was a stub returning null (no implementation).
+
+FAIL AdminDeliveryCard > creates a shipment with the paid tariff only and shows track and events
+FAIL AdminDeliveryCard > explains a tariff mismatch and keeps the quoted snapshot
+FAIL AdminDeliveryCard > reports a provider outage and allows a retry
+FAIL AdminDeliveryCard > shows an expired session for a 401 without hiding the snapshot
+FAIL AdminDeliveryCard > shows a not-found message for a 404 without hiding the snapshot
+FAIL AdminDeliveryCard > shows the empty state and no actions for a paid order without delivery
+FAIL AdminDeliveryCard > shows the after-payment state and no actions for an unpaid order
+FAIL AdminDeliveryCard > renders the newest event first and refreshes the delivery on demand
+FAIL AdminDeliveryCard > renders a single empty-history line and never exposes raw ids or codes
+FAIL AdminOrderPage > shows the delivery snapshot to the seller
+Test Files 2 failed (2)
+Tests 10 failed | 12 passed (22)
+
+## Review-fix RED (tests updated first, old implementation)
+
+Command: pnpm --filter @localhand/web test -- AdminDeliveryCard
+Exit: 1; Tests 4 failed | 181 passed.
+- «Оплаченный тариф» showed current CDEK 450 instead of paid snapshot 410.
+- 401 rendered a bare link instead of SessionExpiredState.
+- «Обновить» was 40px (no h-11).
+- providerNumber CDEK-00042 leaked as «Трек» when trackNumber was null.

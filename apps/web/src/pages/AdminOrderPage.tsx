@@ -3,9 +3,9 @@ import { Button, buttonVariants } from "@localhand/ui";
 import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router";
 import { ScreenState } from "../components/ScreenState.js";
+import { AdminDeliveryCard } from "../components/admin/AdminDeliveryCard.js";
 import { PaymentStatusBadge } from "../components/admin/PaymentStatusBadge.js";
 import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
-import { DeliverySummaryCard } from "../components/orders/DeliverySummaryCard.js";
 import {
   Card,
   Grid,
@@ -177,7 +177,11 @@ export function AdminOrderPage() {
                 onRetry={() => void paymentQuery.refetch()}
               />
 
-              <DeliverySummaryCard delivery={order.delivery} role={"seller" as const} />
+              <AdminDeliveryCard
+                orderId={order.id}
+                orderStatus={order.status}
+                delivery={order.delivery}
+              />
 
               <Card as="section" tone="inverse" aria-labelledby="admin-order-help-title">
                 <h2
