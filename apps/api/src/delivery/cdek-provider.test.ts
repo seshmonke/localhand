@@ -327,6 +327,23 @@ describe("CDEK delivery provider", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("creates one ORDER_STATUS webhook when one foreign subscription exists", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(json({ access_token: "token-1", expires_in: 3599 }))
+      .mockResolvedValueOnce(json([{ uuid: "1", type: "ORDER_STATUS", url: "https://other/1" }]))
+      .mockResolvedValueOnce(json({ uuid: "hook-2" }, 201));
+
+    const provider = createCdekDeliveryProvider(CONFIG, { fetch: fetchMock });
+    await provider.ensureOrderStatusWebhook();
+
+    const [, init] = fetchMock.mock.calls[2] ?? [];
+    expect(JSON.parse(String((init as RequestInit).body))).toEqual({
+      type: "ORDER_STATUS",
+      url: CONFIG.webhookUrl,
+    });
+  });
+
   it("creates one ORDER_STATUS webhook when none matches", async () => {
     const fetchMock = vi
       .fn()

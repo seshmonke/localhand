@@ -9,7 +9,7 @@ export type DeliveryReconcileScheduler = {
   stop: () => Promise<void>;
 };
 
-export type DeliveryReconcileRunner = (signal: AbortSignal) => Promise<void>;
+export type DeliveryReconcileRunner = typeof runDeliveryReconcile;
 
 /**
  * One timer per API process, mirroring the payments scheduler. `unref` keeps
@@ -19,8 +19,7 @@ export type DeliveryReconcileRunner = (signal: AbortSignal) => Promise<void>;
 export function startDeliveryReconcile(
   app: FastifyInstance,
   provider: DeliveryProvider,
-  runPass: DeliveryReconcileRunner = (signal) =>
-    runDeliveryReconcile(provider, app.log, new Date(), signal),
+  runPass: DeliveryReconcileRunner = runDeliveryReconcile,
 ): DeliveryReconcileScheduler {
   let active: Promise<void> | null = null;
   let stopped = false;
@@ -31,7 +30,7 @@ export function startDeliveryReconcile(
       return active ?? Promise.resolve();
     }
 
-    active = (async () => runPass(controller.signal))()
+    active = (async () => runPass(provider, app.log, new Date(), controller.signal))()
       .catch(() => {
         app.log.error({ code: "delivery_reconcile_failed" }, "delivery reconcile pass failed");
       })

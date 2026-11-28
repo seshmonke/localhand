@@ -11,7 +11,9 @@ import {
 } from "fastify-type-provider-zod";
 import { authRoutes } from "./auth/auth.route.js";
 import { createSmsProvider } from "./auth/sms/sms-provider.js";
+import { DeliveryWebhookConflictError } from "./delivery/cdek-provider.js";
 import { deliveryRoutes } from "./delivery/delivery.route.js";
+import { runDeliveryReconcile } from "./delivery/delivery.reconcile.js";
 import { startDeliveryReconcile } from "./delivery/delivery.reconcile.scheduler.js";
 import type { DeliveryProvider } from "./delivery/provider.js";
 import { getDeliveryProvider } from "./delivery/provider-factory.js";
@@ -42,6 +44,8 @@ export type BuildAppOptions = {
   deliveryProvider?: DeliveryProvider;
   /** Test hook: disable the delivery reconcile scheduler and startup subscription check. */
   deliveryReconcile?: boolean;
+  /** Test hook: replace the real DB-backed reconcile pass. */
+  deliveryReconcileRunner?: typeof runDeliveryReconcile;
 };
 
 export function buildApp(options: BuildAppOptions = {}) {
@@ -106,16 +110,23 @@ export function buildApp(options: BuildAppOptions = {}) {
   const deliveryReconcileEnabled =
     options.deliveryReconcile ?? (env.NODE_ENV !== "test" && env.DATABASE_URL !== undefined);
   if (deliveryProvider && deliveryReconcileEnabled) {
-    const scheduler = startDeliveryReconcile(app, deliveryProvider);
+    const scheduler = startDeliveryReconcile(
+      app,
+      deliveryProvider,
+      options.deliveryReconcileRunner,
+    );
     app.addHook("onReady", async () => {
       scheduler.runNow();
       try {
         await deliveryProvider.ensureOrderStatusWebhook();
-      } catch {
+      } catch (error) {
         // Two foreign subscriptions need an operator decision; a failing
         // startup check must never take the whole API down.
         app.log.error(
-          { code: "delivery_webhook_subscription_failed" },
+          {
+            code: "delivery_webhook_subscription_failed",
+            reason: error instanceof DeliveryWebhookConflictError ? "conflict" : "provider_error",
+          },
           "delivery webhook subscription check failed",
         );
       }
