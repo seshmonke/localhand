@@ -1,0 +1,14 @@
+# S3-2-D1b RED evidence
+
+## Original slice (before B UI)
+# Command: vitest run src/pages/AdminShopPage.test.tsx
+# Exit: 1 | Tests 2 failed | 6 passed (8)
+# Missing "Город сдачи" and "Город сдачи не настроен".
+
+## Review fix (implementation reverted to 8127a2d, final tests)
+# Command: pnpm --filter @localhand/web exec vitest run src/pages/AdminShopPage.test.tsx
+# Exit: 1 | Tests 2 failed | 7 passed (9)
+FAIL AdminShopPage > requires a PVZ and reports a save error
+TestingLibraryElementError: Unable to find an element with the text: Сервис доставки временно недоступен. Повторите попытку.
+FAIL AdminShopPage > debounces city search and still loads PVZ after a city change
+AssertionError: expected [ …(14) ] to have a length of +0 but got 14
