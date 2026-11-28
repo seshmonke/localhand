@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
@@ -36,33 +35,16 @@ type LayoutPage = {
 
 /**
  * Physical checkout is delivery-aware since S3-2: fill dimensions/origin on a
- * fixture created without them and use a real quote. On a delivery-less stack
- * the helper keeps the old plain checkout.
+ * fixture created without them and use a real quote. A delivery-less stack
+ * fails loudly in the helper instead of silently using the old checkout.
  */
 async function checkoutOrder(
   request: APIRequestContext,
   catalog: CatalogFixture,
   buyer: ApiSession,
 ): Promise<number> {
-  const choice = await ensureCatalogDeliveryReady(request, catalog);
-  if (choice !== null) {
-    return createDeliveryOrder(request, catalog, buyer, choice);
-  }
-
-  const response = await request.post("/api/checkout", {
-    headers: { cookie: buyer.cookie },
-    data: {
-      items: catalog.products.map((item) => ({ productId: item.id })),
-      clientCheckoutId: randomUUID(),
-    },
-  });
-  expect(response.status(), await response.text()).toBe(201);
-  const payload = (await response.json()) as { orders: Array<{ id: number }> };
-  const orderId = payload.orders[0]?.id;
-  if (!orderId) {
-    throw new Error("checkout did not return an order");
-  }
-  return orderId;
+  const destination = await ensureCatalogDeliveryReady(request, catalog);
+  return createDeliveryOrder(request, catalog, buyer, destination);
 }
 
 async function expectNoHorizontalOverflow(page: Page, label: string): Promise<void> {

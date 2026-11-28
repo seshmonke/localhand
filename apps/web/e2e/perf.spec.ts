@@ -6,6 +6,7 @@ import {
   createDeliveryOrder,
   createPublishedCatalog,
   DEFAULT_DIMENSIONS,
+  findDeliveryOrigin,
   findDeliveryPoint,
   loginViaApi,
   seedBrowserSession,
@@ -116,24 +117,19 @@ async function enableLabThrottling(page: Page): Promise<void> {
 test("lab LCP smoke on catalog, checkout and order", async ({ browser, request }, testInfo) => {
   test.slow();
 
-  const choice = await findDeliveryPoint(request);
-  const catalog = await createPublishedCatalog(
-    request,
-    undefined,
-    choice === null
-      ? {}
-      : {
-          dimensions: DEFAULT_DIMENSIONS,
-          deliveryOrigin: {
-            cdekCityCode: choice.cityCode,
-            cdekCityName: choice.cityName,
-            cdekShipmentPoint: choice.pointCode,
-          },
-        },
-  );
+  const destination = await findDeliveryPoint(request);
+  const origin = await findDeliveryOrigin(request);
+  expect(origin.cityCode).not.toBe(destination.cityCode);
+  const catalog = await createPublishedCatalog(request, undefined, {
+    dimensions: DEFAULT_DIMENSIONS,
+    deliveryOrigin: {
+      cdekCityCode: origin.cityCode,
+      cdekCityName: origin.cityName,
+      cdekShipmentPoint: origin.pointCode,
+    },
+  });
   const buyer = await loginViaApi(request, uniquePhone());
-  const orderId =
-    choice === null ? null : await createDeliveryOrder(request, catalog, buyer, choice);
+  const orderId = await createDeliveryOrder(request, catalog, buyer, destination);
 
   const context = await browser.newContext({
     baseURL: BASE_URL,
@@ -157,10 +153,10 @@ test("lab LCP smoke on catalog, checkout and order", async ({ browser, request }
 
     const catalogLcp = await measureLcp(page, "/");
     const checkoutLcp = await measureLcp(page, "/checkout");
-    const orderLcp = orderId === null ? null : await measureLcp(page, `/orders/${orderId}`);
+    const orderLcp = await measureLcp(page, `/orders/${orderId}`);
 
     const enforceBudget = isPreviewOrForced();
-    const results = [catalogLcp, checkoutLcp, ...(orderLcp === null ? [] : [orderLcp])];
+    const results = [catalogLcp, checkoutLcp, orderLcp];
 
     const budget = {
       limit_ms: LAB_LCP_BUDGET_MS,
@@ -168,7 +164,7 @@ test("lab LCP smoke on catalog, checkout and order", async ({ browser, request }
       target: enforceBudget ? "preview-or-forced" : "dev-info",
       catalog_met: catalogLcp.labP75 < LAB_LCP_BUDGET_MS,
       checkout_met: checkoutLcp.labP75 < LAB_LCP_BUDGET_MS,
-      order_met: orderLcp !== null && orderLcp.labP75 < LAB_LCP_BUDGET_MS,
+      order_met: orderLcp.labP75 < LAB_LCP_BUDGET_MS,
       note: enforceBudget
         ? "Enforced on the built preview bundle (or PERF_ENFORCE=1): every measured page must stay under the lab budget; a regression fails the run."
         : "Information only on the unbundled dev server: exceedance is recorded as an annotation and JSON fact, not a failure. The preview gate is the reference.",
@@ -201,7 +197,7 @@ test("lab LCP smoke on catalog, checkout and order", async ({ browser, request }
       metrics: {
         catalog: catalogLcp,
         checkout: checkoutLcp,
-        ...(orderLcp === null ? {} : { order: orderLcp }),
+        order: orderLcp,
       },
     };
     const body = JSON.stringify(evidence, null, 2);
@@ -215,9 +211,7 @@ test("lab LCP smoke on catalog, checkout and order", async ({ browser, request }
       expect(checkoutLcp.labP75, "checkout lab LCP p75 (preview gate)").toBeLessThan(
         LAB_LCP_BUDGET_MS,
       );
-      if (orderLcp !== null) {
-        expect(orderLcp.labP75, "order lab LCP p75 (preview gate)").toBeLessThan(LAB_LCP_BUDGET_MS);
-      }
+      expect(orderLcp.labP75, "order lab LCP p75 (preview gate)").toBeLessThan(LAB_LCP_BUDGET_MS);
     }
   } finally {
     await context.close();

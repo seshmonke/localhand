@@ -7,6 +7,7 @@ import {
   createPublishedCatalog,
   DEFAULT_DIMENSIONS,
   DEFAULT_RECIPIENT_NAME,
+  findDeliveryOrigin,
   findDeliveryPoint,
   loginViaApi,
   seedBrowserSession,
@@ -77,16 +78,15 @@ test("axe has no serious or critical findings on delivery pages", async ({
 }, testInfo) => {
   test.slow();
 
-  const choice = await findDeliveryPoint(request);
-  if (choice === null) {
-    throw new Error("delivery is disabled on the API under test");
-  }
+  const destination = await findDeliveryPoint(request);
+  const origin = await findDeliveryOrigin(request);
+  expect(origin.cityCode).not.toBe(destination.cityCode);
   const catalog = await createPublishedCatalog(request, ["E2E axe Доставка"], {
     dimensions: DEFAULT_DIMENSIONS,
     deliveryOrigin: {
-      cdekCityCode: choice.cityCode,
-      cdekCityName: choice.cityName,
-      cdekShipmentPoint: choice.pointCode,
+      cdekCityCode: origin.cityCode,
+      cdekCityName: origin.cityName,
+      cdekShipmentPoint: origin.pointCode,
     },
   });
   const quotedBuyer = await loginViaApi(request, uniquePhone());
@@ -123,10 +123,15 @@ test("axe has no serious or critical findings on delivery pages", async ({
         const buyerPage = await buyerContext.newPage();
         await buyerPage.goto("/checkout");
         await expect(buyerPage.getByRole("heading", { name: "Проверьте заказ" })).toBeVisible();
-        await buyerPage.getByLabel("Город доставки").selectOption(String(choice.cityCode));
+        const citySelect = buyerPage.getByLabel("Город доставки");
+        await expect(citySelect.locator(`option[value="${destination.cityCode}"]`)).toHaveCount(1);
+        await citySelect.selectOption(String(destination.cityCode));
         const pointSelect = buyerPage.getByLabel("Пункт выдачи");
-        await expect(pointSelect.locator(`option[value="${choice.pointCode}"]`)).toHaveCount(1);
-        await pointSelect.selectOption(choice.pointCode);
+        await expect(pointSelect.locator(`option[value="${destination.pointCode}"]`)).toHaveCount(
+          1,
+        );
+        await expect(pointSelect).toBeEnabled();
+        await pointSelect.selectOption(destination.pointCode);
         await buyerPage.getByLabel("Имя получателя").fill(DEFAULT_RECIPIENT_NAME);
         await expect(buyerPage.getByText("Срок", { exact: true })).toBeVisible();
         await setTheme(buyerPage, theme);
@@ -141,7 +146,7 @@ test("axe has no serious or critical findings on delivery pages", async ({
         const sellerPage = await sellerContext.newPage();
         await sellerPage.goto("/admin/shop");
         await expect(sellerPage.getByRole("heading", { name: "Ваш магазин" })).toBeVisible();
-        await expect(sellerPage.getByText(`Город сдачи: ${choice.cityName}`)).toBeVisible();
+        await expect(sellerPage.getByText(`Город сдачи: ${origin.cityName}`)).toBeVisible();
         await setTheme(sellerPage, theme);
         await scan(sellerPage, `admin-shop-${viewport.key}-${theme}`, scans);
 
