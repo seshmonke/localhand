@@ -1,0 +1,9 @@
+ .../components/admin/PaymentStatusBadge.test.tsx   |  22 +
+ .../src/components/admin/PaymentStatusBadge.tsx    |  27 +-
+ .../src/components/admin/SellerPaymentsCard.tsx    | 101 ++--
+ .../web/src/components/admin/payment-read.test.tsx |  84 +++
+ apps/web/src/components/admin/payment-read.tsx     |  11 +-
+ apps/web/src/pages/OrderPage.tsx                   | 180 +++---
+ packages/i18n/src/resources/ru.ts                  | 104 ++++
+ scripts/i18n-baseline.json                         | 612 ---------------------
+ 8 files changed, 390 insertions(+), 751 deletions(-)

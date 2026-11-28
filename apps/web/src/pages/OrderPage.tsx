@@ -3,6 +3,9 @@ import { Button, buttonVariants } from "@localhand/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+type Translate = ReturnType<typeof useTranslation>["t"];
 import { Link, useParams, useSearchParams } from "react-router";
 import { FormError } from "../components/FormField.js";
 import { DeliverySummaryCard } from "../components/orders/DeliverySummaryCard.js";
@@ -32,12 +35,14 @@ export const ATTEMPT_KEY_PREFIX = "localhand.payment.attempt.";
 const PAYMENT_POLL_TIMEOUT_MS = 60_000;
 
 function BackToOrders() {
+  const { t } = useTranslation();
   return (
     <Link
       to="/orders"
       className="inline-flex min-h-11 items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] underline decoration-[3px] underline-offset-4 hover:text-accent-red-text"
     >
-      <ArrowLeft aria-hidden="true" className="size-4" />К заказам
+      <ArrowLeft aria-hidden="true" className="size-4" />
+      {t("order.back")}
     </Link>
   );
 }
@@ -75,32 +80,32 @@ export function attemptKeyFor(
   }
 }
 
-function payErrorMessage(error: unknown): string {
+function payErrorMessage(error: unknown, t: Translate): string {
   if (error instanceof ApiError) {
     switch (error.code) {
       case "seller_payment_unavailable":
-        return "Продавец не подключил приём платежей. Свяжитесь с продавцом или попробуйте позже.";
+        return t("order.payment.unavailable.description");
       case "payment_in_progress":
-        return "Оплата уже создана. Обновите статус.";
+        return t("order.payment.error.inProgress");
       case "payment_requires_review":
-        return "Платёж уже на проверке. Повторная оплата недоступна.";
+        return t("order.payment.error.requiresReview");
       case "order_already_paid":
-        return "Заказ уже оплачен.";
+        return t("order.payment.error.alreadyPaid");
       case "zero_amount":
-        return "Сумма заказа нулевая — онлайн-оплата недоступна.";
+        return t("order.payment.error.zeroAmount");
       case "invalid_order_transition":
-        return "Заказ уже нельзя оплатить онлайн.";
+        return t("order.payment.error.invalidTransition");
       case "rate_limited":
-        return "Слишком много попыток оплаты. Подождите минуту и попробуйте снова.";
+        return t("order.payment.error.rateLimited");
       case "provider_unavailable":
-        return "Платёжный сервис недоступен. Попробуйте ещё раз.";
+        return t("payment.error.providerUnavailable");
       case "unauthorized":
-        return "Сессия истекла. Войдите снова.";
+        return t("common.sessionExpired.inline");
       default:
-        return "Не удалось начать оплату. Попробуйте ещё раз.";
+        return t("order.payment.error.generic");
     }
   }
-  return "Не удалось начать оплату. Проверьте соединение и попробуйте снова.";
+  return t("order.payment.error.network");
 }
 
 function isRefetchableConflict(error: unknown): boolean {
@@ -136,24 +141,20 @@ function PaymentDetails({
   onRecheck: () => void;
   rechecking: boolean;
 }) {
+  const { t } = useTranslation();
   if (payment === null) {
     if (order.status === "paid") {
-      return <p className="mt-4 text-sm leading-relaxed">Заказ оплачен.</p>;
+      return <p className="mt-4 text-sm leading-relaxed">{t("order.payment.paid")}</p>;
     }
     if (order.status === "payment_pending") {
-      return (
-        <p className="mt-4 text-sm leading-relaxed">
-          Платёж создаётся. Обновите страницу через минуту — статус появится здесь.
-        </p>
-      );
+      return <p className="mt-4 text-sm leading-relaxed">{t("order.payment.creating")}</p>;
     }
     return (
       <>
-        <p className="mt-4 text-sm font-semibold leading-relaxed">Оплата ещё не начата</p>
-        <p className="mt-2 text-sm leading-relaxed">
-          Оплатите заказ: деньги получит продавец напрямую. Если приём платежей не подключён, мы
-          сообщим об этом.
+        <p className="mt-4 text-sm font-semibold leading-relaxed">
+          {t("order.payment.notStarted.title")}
         </p>
+        <p className="mt-2 text-sm leading-relaxed">{t("order.payment.notStarted.description")}</p>
       </>
     );
   }
@@ -163,15 +164,16 @@ function PaymentDetails({
       return (
         <>
           <p className="mt-4 text-sm font-semibold leading-relaxed">
-            Не удалось подтвердить оплату
+            {t("order.payment.confirmFailed.title")}
           </p>
           <p className="mt-2 text-sm leading-relaxed">
-            Исход создания платежа неизвестен. Повторите оплату: тот же ключ не создаст второе
-            списание.
+            {t("order.payment.confirmFailed.description")}
           </p>
           <dl className="mt-4 flex flex-col gap-2 text-sm">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">Сумма</dt>
+              <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
+                {t("order.payment.amount")}
+              </dt>
               <dd className="font-mono text-sm font-semibold">
                 {formatRubles(kopecks(payment.amountKopecks))}
               </dd>
@@ -182,26 +184,26 @@ function PaymentDetails({
     }
     return (
       <>
-        <p className="mt-4 text-sm font-semibold leading-relaxed">Ожидает оплаты</p>
+        <p className="mt-4 text-sm font-semibold leading-relaxed">{t("payment.status.pending")}</p>
         <dl className="mt-4 flex flex-col gap-2 text-sm">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">Сумма</dt>
+            <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
+              {t("order.payment.amount")}
+            </dt>
             <dd className="font-mono text-sm font-semibold">
               {formatRubles(kopecks(payment.amountKopecks))}
             </dd>
           </div>
         </dl>
         <p className="mt-4 text-sm leading-relaxed" aria-live="polite">
-          {returnedFromPayment
-            ? "Вы вернулись с оплаты. Проверяем платёж…"
-            : "Проверяем оплату. Статус обновится автоматически."}
+          {returnedFromPayment ? t("order.payment.returned") : t("order.payment.checking")}
         </p>
         {payment.confirmationUrl ? (
           <a
             href={payment.confirmationUrl}
             className={buttonVariants({ variant: "outline", className: "mt-4 w-full" })}
           >
-            Продолжить оплату
+            {t("order.payment.continue")}
           </a>
         ) : null}
         {returnedFromPayment && pollExpired ? (
@@ -211,7 +213,7 @@ function PaymentDetails({
             onClick={onRecheck}
             disabled={rechecking}
           >
-            {rechecking ? "Проверяем…" : "Проверить ещё раз"}
+            {rechecking ? t("order.payment.rechecking") : t("order.payment.recheck")}
           </Button>
         ) : null}
       </>
@@ -221,10 +223,11 @@ function PaymentDetails({
   if (payment.status === "manual_review") {
     return (
       <>
-        <p className="mt-4 text-sm font-semibold leading-relaxed">Требует проверки</p>
+        <p className="mt-4 text-sm font-semibold leading-relaxed">
+          {t("payment.status.manualReview")}
+        </p>
         <p className="mt-2 text-sm leading-relaxed">
-          Поддержка разберётся с платежом. Не оплачивайте заказ повторно — новый платёж заблокирован
-          до решения.
+          {t("order.payment.manualReview.description")}
         </p>
       </>
     );
@@ -233,10 +236,14 @@ function PaymentDetails({
   if (payment.status === "succeeded") {
     return (
       <>
-        <p className="mt-4 text-sm font-semibold leading-relaxed">Оплачен</p>
+        <p className="mt-4 text-sm font-semibold leading-relaxed">
+          {t("payment.status.succeeded")}
+        </p>
         <dl className="mt-4 flex flex-col gap-2 text-sm">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">Сумма</dt>
+            <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
+              {t("order.payment.amount")}
+            </dt>
             <dd className="font-mono text-sm font-semibold">
               {formatRubles(kopecks(payment.amountKopecks))}
             </dd>
@@ -244,7 +251,7 @@ function PaymentDetails({
         </dl>
         {payment.paidAt ? (
           <p className="mt-4 font-mono text-[10px] uppercase tracking-wide text-ink/60">
-            Оплачен {formatOrderDate(payment.paidAt)}
+            {t("order.payment.paidAt", { date: formatOrderDate(payment.paidAt) })}
           </p>
         ) : null}
       </>
@@ -254,16 +261,15 @@ function PaymentDetails({
   return (
     <>
       <p className="mt-4 text-sm font-semibold leading-relaxed">
-        {payment.status === "canceled" ? "Оплата отменена" : "Оплата не прошла"}
+        {payment.status === "canceled" ? t("payment.status.canceled") : t("payment.status.failed")}
       </p>
-      <p className="mt-2 text-sm leading-relaxed">
-        Можно попробовать снова или связаться с продавцом.
-      </p>
+      <p className="mt-2 text-sm leading-relaxed">{t("order.payment.retryHint")}</p>
     </>
   );
 }
 
 export function OrderPage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const orderId = Number(id);
@@ -348,14 +354,14 @@ export function OrderPage() {
         setPayError(null);
         return;
       }
-      setPayError(payErrorMessage(error));
+      setPayError(payErrorMessage(error, t));
     },
   });
 
   if (!isValidId) {
     return (
       <PageShell className="py-10 sm:py-12">
-        <h1 className="sr-only">Заказ</h1>
+        <h1 className="sr-only">{t("order.eyebrow")}</h1>
         <OrderNotFound />
       </PageShell>
     );
@@ -364,11 +370,11 @@ export function OrderPage() {
   if (orderQuery.isPending) {
     return (
       <PageShell className="py-10 sm:py-12">
-        <h1 className="sr-only">Заказ №{orderId}</h1>
+        <h1 className="sr-only">{t("order.title", { id: orderId })}</h1>
         <ScreenState
           kind="loading"
-          title="Загружаем заказ"
-          description="Секунду — проверяем детали."
+          title={t("order.loading.title")}
+          description={t("order.loading.description")}
         />
       </PageShell>
     );
@@ -379,7 +385,7 @@ export function OrderPage() {
     if (error instanceof ApiError && error.status === 401) {
       return (
         <PageShell className="py-10 sm:py-12">
-          <h1 className="sr-only">Заказ №{orderId}</h1>
+          <h1 className="sr-only">{t("order.title", { id: orderId })}</h1>
           <SessionExpiredState next={`/orders/${orderId}`} />
         </PageShell>
       );
@@ -387,7 +393,7 @@ export function OrderPage() {
     if (error instanceof ApiError && error.status === 404) {
       return (
         <PageShell className="py-10 sm:py-12">
-          <h1 className="sr-only">Заказ №{orderId}</h1>
+          <h1 className="sr-only">{t("order.title", { id: orderId })}</h1>
           <OrderNotFound />
         </PageShell>
       );
@@ -395,12 +401,12 @@ export function OrderPage() {
 
     return (
       <PageShell className="py-10 sm:py-12">
-        <h1 className="sr-only">Заказ №{orderId}</h1>
+        <h1 className="sr-only">{t("order.title", { id: orderId })}</h1>
         <ScreenState
           kind="error"
-          title="Заказ не загрузился"
-          description="Проверьте соединение и попробуйте снова."
-          action={<Button onClick={() => void orderQuery.refetch()}>Повторить</Button>}
+          title={t("order.error.title")}
+          description={t("order.error.description")}
+          action={<Button onClick={() => void orderQuery.refetch()}>{t("common.retry")}</Button>}
         />
       </PageShell>
     );
@@ -417,10 +423,10 @@ export function OrderPage() {
       (payment.status === "pending" && payment.confirmationUrl === null));
   const payLabel =
     payment !== null && (payment.status === "canceled" || payment.status === "failed")
-      ? "Оплатить снова"
+      ? t("order.payment.payAgain")
       : payment !== null && payment.status === "pending" && payment.confirmationUrl === null
-        ? "Повторить оплату"
-        : "Оплатить";
+        ? t("order.payment.retryPay")
+        : t("order.payment.pay");
 
   return (
     <PageShell className="py-10 sm:py-12">
@@ -429,11 +435,13 @@ export function OrderPage() {
           <BackToOrders />
 
           <PageHeader
-            eyebrow="Заказ"
-            title={`Заказ №${order.id}`}
+            eyebrow={t("order.eyebrow")}
+            title={t("order.title", { id: order.id })}
             actions={<OrderBadge order={order} payment={payment} />}
             description={
-              <time dateTime={order.createdAt}>Создан {formatOrderDate(order.createdAt)}</time>
+              <time dateTime={order.createdAt}>
+                {t("order.created", { date: formatOrderDate(order.createdAt) })}
+              </time>
             }
             descriptionClassName="font-mono text-[10px] uppercase tracking-wide text-ink/60"
           />
@@ -443,10 +451,10 @@ export function OrderPage() {
           <GridColumn span={8}>
             <Card as="section" aria-labelledby="order-items-title">
               <h2 id="order-items-title" className="font-display text-2xl uppercase">
-                Состав
+                {t("order.items.title")}
               </h2>
               <p className="mt-2 text-sm leading-relaxed">
-                Магазин:{" "}
+                {t("order.shopPrefix")}{" "}
                 <Link
                   to={`/shops/${order.shop.slug}`}
                   className="break-words font-semibold underline-offset-4 hover:underline"
@@ -454,9 +462,12 @@ export function OrderPage() {
                   {order.shop.name}
                 </Link>
               </p>
-              <OrderItemsList items={order.items} label={`Состав заказа №${order.id}`} />
+              <OrderItemsList
+                items={order.items}
+                label={t("order.items.label", { id: order.id })}
+              />
               <div className="mt-6 flex justify-between gap-4 border-t-[3px] border-ink pt-4 font-mono text-base">
-                <span className="uppercase">Итого</span>
+                <span className="uppercase">{t("order.total")}</span>
                 <span className="font-semibold tabular-nums">
                   {formatRubles(kopecks(order.totalKopecks))}
                 </span>
@@ -471,24 +482,24 @@ export function OrderPage() {
                   id="order-payment-title"
                   className="font-mono text-[10px] uppercase tracking-[0.2em]"
                 >
-                  Оплата
+                  {t("order.payment.title")}
                 </h2>
 
                 {paymentQuery.isPending ? (
                   <output aria-live="polite" className="mt-4 block text-sm">
-                    Проверяем оплату…
+                    {t("order.payment.loading")}
                   </output>
                 ) : null}
 
                 {paymentQuery.isError ? (
                   <p className="mt-4 text-sm leading-relaxed">
-                    Не удалось загрузить статус оплаты.{" "}
+                    {t("order.payment.readError")}{" "}
                     <button
                       type="button"
                       className="underline decoration-[3px] underline-offset-4"
                       onClick={() => void paymentQuery.refetch()}
                     >
-                      Повторить
+                      {t("common.retry")}
                     </button>
                   </p>
                 ) : null}
@@ -498,11 +509,10 @@ export function OrderPage() {
                     {showUnavailable ? (
                       <>
                         <p className="mt-4 text-sm font-semibold leading-relaxed">
-                          Оплата не подключена
+                          {t("order.payment.unavailable.title")}
                         </p>
                         <p className="mt-2 text-sm leading-relaxed">
-                          Продавец не подключил приём платежей. Свяжитесь с продавцом или попробуйте
-                          позже.
+                          {t("order.payment.unavailable.description")}
                         </p>
                         <Button
                           variant="outline"
@@ -513,7 +523,7 @@ export function OrderPage() {
                             void orderQuery.refetch();
                           }}
                         >
-                          Проверить ещё раз
+                          {t("order.payment.recheck")}
                         </Button>
                       </>
                     ) : (
@@ -540,7 +550,7 @@ export function OrderPage() {
                         onClick={() => payMutation.mutate()}
                         disabled={payMutation.isPending}
                       >
-                        {payMutation.isPending ? "Создаём платёж…" : payLabel}
+                        {payMutation.isPending ? t("order.payment.creatingPayment") : payLabel}
                       </Button>
                     ) : null}
                   </>
@@ -554,12 +564,12 @@ export function OrderPage() {
                   id="order-contact-title"
                   className="font-mono text-[10px] uppercase tracking-[0.2em]"
                 >
-                  Контакты
+                  {t("order.contacts.title")}
                 </h2>
                 <dl className="mt-4 flex flex-col gap-4 text-sm">
                   <div>
                     <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
-                      Телефон
+                      {t("order.contacts.phone")}
                     </dt>
                     <dd className="mt-2 font-mono text-sm font-semibold">
                       <a
@@ -572,10 +582,10 @@ export function OrderPage() {
                   </div>
                   <div>
                     <dt className="font-mono text-[10px] uppercase tracking-wide text-ink/60">
-                      Комментарий
+                      {t("order.contacts.comment")}
                     </dt>
                     <dd className="mt-2 break-words leading-relaxed">
-                      {order.comment ?? "Без комментария"}
+                      {order.comment ?? t("order.contacts.noComment")}
                     </dd>
                   </div>
                 </dl>
@@ -586,11 +596,10 @@ export function OrderPage() {
                   id="order-help-title"
                   className="font-mono text-[10px] uppercase tracking-[0.2em]"
                 >
-                  Что дальше
+                  {t("order.next.title")}
                 </h2>
                 <p className="mt-4 text-sm leading-relaxed text-inverse-text/85">
-                  Продавец увидит заказ и свяжется с вами по телефону. Оплата проходит на странице
-                  ЮKassa, деньги поступают напрямую продавцу.
+                  {t("order.next.description")}
                 </p>
               </Card>
 
@@ -598,7 +607,7 @@ export function OrderPage() {
                 to="/orders"
                 className={buttonVariants({ variant: "outline", className: "w-full" })}
               >
-                Все заказы
+                {t("order.all")}
               </Link>
             </Stack>
           </Sidebar>
@@ -609,14 +618,15 @@ export function OrderPage() {
 }
 
 function OrderNotFound() {
+  const { t } = useTranslation();
   return (
     <ScreenState
       kind="empty"
-      title="Заказ не найден"
-      description="Проверьте ссылку. Заказ виден только тому номеру, с которого его оформили."
+      title={t("order.notFound.title")}
+      description={t("order.notFound.description")}
       action={
         <Link to="/orders" className={buttonVariants({ variant: "outline" })}>
-          К списку заказов
+          {t("order.notFound.action")}
         </Link>
       }
     />

@@ -1,0 +1,20 @@
+ .../4/tasks/S4-2a1/evidence/baseline-after.txt     |   3 +
+ .../4/tasks/S4-2a1/evidence/baseline-before.txt    |  15 +
+ .../4/tasks/S4-2a1/evidence/check-i18n-after.txt   |   3 +
+ .../4/tasks/S4-2a1/evidence/commit-size.txt        |  10 +
+ .scrum/sprints/4/tasks/S4-2a1/evidence/e2e.txt     |  23 ++
+ .../tasks/S4-2a1/evidence/tdd-baseline-web-221.txt |  13 +
+ .../evidence/tdd-characterization-before.txt       |   8 +
+ .scrum/sprints/4/tasks/S4-2a1/evidence/verify.txt  | 159 ++++++++
+ .scrum/sprints/4/tasks/S4-2a1/handoff.md           |  65 ++++
+ .scrum/sprints/4/tasks/S4-2a1/report.md            | 104 ++++++
+ apps/web/src/cart/item-count.test.ts               |  18 +
+ apps/web/src/cart/item-count.ts                    |  13 +-
+ apps/web/src/components/ScreenState.test.tsx       |  17 +-
+ apps/web/src/components/ScreenState.tsx            |  24 +-
+ .../src/components/admin/SessionExpiredState.tsx   |   8 +-
+ apps/web/src/pages/CheckoutPage.test.tsx           |   6 +-
+ apps/web/src/pages/CheckoutPage.tsx                | 164 ++++-----
+ packages/i18n/src/resources/ru.ts                  |  70 ++++
+ scripts/i18n-baseline.json                         | 402 ---------------------
+ 19 files changed, 615 insertions(+), 510 deletions(-)

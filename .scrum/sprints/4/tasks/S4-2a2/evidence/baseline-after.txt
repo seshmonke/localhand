@@ -1,0 +1,9 @@
+A2 baseline: 583 findings, 0 deadKeys
+A2 delta: 685 -> 583 (- 102 )
+remaining W1 (S4-2b):
+  19 apps/web/src/pages/OrdersPage.tsx
+  33 apps/web/src/pages/AdminOrderPage.tsx
+  29 apps/web/src/pages/AdminOrdersPage.tsx
+  55 apps/web/src/components/admin/AdminDeliveryCard.tsx
+  23 apps/web/src/components/orders/DeliverySummaryCard.tsx
+total: 159
