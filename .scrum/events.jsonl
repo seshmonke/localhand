@@ -126,3 +126,4 @@
 {"ts":"2026-11-28T16:30:00Z","type":"claim","sprint":4,"cycle":1,"task":"S4-1","owner":"scrum-worker","branch":"task/S4-1-i18n-foundation","change":null,"lease":".scrum/locks/S4-1.json"}
 {"ts":"2026-11-28T16:35:00Z","type":"decision","scope":"sprint_5_scope","owner":"human","decision":"move_08_09_q1_to_sprint_5","reason":"Sprint 4 dedicated to i18n runtime copy","date":"2026-11-28"}
 {"ts":"2026-11-28T16:35:00Z","type":"decision","scope":"tdd_exception_deadline","owner":"human","decision":"extend_to_q1_1_sprint_5","reason":"Q1.1 moved to Sprint 5; exception not overdue","date":"2026-11-28"}
+{"ts":"2026-11-28T16:45:00Z","type":"decision","scope":"quality_wave_shift","owner":"human","decision":"shift_q1_3_to_7","reason":"Sprint 4 i18n and Q1.1/Q1.2 in Sprint 5; keep capacity","date":"2026-11-28"}

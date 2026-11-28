@@ -4,8 +4,8 @@
   "init_closed": true,
   "sprint": 4,
   "cycle": 1,
-  "updated_at": "2026-11-28T16:30:00Z",
+  "updated_at": "2026-11-28T16:45:00Z",
   "stop": false,
   "human_gate": null,
-  "notes": "Sprint 4: i18n runtime copy. Owner decision: i18n in Sprint 4; S3-3/S3-4 and Q1.1/Q1.2 deferred to Sprint 5. S4-1 i18n foundation in progress: packages/i18n, i18next/react-i18next, typed ru catalog, check-i18n baseline, 100% gate at close. No spec change: i18n refactor, ru-only. Previous Sprint 3 closed 28.11.2026; scrum-crew v0.6.1 installed."
+  "notes": "Sprint 4: i18n runtime copy. Owner decision: i18n in Sprint 4; S3-3/S3-4 and Q1.1/Q1.2 deferred to Sprint 5; Q1.3–Q1.6 shifted to Sprint 6–7. S4-1 i18n foundation in progress: packages/i18n, i18next/react-i18next, typed ru catalog, check-i18n baseline, 100% gate at close. No spec change: i18n refactor, ru-only. Previous Sprint 3 closed 28.11.2026; scrum-crew v0.6.1 installed."
 }

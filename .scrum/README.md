@@ -10,8 +10,9 @@
 
 - Phase: BUILDING
 - Sprint: 4
-- Goal: все runtime-тексты сайта, SMS и shared-лейблы в одном typed
-  i18next-каталоге; 100% gate в `verify`; W1/W2 copy.
+- Goal: все runtime JS/API/SMS и shared-тексты в одном typed
+  i18next-каталоге; 100% gate в `verify`; static `index.html` meta —
+  allowlist; W1/W2 copy review с evidence.
 - Next gate: S4-1 foundation — `packages/i18n`, baseline scanner,
   `pnpm check:i18n`.
 - WIP: 1 (потолок 6).

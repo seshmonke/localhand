@@ -19,7 +19,8 @@
 - [ ] `scripts/check-i18n.mjs`: кириллица вне каталога, missing/dead keys;
   baseline; `pnpm check:i18n` в `verify`.
 - [ ] `apps/web/index.html` meta/title — allowlist с причиной.
-- [ ] Unit: `t` interpolation/plural; scanner fixture file (Cyrillic) fails;
+- [ ] Unit: `t` interpolation/plural; fixture
+  `scripts/fixtures/i18n/cyrillic.tsx` (не `*.test`) сканером ловится;
   `pnpm verify` 0.
 - [ ] ADR 0006; baseline воспроизводим.
 
@@ -32,8 +33,7 @@
 
 - `packages/i18n/**`
 - `apps/web/src/i18n.ts`, `main.tsx`, test setup
-- `apps/web/package.json`, `apps/api/package.json` (только зависимость,
-  если нужно)
+- `apps/web/package.json` (только зависимость; API — S4-4)
 - `scripts/check-i18n.mjs`, `scripts/i18n-baseline.json`,
   `scripts/fixtures/i18n/**`
 - `apps/web/index.html` (allowlist)

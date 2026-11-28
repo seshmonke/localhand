@@ -72,7 +72,7 @@
 - 28.11.2026. Sprint 3 закрыт: S3-1 payments sandbox (PR #39/#41/#45) и
   S3-2 delivery test contour (PR #47–#79); changes `06-payments`/
   `07-delivery` заархивированы; review ACCEPT. S3-3 order lifecycle и
-  S3-4 hardening перенесены в Sprint 5; live YooKassa/CDEK, юрпакет,
+  S3-4 hardening перенесены в Sprint 4; 28.11.2026 re-deferred в Sprint 5; live YooKassa/CDEK, юрпакет,
   production deploy/SMS — owner-гейты.
 
 - 28.11.2026. Тексты: программа Text review (voice/anti-slop, W1–W3,
