@@ -10,8 +10,8 @@ type DbClientModule = typeof import("../db/client.js");
 type ReconcileModule = typeof import("./delivery.reconcile.js");
 let dbClient!: DbClientModule;
 let reconcile!: ReconcileModule;
-let orderIds: number[] = [];
-let nextOrder = 0;
+const orderIds: { a: number[]; b: number[] } = { a: [], b: [] };
+let nextOrder = { a: 0, b: 0 };
 
 const NOW = new Date("2026-11-28T12:00:00.000Z");
 const STALE = new Date(NOW.getTime() - 5 * 60_000);
@@ -39,11 +39,16 @@ function stubProvider() {
   return provider as unknown as DeliveryProvider & typeof provider;
 }
 
-async function createDelivery(status: string, providerOrderId: string, lastStatusAt = STALE) {
-  const orderId = orderIds[nextOrder];
-  nextOrder += 1;
+async function createDelivery(
+  shop: "a" | "b",
+  status: string,
+  providerOrderId: string,
+  lastStatusAt = STALE,
+) {
+  const orderId = orderIds[shop][nextOrder[shop]];
+  nextOrder[shop] += 1;
   if (!orderId) {
-    throw new Error("the fixture batch has no free order");
+    throw new Error(`shop ${shop} fixture batch has no free order`);
   }
   const result = await pool().query<{ id: number }>(
     `INSERT INTO order_deliveries
@@ -63,8 +68,13 @@ async function createDelivery(status: string, providerOrderId: string, lastStatu
 }
 
 async function stateOf(deliveryId: number) {
-  const result = await pool().query<{ status: string; events: number }>(
-    `SELECT d.status, (SELECT count(*)::int FROM delivery_events e WHERE e.delivery_id = d.id) AS events
+  const result = await pool().query<{
+    status: string;
+    updated_at: Date;
+    events: number;
+  }>(
+    `SELECT d.status, d.updated_at,
+       (SELECT count(*)::int FROM delivery_events e WHERE e.delivery_id = d.id) AS events
      FROM order_deliveries d WHERE d.id = $1`,
     [deliveryId],
   );
@@ -73,6 +83,16 @@ async function stateOf(deliveryId: number) {
     throw new Error("delivery row missing");
   }
   return row;
+}
+
+function loggedText(): string {
+  const calls = [...log.info.mock.calls, ...log.warn.mock.calls, ...log.error.mock.calls];
+  return JSON.stringify(calls, (_key, value: unknown) => {
+    if (value instanceof Error) {
+      return `${value.name}:${value.message}`;
+    }
+    return value;
+  });
 }
 
 function shipment(
@@ -103,22 +123,41 @@ describeWithDb("delivery reconcile edge cases", () => {
     await pool().query(
       "TRUNCATE TABLE delivery_events, order_deliveries, order_items, orders, products, shops, sellers, users, otp_codes CASCADE",
     );
-    const fixtures = await pool().query<{ id: number }>(
-      `WITH buyers AS (
-         INSERT INTO users (phone)
-         SELECT '+7999' || lpad(i::text, 7, '0') FROM generate_series(1, 3) AS i
-         RETURNING id
-       ), seller AS (
+    const fixtures = await pool().query<{ id: number; shop_id: number }>(
+      `WITH seller_a AS (
          INSERT INTO sellers (display_name) VALUES ('Иван Тестов') RETURNING id
-       ), shop AS (
+       ), seller_b AS (
+         INSERT INTO sellers (display_name) VALUES ('Мария Тестова') RETURNING id
+       ), shop_a AS (
          INSERT INTO shops (seller_id, slug, name, status)
-         SELECT id, 'reconcile-edge-shop', 'Тестовый магазин', 'published' FROM seller RETURNING id
+         SELECT id, 'reconcile-edge-a', 'Магазин А', 'published' FROM seller_a RETURNING id
+       ), shop_b AS (
+         INSERT INTO shops (seller_id, slug, name, status)
+         SELECT id, 'reconcile-edge-b', 'Магазин Б', 'published' FROM seller_b RETURNING id
+       ), buyers AS (
+         INSERT INTO users (phone)
+         SELECT '+7999' || lpad(i::text, 7, '0') FROM generate_series(1, 6) AS i
+         RETURNING id
+       ), numbered AS (
+         SELECT id, row_number() OVER (ORDER BY id) AS rn FROM buyers
+       ), shop_ids AS (
+         SELECT shop_a.id AS a, shop_b.id AS b FROM shop_a, shop_b
        )
        INSERT INTO orders (buyer_user_id, shop_id, status, total_kopecks, buyer_phone, client_checkout_id)
-       SELECT buyers.id, shop.id, 'paid', 458000, '+7999', gen_random_uuid() FROM buyers, shop
-       RETURNING id`,
+       SELECT n.id, CASE WHEN n.rn <= 3 THEN s.a ELSE s.b END, 'paid', 458000, '+7999', gen_random_uuid()
+       FROM numbered n CROSS JOIN shop_ids s
+       RETURNING id, shop_id`,
     );
-    orderIds = fixtures.rows.map((row) => row.id);
+    const shops = await pool().query<{ id: number; slug: string }>(
+      "SELECT id, slug FROM shops WHERE slug IN ('reconcile-edge-a', 'reconcile-edge-b')",
+    );
+    const shopA = shops.rows.find((row) => row.slug === "reconcile-edge-a");
+    const shopB = shops.rows.find((row) => row.slug === "reconcile-edge-b");
+    if (!shopA || !shopB) {
+      throw new Error("edge shops are missing");
+    }
+    orderIds.a = fixtures.rows.filter((row) => row.shop_id === shopA.id).map((row) => row.id);
+    orderIds.b = fixtures.rows.filter((row) => row.shop_id === shopB.id).map((row) => row.id);
   });
 
   afterAll(async () => {
@@ -127,13 +166,14 @@ describeWithDb("delivery reconcile edge cases", () => {
 
   beforeEach(async () => {
     await pool().query("TRUNCATE TABLE delivery_events, order_deliveries CASCADE");
-    nextOrder = 0;
+    nextOrder = { a: 0, b: 0 };
+    vi.clearAllMocks();
   });
 
   it("ignores a lower-rank status, an older event and a delivered delivery", async () => {
-    const regress = await createDelivery("in_transit", "remote-regress");
-    const older = await createDelivery("in_transit", "remote-older");
-    const delivered = await createDelivery("delivered", "remote-done");
+    const regress = await createDelivery("a", "in_transit", "remote-regress");
+    const older = await createDelivery("a", "in_transit", "remote-older");
+    const delivered = await createDelivery("a", "delivered", "remote-done");
     const provider = stubProvider();
     provider.shipments.set(
       "remote-regress",
@@ -154,32 +194,43 @@ describeWithDb("delivery reconcile edge cases", () => {
     expect((await stateOf(regress)).events + (await stateOf(older)).events).toBe(0);
   });
 
-  it("continues after a provider failure and a missing shipment without logging PII", async () => {
-    const failing = await createDelivery("created", "remote-failing");
-    const healthy = await createDelivery("created", "remote-healthy");
-    const missing = await createDelivery("created", "remote-missing");
+  it("delivers shop B while shop A fails, returns null and skips", async () => {
+    const failing = await createDelivery("a", "created", "remote-failing");
+    const missing = await createDelivery("a", "created", "remote-missing");
+    const healthyA = await createDelivery("a", "created", "remote-healthy-a");
+    const healthyB = await createDelivery("b", "created", "remote-healthy-b");
     const provider = stubProvider();
     provider.fail.add("remote-failing");
     provider.shipments.set(
-      "remote-healthy",
-      shipment("DELIVERED", "Вручён", new Date(NOW.getTime() - 60_000), "TRACK-OK"),
+      "remote-healthy-a",
+      shipment("DELIVERED", "Вручён", new Date(NOW.getTime() - 60_000), "TRACK-A"),
+    );
+    provider.shipments.set(
+      "remote-healthy-b",
+      shipment("DELIVERED", "Вручён", new Date(NOW.getTime() - 60_000), "TRACK-B"),
     );
 
     await reconcile.runDeliveryReconcile(provider, log, NOW);
 
     expect((await stateOf(failing)).status).toBe("created");
-    expect((await stateOf(healthy)).status).toBe("delivered");
     expect((await stateOf(missing)).status).toBe("created");
-    expect(provider.calls).toEqual(["remote-failing", "remote-healthy", "remote-missing"]);
-    expect(log.warn).toHaveBeenCalled();
-    const logged = JSON.stringify([...log.info.mock.calls, ...log.warn.mock.calls]);
+    expect((await stateOf(healthyA)).status).toBe("delivered");
+    expect((await stateOf(healthyB)).status).toBe("delivered");
+    expect((await stateOf(healthyB)).events).toBe(1);
+    expect((await stateOf(failing)).updated_at.getTime()).toBe(NOW.getTime());
+    expect((await stateOf(missing)).updated_at.getTime()).toBe(NOW.getTime());
+
+    const logged = loggedText();
     expect(logged).not.toContain("Иван Тестов");
+    expect(logged).not.toContain("Мария Тестова");
     expect(logged).not.toContain("0000000000");
+    expect(logged).not.toContain("Невский 1");
+    expect(log.warn).toHaveBeenCalled();
   });
 
-  it("stops between rows when the signal is aborted", async () => {
-    const first = await createDelivery("created", "remote-a");
-    const second = await createDelivery("created", "remote-b");
+  it("does not touch shop B when shop A aborts between rows, then delivers it", async () => {
+    const first = await createDelivery("a", "created", "remote-a");
+    const second = await createDelivery("b", "created", "remote-b");
     const provider = stubProvider();
     provider.shipments.set(
       "remote-a",
@@ -197,5 +248,25 @@ describeWithDb("delivery reconcile edge cases", () => {
     expect(provider.calls).toHaveLength(1);
     expect((await stateOf(first)).status).toBe("delivered");
     expect((await stateOf(second)).status).toBe("created");
+
+    provider.onCall = null;
+    await reconcile.runDeliveryReconcile(provider, log, NOW);
+    expect((await stateOf(second)).status).toBe("delivered");
+  });
+
+  it("makes no provider call when the signal is already aborted", async () => {
+    const shopA = await createDelivery("a", "created", "remote-a");
+    const shopB = await createDelivery("b", "created", "remote-b");
+    const provider = stubProvider();
+    provider.shipments.set("remote-a", shipment("DELIVERED", "Вручён", NOW));
+    provider.shipments.set("remote-b", shipment("DELIVERED", "Вручён", NOW));
+    const controller = new AbortController();
+    controller.abort();
+
+    await reconcile.runDeliveryReconcile(provider, log, NOW, controller.signal);
+
+    expect(provider.calls).toEqual([]);
+    expect((await stateOf(shopA)).status).toBe("created");
+    expect((await stateOf(shopB)).status).toBe("created");
   });
 });
