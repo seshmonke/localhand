@@ -1,0 +1,13 @@
+✔ scanner catches cyrillic runtime strings in production-like TSX (80.341084ms)
+✔ scanner ignores comments and non-cyrillic source (129.126923ms)
+✔ key gate reports missing and test-only dead keys (0.929874ms)
+✔ plural variants are covered by production usage of their base key (0.305614ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 334.656291
+exit=0

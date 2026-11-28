@@ -1,0 +1,11 @@
+$ vitest run
+
+ RUN  v5.1.2 ./packages/i18n
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  20:11:23
+   Duration  204ms (import 46%, transform 25%, tests 16%, worker 13%)
+
+exit=0

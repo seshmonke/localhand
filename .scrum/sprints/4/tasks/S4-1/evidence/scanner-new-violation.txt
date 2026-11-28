@@ -1,0 +1,7 @@
+$ node scripts/check-i18n.mjs
+i18n scan: 121 production files, 83 test files; 6 keys, 0 production usages
+cyrillic: 753 baselined findings / 827 occurrences; 35 allowlisted occurrences
+new i18n violations (move text to packages/i18n/resources/ru.ts or allowlist):
+  + apps/web/src/__i18n_probe.ts (string): Новая строка
+[ELIFECYCLE] Command failed with exit code 1.
+exit=1
