@@ -1,0 +1,9 @@
+
+ RUN  v5.1.2 <worktree>/apps/web
+
+
+ Test Files  2 passed (2)
+      Tests  48 passed (48)
+   Start at  22:28:34
+   Duration  3.72s (tests 51%, environment 25%, import 13%, setup 6%, transform 5%)
+

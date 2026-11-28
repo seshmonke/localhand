@@ -1,0 +1,6 @@
+87	0	apps/web/src/components/admin/AdminDeliveryCard.test.tsx
+106	82	apps/web/src/components/admin/AdminDeliveryCard.tsx
+15	0	apps/web/src/components/orders/DeliverySummaryCard.test.tsx
+41	25	apps/web/src/components/orders/DeliverySummaryCard.tsx
+72	0	packages/i18n/src/resources/ru.ts
+0	468	scripts/i18n-baseline.json
