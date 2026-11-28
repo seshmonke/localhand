@@ -1,0 +1,15 @@
+# Command: pnpm --filter @localhand/web exec vitest run src/pages/AdminProductFormPage.test.tsx
+# Setup: implementation files reverted to main 5ebfe9c; the new tests stayed.
+# Exit: 1 (RED)
+# Summary: Test Files 1 failed (1) | Tests 3 failed | 12 passed (15)
+
+FAIL src/pages/AdminProductFormPage.test.tsx > AdminProductNewPage > sends weight and dimensions as integer grams and centimeters
+TestingLibraryElementError: Unable to find a label with the text of: Вес, г
+
+FAIL src/pages/AdminProductFormPage.test.tsx > AdminProductNewPage > rejects zero, fractional and too large dimensions with field errors
+TestingLibraryElementError: Unable to find a label with the text of: Вес, г
+
+FAIL src/pages/AdminProductFormPage.test.tsx > AdminProductEditPage > prefills dimensions, PATCHes changed values and sends null when a field is cleared
+TestingLibraryElementError: Unable to find a label with the text of: Вес, г
+
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
