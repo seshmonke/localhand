@@ -1,0 +1,6 @@
+# Command: pnpm --filter @localhand/web exec vitest run src/components/admin/AdminDeliveryCard.test.tsx src/components/orders/DeliverySummaryCard.test.tsx
+# Exit: 0 (GREEN)
+# Summary: Test Files 2 passed (2) | Tests 42 passed (42)
+
+Test Files  2 passed (2)
+Tests  42 passed (42)
