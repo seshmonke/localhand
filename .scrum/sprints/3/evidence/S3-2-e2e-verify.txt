@@ -1,0 +1,32 @@
+# VERIFY evidence: S3-2-E2E API/DB delivery e2e (LOG #77 merge)
+# date: 2026-11-28; branch task/S3-2-e2e-api; main 22c6d8b merged (9fe4a77).
+
+$ cp/env: DATABASE_URL_TEST=postgres://localhand:localhand@localhost:5433/localhand_s2_test
+$ JWT_SECRET=… OTP_SECRET=…
+
+$ pnpm verify
+$ pnpm typecheck && pnpm lint && pnpm format:check && pnpm check:public &&
+  pnpm test && pnpm build && pnpm openspec:validate
+
+packages/shared typecheck: Done
+packages/ui typecheck: Done
+apps/web typecheck: Done
+apps/api typecheck: Done
+$ oxlint .
+$ prettier --check .
+All matched files use Prettier code style!
+$ node scripts/check-public-repo.mjs
+Public repo check: 591 tracked files, no secrets/PII patterns found
+packages/shared test:  Test Files  12 passed (12), Tests  161 passed (161)
+apps/web test:         Test Files  25 passed (25), Tests  220 passed (220)
+apps/api test:         Test Files  43 passed (43), Tests  394 passed (394)
+packages/shared build: Done
+packages/ui build: Done
+apps/web build: Done
+apps/api build: Done
+$ openspec validate --all --strict
+Totals: 9 passed, 0 failed (9 items)
+
+exit=0
+
+Note: a second `pnpm check:public` after `git add` also passed.
