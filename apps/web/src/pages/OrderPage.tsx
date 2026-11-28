@@ -166,7 +166,8 @@ function PaymentDetails({
             Не удалось подтвердить оплату
           </p>
           <p className="mt-2 text-sm leading-relaxed">
-            Исход создания платежа неизвестен. Повторите оплату — второе списание не создастся.
+            Исход создания платежа неизвестен. Повторите оплату: тот же ключ не создаст второе
+            списание.
           </p>
           <dl className="mt-4 flex flex-col gap-2 text-sm">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -256,8 +257,7 @@ function PaymentDetails({
         {payment.status === "canceled" ? "Оплата отменена" : "Оплата не прошла"}
       </p>
       <p className="mt-2 text-sm leading-relaxed">
-        {payment.status === "canceled" ? "Платёж отменён" : "Платёж не прошёл"}. Можно попробовать
-        снова или связаться с продавцом.
+        Можно попробовать снова или связаться с продавцом.
       </p>
     </>
   );

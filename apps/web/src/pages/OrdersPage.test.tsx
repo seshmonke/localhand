@@ -173,7 +173,7 @@ describe("OrdersPage", () => {
     expect(within(card).queryByText("Оплата не начата")).not.toBeInTheDocument();
   });
 
-  it("does not turn a payment read error into 'payment not connected'", async () => {
+  it("does not turn a payment read error into 'payment not started'", async () => {
     let fail = true;
     installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },

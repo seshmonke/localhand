@@ -1,0 +1,175 @@
+{
+  "generated_at": "2026-11-28T15:39:55.307Z",
+  "base": "http://localhost:5173",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa",
+    "wcag22a",
+    "wcag22aa"
+  ],
+  "orderId": 354,
+  "scans": {
+    "catalog-320-light": {
+      "url": "http://localhost:5173/",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "cart-320-light": {
+      "url": "http://localhost:5173/cart",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "checkout-320-light": {
+      "url": "http://localhost:5173/checkout",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "orders-320-light": {
+      "url": "http://localhost:5173/orders",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "shop-320-light": {
+      "url": "http://localhost:5173/shops/e2e-mx0ksntm1",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "catalog-320-dark": {
+      "url": "http://localhost:5173/",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "cart-320-dark": {
+      "url": "http://localhost:5173/cart",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "checkout-320-dark": {
+      "url": "http://localhost:5173/checkout",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "orders-320-dark": {
+      "url": "http://localhost:5173/orders",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "shop-320-dark": {
+      "url": "http://localhost:5173/shops/e2e-mx0ksntm1",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "catalog-1440-light": {
+      "url": "http://localhost:5173/",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "cart-1440-light": {
+      "url": "http://localhost:5173/cart",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "checkout-1440-light": {
+      "url": "http://localhost:5173/checkout",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "orders-1440-light": {
+      "url": "http://localhost:5173/orders",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "shop-1440-light": {
+      "url": "http://localhost:5173/shops/e2e-mx0ksntm1",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "catalog-1440-dark": {
+      "url": "http://localhost:5173/",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "cart-1440-dark": {
+      "url": "http://localhost:5173/cart",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "checkout-1440-dark": {
+      "url": "http://localhost:5173/checkout",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "orders-1440-dark": {
+      "url": "http://localhost:5173/orders",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    },
+    "shop-1440-dark": {
+      "url": "http://localhost:5173/shops/e2e-mx0ksntm1",
+      "testEngine": {
+        "name": "axe-core",
+        "version": "4.14.1"
+      },
+      "violations": []
+    }
+  }
+}

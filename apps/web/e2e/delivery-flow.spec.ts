@@ -265,7 +265,7 @@ test("manual fallback keeps a quoted order and shows the track to buyer and sell
     const deliveryCard = sellerPage.getByRole("region", { name: "Доставка" });
     await expect(deliveryCard.getByText("Ожидает отправки")).toBeVisible();
     await sellerPage.getByLabel("Перевозчик").fill("Почта России");
-    await sellerPage.getByLabel("Трек-номер").fill("TESTTRACK-123");
+    await sellerPage.getByLabel("Трек", { exact: true }).fill("TESTTRACK-123");
     await screenshot(sellerPage, "delivery-admin-order-quoted-1440.png");
     await sellerPage.getByRole("button", { name: "Сохранить трек" }).click();
     await expect(deliveryCard.getByText("Ручной трек", { exact: true })).toBeVisible();

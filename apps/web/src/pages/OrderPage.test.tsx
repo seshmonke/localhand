@@ -313,6 +313,11 @@ describe("OrderPage", () => {
     expect(
       await within(paymentSection).findByText("Не удалось подтвердить оплату"),
     ).toBeInTheDocument();
+    expect(
+      within(paymentSection).getByText(
+        "Исход создания платежа неизвестен. Повторите оплату: тот же ключ не создаст второе списание.",
+      ),
+    ).toBeInTheDocument();
     expect(within(paymentSection).queryByText(/Проверяем оплату/)).not.toBeInTheDocument();
 
     await browser.click(

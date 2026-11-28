@@ -111,12 +111,12 @@ test("buyer and seller see the same order end-to-end", async ({
     animations: "disabled",
   });
 
-  // The orders list keeps the honest "payment not connected" state when the
+  // The orders list keeps the honest "payment not started" state when the
   // seller has no payment account.
   await page.goto("/orders");
   await expect(page.getByRole("heading", { name: "Мои заказы", level: 1 })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Заказ №\d+/ })).toBeVisible();
-  await expect(page.getByText("Оплата не подключена")).toBeVisible();
+  await expect(page.getByText("Оплата не начата")).toBeVisible();
   await waitForStablePage(page);
   await page.screenshot({
     path: testInfo.outputPath("buyer-orders-1440.png"),

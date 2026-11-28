@@ -5,3 +5,4 @@ PUNCT: apps/web/src/pages/AdminOrderPage.tsx: восклицательный з�
 PUNCT: apps/web/src/pages/AdminOrdersPage.tsx: восклицательный знак
 PUNCT: apps/web/src/components/admin/AdminDeliveryCard.tsx: восклицательный знак
 PUNCT: apps/web/src/components/orders/DeliverySummaryCard.tsx: восклицательный знак
+exit=1
