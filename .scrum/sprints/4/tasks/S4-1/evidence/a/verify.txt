@@ -1,0 +1,130 @@
+$ pnpm typecheck && pnpm lint && pnpm format:check && pnpm check:public && pnpm test && pnpm build && pnpm openspec:validate
+$ pnpm --filter @localhand/shared build && pnpm --filter @localhand/i18n build && pnpm -r typecheck
+$ tsc -p tsconfig.build.json
+$ tsc -p tsconfig.build.json
+packages/shared typecheck$ tsc --noEmit
+packages/ui typecheck$ tsc --noEmit
+packages/i18n typecheck$ tsc --noEmit
+packages/i18n typecheck: Done
+packages/shared typecheck: Done
+apps/api typecheck$ tsc --noEmit
+packages/ui typecheck: Done
+apps/web typecheck$ tsc --noEmit && tsc -p tsconfig.e2e.json --noEmit
+apps/web typecheck: Done
+apps/api typecheck: Done
+$ oxlint .
+$ prettier --check .
+Checking formatting...
+All matched files use Prettier code style!
+$ node scripts/check-public-repo.mjs
+Public repo check: 689 tracked files, no secrets/PII patterns found
+$ pnpm --filter @localhand/shared build && pnpm --filter @localhand/i18n build && pnpm -r test
+$ tsc -p tsconfig.build.json
+$ tsc -p tsconfig.build.json
+Scope: 5 of 6 workspace projects
+packages/ui test$ vitest run --passWithNoTests
+packages/i18n test$ vitest run
+packages/shared test$ vitest run --passWithNoTests
+packages/ui test: 
+packages/ui test:  RUN  v5.1.2 ./packages/ui
+packages/ui test: 
+packages/ui test: No test files found, exiting with code 0
+packages/ui test: 
+packages/ui test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+packages/ui test: exclude:  **/node_modules/**, **/.git/**
+packages/ui test: 
+packages/i18n test: 
+packages/i18n test:  RUN  v5.1.2 ./packages/i18n
+packages/i18n test: 
+packages/shared test: 
+packages/shared test:  RUN  v5.1.2 ./packages/shared
+packages/shared test: 
+packages/ui test: Done
+packages/i18n test: 
+packages/i18n test:  Test Files  1 passed (1)
+packages/i18n test:       Tests  4 passed (4)
+packages/i18n test:    Start at  20:32:30
+packages/i18n test:    Duration  328ms (import 44%, transform 29%, tests 18%, worker 8%)
+packages/i18n test: 
+packages/i18n test: Done
+packages/shared test: 
+packages/shared test:  Test Files  12 passed (12)
+packages/shared test:       Tests  161 passed (161)
+packages/shared test:    Start at  20:32:30
+packages/shared test:    Duration  949ms (import 66%, tests 19%, transform 10%, worker 4%)
+packages/shared test: 
+packages/shared test: Done
+apps/api test$ vitest run
+apps/web test$ vitest run
+apps/api test: 
+apps/api test:  RUN  v5.1.2 ./apps/api
+apps/api test: 
+apps/web test: 
+apps/web test:  RUN  v5.1.2 ./apps/web
+apps/web test: 
+apps/web test: 
+apps/web test:  Test Files  26 passed (26)
+apps/web test:       Tests  221 passed (221)
+apps/web test:    Start at  20:32:32
+apps/web test:    Duration  19.08s (tests 42%, environment 30%, import 18%, setup 7%, transform 2%)
+apps/web test: 
+apps/web test: Environment  jsdom was created 26 times · 37.02s total, 30% of tracked time
+apps/web test:              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+apps/web test:              learn more: https://vitest.dev/guide/improving-performance#test-environments
+apps/web test: 
+apps/web test: Done
+apps/api test: 
+apps/api test:  Test Files  27 passed | 16 skipped (43)
+apps/api test:       Tests  224 passed | 170 skipped (394)
+apps/api test:    Start at  20:32:32
+apps/api test:    Duration  27.30s (import 83%, tests 14%, transform 2%, worker 1%)
+apps/api test: 
+apps/api test:     Isolate  43 workers spawned · ~153ms startup each (spawn + environment, per file)
+apps/api test:              at least ~6.41s faster with isolate: false — reuses workers across files instead of one per file
+apps/api test: 
+apps/api test: Done
+$ pnpm -r build
+packages/i18n build$ tsc -p tsconfig.build.json
+packages/ui build$ tsc --noEmit
+packages/shared build$ tsc -p tsconfig.build.json
+packages/i18n build: Done
+packages/shared build: Done
+apps/api build$ tsc -p tsconfig.build.json
+packages/ui build: Done
+apps/web build$ vite build
+apps/web build: vite v8.4.0 building client environment for production...
+apps/web build: transforming...
+apps/web build: ✓ 2496 modules transformed.
+apps/web build: rendering chunks...
+apps/web build: computing gzip size...
+apps/web build: dist/index.html                                                   1.16 kB │ gzip:   0.53 kB
+apps/web build: dist/assets/martian-mono-cyrillic-wght-normal-B84CD5C_.woff2     10.56 kB
+apps/web build: dist/assets/martian-mono-latin-ext-wght-normal-DlL6xMw5.woff2    15.90 kB
+apps/web build: dist/assets/golos-text-cyrillic-ext-wght-normal-hICkpzq7.woff2   17.50 kB
+apps/web build: dist/assets/golos-text-latin-ext-wght-normal-B-I5lbAQ.woff2      19.18 kB
+apps/web build: dist/assets/golos-text-cyrillic-wght-normal-mKek_fSS.woff2       22.03 kB
+apps/web build: dist/assets/martian-mono-latin-wght-normal-5W32yIyr.woff2        23.55 kB
+apps/web build: dist/assets/golos-text-latin-wght-normal-BS5oQT7X.woff2          37.91 kB
+apps/web build: dist/assets/index-DOMfajIs.css                                   42.29 kB │ gzip:  11.30 kB
+apps/web build: dist/assets/index-DGS4rw-U.js                                   664.29 kB │ gzip: 187.88 kB
+apps/web build: 
+apps/web build: [plugin builtin:vite-reporter] 
+apps/web build: (!) Some chunks are larger than 500 kB after minification. Consider:
+apps/web build: - Using dynamic import() to code-split the application
+apps/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+apps/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+apps/web build: ✓ built in 1.19s
+apps/web build: Done
+apps/api build: Done
+$ openspec validate --all --strict
+✓ spec/cart
+✓ spec/catalog-discovery
+✓ spec/checkout-orders
+✓ spec/delivery
+✓ spec/payments
+✓ spec/phone-auth
+✓ spec/product-management
+✓ spec/seller-shop
+✓ spec/storefront
+Totals: 9 passed, 0 failed (9 items)
+VERIFY_EXIT=0
