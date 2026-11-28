@@ -15,7 +15,8 @@ Copywriter и анти-слоп в `scrum-crew` v0.6.0
 
 Все пользовательские и публичные тексты говорят одним голосом, называют
 вещи одинаково, не обещают лишнего и не звучат как пресс-релиз. Каждое
-изменение текста проходит ревью Copywriter и проверку `slop-check`.
+изменение текста проходит ревью Copywriter и проверки `slop-check` +
+`motif-check`.
 
 ## Скоуп
 
@@ -56,7 +57,7 @@ Copywriter и анти-слоп в `scrum-crew` v0.6.0
    админка/auth → W2; docs/README/content → W3; системные тексты
    (SMS/validation/dev/404) → W1–W2; `.scrum`/`docs/tasks` → W2–W3;
    `openspec/specs` — read-only, правки через change.
-2. **Baseline.** `slop-check` по текстовым файлам; ручное чтение
+2. **Baseline.** `slop-check` + `motif-check` по текстовым файлам; ручное чтение
    Copywriter; список ложных обещаний и расхождений глоссария.
 3. **W1 P0.** Checkout/оплата/доставка/статусы/ошибки; сначала
    ошибки и деньги, потом остальное. Малые PR по поверхности.
@@ -119,6 +120,6 @@ Copywriter и анти-слоп в `scrum-crew` v0.6.0
 ## Evidence
 
 - Inventory и baseline-отчёт.
-- PR по волнам с `slop-check` и ссылками на ревью.
+- PR по волнам с `slop-check` + `motif-check` и ссылками на ревью.
 - `docs/design/content.md` (baseline), PR-шаблон, DoD.
 - Итоговый отчёт: метрики, остатки, owner.
