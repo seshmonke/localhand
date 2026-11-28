@@ -2,6 +2,10 @@ import { expect, test } from "@playwright/test";
 import {
   BASE_URL,
   createPublishedCatalog,
+  DEFAULT_DIMENSIONS,
+  DEFAULT_RECIPIENT_NAME,
+  findDeliveryOrigin,
+  findDeliveryPoint,
   loginViaUi,
   uniquePhone,
   waitForStablePage,
@@ -23,7 +27,19 @@ test("buyer and seller see the same order end-to-end", async ({
   request,
   browser,
 }, testInfo) => {
-  const catalog = await createPublishedCatalog(request, ["E2E Куртка"]);
+  // Physical orders need dimensions and a shop origin once delivery is on.
+  // The shop ships from another city than the buyer's PVZ.
+  const destination = await findDeliveryPoint(request);
+  const origin = await findDeliveryOrigin(request);
+  expect(origin.cityCode).not.toBe(destination.cityCode);
+  const catalog = await createPublishedCatalog(request, ["E2E Куртка"], {
+    dimensions: DEFAULT_DIMENSIONS,
+    deliveryOrigin: {
+      cdekCityCode: origin.cityCode,
+      cdekCityName: origin.cityName,
+      cdekShipmentPoint: origin.pointCode,
+    },
+  });
   const product = catalog.products[0];
   if (!product) {
     throw new Error("catalog fixture did not create a product");
@@ -66,6 +82,15 @@ test("buyer and seller see the same order end-to-end", async ({
   await page.waitForURL(/\/checkout$/);
   await expect(page.getByRole("heading", { name: "Проверьте заказ" })).toBeVisible();
   await expect(page.getByText(catalog.shop.name).first()).toBeVisible();
+  const citySelect = page.getByLabel("Город доставки");
+  await expect(citySelect.locator(`option[value="${destination.cityCode}"]`)).toHaveCount(1);
+  await citySelect.selectOption(String(destination.cityCode));
+  const pointSelect = page.getByLabel("Пункт выдачи");
+  await expect(pointSelect.locator(`option[value="${destination.pointCode}"]`)).toHaveCount(1);
+  await expect(pointSelect).toBeEnabled();
+  await pointSelect.selectOption(destination.pointCode);
+  await page.getByLabel("Имя получателя").fill(DEFAULT_RECIPIENT_NAME);
+  await expect(page.getByText("Срок", { exact: true })).toBeVisible();
   await page.getByLabel("Комментарий продавцу").fill(comment);
   await waitForStablePage(page);
   await page.screenshot({

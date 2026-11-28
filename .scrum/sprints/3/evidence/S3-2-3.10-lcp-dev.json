@@ -1,0 +1,60 @@
+{
+  "kind": "lab",
+  "field_p75": false,
+  "generated_at": "2026-11-28T13:46:36.129Z",
+  "base": "http://localhost:5173",
+  "budget": {
+    "limit_ms": 2500,
+    "enforced": false,
+    "target": "dev-info",
+    "catalog_met": false,
+    "checkout_met": false,
+    "order_met": false,
+    "note": "Information only on the unbundled dev server: exceedance is recorded as an annotation and JSON fact, not a failure. The preview gate is the reference."
+  },
+  "runs": 5,
+  "viewport": "390x844 @2x mobile",
+  "conditions": {
+    "network": "CDP Slow 4G: 150 ms RTT, 1.6 Mbps down, 750 kbps up",
+    "cpu_throttling": "4x (CDP Emulation.setCPUThrottlingRate)",
+    "network_throttling": "CDP Network.emulateNetworkConditions (Lighthouse mobileSlow4G preset)",
+    "images": "placeholder blocks; no real product images",
+    "browser": "headless Chromium"
+  },
+  "note": "Lab smoke only. Not field p75 and not the DoD average-mobile metric; field p75 requires RUM or real-device/Lighthouse field data (backlog P3).",
+  "metrics": {
+    "catalog": {
+      "url": "/",
+      "runs": [
+        4612,
+        3588,
+        3152,
+        4044,
+        3108
+      ],
+      "labP75": 4044
+    },
+    "checkout": {
+      "url": "/checkout",
+      "runs": [
+        4132,
+        3736,
+        3596,
+        3788,
+        3248
+      ],
+      "labP75": 3788
+    },
+    "order": {
+      "url": "/orders/328",
+      "runs": [
+        4052,
+        3840,
+        3868,
+        4316,
+        5432
+      ],
+      "labP75": 4316
+    }
+  }
+}

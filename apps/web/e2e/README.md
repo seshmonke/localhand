@@ -23,7 +23,7 @@ production-бандле их нет. На preview проверяются обы�
 (карточка продавца, заказ, списки) — `payments-a11y.spec.ts`; сам fake-флоу
 запускается против dev 5173.
 
-## Доставка (S3-2, PR A)
+## Доставка (S3-2)
 
 `delivery-flow.spec.ts` проходит PVZ-checkout (город/ПВЗ получателя,
 магазин отправляет из другого города), fake-оплату, тарифы и создание
@@ -43,11 +43,11 @@ DELIVERY_QUOTE_SECRET=... DELIVERY_LIVE_PII=false
 карточки. Сам переход `created→delivered` — API e2e
 `apps/api/src/delivery/delivery.e2e.db.test.ts` (#73), не браузерный flow.
 
-В этот PR **не входят**: `delivery-a11y.spec.ts` (axe checkout/order/
-admin-order/admin-shop/admin-product-new) и LCP `/orders/:id` в
-`perf.spec.ts` — это PR B. Полный `pnpm test:e2e` на A не зелёный:
-`buyer-flow.spec.ts` и `layout.spec.ts` получают `409 delivery_required`
-и адаптируются в PR B; на A зелёный только `delivery-flow.spec.ts` (2/2).
+`delivery-a11y.spec.ts` (axe checkout/order/admin-order в `quoted` и
+`created`, `/admin/shop`, `/admin/products/new`) и LCP `/orders/:id` в
+`perf.spec.ts` входят в дерево. Полный `pnpm test:e2e` — **13 passed**,
+включая `buyer-flow.spec.ts` и `layout.spec.ts`, адаптированные к
+обязательной доставке.
 
 ## CI и границы гейта
 
@@ -69,7 +69,7 @@ merge. Не выдавать локальный прогон за CI.
 ## Предусловия
 
 1. `pnpm dev` — web на `http://localhost:5173`, API на `:3000` с
-   миграцией `0003`.
+   миграцией `0006`.
 2. API обязан работать с `SMS_PROVIDER=dev`: e2e preflight делает
    `GET /api/health` и требует `smsProvider: "dev"` **до** первого
    `request-code`. Иначе прогон падает с понятной ошибкой: иначе тест
@@ -108,8 +108,9 @@ PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173 pnpm --filter @localhand/web test:e2e
 field data — отдельный P3 в `docs/tasks/backlog.md`.
 
 Бюджет 2,5 с — **gate для preview**: на собранном бандле (порт 4173)
-`perf.spec.ts` проверяет `expect(labP75).toBeLessThan(2500)` для `/` и
-`/checkout`, а evidence содержит `budget.enforced: true`. Для
+`perf.spec.ts` проверяет `expect(labP75).toBeLessThan(2500)` для `/`,
+`/checkout` и `/orders/:id`, а evidence содержит
+`budget.enforced: true`. Для
 unbundled dev 5173 (и любого другого baseURL) бюджет — **info**:
 превышение фиксируется аннотацией `lab-lcp-over-budget` и
 `budget.enforced: false`, прогон не падает. `PERF_ENFORCE=1` включает

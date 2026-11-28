@@ -1,7 +1,5 @@
 $ pnpm --filter @localhand/web typecheck
 exit code: 0
 
-$ tsc --noEmit && tsc -p tsconfig.e2e.json --noEmit
-
 $ pnpm --filter @localhand/web typecheck:e2e
 exit code: 0

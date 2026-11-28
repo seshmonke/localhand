@@ -41,7 +41,7 @@ A foundation, B checkout/UI, C shipment/status/e2e.
 - [x] 3.7 Reconcile 60s: created/in_transit >2 мин; delivered; unknown raw; `quoted` не авто-`failed`; timeout/duplicate safety.
 - [x] 3.8 Seller UI: tariffs/create/manual/events; buyer delivery card; states/a11y.
 - [x] 3.9 API/DB e2e: quote→checkout→paid→create→webhook→track; manual after definitive fail; no duplicate; PII logs.
-- [ ] 3.10 Browser e2e PVZ→checkout→delivery/manual; axe 320/1440 light/dark; preview LCP<2500; bundle.
+- [x] 3.10 Browser e2e PVZ→checkout→delivery/manual; axe 320/1440 light/dark; preview LCP<2500; bundle.
 - [x] 3.11 ADR 0005, runbooks webhook/reconcile/manual/rollback; `openspec validate --all --strict`; evidence `S3-2-3.11-*`.
 
 ## 4. Close
