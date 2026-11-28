@@ -86,7 +86,7 @@ Vite proxy на :3100 патчился временно и возвращён к
 ## Doc change и drift
 
 - `No doc change: i18n refactor`; ADR 0006 и план спринта актуальны.
-- Stale claims: none.
+- Stale claims: none; bundle +3.47 KiB gzip (+1.85%), budget ADR 0004.
 - Обещание теста: ссылки в TDD/AC.
 - Будущее как текущее: A2/S4-2b в отчёте помечены как не входящие в A1.
 
@@ -97,7 +97,7 @@ Vite proxy на :3100 патчился временно и возвращён к
 - Грабли: e2e требует свой API с fake providers и `WEB_ORIGIN`,
   совпадающий с base URL; порты 3000/5173 могут быть заняты.
 - Открытые треды: `#task-4`.
-- PR не открыт: push в окружении недоступен, передан SHA.
+- PR #89 открыт; review APPROVE; P2 brief/status закрыты.
 
 ## Блокеры
 
