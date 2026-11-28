@@ -10,6 +10,7 @@ import { Button, buttonVariants } from "@localhand/ui";
 import { useQueries } from "@tanstack/react-query";
 import { Link, useLocation } from "react-router";
 import { Announcer } from "../components/FormField.js";
+import { DeliveryListLine } from "../components/orders/DeliverySummaryCard.js";
 import { ScreenState } from "../components/ScreenState.js";
 import { PaymentReadStatus, type PaymentRead } from "../components/admin/payment-read.js";
 import { SessionExpiredState } from "../components/admin/SessionExpiredState.js";
@@ -218,6 +219,7 @@ function OrderCard({ order, read }: { order: OrderSummary; read: PaymentRead }) 
               emptyLabel="Оплата не подключена"
             />
           </div>
+          {order.delivery !== null ? <DeliveryListLine delivery={order.delivery} /> : null}
           <p className="mt-2 font-mono text-[10px] uppercase tracking-wide text-ink/60">
             {pluralizeItems(order.items.length)}
           </p>
