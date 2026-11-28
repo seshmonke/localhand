@@ -75,3 +75,12 @@ refactor. Evidence: `S3-2-tdd-a-red.txt`, `S3-2-tdd-a-green.txt`,
 
 Mutation/SAST — owner exception до Q1.3/Q1.4; alert/RUM — до публичного
 запуска. Записаны в `.scrum/events.jsonl` и threat model.
+
+## D3b — scheduler и startup-подписка
+
+| AC | RED-тест | Что падает |
+|----|----------|------------|
+| Reconcile scheduler | `delivery.reconcile.scheduler.test.ts` | нет модуля scheduler |
+| Startup subscription | `app.test.ts` | `ensureOrderStatusWebhook` не вызывается, нет runner-hook |
+| Одна подписка ORDER_STATUS | `cdek-provider.test.ts` | 2 чужие подписки не дают ошибку, возможна третья |
+| Детерминизм wiring | `app.test.ts` | реальный pass зависит от БД; review-фикс: fake runner |

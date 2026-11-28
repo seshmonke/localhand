@@ -94,6 +94,12 @@
 
 ## P2
 
+- [ ] P2. Delivery webhook subscription: distributed lock для нескольких
+  реплик API. Критерий: два инстанса одновременно проверяют
+  `ORDER_STATUS` и создают ровно одну подписку (advisory lock/DB lease),
+  тест на гонку. Источник: P2 ревью PR #68; v1 — один API-контейнер
+  (`docs/stack/hosting.md`), ограничение зафиксировано в evidence.
+  Спринт: —.
 - [ ] P2. Реальный YooKassa adapter + contract tests + live sandbox smoke:
   `YooKassaProvider` (OAuth/Bearer, `/v3/payments`, `/v3/webhooks`),
   fixture contract-тесты, тестовый магазин; fake/sandbox уже в main.

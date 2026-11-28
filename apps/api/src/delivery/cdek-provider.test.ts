@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createCdekDeliveryProvider } from "./cdek-provider.js";
+import { createCdekDeliveryProvider, DeliveryWebhookConflictError } from "./cdek-provider.js";
 import { calculatePackaging } from "./packaging.js";
 
 const CONFIG = {
@@ -292,7 +292,7 @@ describe("CDEK delivery provider", () => {
     });
   });
 
-  it("does not create a third webhook when two already exist", async () => {
+  it("throws a conflict and does not create a third webhook when two foreign subscriptions exist", async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(json({ access_token: "token-1", expires_in: 3599 }))
@@ -304,11 +304,44 @@ describe("CDEK delivery provider", () => {
       );
 
     const provider = createCdekDeliveryProvider(CONFIG, { fetch: fetchMock });
+    await expect(provider.ensureOrderStatusWebhook()).rejects.toBeInstanceOf(
+      DeliveryWebhookConflictError,
+    );
+
+    const webhookCalls = fetchMock.mock.calls.filter(([url]) =>
+      String(url).endsWith("/v2/webhooks"),
+    );
+    expect(webhookCalls).toHaveLength(1);
+    expect((webhookCalls[0]?.[1] as RequestInit | undefined)?.method).toBeUndefined();
+  });
+
+  it("does not create a webhook when a matching ORDER_STATUS subscription exists", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(json({ access_token: "token-1", expires_in: 3599 }))
+      .mockResolvedValueOnce(json([{ uuid: "1", type: "ORDER_STATUS", url: CONFIG.webhookUrl }]));
+
+    const provider = createCdekDeliveryProvider(CONFIG, { fetch: fetchMock });
     await provider.ensureOrderStatusWebhook();
 
-    expect(
-      fetchMock.mock.calls.filter(([url]) => String(url).endsWith("/v2/webhooks")),
-    ).toHaveLength(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("creates one ORDER_STATUS webhook when one foreign subscription exists", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(json({ access_token: "token-1", expires_in: 3599 }))
+      .mockResolvedValueOnce(json([{ uuid: "1", type: "ORDER_STATUS", url: "https://other/1" }]))
+      .mockResolvedValueOnce(json({ uuid: "hook-2" }, 201));
+
+    const provider = createCdekDeliveryProvider(CONFIG, { fetch: fetchMock });
+    await provider.ensureOrderStatusWebhook();
+
+    const [, init] = fetchMock.mock.calls[2] ?? [];
+    expect(JSON.parse(String((init as RequestInit).body))).toEqual({
+      type: "ORDER_STATUS",
+      url: CONFIG.webhookUrl,
+    });
   });
 
   it("creates one ORDER_STATUS webhook when none matches", async () => {

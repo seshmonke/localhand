@@ -73,6 +73,18 @@ export class CdekError extends Error {
   }
 }
 
+/**
+ * CDEK allows at most two webhook subscriptions. Two foreign subscriptions
+ * mean an operator must remove one by hand: creating a third is impossible
+ * and silently skipping the check would leave startup believing it is wired.
+ */
+export class DeliveryWebhookConflictError extends Error {
+  constructor() {
+    super("CDEK already has two foreign webhook subscriptions");
+    this.name = "DeliveryWebhookConflictError";
+  }
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -415,8 +427,11 @@ export function createCdekDeliveryProvider(
       const existing = webhooks.some(
         (webhook) => webhook.type === "ORDER_STATUS" && webhook.url === config.webhookUrl,
       );
-      if (existing || webhooks.length >= 2) {
+      if (existing) {
         return;
+      }
+      if (webhooks.length >= 2) {
+        throw new DeliveryWebhookConflictError();
       }
 
       await request("/v2/webhooks", {
