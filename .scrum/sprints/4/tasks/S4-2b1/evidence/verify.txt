@@ -1,0 +1,159 @@
+$ pnpm typecheck && pnpm lint && pnpm format:check && pnpm check:public && pnpm check:i18n && pnpm test && pnpm build && pnpm openspec:validate
+$ pnpm --filter @localhand/shared build && pnpm --filter @localhand/i18n build && pnpm -r typecheck
+$ tsc -p tsconfig.build.json
+$ tsc -p tsconfig.build.json
+packages/ui typecheck$ tsc --noEmit
+packages/shared typecheck$ tsc --noEmit
+packages/i18n typecheck$ tsc --noEmit
+packages/ui typecheck: Done
+packages/i18n typecheck: Done
+packages/shared typecheck: Done
+apps/web typecheck$ tsc --noEmit && tsc -p tsconfig.e2e.json --noEmit
+apps/api typecheck$ tsc --noEmit
+apps/api typecheck: Done
+apps/web typecheck: Done
+$ oxlint .
+$ prettier --check .
+Checking formatting...
+All matched files use Prettier code style!
+$ node scripts/check-public-repo.mjs
+Public repo check: 742 tracked files, no secrets/PII patterns found
+$ node scripts/check-i18n.mjs
+i18n scan: 125 production files, 88 test files; 197 keys, 192 production usages
+cyrillic: 502 baselined findings / 550 occurrences; 35 allowlisted occurrences
+i18n check passed (baseline: 502 findings)
+$ pnpm --filter @localhand/shared build && pnpm --filter @localhand/i18n build && pnpm -r test && node --test --experimental-test-coverage --test-coverage-lines=80 --test-coverage-branches=80 --test-coverage-include=scripts/check-i18n.mjs scripts/check-i18n.test.mjs
+$ tsc -p tsconfig.build.json
+$ tsc -p tsconfig.build.json
+Scope: 5 of 6 workspace projects
+packages/i18n test$ vitest run
+packages/ui test$ vitest run --passWithNoTests
+packages/shared test$ vitest run --passWithNoTests
+packages/ui test: 
+packages/ui test:  RUN  v5.1.2 <worktree>/packages/ui
+packages/ui test: 
+packages/ui test: No test files found, exiting with code 0
+packages/ui test: 
+packages/ui test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+packages/ui test: exclude:  **/node_modules/**, **/.git/**
+packages/shared test: 
+packages/ui test: 
+packages/shared test:  RUN  v5.1.2 <worktree>/packages/shared
+packages/shared test: 
+packages/i18n test: 
+packages/i18n test:  RUN  v5.1.2 <worktree>/packages/i18n
+packages/i18n test: 
+packages/ui test: Done
+packages/i18n test: 
+packages/i18n test:  Test Files  1 passed (1)
+packages/i18n test:       Tests  4 passed (4)
+packages/i18n test:    Start at  22:11:45
+packages/i18n test:    Duration  573ms (transform 64%, import 23%, tests 9%, worker 4%)
+packages/i18n test: 
+packages/i18n test: Done
+packages/shared test: 
+packages/shared test:  Test Files  12 passed (12)
+packages/shared test:       Tests  161 passed (161)
+packages/shared test:    Start at  22:11:45
+packages/shared test:    Duration  1.15s (import 52%, transform 30%, tests 14%, worker 3%)
+packages/shared test: 
+packages/shared test: Done
+apps/api test$ vitest run
+apps/web test$ vitest run
+apps/api test: 
+apps/api test:  RUN  v5.1.2 <worktree>/apps/api
+apps/api test: 
+apps/web test: 
+apps/web test:  RUN  v5.1.2 <worktree>/apps/web
+apps/web test: 
+apps/web test: 
+apps/web test:  Test Files  29 passed (29)
+apps/web test:       Tests  246 passed (246)
+apps/web test:    Start at  22:11:47
+apps/web test:    Duration  16.92s (tests 38%, environment 33%, import 18%, setup 8%, transform 2%)
+apps/web test: 
+apps/web test: Environment  jsdom was created 29 times · 35.56s total, 33% of tracked time
+apps/web test:              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+apps/web test:              learn more: https://vitest.dev/guide/improving-performance#test-environments
+apps/web test: 
+apps/web test: Done
+apps/api test: 
+apps/api test:  Test Files  27 passed | 16 skipped (43)
+apps/api test:       Tests  224 passed | 170 skipped (394)
+apps/api test:    Start at  22:11:47
+apps/api test:    Duration  24.96s (import 72%, transform 16%, tests 10%, worker 2%)
+apps/api test: 
+apps/api test:     Isolate  43 workers spawned · ~199ms startup each (spawn + environment, per file)
+apps/api test:              at least ~8.34s faster with isolate: false — reuses workers across files instead of one per file
+apps/api test: 
+apps/api test: Done
+✔ scanner catches fixture kinds and ignores comments/clean source (124.964968ms)
+✔ fails closed when a project config is missing (3.39512ms)
+✔ scans packages/ui and packages/i18n outside the catalog (76.622487ms)
+✔ allowlist matches file+kind+text and index strips only html-text (120.659642ms)
+✔ new violation and count growth fail the gate (123.461034ms)
+✔ baseline init/update is idempotent, prunes, and refuses to mask (353.353104ms)
+✔ missing and dead keys fail the gate (123.595744ms)
+✔ allowlist requires texts+kinds (0.451524ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1068.657849
+ℹ start of coverage report
+ℹ --------------------------------------------------------------------------------------------------------------------------
+ℹ file            | line % | branch % | funcs % | uncovered lines
+ℹ --------------------------------------------------------------------------------------------------------------------------
+ℹ scripts         |        |          |         | 
+ℹ  check-i18n.mjs |  93.54 |    84.02 |   84.38 | 83-84 101-104 128-131 163 236-237 272-274 281-284 378-379 405-407 417-418
+ℹ --------------------------------------------------------------------------------------------------------------------------
+ℹ all files       |  93.54 |    84.02 |   84.38 | 
+ℹ --------------------------------------------------------------------------------------------------------------------------
+ℹ end of coverage report
+$ pnpm -r build
+packages/shared build$ tsc -p tsconfig.build.json
+packages/i18n build$ tsc -p tsconfig.build.json
+packages/ui build$ tsc --noEmit
+packages/shared build: Done
+apps/api build$ tsc -p tsconfig.build.json
+packages/ui build: Done
+packages/i18n build: Done
+apps/web build$ vite build
+apps/web build: vite v8.4.0 building client environment for production...
+apps/web build: transforming...
+apps/web build: ✓ 2496 modules transformed.
+apps/web build: rendering chunks...
+apps/web build: computing gzip size...
+apps/web build: dist/index.html                                                   1.16 kB │ gzip:   0.53 kB
+apps/web build: dist/assets/martian-mono-cyrillic-wght-normal-B84CD5C_.woff2     10.56 kB
+apps/web build: dist/assets/martian-mono-latin-ext-wght-normal-DlL6xMw5.woff2    15.90 kB
+apps/web build: dist/assets/golos-text-cyrillic-ext-wght-normal-hICkpzq7.woff2   17.50 kB
+apps/web build: dist/assets/golos-text-latin-ext-wght-normal-B-I5lbAQ.woff2      19.18 kB
+apps/web build: dist/assets/golos-text-cyrillic-wght-normal-mKek_fSS.woff2       22.03 kB
+apps/web build: dist/assets/martian-mono-latin-wght-normal-5W32yIyr.woff2        23.55 kB
+apps/web build: dist/assets/golos-text-latin-wght-normal-BS5oQT7X.woff2          37.91 kB
+apps/web build: dist/assets/index-DkPe992E.css                                   42.31 kB │ gzip:  11.30 kB
+apps/web build: dist/assets/index-GeMItqYn.js                                   680.44 kB │ gzip: 193.10 kB
+apps/web build: 
+apps/web build: [plugin builtin:vite-reporter] 
+apps/web build: (!) Some chunks are larger than 500 kB after minification. Consider:
+apps/web build: - Using dynamic import() to code-split the application
+apps/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+apps/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+apps/web build: ✓ built in 982ms
+apps/web build: Done
+apps/api build: Done
+$ openspec validate --all --strict
+✓ spec/cart
+✓ spec/catalog-discovery
+✓ spec/checkout-orders
+✓ spec/delivery
+✓ spec/payments
+✓ spec/phone-auth
+✓ spec/product-management
+✓ spec/seller-shop
+✓ spec/storefront
+Totals: 9 passed, 0 failed (9 items)

@@ -1,0 +1,62 @@
+{
+  "generated_at": "2026-11-28T19:15:22.743Z",
+  "base": "http://localhost:5273",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa",
+    "wcag22a",
+    "wcag22aa"
+  ],
+  "scans": {
+    "admin-shop-320-light": {
+      "url": "http://localhost:5273/admin/shop",
+      "violations": []
+    },
+    "admin-product-320-light": {
+      "url": "http://localhost:5273/admin/products/583",
+      "violations": []
+    },
+    "admin-orders-320-light": {
+      "url": "http://localhost:5273/admin/orders",
+      "violations": []
+    },
+    "admin-shop-320-dark": {
+      "url": "http://localhost:5273/admin/shop",
+      "violations": []
+    },
+    "admin-product-320-dark": {
+      "url": "http://localhost:5273/admin/products/583",
+      "violations": []
+    },
+    "admin-orders-320-dark": {
+      "url": "http://localhost:5273/admin/orders",
+      "violations": []
+    },
+    "admin-shop-1440-light": {
+      "url": "http://localhost:5273/admin/shop",
+      "violations": []
+    },
+    "admin-product-1440-light": {
+      "url": "http://localhost:5273/admin/products/583",
+      "violations": []
+    },
+    "admin-orders-1440-light": {
+      "url": "http://localhost:5273/admin/orders",
+      "violations": []
+    },
+    "admin-shop-1440-dark": {
+      "url": "http://localhost:5273/admin/shop",
+      "violations": []
+    },
+    "admin-product-1440-dark": {
+      "url": "http://localhost:5273/admin/products/583",
+      "violations": []
+    },
+    "admin-orders-1440-dark": {
+      "url": "http://localhost:5273/admin/orders",
+      "violations": []
+    }
+  }
+}
