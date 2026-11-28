@@ -1,0 +1,4 @@
+value preservation: every baseline literal from the two B2 files is present in ru.ts
+baseline entries checked: 73
+missing: 0
+templates: ${min}–${max} дн. -> {{min}}–{{max}} дн.; ${single} дн. -> {{count}} дн.

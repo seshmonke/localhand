@@ -1,0 +1,4 @@
+base (main 92f6675): 680443 B raw / 191244 B gzip
+after: 684787 B raw / 191946 B gzip
+delta: +4344 B raw (+0.638%) / +702 B gzip (+0.367%)
+budget ADR 0004: <= +10% and <= +20 KiB gzip -> pass

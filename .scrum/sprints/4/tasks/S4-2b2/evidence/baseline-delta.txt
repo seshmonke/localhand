@@ -1,0 +1,6 @@
+baseline before (main 92f6675): 502 findings / 550 occurrences
+baseline after: 424 findings / 466 occurrences
+removed: 84 occurrences / 78 findings; added: 0 occurrences / 0 findings
+apps/web/src/components/admin/AdminDeliveryCard.tsx: 0 findings
+apps/web/src/components/orders/DeliverySummaryCard.tsx: 0 findings
+deadKeys: 0
