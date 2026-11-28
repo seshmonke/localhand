@@ -117,3 +117,7 @@
 {"ts":"2026-11-28T12:45:00Z","type":"pr_opened","sprint":3,"cycle":6,"task":"S3-2-3.10","pr":78,"scope":"delivery_browser_flow","size":564}
 {"ts":"2026-11-28T13:00:00Z","type":"merge","sprint":3,"cycle":6,"task":"S3-2-3.10","pr":78,"merge_commit":"b7b5342","scope":"browser_flow_e2e","status":"done"}
 {"ts":"2026-11-28T13:05:00Z","type":"pr_opened","sprint":3,"cycle":6,"task":"S3-2-3.10","pr":79,"scope":"browser_axe_lcp_legacy","size":286}
+{"ts":"2026-11-28T13:55:00Z","type":"change_archived","sprint":3,"change":"07-delivery","archive":"2026-11-28-07-delivery","specs":["delivery","checkout-orders","product-management","seller-shop"]}
+{"ts":"2026-11-28T13:55:00Z","type":"sprint_closed","sprint":3,"status":"accepted","goal_achieved":true,"deferred":["S3-3","S3-4"],"review":".scrum/sprints/3/review.md","retro":".scrum/sprints/3/retro.md"}
+{"ts":"2026-11-28T13:55:00Z","type":"pr_opened","sprint":null,"pr":80,"scope":"sprint_3_close","size":"docs/state"}
+{"ts":"2026-11-28T13:55:00Z","type":"leases_released","tasks":["S3-1","S3-2"]}

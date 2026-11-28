@@ -94,6 +94,14 @@
   Источник: design review владельца 27.11.2026. Сделано: PR #35,
   merge `5d91cc5`.
 
+- [ ] P1. Дефлейк `CheckoutPage` replay-навигации: тест «clears only the
+  products returned by the checkout replay» упал в CI на main (#63,
+  run 46131945941) по таймауту `findByRole`, локально 15/15 и 8 полных
+  web-suite зелёные; rerun прошёл. Критерий: детерминированное ожидание
+  навигации/заголовка (не просто увеличенный timeout), 20 полных
+  web-suite подряд + CI зелёные, без ослабления проверок. Источник:
+  CI main 28.11.2026. Спринт: — (Sprint 4).
+
 ## P2
 
 - [ ] P2. Delivery webhook subscription: distributed lock для нескольких
@@ -201,6 +209,11 @@
 - [ ] Добавить метрики checkout/409/429 без PII. Критерий: метрики в логах/системе, без телефона/комментария. Источник: P3 ревью S2-3a; `Cache-Control: no-store` на PII-ответах заказов уже сделан в S2-4. Спринт: —.
 - [ ] Починить test-helper `countAdvisoryWaiters` для signed bigint hash; добавить CI fail-fast для orders DB suite. Критерий: тест с отрицательным hash, skip не молчит. Источник: P3 ревью S2-3a. Спринт: — (S2-4).
 
+- [ ] P2. Ozon Доставка как второй перевозчик: отдельный adapter за
+  существующим provider seam, contract/B2B, тарифы; после стабильного
+  СДЭК. Критерий: quote/create/track на Ozon в тестовом контуре, без
+  изменения orders/UI. Источник: S3-2 task 4.2/product.md. Спринт: —.
+
 ## P3
 
 - [ ] P3. Изоляция auth DB-тестов: отдельная схема/БД на файл или
@@ -225,13 +238,6 @@
   field p75 остаётся DoD для публичного запуска. Критерий: field p75 < 2,5 с на `/` и
   `/checkout`. Источник: P3 ревью S2-4. Спринт: —.
 
-- [ ] P1. Дефлейк `CheckoutPage` replay-навигации: тест «clears only the
-  products returned by the checkout replay» упал в CI на main (#63,
-  run 46131945941) по таймауту `findByRole`, локально 15/15 и 8 полных
-  web-suite зелёные; rerun прошёл. Критерий: детерминированное ожидание
-  навигации/заголовка (не просто увеличенный timeout), 20 полных
-  web-suite подряд + CI зелёные, без ослабления проверок. Источник:
-  CI main 28.11.2026. Спринт: — (3.10).
 - [ ] P3. Закрыть долг ревью delivery UI: переименовать `role` prop
   `DeliverySummaryCard` → `viewer`, расширить assert raw-кодов
   (`tariffCode/pointCode/cityCode`), согласовать `totalKopecks` с
@@ -263,8 +269,3 @@
 - [ ] P3. Threat model: property/DB-инварианты (event idempotency) —
   указать fact-файл `schema.delivery.db.test.ts`, не смешивать с
   property. Источник: P3 ревью #76. Спринт: —.
-
-- [ ] P2. Ozon Доставка как второй перевозчик: отдельный adapter за
-  существующим provider seam, contract/B2B, тарифы; после стабильного
-  СДЭК. Критерий: quote/create/track на Ozon в тестовом контуре, без
-  изменения orders/UI. Источник: S3-2 task 4.2/product.md. Спринт: —.

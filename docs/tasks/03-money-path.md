@@ -112,6 +112,8 @@ AC:
 
 ## Циклы
 
+Примечание: циклы 5–6 ниже описаны по первоначальному плану; S3-3/S3-4 перенесены в Sprint 4, поэтому lifecycle/hardening в Sprint 3 не выполнялись.
+
 1. Planning: план, `06-payments` proposal/spec/design/tasks, review,
    `openspec validate --strict`. Код не пишем.
 2. Payments foundation (PR A): миграция, контракты, крипто, адаптер,

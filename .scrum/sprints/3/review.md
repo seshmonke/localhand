@@ -66,3 +66,18 @@ production-деплой остаются внешними гейтами вла�
 - Подписка CDEK: один API-контейнер; distributed lock — backlog P2.
 - Field RUM/LCP — owner-approved lab/preview proxy; field p75 до
   публичного запуска.
+
+## Демо и вердикты
+
+- QA: API/DB e2e quote→checkout→paid→create→webhook→track, manual
+  fallback, idempotency; browser e2e 13 passed.
+- Security: PII не в логах/DOM, authz 404, no-store, raw `err`
+  redacted; threat model D1–D16.
+- Perf/A11y: preview LCP 580/756/928 ms <2500; axe 24×0 320/1440
+  light/dark.
+- PO/owner: ACCEPT по S3-1/S3-2; S3-3/S3-4 — Sprint 4.
+
+## Проверка владельцем
+
+Live YooKassa/CDEK, юрпакет, `DELIVERY_LIVE_PII=true`, production
+deploy/SMS — внешние гейты; в спринте не проверялись.

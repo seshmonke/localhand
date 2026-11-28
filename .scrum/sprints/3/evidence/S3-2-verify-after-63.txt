@@ -20,53 +20,53 @@ $ tsc -p tsconfig.build.json
 Scope: 4 of 5 workspace projects
 packages/ui test$ vitest run --passWithNoTests
 packages/shared test$ vitest run --passWithNoTests
-packages/ui test: 
+packages/ui test:
 packages/ui test:  RUN  v5.1.2 <repo>/packages/ui
-packages/ui test: 
+packages/ui test:
 packages/ui test: No test files found, exiting with code 0
-packages/shared test: 
-packages/ui test: 
+packages/shared test:
+packages/ui test:
 packages/shared test:  RUN  v5.1.2 <repo>/packages/shared
-packages/shared test: 
+packages/shared test:
 packages/ui test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
 packages/ui test: exclude:  **/node_modules/**, **/.git/**
-packages/ui test: 
+packages/ui test:
 packages/ui test: Done
-packages/shared test: 
+packages/shared test:
 packages/shared test:  Test Files  12 passed (12)
 packages/shared test:       Tests  156 passed (156)
 packages/shared test:    Start at  12:46:03
 packages/shared test:    Duration  1.11s (import 64%, tests 22%, transform 10%, worker 4%)
-packages/shared test: 
+packages/shared test:
 packages/shared test: Done
 apps/web test$ vitest run
 apps/api test$ vitest run
-apps/api test: 
+apps/api test:
 apps/api test:  RUN  v5.1.2 <repo>/apps/api
-apps/api test: 
-apps/web test: 
+apps/api test:
+apps/web test:
 apps/web test:  RUN  v5.1.2 <repo>/apps/web
-apps/web test: 
-apps/web test: 
+apps/web test:
+apps/web test:
 apps/web test:  Test Files  23 passed (23)
 apps/web test:       Tests  164 passed (164)
 apps/web test:    Start at  12:46:05
 apps/web test:    Duration  19.80s (environment 35%, tests 34%, import 21%, setup 6%, transform 4%)
-apps/web test: 
+apps/web test:
 apps/web test: Environment  jsdom was created 23 times · 43.04s total, 35% of tracked time
 apps/web test:              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
 apps/web test:              learn more: https://vitest.dev/guide/improving-performance#test-environments
-apps/web test: 
+apps/web test:
 apps/web test: Done
-apps/api test: 
+apps/api test:
 apps/api test:  Test Files  24 passed | 14 skipped (38)
 apps/api test:       Tests  199 passed | 153 skipped (352)
 apps/api test:    Start at  12:46:05
 apps/api test:    Duration  51.14s (import 82%, tests 11%, transform 3%, worker 3%)
-apps/api test: 
+apps/api test:
 apps/api test:     Isolate  38 workers spawned · ~550ms startup each (spawn + environment, per file)
 apps/api test:              at least ~20.36s faster with isolate: false — reuses workers across files instead of one per file
-apps/api test: 
+apps/api test:
 apps/api test: Done
 $ pnpm -r build
 packages/shared build$ tsc -p tsconfig.build.json
@@ -90,8 +90,8 @@ apps/web build: dist/assets/martian-mono-latin-wght-normal-5W32yIyr.woff2       
 apps/web build: dist/assets/golos-text-latin-wght-normal-BS5oQT7X.woff2          37.91 kB
 apps/web build: dist/assets/index-BZBymkKD.css                                   41.87 kB │ gzip:  11.25 kB
 apps/web build: dist/assets/index-DucB8FZq.js                                   589.97 kB │ gzip: 166.61 kB
-apps/web build: 
-apps/web build: [plugin builtin:vite-reporter] 
+apps/web build:
+apps/web build: [plugin builtin:vite-reporter]
 apps/web build: (!) Some chunks are larger than 500 kB after minification. Consider:
 apps/web build: - Using dynamic import() to code-split the application
 apps/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting

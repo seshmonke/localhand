@@ -3,7 +3,7 @@
 Статус: accepted.
 Дата: 2026-11-28.
 Владелец: Local Hand.
-Связанные документы: `openspec/changes/07-delivery/`,
+Связанные документы: `openspec/changes/archive/2026-11-28-07-delivery/`,
 `docs/stack/integrations/cdek.md`,
 `docs/stack/adr/0003-orders.md`,
 `docs/stack/adr/0004-payments.md`,
@@ -18,8 +18,8 @@
 - Sprint 3 закрывает money-path: покупатель выбирает ПВЗ, видит цену и
   срок доставки, оплачивает заказ; продавец создаёт отправление СДЭК или
   вводит трек вручную; покупатель и продавец видят трек и статус.
-  Поведение — `openspec/changes/07-delivery/specs/delivery/spec.md`,
-  решение — `openspec/changes/07-delivery/design.md`.
+  Поведение — `openspec/changes/archive/2026-11-28-07-delivery/specs/delivery/spec.md`,
+  решение — `openspec/changes/archive/2026-11-28-07-delivery/design.md`.
 - СДЭК API v2 — внешний провайдер: OAuth client credentials, асинхронное
   создание заказа (`202`), вебхук `ORDER_STATUS`, не более двух подписок
   на обычного клиента, 200 RPS. Общая тестовая учётная запись уже имеет
@@ -215,8 +215,8 @@
 
 ## Источники
 
-- `openspec/changes/07-delivery/design.md`,
-  `openspec/changes/07-delivery/specs/delivery/spec.md`.
+- `openspec/changes/archive/2026-11-28-07-delivery/design.md`,
+  `openspec/changes/archive/2026-11-28-07-delivery/specs/delivery/spec.md`.
 - `apps/api/src/delivery/provider.ts`,
   `apps/api/src/delivery/cdek-provider.ts`,
   `apps/api/src/delivery/shipment.service.ts`,

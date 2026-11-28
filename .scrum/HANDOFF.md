@@ -4,7 +4,7 @@
 
 ## Состояние
 
-- `main`: `7161e52` + close PR этой сессии.
+- `main`: после merge close PR Sprint 3.
 - Sprint 1/2/3 закрыты. Sprint 3 review ACCEPT; S3-1 payments и
   S3-2 delivery приняты, S3-3/S3-4 перенесены в Sprint 4.
 - Changes `01`–`07` в архиве; `openspec/specs/` содержит

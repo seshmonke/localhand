@@ -73,4 +73,4 @@
   S3-2 delivery test contour (PR #47–#79); changes `06-payments`/
   `07-delivery` заархивированы; review ACCEPT. S3-3 order lifecycle и
   S3-4 hardening перенесены в Sprint 4; live YooKassa/CDEK, юрпакет,
-  production deploy/SMS — owner-гейты. Sprint 3.
+  production deploy/SMS — owner-гейты.

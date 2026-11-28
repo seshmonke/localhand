@@ -41,3 +41,19 @@
    web-suite + CI перед Sprint 4 close.
 5. **Процесс:** состояние писать в том же PR/цикле, где merge; evidence
    не раздувать, лимит 600 code+tests; TDD-first для нового кода.
+
+## Проверка прошлых действий
+
+- LCP lab/preview proxy v1 — принят и применён; field RUM — backlog до
+  публичного запуска.
+- Layout system — в main, e2e 320/768/1440 зелёные.
+- S3-1/S3-2 live smoke — остаётся owner-гейтом, не забыт в backlog.
+
+## Метрики
+
+- Merged PR: #63–#79 (S3-2 delivery + close), 17 PR.
+- Tests на close: shared 161, web 220, API 394; browser e2e 13;
+  axe 24×0; preview LCP 580/756/928 ms.
+- OpenSpec: changes `06`/`07` archived; 9 specs, 0 active changes.
+- Rework: P1 starvation/multi-shop/manual-guard/PII audit найдены
+  ревью и исправлены до merge; TDD-first долг 3.1 — Sprint 4.
