@@ -4,6 +4,7 @@ import {
   CheckoutResponseSchema,
   DeliveryResponseSchema,
   DeliveryTariffListResponseSchema,
+  SellerDeliveryResponseSchema,
 } from "@localhand/shared";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { SESSION_COOKIE_NAME } from "../auth/session.js";
@@ -498,5 +499,94 @@ describeWithDb("delivery shipment routes", () => {
       uuid: "00000000-0000-4000-8000-000000000000",
     });
     expect(unknown.statusCode).toBe(404);
+  });
+
+  it("returns the seller delivery with newest-first events and no internal fields", async () => {
+    const order = await createPaidOrder(1, 2, "events-shop");
+    const created = await request(
+      order.seller,
+      "POST",
+      `/seller/orders/${order.orderId}/delivery`,
+      { tariffCode: "136" },
+    );
+    expect(created.statusCode).toBe(201);
+    expect(Object.keys(created.json())).toEqual(["delivery"]);
+
+    const { getDeliveryProvider } = await import("./provider-factory.js");
+    const provider = getDeliveryProvider() as FakeDeliveryProvider;
+    provider.setShipmentStatus(`fake-${order.orderId}`, "DELIVERED", "Вручён");
+    expect(
+      (
+        await request(null, "POST", "/delivery/cdek/webhook", {
+          type: "ORDER_STATUS",
+          uuid: `fake-${order.orderId}`,
+          attributes: { number: `order-${order.orderId}` },
+        })
+      ).statusCode,
+    ).toBe(200);
+
+    const response = await request(order.seller, "GET", `/seller/orders/${order.orderId}/delivery`);
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["cache-control"]).toBe("no-store");
+    const body = SellerDeliveryResponseSchema.parse(response.json());
+    expect(body.delivery.providerOrderId).toBe(`fake-${order.orderId}`);
+    expect(body.events.map((event) => event.statusCode)).toEqual(["DELIVERED", "CREATED"]);
+    expect(body.events[0]?.statusName).toBe("Вручён");
+    for (const event of body.events) {
+      expect(Object.keys(event)).toEqual(["statusCode", "statusName", "occurredAt"]);
+    }
+    const raw = JSON.stringify(response.json());
+    expect(raw).not.toMatch(/payload_?hash/i);
+  });
+
+  it("returns an empty event list for a quoted delivery", async () => {
+    const order = await createPaidOrder(1, 2, "empty-events-shop");
+    const response = await request(order.seller, "GET", `/seller/orders/${order.orderId}/delivery`);
+    expect(response.statusCode).toBe(200);
+    const body = SellerDeliveryResponseSchema.parse(response.json());
+    expect(body.delivery.status).toBe("quoted");
+    expect(body.events).toEqual([]);
+  });
+
+  it("requires a session and keeps 404 for legacy orders without delivery", async () => {
+    const order = await createPaidOrder(1, 2, "events-authz-shop");
+    const anonymous = await request(null, "GET", `/seller/orders/${order.orderId}/delivery`);
+    expect(anonymous.statusCode).toBe(401);
+
+    await dbClient
+      .requirePool()
+      .query("DELETE FROM order_deliveries WHERE order_id = $1", [order.orderId]);
+    const legacy = await request(order.seller, "GET", `/seller/orders/${order.orderId}/delivery`);
+    expect(legacy.statusCode).toBe(404);
+  });
+
+  it("returns the last 50 events ordered by occurred_at and id descending", async () => {
+    const order = await createPaidOrder(1, 2, "events-limit-shop");
+    const delivery = await dbClient
+      .requirePool()
+      .query<{ id: number }>("SELECT id FROM order_deliveries WHERE order_id = $1", [
+        order.orderId,
+      ]);
+    const deliveryId = delivery.rows[0]?.id;
+    expect(deliveryId).toBeDefined();
+
+    await dbClient.requirePool().query(
+      `INSERT INTO delivery_events (delivery_id, status_code, status_name, occurred_at, payload_hash)
+       SELECT $1::int, 'EVT-' || g, 'Событие ' || g,
+              timestamptz '2026-01-01 00:00:00+00' + (g || ' seconds')::interval,
+              'hash-' || g
+       FROM generate_series(1, 55) AS g
+       UNION ALL
+       SELECT $1::int, 'EVT-SAME', 'Событие рядом', timestamptz '2026-01-01 00:00:55+00', 'hash-same'`,
+      [deliveryId],
+    );
+
+    const response = await request(order.seller, "GET", `/seller/orders/${order.orderId}/delivery`);
+    expect(response.statusCode).toBe(200);
+    const body = SellerDeliveryResponseSchema.parse(response.json());
+    expect(body.events).toHaveLength(50);
+    expect(body.events[0]?.statusCode).toBe("EVT-SAME");
+    expect(body.events[1]?.statusCode).toBe("EVT-55");
+    expect(body.events.at(-1)?.statusCode).toBe("EVT-7");
   });
 });

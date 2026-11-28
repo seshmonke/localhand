@@ -1,0 +1,33 @@
+# GREEN evidence: same suite after minimal implementation
+# date: 2026-11-28T09:33:58Z
+
+$ pnpm --filter @localhand/web exec vitest run src/components/orders/DeliverySummaryCard.test.tsx src/pages/OrderPage.test.tsx src/pages/OrdersPage.test.tsx src/pages/AdminOrdersPage.test.tsx
+
+
+ RUN  v5.1.2 <worktree>/apps/web
+
+
+ Test Files  4 passed (4)
+      Tests  45 passed (45)
+   Start at  12:33:42
+   Duration  3.33s (tests 33%, environment 33%, import 21%, setup 7%, transform 6%)
+
+exit=0
+
+$ pnpm --filter @localhand/web test
+
+$ vitest run
+
+ RUN  v5.1.2 <worktree>/apps/web
+
+
+ Test Files  23 passed (23)
+      Tests  164 passed (164)
+   Start at  12:33:46
+   Duration  11.90s (tests 37%, environment 33%, import 21%, setup 6%, transform 3%)
+
+Environment  jsdom was created 23 times · 24.66s total, 33% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+exit=0

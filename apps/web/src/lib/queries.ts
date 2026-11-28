@@ -27,6 +27,8 @@ export const sellerKeys = {
   orders: ["seller", "orders"] as const,
   order: (id: number) => ["seller", "orders", id] as const,
   orderPayment: (id: number) => ["seller", "orders", id, "payment"] as const,
+  delivery: (id: number) => ["seller", "orders", id, "delivery"] as const,
+  deliveryTariffs: (id: number) => ["seller", "orders", id, "delivery", "tariffs"] as const,
   paymentsAccount: ["seller", "payments", "account"] as const,
 };
 

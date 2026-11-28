@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import type { DeliveryStatus } from "@localhand/shared";
-import { and, eq, inArray, isNotNull, isNull, lt, lte, or } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, isNull, lt, lte, or } from "drizzle-orm";
 import type { FastifyBaseLogger } from "fastify";
 import { requireDb } from "../db/client.js";
 import { deliveryEvents, orderDeliveries } from "../db/schema.js";
@@ -13,6 +13,10 @@ export const DELIVERY_RECONCILE_AGE_MS = 2 * 60_000;
 const RECONCILE_BATCH_SIZE = 50;
 
 export type DeliveryReconcileLogger = Pick<FastifyBaseLogger, "info" | "warn" | "error">;
+
+type Database = ReturnType<typeof requireDb>;
+type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
+type TouchExecutor = Pick<Database, "update"> | Transaction;
 
 const STATUS_RANK: Record<DeliveryStatus, number> = {
   quoted: 0,
@@ -61,6 +65,7 @@ export async function runDeliveryReconcile(
         ),
       ),
     )
+    .orderBy(asc(orderDeliveries.updatedAt), asc(orderDeliveries.id))
     .limit(RECONCILE_BATCH_SIZE);
 
   for (const candidate of candidates) {
@@ -72,13 +77,14 @@ export async function runDeliveryReconcile(
     }
     try {
       await reconcileOne(provider, candidate, log, now);
-    } catch {
+    } catch (error) {
       log.warn(
         {
           code: "delivery_reconcile_failed",
           delivery_id: candidate.id,
           order_id: candidate.orderId,
           provider: provider.name,
+          err: error,
         },
         "delivery reconcile row failed",
       );
@@ -100,19 +106,22 @@ async function reconcileOne(
   let remote: ShipmentState | null;
   try {
     remote = await provider.getShipment(providerOrderId);
-  } catch {
+  } catch (error) {
     log.warn(
       {
         code: "delivery_reconcile_provider_error",
         delivery_id: candidate.id,
         order_id: candidate.orderId,
         provider: provider.name,
+        err: error,
       },
       "delivery reconcile status lookup failed",
     );
+    await touchAttempt(candidate.id, providerOrderId, now);
     return;
   }
   if (!remote) {
+    await touchAttempt(candidate.id, providerOrderId, now);
     return;
   }
 
@@ -120,6 +129,7 @@ async function reconcileOne(
   const parsed = remote.statusDateTime ? new Date(remote.statusDateTime) : null;
   const occurredAt = parsed && !Number.isNaN(parsed.getTime()) ? parsed : now;
 
+  let appliedStatus: string | null = null;
   await requireDb().transaction(async (tx) => {
     const [current] = await tx
       .select({
@@ -133,10 +143,11 @@ async function reconcileOne(
     if (!current || current.providerOrderId !== providerOrderId) {
       return;
     }
-    if (STATUS_RANK[status] < STATUS_RANK[current.status]) {
-      return;
-    }
-    if (current.lastStatusAt && current.lastStatusAt.getTime() > occurredAt.getTime()) {
+    if (
+      STATUS_RANK[status] < STATUS_RANK[current.status] ||
+      (current.lastStatusAt && current.lastStatusAt.getTime() > occurredAt.getTime())
+    ) {
+      await touchAttempt(candidate.id, providerOrderId, now, tx);
       return;
     }
 
@@ -157,10 +168,11 @@ async function reconcileOne(
       )
       .returning({ id: orderDeliveries.id });
     if (!applied) {
+      await touchAttempt(candidate.id, providerOrderId, now, tx);
       return;
     }
 
-    await tx
+    const [event] = await tx
       .insert(deliveryEvents)
       .values({
         deliveryId: candidate.id,
@@ -169,17 +181,37 @@ async function reconcileOne(
         occurredAt,
         payloadHash: statusEventHash(remote.statusCode, occurredAt),
       })
-      .onConflictDoNothing();
+      .onConflictDoNothing()
+      .returning({ id: deliveryEvents.id });
+    if (event) {
+      appliedStatus = remote.statusCode;
+    }
+  });
 
+  if (appliedStatus !== null) {
     log.info(
       {
         code: "delivery_reconcile_applied",
         delivery_id: candidate.id,
         order_id: candidate.orderId,
         provider: provider.name,
-        status: remote.statusCode,
+        status: appliedStatus,
       },
       "delivery reconcile applied the provider status",
     );
-  });
+  }
+}
+
+async function touchAttempt(
+  deliveryId: number,
+  providerOrderId: string,
+  now: Date,
+  executor: TouchExecutor = requireDb(),
+): Promise<void> {
+  await executor
+    .update(orderDeliveries)
+    .set({ updatedAt: now })
+    .where(
+      and(eq(orderDeliveries.id, deliveryId), eq(orderDeliveries.providerOrderId, providerOrderId)),
+    );
 }

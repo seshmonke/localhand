@@ -12,6 +12,13 @@ const DESCRIPTION_HINT = `Необязательно. До ${PRODUCT_DESCRIPTION
 const PRICE_HINT = "В рублях, например 1234,50. Ноль разрешён: товар будет бесплатным.";
 const IMAGE_HINT = "Необязательно. Прямая ссылка на изображение; загрузка файлов появится позже.";
 
+const DIMENSION_FIELDS = [
+  { field: "weightG", id: "product-weight-g", label: "Вес, г" },
+  { field: "lengthCm", id: "product-length-cm", label: "Длина, см" },
+  { field: "widthCm", id: "product-width-cm", label: "Ширина, см" },
+  { field: "heightCm", id: "product-height-cm", label: "Высота, см" },
+] as const;
+
 type ProductFormFieldsProps = {
   values: ProductFormValues;
   errors: ProductFieldErrors;
@@ -75,6 +82,34 @@ export function ProductFormFields({ values, errors, onChange }: ProductFormField
           className={cn(fieldControlClass, "font-mono tabular-nums")}
         />
       </FormField>
+
+      <fieldset className="border-[3px] border-ink/20 p-4">
+        <legend className="px-2 font-mono text-[11px] uppercase tracking-[0.18em]">
+          Габариты для доставки
+        </legend>
+        <p className="mt-1 text-sm leading-relaxed text-ink/70">
+          Необязательно. Без веса и габаритов покупатель не сможет оформить доставку СДЭК.
+        </p>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {DIMENSION_FIELDS.map(({ field, id, label }) => (
+            <FormField key={field} id={id} label={label} error={errors[field]}>
+              <input
+                id={id}
+                name={field}
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                value={values[field]}
+                onChange={(event) => onChange(field, event.target.value)}
+                aria-invalid={errors[field] ? true : undefined}
+                aria-describedby={fieldDescribedBy(id, undefined, errors[field])}
+                className={cn(fieldControlClass, "font-mono tabular-nums")}
+              />
+            </FormField>
+          ))}
+        </div>
+      </fieldset>
 
       <FormField
         id="product-image-url"

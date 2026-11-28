@@ -1,0 +1,32 @@
+# RED evidence: S3-2-D4a seller delivery events API + web client
+# date: 2026-11-28; base: 066b29b; tests written before production code.
+
+## 1. Contract: DeliveryEventSchema / SellerDeliveryResponseSchema absent
+$ pnpm --filter @localhand/shared exec vitest run src/contracts/delivery.test.ts
+
+ FAIL  src/contracts/delivery.test.ts > DeliveryEventSchema > accepts a status event...
+TypeError: Cannot read properties of undefined (reading 'parse')
+ FAIL  src/contracts/delivery.test.ts > DeliveryEventSchema > bounds status fields...
+ FAIL  src/contracts/delivery.test.ts > SellerDeliveryResponseSchema > combines...
+ FAIL  src/contracts/delivery.test.ts > SellerDeliveryResponseSchema > requires events...
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 13 passed (17)
+exit=1
+
+## 2. API DB: GET /seller/orders/:id/delivery returns snapshot without events
+$ DATABASE_URL_TEST=postgres://localhand:localhand@localhost:5433/localhand_s2_test \
+  JWT_SECRET=… OTP_SECRET=… pnpm --filter @localhand/api exec vitest run \
+  src/delivery/shipment.db.test.ts
+
+ FAIL  ... > returns the seller delivery with newest-first events...
+ZodError: [ { "expected": "array", "code": "invalid_type",
+  "path": [ "events" ], "message": "Invalid input: expected array, received undefined" } ]
+ FAIL  ... > returns an empty event list for a quoted delivery
+ FAIL  ... > returns the last 50 events ordered by occurred_at and id descending
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 13 passed (16)
+exit=1
+
+Note: authz/404/no-store guards were already green (regression guard).

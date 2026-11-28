@@ -1,4 +1,10 @@
-import { formatRubles, kopecks, type OrderPayment, type OrderSummary } from "@localhand/shared";
+import {
+  formatRubles,
+  kopecks,
+  type DeliverySnapshot,
+  type OrderPayment,
+  type OrderSummary,
+} from "@localhand/shared";
 import { cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -242,6 +248,42 @@ describe("AdminOrdersPage", () => {
 });
 
 describe("AdminOrderPage", () => {
+  it("shows the delivery snapshot to the seller", async () => {
+    const delivery: DeliverySnapshot = {
+      provider: "cdek",
+      status: "in_transit",
+      cityCode: 44,
+      cityName: "Москва",
+      pointCode: "MSK001",
+      pointAddress: "ул. Тестовая, 1, ПВЗ «Тестовый»",
+      recipientName: "Иван Тестов",
+      tariffCode: "136",
+      tariffName: "Посылка склад-ПВЗ",
+      priceKopecks: 45_000,
+      periodMin: 2,
+      periodMax: 5,
+      providerOrderId: "cdek-order-42",
+      providerNumber: "1234567890",
+      carrier: null,
+      trackNumber: "1234567890",
+      lastStatusCode: "IN_TRANSIT",
+      lastStatusAt: "2026-11-27T12:00:00.000Z",
+    };
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/orders/42": { body: { order: { ...firstOrder, delivery } } },
+      "GET /seller/orders/42/payment": { body: { payment: null } },
+    });
+
+    renderApp(["/admin/orders/42"]);
+
+    const deliverySection = await screen.findByRole("region", { name: "Доставка" });
+    expect(within(deliverySection).getByText("В пути")).toBeInTheDocument();
+    expect(within(deliverySection).getByText("ПВЗ получателя")).toBeInTheDocument();
+    expect(within(deliverySection).getByText("2–5 дн.")).toBeInTheDocument();
+    expect(within(deliverySection).getByText("Перевозчик · 1234567890")).toBeInTheDocument();
+  });
+
   it("shows the seller order details", async () => {
     installFetchMock({
       "GET /auth/me": { body: { user: demoUser } },

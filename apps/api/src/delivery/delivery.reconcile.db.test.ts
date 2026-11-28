@@ -25,8 +25,12 @@ function stubProvider() {
     name: "fake" as const,
     shipments,
     calls,
+    fail: new Set<string>(),
     async getShipment(id: string): Promise<ShipmentState | null> {
       calls.push(id);
+      if (provider.fail.has(id)) {
+        throw new Error("provider down");
+      }
       return shipments.get(id) ?? null;
     },
   };
@@ -147,7 +151,7 @@ describeWithDb("delivery reconcile core", () => {
     nextOrder = 0;
   });
 
-  it("applies delivered and track for a stale delivery without duplicating the event", async () => {
+  it("applies delivered and track for a stale delivery", async () => {
     const deliveryId = await fixture("created", "remote-1");
     const provider = stubProvider();
     provider.shipments.set(
@@ -163,9 +167,20 @@ describeWithDb("delivery reconcile core", () => {
       last_status_code: "DELIVERED",
     });
     expect(await eventCodes(deliveryId)).toEqual(["DELIVERED"]);
+  });
 
-    await reconcile.runDeliveryReconcile(provider, log, new Date(NOW.getTime() + 5 * 60_000));
-    expect(await eventCodes(deliveryId)).toEqual(["DELIVERED"]);
+  it("keeps one event when two passes return the same in-transit status", async () => {
+    const statusAt = new Date(NOW.getTime() - 3 * 60_000);
+    const deliveryId = await fixture("in_transit", "remote-same", statusAt);
+    const provider = stubProvider();
+    provider.shipments.set("remote-same", shipment("IN_TRANSIT", "В пути", statusAt));
+
+    await reconcile.runDeliveryReconcile(provider, log, NOW);
+    await reconcile.runDeliveryReconcile(provider, log, NOW);
+
+    expect(provider.calls).toEqual(["remote-same", "remote-same"]);
+    expect((await deliveryRow(deliveryId)).status).toBe("in_transit");
+    expect(await eventCodes(deliveryId)).toEqual(["IN_TRANSIT"]);
   });
 
   it("does not poll fresh, quoted or manual deliveries", async () => {
@@ -200,5 +215,66 @@ describeWithDb("delivery reconcile core", () => {
       last_status_code: "SOMETHING_NEW",
     });
     expect(await eventCodes(deliveryId)).toEqual(["SOMETHING_NEW"]);
+  });
+
+  it("does not starve the 51st delivery behind 50 failing rows", async () => {
+    const stale = new Date(NOW.getTime() - 5 * 60_000);
+    await pool().query(
+      `WITH buyers AS (
+         INSERT INTO users (phone)
+         SELECT '+7998' || lpad(i::text, 7, '0') FROM generate_series(1, 51) AS i
+         RETURNING id
+       ), seller AS (
+         INSERT INTO sellers (display_name) VALUES ('Иван Тестов') RETURNING id
+       ), shop AS (
+         INSERT INTO shops (seller_id, slug, name, status)
+         SELECT id, 'reconcile-starve-shop', 'Тестовый магазин', 'published' FROM seller RETURNING id
+       )
+       INSERT INTO orders (buyer_user_id, shop_id, status, total_kopecks, buyer_phone, client_checkout_id, comment)
+       SELECT buyers.id, shop.id, 'paid', 458000, '+7999', gen_random_uuid(), 'starvation'
+       FROM buyers, shop`,
+    );
+    const created = await pool().query<{ id: number; provider_order_id: string }>(
+      `INSERT INTO order_deliveries
+         (order_id, provider, status, city_code, city_name, point_code, point_address,
+          recipient_name, recipient_phone, price_kopecks, provider_order_id,
+          last_status_at, updated_at)
+       SELECT id, 'fake', 'in_transit', 137, 'Санкт-Петербург', 'SPB001', 'Невский 1',
+         'Иван Тестов', '0000000000', 38000,
+         'remote-' || (row_number() OVER (ORDER BY id))::text, $1, $1
+       FROM orders WHERE comment = 'starvation'
+       RETURNING id, provider_order_id`,
+      [stale],
+    );
+    const target = created.rows.find((row) => row.provider_order_id === "remote-51");
+    if (!target) {
+      throw new Error("the 51st delivery is missing");
+    }
+    const provider = stubProvider();
+    for (let i = 1; i <= 50; i += 1) {
+      provider.fail.add(`remote-${i}`);
+    }
+    provider.shipments.set(
+      "remote-51",
+      shipment("DELIVERED", "Вручён", new Date(NOW.getTime() - 60_000), "TRACK-51"),
+    );
+
+    await reconcile.runDeliveryReconcile(provider, log, NOW);
+    expect(provider.calls).toHaveLength(50);
+    expect(provider.calls).not.toContain("remote-51");
+    expect((await deliveryRow(target.id)).status).toBe("in_transit");
+
+    provider.calls.length = 0;
+    await reconcile.runDeliveryReconcile(provider, log, NOW);
+    expect(provider.calls).toHaveLength(50);
+    expect(provider.calls).toContain("remote-51");
+    expect((await deliveryRow(target.id)).status).toBe("delivered");
+    expect(await eventCodes(target.id)).toEqual(["DELIVERED"]);
+
+    provider.calls.length = 0;
+    await reconcile.runDeliveryReconcile(provider, log, new Date(NOW.getTime() + 60_000));
+    expect(provider.calls).toHaveLength(50);
+    expect(provider.calls).not.toContain("remote-51");
+    expect(await eventCodes(target.id)).toEqual(["DELIVERED"]);
   });
 });

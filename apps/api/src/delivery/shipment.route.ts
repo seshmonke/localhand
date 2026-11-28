@@ -5,6 +5,7 @@ import {
   DeliveryShipmentCreateSchema,
   DeliveryTariffListResponseSchema,
   OrderIdSchema,
+  SellerDeliveryResponseSchema,
 } from "@localhand/shared";
 import type { FastifyError } from "fastify";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
@@ -107,7 +108,7 @@ export const shipmentRoutes: FastifyPluginAsyncZod = async (app) => {
       schema: {
         params: OrderParamsSchema,
         response: {
-          200: DeliveryResponseSchema,
+          200: SellerDeliveryResponseSchema,
           401: ApiErrorSchema,
           404: ApiErrorSchema,
         },
@@ -115,11 +116,11 @@ export const shipmentRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (request, reply) => {
       const user = getSessionUser(request);
-      const delivery = await getSellerDelivery(user.id, request.params.id);
-      if (!delivery) {
+      const result = await getSellerDelivery(user.id, request.params.id);
+      if (!result) {
         return reply.code(404).send({ error: "not_found" });
       }
-      return { delivery };
+      return result;
     },
   );
 
