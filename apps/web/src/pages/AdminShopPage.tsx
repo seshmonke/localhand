@@ -103,6 +103,19 @@ const DELIVERY_SAVE_ERRORS: Record<string, string> = {
   delivery_unavailable: "Сервис доставки временно недоступен. Повторите попытку.",
 };
 
+function deliveryLookupErrorMessage(error: unknown, subject: "города" | "ПВЗ"): string {
+  if (error instanceof ApiError) {
+    if (error.status === 429 || error.code === "rate_limited") {
+      return "Слишком много запросов. Подождите минуту и повторите.";
+    }
+    if (error.status === 502 || error.code === "delivery_unavailable") {
+      return "Сервис доставки временно недоступен. Повторите попытку.";
+    }
+  }
+
+  return `Не удалось загрузить ${subject}. Проверьте соединение и повторите попытку.`;
+}
+
 export function AdminShopPage() {
   const shopQuery = useSellerShopQuery();
   const [announcement, setAnnouncement] = useState("");
@@ -420,6 +433,7 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
   );
   const [pointCode, setPointCode] = useState(shop.cdekShipmentPoint ?? "");
   const [deliveryError, setDeliveryError] = useState<string | null>(null);
+  const [pointInvalid, setPointInvalid] = useState(false);
 
   const normalizedCityQuery = cityQuery.trim();
   const [debouncedCityQuery, setDebouncedCityQuery] = useState("");
@@ -455,11 +469,41 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
   const points = pointsQuery.data?.points ?? [];
   const selectedCityMissing =
     selectedCity !== null && !cityResults.some((city) => city.code === selectedCity.code);
-  const nextPoint = selectedCity === null || pointCode.length === 0 ? null : pointCode;
+  const savedPointFallback =
+    selectedCity !== null &&
+    selectedCity.code === shop.cdekCityCode &&
+    pointCode.length > 0 &&
+    (pointsQuery.isPending || pointsQuery.isError);
+  const savedPointUnavailable =
+    selectedCity !== null &&
+    selectedCity.code === shop.cdekCityCode &&
+    pointCode.length > 0 &&
+    pointsQuery.isSuccess &&
+    !points.some((point) => point.code === pointCode);
+  const effectivePointCode = savedPointUnavailable ? "" : pointCode;
+  const nextPoint =
+    selectedCity === null || effectivePointCode.length === 0 ? null : effectivePointCode;
   const deliveryDirty =
     (selectedCity?.code ?? null) !== shop.cdekCityCode ||
     (selectedCity?.name ?? null) !== shop.cdekCityName ||
     nextPoint !== shop.cdekShipmentPoint;
+  const cityStatus =
+    normalizedCityQuery.length < 2
+      ? "Начните вводить город: минимум два символа."
+      : citiesQuery.isPending
+        ? "Ищем города…"
+        : citiesQuery.isError
+          ? ""
+          : cityResults.length === 0
+            ? "Города не найдены. Уточните запрос."
+            : `Найдено городов: ${cityResults.length}. Выберите город в списке.`;
+  const pointsStatus = pointsQuery.isPending
+    ? "Загружаем ПВЗ…"
+    : pointsQuery.isError
+      ? ""
+      : points.length === 0
+        ? "В этом городе нет ПВЗ. Выберите другой город."
+        : `Доступно ПВЗ: ${points.length}.`;
 
   const deliveryMutation = useMutation({
     mutationFn: (input: UpdateShop) => updateShop(input),
@@ -486,20 +530,24 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
 
   function handleSaveDelivery() {
     setDeliveryError(null);
+    setPointInvalid(false);
 
-    if (selectedCity !== null && pointCode.length === 0) {
+    if (selectedCity !== null && effectivePointCode.length === 0) {
       setDeliveryError("Выберите ПВЗ: без него заказы не смогут оформить доставку.");
+      setPointInvalid(true);
       document.getElementById("shop-delivery-point")?.focus();
       return;
     }
 
-    if (selectedCity === null) return;
-
-    deliveryMutation.mutate({
-      cdekCityCode: selectedCity.code,
-      cdekCityName: selectedCity.name,
-      cdekShipmentPoint: pointCode,
-    });
+    deliveryMutation.mutate(
+      selectedCity !== null
+        ? {
+            cdekCityCode: selectedCity.code,
+            cdekCityName: selectedCity.name,
+            cdekShipmentPoint: effectivePointCode,
+          }
+        : { cdekCityCode: null, cdekCityName: null, cdekShipmentPoint: null },
+    );
   }
 
   function handleSave(event: FormEvent<HTMLFormElement>) {
@@ -739,6 +787,7 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
                   }
                   setSelectedCity(city);
                   setDeliveryError(null);
+                  setPointInvalid(false);
                 }}
                 aria-describedby={fieldDescribedBy(
                   "shop-delivery-city",
@@ -747,7 +796,11 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
                 className={fieldControlClass}
                 disabled={blocked || (selectedCity === null && cityResults.length === 0)}
               >
-                {selectedCity === null ? <option value="">Выберите город</option> : null}
+                {selectedCity === null ? (
+                  <option value="">
+                    {citiesQuery.isFetching ? "Ищем города…" : "Выберите город"}
+                  </option>
+                ) : null}
                 {selectedCityMissing && selectedCity ? (
                   <option value={selectedCity.code}>{selectedCity.name}</option>
                 ) : null}
@@ -760,6 +813,25 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
             </FormField>
           </div>
 
+          <p aria-live="polite" className="mt-3 text-sm leading-relaxed text-ink/70">
+            {cityStatus}
+          </p>
+
+          {citiesQuery.isError ? (
+            <div role="alert" className="mt-3 border-[3px] border-ink p-3">
+              <p className="text-sm font-semibold">
+                {deliveryLookupErrorMessage(citiesQuery.error, "города")}
+              </p>
+              <button
+                type="button"
+                onClick={() => void citiesQuery.refetch()}
+                className="mt-2 inline-flex min-h-11 items-center font-mono text-[10px] uppercase underline decoration-[3px] underline-offset-4"
+              >
+                Повторить поиск городов
+              </button>
+            </div>
+          ) : null}
+
           {selectedCity ? (
             <div className="mt-6">
               <FormField
@@ -770,17 +842,23 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
                 <select
                   id="shop-delivery-point"
                   name="cdekShipmentPoint"
-                  value={pointCode}
+                  value={effectivePointCode}
                   onChange={(event) => {
                     setPointCode(event.target.value);
+                    setPointInvalid(false);
                     setDeliveryError(null);
                   }}
-                  aria-invalid={deliveryError ? true : undefined}
+                  aria-invalid={pointInvalid ? true : undefined}
                   aria-describedby="shop-delivery-point-hint shop-delivery-error"
                   className={fieldControlClass}
-                  disabled={blocked}
+                  disabled={blocked || pointsQuery.isPending || pointsQuery.isError}
                 >
-                  <option value="">Выберите ПВЗ</option>
+                  <option value="">
+                    {pointsQuery.isFetching ? "Загружаем ПВЗ…" : "Выберите ПВЗ"}
+                  </option>
+                  {savedPointFallback ? (
+                    <option value={pointCode}>Сохранённый ПВЗ {pointCode}</option>
+                  ) : null}
                   {points.map((point) => (
                     <option key={point.code} value={point.code}>
                       {point.name} — {point.address}
@@ -788,10 +866,38 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
                   ))}
                 </select>
               </FormField>
+
+              {savedPointUnavailable ? (
+                <p
+                  role="alert"
+                  className="mt-3 border-l-[3px] border-accent-orange pl-2 text-sm font-semibold leading-relaxed"
+                >
+                  Сохранённый ПВЗ {pointCode} больше не доступен. Выберите другой пункт выдачи.
+                </p>
+              ) : null}
+
+              <p aria-live="polite" className="mt-3 text-sm leading-relaxed text-ink/70">
+                {pointsStatus}
+              </p>
+
+              {pointsQuery.isError ? (
+                <div role="alert" className="mt-3 border-[3px] border-ink p-3">
+                  <p className="text-sm font-semibold">
+                    {deliveryLookupErrorMessage(pointsQuery.error, "ПВЗ")}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => void pointsQuery.refetch()}
+                    className="mt-2 inline-flex min-h-11 items-center font-mono text-[10px] uppercase underline decoration-[3px] underline-offset-4"
+                  >
+                    Повторить загрузку ПВЗ
+                  </button>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
-          <div className="mt-6">
+          <div className="mt-6 flex flex-col gap-4 sm:flex-row">
             <Button
               type="button"
               size="lg"
@@ -800,6 +906,22 @@ function ShopSettings({ shop, onAnnounce }: ShopFormProps & { shop: SellerShop }
             >
               {deliveryMutation.isPending ? "Сохраняем…" : "Сохранить доставку"}
             </Button>
+            {selectedCity ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                onClick={() => {
+                  setSelectedCity(null);
+                  setPointCode("");
+                  setPointInvalid(false);
+                  setDeliveryError(null);
+                }}
+                disabled={deliveryMutation.isPending || blocked}
+              >
+                Убрать город сдачи
+              </Button>
+            ) : null}
           </div>
 
           <div id="shop-delivery-error" className="mt-4">
