@@ -1,0 +1,9 @@
+
+ RUN  v5.1.2 ./apps/api
+
+
+ Test Files  3 passed (3)
+      Tests  23 passed (23)
+   Start at  15:45:23
+   Duration  2.52s (tests 78%, import 21%, worker 1%, transform 1%)
+

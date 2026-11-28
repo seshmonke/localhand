@@ -34,15 +34,15 @@ A foundation, B checkout/UI, C shipment/status/e2e.
 
 - [ ] 3.1 RED: shipment/webhook/manual/e2e tests падают.
 - [x] 3.2 `GET /seller/orders/:id/delivery/tariffs` (paid, CDEK from shop city/point to buyer PVZ).
-- [x] 3.3 `POST /seller/orders/:id/delivery {tariffCode}`: paid-only, tariff must equal paid quote/price, 409 `delivery_tariff_mismatch`, idempotent `number=order-{id}`, `shipment_point`, 202, provider id/number, `created`; reconcile before retry.
+- [x] 3.3 `POST /seller/orders/:id/delivery {tariffCode}`: paid-only, tariff must equal paid quote/price, 409 `delivery_tariff_mismatch`, idempotent `number=order-{id}`, `shipment_point`; CDEK `202` обрабатывается внутренне, локальный ответ `201`, provider id/number, `created`; reconcile before retry.
 - [x] 3.4 `PATCH /seller/orders/:id/delivery` manual carrier/track: only paid + no CDEK order; 409 if exists.
 - [x] 3.5 `GET /seller/orders/:id/delivery`, buyer `GET /orders/:id/delivery`; authz 404; no-store.
 - [x] 3.6 Webhook `/delivery/cdek/webhook`: verify GET (unknown 404, invalid 400, verify fail 502), idempotent events, mapping, 60/min, no-store; `ensureWebhook` one ORDER_STATUS.
 - [x] 3.7 Reconcile 60s: created/in_transit >2 мин; delivered; unknown raw; `quoted` не авто-`failed`; timeout/duplicate safety.
-- [ ] 3.8 Seller UI: tariffs/create/manual/events; buyer delivery card; states/a11y.
+- [x] 3.8 Seller UI: tariffs/create/manual/events; buyer delivery card; states/a11y.
 - [x] 3.9 API/DB e2e: quote→checkout→paid→create→webhook→track; manual after definitive fail; no duplicate; PII logs.
 - [ ] 3.10 Browser e2e PVZ→checkout→delivery/manual; axe 320/1440 light/dark; preview LCP<2500; bundle.
-- [ ] 3.11 ADR 0005, runbooks webhook/reconcile/manual/rollback; `openspec validate --all --strict`; evidence `S3-2-*`.
+- [x] 3.11 ADR 0005, runbooks webhook/reconcile/manual/rollback; `openspec validate --all --strict`; evidence `S3-2-3.11-*`.
 
 ## 4. Close
 

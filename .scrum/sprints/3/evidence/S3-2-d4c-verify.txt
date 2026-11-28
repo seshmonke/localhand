@@ -1,0 +1,11 @@
+# Command: pnpm verify
+# Exit: 0
+# Summary:
+#   typecheck, lint, format:check, check:public, test, build and openspec validate --all --strict passed.
+#   packages/shared: 160 passed; apps/web: 212 passed; apps/api: 209 passed | 166 skipped; packages/ui: no tests.
+  Public repo check: 563 tracked files, no secrets/PII patterns found
+  packages/shared test:       Tests  160 passed (160)
+  apps/web test:       Tests  212 passed (212)
+  apps/api test:       Tests  209 passed | 166 skipped (375)
+  ✓ change/07-delivery
+  Totals: 9 passed, 0 failed (9 items)

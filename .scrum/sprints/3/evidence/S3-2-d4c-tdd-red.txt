@@ -1,0 +1,29 @@
+# Command: pnpm --filter @localhand/web exec vitest run src/components/admin/AdminDeliveryCard.test.tsx
+# Setup: AdminDeliveryCard.tsx and lib/queries.ts reverted to main 775b783; the new tests stayed.
+# Exit: 1 (RED)
+# Summary: Test Files 1 failed (1) | Tests 12 failed | 18 passed (30)
+
+FAIL AdminDeliveryCard > offers manual entry for a paid order without a delivery snapshot
+  TestingLibraryElementError: Unable to find a label with the text of: Перевозчик
+FAIL AdminDeliveryCard > saves a manual carrier and track for a quoted delivery
+  TestingLibraryElementError: Unable to find a label with the text of: Перевозчик
+FAIL AdminDeliveryCard > saves a manual carrier and track for a legacy order without a delivery snapshot
+  TestingLibraryElementError: Unable to find an element with the text: /Город, ПВЗ и получатель не сохранены в заказе/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+FAIL AdminDeliveryCard > validates carrier and track on the client before sending
+  TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Сохранить трек"
+FAIL AdminDeliveryCard > handles a conflict when saving the manual track
+  TestingLibraryElementError: Unable to find a label with the text of: Перевозчик
+FAIL AdminDeliveryCard > handles a provider error when saving the manual track
+  TestingLibraryElementError: Unable to find a label with the text of: Перевозчик
+FAIL AdminDeliveryCard > handles a missing order when saving the manual track
+  TestingLibraryElementError: Unable to find a label with the text of: Перевозчик
+FAIL AdminDeliveryCard > handles an expired session when saving the manual track
+  TestingLibraryElementError: Unable to find a label with the text of: Перевозчик
+FAIL AdminDeliveryCard > retries a failed delivery request without losing the snapshot
+  TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Повторить"
+FAIL AdminDeliveryCard > does not send a manual track twice while the request is pending
+  TestingLibraryElementError: Unable to find a label with the text of: Перевозчик
+FAIL AdminDeliveryCard > polls a created delivery every 15 seconds, stops when delivered and cleans up
+  AssertionError: expected 1 to be 2 // Object.is equality
+FAIL AdminDeliveryCard > polls a in_transit delivery every 15 seconds, stops when delivered and cleans up
+  AssertionError: expected 1 to be 2 // Object.is equality

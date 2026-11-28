@@ -1,0 +1,15 @@
+# Command: pnpm --filter @localhand/web exec vitest run src/components/admin/AdminDeliveryCard.test.tsx src/components/orders/DeliverySummaryCard.test.tsx
+# Setup: AdminDeliveryCard.tsx, lib/queries.ts and orders/DeliverySummaryCard.tsx reverted to 7bca728; the new tests stayed.
+# Exit: 1 (RED)
+# Summary: Test Files 2 failed (2) | Tests 5 failed | 37 passed (42)
+
+FAIL AdminDeliveryCard > validates carrier and track on the client before sending
+  Error: expect(element).toHaveFocus()
+FAIL AdminDeliveryCard > retries a delivery request after a network error
+  TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Повторить"
+FAIL AdminDeliveryCard > stops polling when the delivery request fails with 401
+  AssertionError: expected 4 to be 2 // Object.is equality
+FAIL AdminDeliveryCard > stops polling when the delivery request fails with 404
+  AssertionError: expected 4 to be 2 // Object.is equality
+FAIL DeliverySummaryCard > hides placeholder city, PVZ and recipient rows for a legacy manual snapshot
+  TestingLibraryElementError: Unable to find an element with the text: /Город, ПВЗ и получатель не сохранены/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
