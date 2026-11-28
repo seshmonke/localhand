@@ -148,6 +148,9 @@
 | D11 | Неизвестный статус теряется | Новый код CDEK | Сохраняем raw `status_code`, ставим `in_transit`, безопасный лог | Неверная интерпретация; ручная проверка |
 | D12 | PII в manual-треке | Произвольный carrier/track | Zod длина/формат, без логов значения, только seller own order | Нет |
 | D13 | Расхождение `orders.delivery_kopecks` и `order_deliveries.price_kopecks` | Баг/ручная правка | Один источник — `order_deliveries.price_kopecks` на момент checkout; snapshot в заказе; invariant-тест `total = items + delivery`; manual цену не меняет | Исторические заказы с delivery 0 — допустимо |
+| D14 | История доставки раскрывает внутренние данные | Seller GET возвращает `payloadHash`, raw payload, ПДн или чужие события | `GET /seller/orders/:id/delivery` отдаёт только `statusCode/statusName/occurredAt`, newest-first, не более 50; `payloadHash` остаётся в БД; seller authz 404; `no-store`; контрактные/DB-тесты | Продавец видит ПДн своего заказа по дизайну (snapshot доставки); удаление — по retention |
+| D15 | Логи reconcile содержат ПДн | Ошибка провайдера/строка с именем, телефоном, адресом | Логи только `delivery_id/order_id/provider/status/code`; без recipient/PVZ/raw payload; `err` без тела ответа CDEK; runtime-тест redaction | Ошибка адаптера может содержать технические детали; код/статус без PII |
+| D16 | Дубли/конфликт подписки при нескольких инстансах | Два API-процесса одновременно вызывают `ensureOrderStatusWebhook` | Идемпотентность по `ORDER_STATUS + URL`; максимум две подписки; при двух чужих — ops-ошибка, третья не создаётся; v1 — один API-процесс | Гонка холодного старта может создать вторую подписку на тот же URL; распределённая блокировка — P3 |
 
 ### Проверки (где доказано)
 
@@ -158,6 +161,22 @@
 - `apps/api/src/delivery/*.flow.db.test.ts`: paid-гейт, дубль create,
   webhook spoof/unknown/replay, reconcile `created|in_transit`, manual
   после терминального отказа, PII redaction, no-store, authz 404.
+- `apps/api/src/delivery/shipment.db.test.ts`: seller events newest-first,
+  лимит 50, пустая история, authz 404, no-store, отсутствие
+  `payload_hash` в ответе.
+- `packages/shared/src/contracts/delivery.test.ts`: `DeliveryEvent` без
+  `payloadHash`, граница 50/51 через `SELLER_DELIVERY_EVENTS_MAX`,
+  `SellerDeliveryResponseSchema`.
+- `apps/api/src/delivery/delivery.reconcile.edge.db.test.ts`: PII не
+  попадает в логи reconcile (`Иван Тестов`, телефон, адрес), touch при
+  ошибке/`null`, прерывание по abort.
+- `apps/api/src/delivery/delivery.reconcile.db.test.ts`: starvation
+  51-й доставки за 50 падающими, batch/touch.
+- `apps/api/src/delivery/cdek-provider.test.ts`: существующая подписка —
+  no-op, одна чужая — вторая, две чужие — `DeliveryWebhookConflictError`
+  без третьей.
+- `apps/api/src/delivery/delivery.reconcile.scheduler.test.ts`: один
+  таймер, нет параллельного прохода, остановка на `onClose`.
 - `apps/web/e2e/delivery-*.spec.ts`: PVZ checkout → paid → create/manual →
   track; axe light/dark 320/1440.
 - Property: `total = items + delivery`, quote TTL, event idempotency,

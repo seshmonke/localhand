@@ -1,0 +1,26 @@
+# S3-2-3.11 summary: docs/spec/ADR/runbooks before archive
+
+Status: DONE for 3.11; change `07-delivery` not archived. No merge.
+
+Branch: task/S3-2-docs-archive-prep, base main @ 7bca728.
+Files: ADR 0005; runbooks delivery-cdek-webhook/reconcile/manual-track;
+delivery-rollback updated; delivery + seller-shop spec deltas; tasks 3.11;
+threat model D14-D16; contract events cap; contract/web RED evidence.
+
+Checks:
+- Contract RED: 18 tests, 1 failed (51 events accepted), exit=1.
+- Contract GREEN: 18/18, exit=0.
+- Web RED (D4a reproduction on base 066b29b + D4a tests):
+  6 failed, exit=1.
+- `openspec validate --all --strict`: 9 passed, 0 failed, exit=0.
+- `pnpm verify`: shared 161, web 212, api 375, build ok, exit=0.
+
+Tasks:
+- 3.11 [x].
+- 3.6/3.7/3.8 [x] on main.
+- 3.9 still [ ] on main: e2e branch task/S3-2-e2e-api has 3.9 [x]
+  but is not merged. Needed before archive 4.1.
+- 3.10 browser e2e and 4.1 archive remain open by brief.
+
+Blockers: none for this PR. Owner dependencies remain: CDEK contract,
+legal package, DELIVERY_LIVE_PII=true. Archive waits 3.9/3.10 merge.

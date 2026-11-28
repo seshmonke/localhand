@@ -12,6 +12,7 @@ export const DELIVERY_CARRIER_MAX_LENGTH = 80;
 export const DELIVERY_TRACK_NUMBER_MAX_LENGTH = 64;
 export const DELIVERY_EVENT_STATUS_CODE_MAX_LENGTH = 64;
 export const DELIVERY_EVENT_STATUS_NAME_MAX_LENGTH = 160;
+export const SELLER_DELIVERY_EVENTS_MAX = 50;
 export const DELIVERY_QUOTE_TOKEN_MAX_LENGTH = 32_768;
 export const DELIVERY_QUOTE_TTL_SECONDS = 600;
 
@@ -148,7 +149,7 @@ export const DeliveryEventSchema = z.object({
 
 export const SellerDeliveryResponseSchema = z.object({
   delivery: DeliverySnapshotSchema,
-  events: z.array(DeliveryEventSchema),
+  events: z.array(DeliveryEventSchema).max(SELLER_DELIVERY_EVENTS_MAX),
 });
 
 export const DeliveryShipmentCreateSchema = z.object({

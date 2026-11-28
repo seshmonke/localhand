@@ -110,8 +110,15 @@
 
 - **WHEN** продавец создаёт отправление с оплаченным `tariffCode`
 - **THEN** система вызывает CDEK с `number=order-{id}` и
-  `shipment_point`, сохраняет provider order id/номер, ставит delivery
-  `created`, а `202` не считает успешным заказом
+  `shipment_point`, сохраняет provider order id/номер и ставит delivery
+  `created`
+
+#### Scenario: Локальный ответ на создание
+
+- **WHEN** CDEK принимает `POST /v2/orders` асинхронно и отвечает `202`
+- **THEN** API обрабатывает `202` внутри, сохраняет provider id/номер и
+  отвечает продавцу `201` со snapshot; `202` — ответ провайдера, а не
+  статус локального API
 
 #### Scenario: Другой тариф
 
@@ -205,6 +212,21 @@
 - **THEN** оно проверяет одну подписку `ORDER_STATUS` на
   `/delivery/cdek/webhook`; при наличии двух чужих подписок не создаёт
   третью и пишет ops-ошибку
+
+#### Scenario: Повторный старт и один инстанс
+
+- **WHEN** API стартует повторно и подписка `ORDER_STATUS` на тот же URL
+  уже существует
+- **THEN** система не создаёт вторую подписку; v1 работает с одним
+  API-процессом, распределённой блокировки подписки нет
+
+#### Scenario: История событий продавцу
+
+- **WHEN** продавец запрашивает `GET /seller/orders/:id/delivery`
+- **THEN** ответ `{delivery, events}` содержит не более 50 событий в
+  порядке `occurred_at DESC, id DESC`, только `statusCode`,
+  `statusName` и `occurredAt`; `payloadHash`, raw payload и чужие ПДн
+  не возвращаются
 
 #### Scenario: Потерянный вебхук
 

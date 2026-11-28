@@ -1,0 +1,32 @@
+# RED evidence: S3-2-3.11 seller event timeline cap
+# date: 2026-11-28; test written before the contract cap.
+
+$ pnpm --filter @localhand/shared exec vitest run src/contracts/delivery.test.ts
+
+ RUN  v5.1.2 packages/shared
+
+ ❯ src/contracts/delivery.test.ts (18 tests | 1 failed) 36ms
+   ❯ SellerDeliveryResponseSchema (3)
+     × caps the event timeline at 50 entries 10ms
+
+ FAIL  src/contracts/delivery.test.ts > SellerDeliveryResponseSchema > caps the event timeline at 50 entries
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/contracts/delivery.test.ts:332:7
+    330|       SellerDeliveryResponseSchema.safeParse({ delivery: sellerSnapsho…
+    331|         .success,
+    332|     ).toBe(false);
+       |       ^
+    333|   });
+    334| });
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 passed (18)
+
+exit=1

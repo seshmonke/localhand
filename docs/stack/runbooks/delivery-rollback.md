@@ -4,6 +4,11 @@
 остановка API, второй человек/владелец на подтверждение. Не запускать на
 проде без инцидента.
 
+Связанные документы: `docs/stack/adr/0005-delivery.md`,
+`docs/stack/runbooks/delivery-cdek-webhook.md`,
+`docs/stack/runbooks/delivery-reconcile.md`,
+`docs/stack/runbooks/delivery-manual-track.md`.
+
 ## Когда применять
 
 - Миграция `0006` сломала checkout/заказы и forward-fix не успевает.
@@ -22,15 +27,23 @@ DELIVERY_PROVIDER=
 - Checkout без доставки вернёт `delivery_unavailable`; старые заказы и
   snapshots остаются.
 - Вебхук можно оставить: он проверяет локальный заказ и ничего не
-  создаёт.
-- Подписку CDEK удалить через `GET /v2/webhooks` →
-  `DELETE /v2/webhooks/{uuid}`; не трогать чужие подписки тестового
-  аккаунта.
+  создаёт. Если провайдер выключен, endpoint отвечает `502`.
+- Подписку CDEK удалять только после выключения провайдера: при
+  следующем старте с CDEK `ensureOrderStatusWebhook` создаст её снова.
+  `GET /v2/webhooks` → `DELETE /v2/webhooks/{uuid}`; CDEK допускает две
+  подписки, удалять только совпадающую с текущим `CDEK_WEBHOOK_URL` или
+  подтверждённо чужую/устаревшую. Детали — `delivery-cdek-webhook.md`.
+  Не трогать чужие подписки тестового аккаунта.
 
 ## 2. Остановить фоновые процессы
 
 1. Остановить API (reconcile и вебхуки не должны писать в БД).
-2. Удалить/остановить cron reconcile, если вынесен.
+   Reconcile в v1 живёт в процессе API; отдельного cron нет. Дождаться
+   graceful shutdown: таймер останавливается, текущий проход
+   прерывается между строками.
+2. Проверить, что второй API-инстанс не запущен: reconcile и подписка
+   не имеют распределённой блокировки (`delivery-reconcile.md`,
+   `delivery-cdek-webhook.md`).
 3. Зафиксировать время остановки.
 
 ## 3. Backup и выгрузка
