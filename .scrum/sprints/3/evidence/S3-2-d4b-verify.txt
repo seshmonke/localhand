@@ -1,0 +1,18 @@
+# S3-2-D4b verify
+
+Date: 2026-11-28
+Command: pnpm verify
+Exit: 0
+
+Steps: typecheck → lint → format:check → check:public → test → build → openspec.
+package results:
+  shared: 12 files, 160 tests passed
+  web:    25 files, 185 tests passed
+  api:    24 files passed / 15 skipped; 199 tests passed / 162 skipped
+  openspec validate --all --strict: 9 passed, 0 failed
+  build: web + api done
+  check:public: passed
+
+Targeted before full gate:
+  pnpm --filter @localhand/web test -- AdminDeliveryCard AdminOrdersPage
+  exit 0, 25 files, 185 tests passed.

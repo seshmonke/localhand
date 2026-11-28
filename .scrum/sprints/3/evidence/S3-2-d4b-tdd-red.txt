@@ -1,0 +1,23 @@
+# S3-2-D4b RED — seller shipment UI
+
+Date: 2026-11-28
+Branch: task/S3-2-d4b-seller-shipment-ui
+Command: pnpm --filter @localhand/web test -- AdminDeliveryCard
+Exit: 1
+Setup: AdminDeliveryCard was a stub returning null (no implementation).
+
+FAIL src/pages/AdminOrdersPage.test.tsx > AdminOrderPage > shows the delivery snapshot to the seller
+  TestingLibraryElementError: Unable to find role="region" and name "Доставка"
+FAIL src/components/admin/AdminDeliveryCard.test.tsx > creates a shipment with the paid tariff only and shows track and events
+  TestingLibraryElementError: Unable to find role="region" and name "Доставка"
+FAIL AdminDeliveryCard > explains a tariff mismatch and keeps the quoted snapshot
+FAIL AdminDeliveryCard > reports a provider outage and allows a retry
+FAIL AdminDeliveryCard > shows an expired session for a 401 without hiding the snapshot
+FAIL AdminDeliveryCard > shows a not-found message for a 404 without hiding the snapshot
+FAIL AdminDeliveryCard > shows the empty state and no actions for a paid order without delivery
+FAIL AdminDeliveryCard > shows the after-payment state and no actions for an unpaid order
+FAIL AdminDeliveryCard > renders the newest event first and refreshes the delivery on demand
+FAIL AdminDeliveryCard > renders a single empty-history line and never exposes raw ids or codes
+
+Test Files 2 failed (2)
+Tests 10 failed (10)

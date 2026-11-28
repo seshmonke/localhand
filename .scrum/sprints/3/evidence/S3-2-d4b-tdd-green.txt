@@ -1,0 +1,13 @@
+# S3-2-D4b GREEN — seller shipment UI
+
+Date: 2026-11-28
+Command: pnpm --filter @localhand/web test -- AdminDeliveryCard AdminOrdersPage
+Exit: 0
+Test Files 25 passed (25)
+Tests 185 passed (185)
+
+Targeted:
+  AdminDeliveryCard.test.tsx — 9 passed
+  AdminOrdersPage.test.tsx — 13 passed (includes seller snapshot regression)
+
+Full gate: pnpm verify — exit 0 (see S3-2-d4b-verify.txt)
