@@ -276,6 +276,9 @@ importers:
       '@fontsource-variable/martian-mono':
         specifier: ^5.3.0
         version: 5.3.0
+      '@localhand/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@localhand/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -303,6 +306,9 @@ importers:
       react-dom:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
+      react-i18next:
+        specifier: ^18.0.3
+        version: 18.0.3(@types/react@19.3.3)(i18next@27.2.10(typescript@7.0.2))(react@19.3.1)(typescript@7.0.2)
       react-router:
         specifier: ^8.5.3
         version: 8.5.3(@types/react-dom@19.3.0(@types/react@19.3.3))(@types/react@19.3.3)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -361,6 +367,19 @@ importers:
       vite:
         specifier: ^8.4.0
         version: 8.4.0(@types/node@26.6.11)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
+      vitest:
+        specifier: ^5.1.2
+        version: 5.1.2(@opentelemetry/api@1.10.0)(@types/node@26.6.11)(jsdom@31.0.1)(vite@8.4.0(@types/node@26.6.11)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+
+  packages/i18n:
+    dependencies:
+      i18next:
+        specifier: ^27.2.10
+        version: 27.2.10(typescript@7.0.2)
+    devDependencies:
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
       vitest:
         specifier: ^5.1.2
         version: 5.1.2(@opentelemetry/api@1.10.0)(@types/node@26.6.11)(jsdom@31.0.1)(vite@8.4.0(@types/node@26.6.11)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
@@ -2486,6 +2505,18 @@ packages:
     resolution: {integrity: sha512-UikN5yr7xsCDAq87Or5or0PAlD3HJJOKVzM05az588WnpDJ4Ux7a2A53Qi6gofGg2/EtvF/H4hCi/TXfCW4Y6w==}
     engines: {node: ^22.13.0 || >=24.0.0}
 
+  html-parse-stringify@4.0.1:
+    resolution: {integrity: sha512-0zHsZJrK7S3K2aucXWL6ycoYJ/iNtIcFHC/nYQgFklPtrv5LpJctIiSCroWZWeuoXvuyFdzp6KzjJQ+OT5MfFw==}
+
+  i18next@27.2.10:
+    resolution: {integrity: sha512-v2hQPOZ4yvfhK5CNyXevVjneTX85rDxgTKSV96tftmp89yrF1MEFIDV0i6jYKEnzR3lnWDe62HktDFy6624/UQ==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      typescript: ^5 || ^6 || ^7
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   indent-string@4.0.0:
     resolution: {integrity: sha512-EdDDZu4A2OyIK7Lr/2zG+w5jmbuk1DVBnEwREQvBzspBJkCEbRa8GxU1lghYcaGJCnRWibjDXlq779X1/y5xwg==}
     engines: {node: '>=8'}
@@ -2918,6 +2949,20 @@ packages:
     resolution: {integrity: sha512-Y0bARz53lhEC1NMCASs0/j+faB/zqt3R8hpvg1e8+61ZVJ4UL0UdC4cBbXfZMcIuhrfgeILTLe+ZeBCavQPtKQ==}
     peerDependencies:
       react: ^19.3.1
+
+  react-i18next@18.0.3:
+    resolution: {integrity: sha512-S84rtVuaKuiRtoCOspbGEaDlFjka+KvK/A5YCOr4LQ41XF3iJOrJ5rqQTD/jJHFVUf6X1i4ZMN5PGGgpz8NN6g==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      '@types/react': '*'
+      i18next: '>= 27.0.1'
+      react: '>= 18.0.0'
+      typescript: ^5 || ^6 || ^7
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      typescript:
+        optional: true
 
   react-is@17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
@@ -4916,6 +4961,12 @@ snapshots:
     transitivePeerDependencies:
       - '@noble/hashes'
 
+  html-parse-stringify@4.0.1: {}
+
+  i18next@27.2.10(typescript@7.0.2):
+    optionalDependencies:
+      typescript: 7.0.2
+
   indent-string@4.0.0: {}
 
   inherits@2.0.4: {}
@@ -5346,6 +5397,15 @@ snapshots:
     dependencies:
       react: 19.3.1
       scheduler: 0.28.0
+
+  react-i18next@18.0.3(@types/react@19.3.3)(i18next@27.2.10(typescript@7.0.2))(react@19.3.1)(typescript@7.0.2):
+    dependencies:
+      html-parse-stringify: 4.0.1
+      i18next: 27.2.10(typescript@7.0.2)
+      react: 19.3.1
+    optionalDependencies:
+      '@types/react': 19.3.3
+      typescript: 7.0.2
 
   react-is@17.0.2: {}
 

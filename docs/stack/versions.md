@@ -25,6 +25,8 @@
 | @base-ui/react | 1.9.0 |
 | react-router | 8.5.3 |
 | @tanstack/react-query | 5.108.4 |
+| i18next | 27.2.10 |
+| react-i18next | 18.0.3 |
 | zod | 4.6.7 |
 | lucide-react | 1.81.0 |
 | motion | 14.14.0 |

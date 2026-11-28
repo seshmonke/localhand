@@ -12,11 +12,19 @@ const apiProxy = {
   },
 };
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // Dev reads the catalog from source so ru.ts edits hot-reload; builds use dist.
+      ...(command === "serve"
+        ? {
+            "@localhand/i18n": fileURLToPath(
+              new URL("../../packages/i18n/src/index.ts", import.meta.url),
+            ),
+          }
+        : {}),
     },
   },
   server: {
@@ -36,4 +44,4 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
   },
-});
+}));
