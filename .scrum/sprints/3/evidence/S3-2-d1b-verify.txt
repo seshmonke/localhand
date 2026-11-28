@@ -1,0 +1,20 @@
+# Command: pnpm verify (disposable local test DB)
+# Exit: 0
+packages/shared typecheck: Done
+packages/ui typecheck: Done
+apps/web typecheck: Done
+apps/api typecheck: Done
+$ oxlint .
+All matched files use Prettier code style!
+Public repo check: 540 tracked files, no secrets/PII patterns found
+packages/shared test:  Test Files  12 passed (12)
+packages/shared test:       Tests  156 passed (156)
+apps/web test:  Test Files  23 passed (23)
+apps/web test:       Tests  170 passed (170)
+apps/api test:  Test Files  38 passed (38)
+apps/api test:       Tests  352 passed (352)
+packages/shared build: Done
+packages/ui build: Done
+apps/web build: Done
+apps/api build: Done
+Totals: 9 passed, 0 failed (9 items)

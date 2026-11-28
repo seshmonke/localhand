@@ -1,4 +1,4 @@
-import { cleanup, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { orderKeys } from "../lib/queries.js";
@@ -21,9 +21,35 @@ const draftShop = {
   status: "draft" as const,
 };
 
+const shippingShop = {
+  ...draftShop,
+  cdekCityCode: 44,
+  cdekCityName: "Москва",
+  cdekShipmentPoint: "MSK001",
+};
+
+const moscowCity = { code: 44, name: "Москва" };
+const spbCity = { code: 137, name: "Санкт-Петербург" };
+const kazanCity = { code: 447, name: "Казань" };
+const moscowPoint = {
+  code: "MSK001",
+  name: "ПВЗ Тверская",
+  address: "ул. Тестовая, 1",
+  cityCode: 44,
+  cityName: "Москва",
+};
+const kazanPoint = {
+  code: "KZN001",
+  name: "ПВЗ Баумана",
+  address: "ул. Тестовая, 2",
+  cityCode: 447,
+  cityName: "Казань",
+};
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
 
 describe("admin guard", () => {
@@ -170,5 +196,138 @@ describe("AdminShopPage", () => {
     expect(await screen.findByRole("heading", { level: 1, name: "Вход" })).toBeInTheDocument();
     expect(loggedIn).toBe(false);
     expect(client.getQueryCache().findAll({ queryKey: orderKeys.all })).toHaveLength(0);
+  });
+
+  it("shows the saved shipping city and PVZ and saves a new origin", async () => {
+    let current = { ...shippingShop };
+    let patchBody: unknown;
+
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": () => ({ body: { shop: current } }),
+      "GET /seller/payments/account": { body: { account: null } },
+      "GET /delivery/cities": ({ query }) => ({
+        body: { cities: query.query === "Казань" ? [kazanCity] : [moscowCity] },
+      }),
+      "GET /delivery/points": ({ query }) => ({
+        body: { points: query.cityCode === "447" ? [kazanPoint] : [moscowPoint] },
+      }),
+      "PATCH /seller/shop": ({ body }) => {
+        patchBody = body;
+        current = { ...current, ...(body as Partial<typeof current>) };
+        return { body: { shop: current } };
+      },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/shop"]);
+
+    await screen.findByRole("heading", { level: 2, name: "Настройки магазина" });
+    const citySelect = await screen.findByLabelText("Город сдачи");
+    expect(citySelect).toHaveValue("44");
+    const pointSelect = await screen.findByLabelText("Пункт выдачи");
+    await waitFor(() => expect(pointSelect).toHaveValue("MSK001"));
+
+    await browser.type(screen.getByLabelText("Поиск города"), "Казань");
+    await waitFor(() => expect(screen.getByRole("option", { name: "Казань" })).toBeInTheDocument());
+
+    await browser.selectOptions(citySelect, "447");
+    expect(screen.getByLabelText("Пункт выдачи")).toHaveValue("");
+
+    const kazanPointOption = await screen.findByRole("option", { name: /ПВЗ Баумана/ });
+    await browser.selectOptions(screen.getByLabelText("Пункт выдачи"), kazanPointOption);
+    await browser.click(screen.getByRole("button", { name: "Сохранить доставку" }));
+
+    await waitFor(() =>
+      expect(patchBody).toEqual({
+        cdekCityCode: 447,
+        cdekCityName: "Казань",
+        cdekShipmentPoint: "KZN001",
+      }),
+    );
+    expect(await screen.findByText("Доставка сохранена.")).toBeInTheDocument();
+  });
+
+  it("requires a PVZ and reports a save error", async () => {
+    installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: draftShop } },
+      "GET /seller/payments/account": { body: { account: null } },
+      "GET /delivery/cities": { body: { cities: [moscowCity] } },
+      "GET /delivery/points": { body: { points: [moscowPoint] } },
+      "PATCH /seller/shop": { status: 502, body: { error: "delivery_unavailable" } },
+    });
+
+    const browser = userEvent.setup();
+    renderApp(["/admin/shop"]);
+
+    await screen.findByRole("heading", { level: 2, name: "Настройки магазина" });
+    expect(screen.getByText(/Город сдачи не настроен/)).toBeInTheDocument();
+
+    await browser.type(screen.getByLabelText("Поиск города"), "Москва");
+    await screen.findByRole("option", { name: "Москва" });
+    await browser.selectOptions(screen.getByLabelText("Город сдачи"), "44");
+    await browser.click(screen.getByRole("button", { name: "Сохранить доставку" }));
+
+    expect(
+      await screen.findByText("Выберите ПВЗ: без него заказы не смогут оформить доставку."),
+    ).toBeInTheDocument();
+
+    const pointOption = await screen.findByRole("option", { name: /ПВЗ Тверская/ });
+    await browser.selectOptions(screen.getByLabelText("Пункт выдачи"), pointOption);
+    await browser.click(screen.getByRole("button", { name: "Сохранить доставку" }));
+
+    expect(
+      await screen.findByText("Сервис доставки временно недоступен. Повторите попытку."),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Город сдачи")).toHaveValue("44");
+    expect(screen.getByLabelText("Пункт выдачи")).toHaveValue("MSK001");
+  });
+
+  it("debounces city search and still loads PVZ after a city change", async () => {
+    const fetchMock = installFetchMock({
+      "GET /auth/me": { body: { user: demoUser } },
+      "GET /seller/shop": { body: { shop: draftShop } },
+      "GET /seller/payments/account": { body: { account: null } },
+      "GET /delivery/cities": { body: { cities: [spbCity] } },
+      "GET /delivery/points": { body: { points: [] } },
+    });
+    const cityCalls = () =>
+      fetchMock.mock.calls
+        .map(([input]) => String(input))
+        .filter((url) => url.includes("/api/delivery/cities"));
+
+    renderApp(["/admin/shop"]);
+    await screen.findByRole("heading", { level: 2, name: "Настройки магазина" });
+
+    vi.useFakeTimers();
+    const search = screen.getByLabelText<HTMLInputElement>("Поиск города");
+    for (const char of "Санкт-Петербург") {
+      fireEvent.change(search, { target: { value: search.value + char } });
+    }
+    expect(cityCalls()).toHaveLength(0);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
+    expect(cityCalls()).toHaveLength(1);
+    const [calledUrl] = cityCalls();
+    expect(new URL(calledUrl ?? "", "http://localhost").searchParams.get("query")).toBe(
+      "Санкт-Петербург",
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(screen.getByRole("option", { name: "Санкт-Петербург" })).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Город сдачи"), { target: { value: "137" } });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(
+      fetchMock.mock.calls.some(([input]) =>
+        String(input).includes("/api/delivery/points?cityCode=137"),
+      ),
+    ).toBe(true);
   });
 });
